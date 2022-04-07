@@ -1,9 +1,9 @@
 import { DefaultFooter } from '@ant-design/pro-layout';
 export default () => {
-  const defaultMessage = '极客猿导航';
+  const defaultMessage = '狗头导航';
   return (
     <DefaultFooter
-      copyright={`2021 ${defaultMessage}`}
+      copyright={`2022 ${defaultMessage}`}
       links={[]}
     />
   );

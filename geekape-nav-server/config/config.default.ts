@@ -32,7 +32,7 @@ export default (appInfo: EggAppInfo) => {
     };
 
     config.jwt = {
-        secret: 'xiaobing_19960412_jwttoken',
+        secret: 'a_strange_jwt_token_when_you_see_it',
     };
 
     config.routerAuth = [

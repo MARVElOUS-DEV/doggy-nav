@@ -68,12 +68,12 @@ class Reptile {
 
 
 async function main() {
-  // await Promise.all([
-  //   new Reptile('index', '设计'),
-  //   new Reptile('code', '前端'),
-  //   new Reptile('operate', '运营'),
-  //   new Reptile('product', '产品')
-  // ])
+  await Promise.all([
+    new Reptile('index', '设计'),
+    new Reptile('code', '前端'),
+    new Reptile('operate', '运营'),
+    new Reptile('product', '产品')
+  ])
   let admin = {
     username: "admin",
     password: '123456',
