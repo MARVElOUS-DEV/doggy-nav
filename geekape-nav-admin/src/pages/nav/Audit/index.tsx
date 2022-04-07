@@ -47,7 +47,7 @@ export default function NavAuditListPage() {
       search: false,
       width: 250,
       renderText: (text, record)=> (<Space>
-        {record.tags.map(item=> <RandomColorTag>{item}</RandomColorTag>)}
+        {record.tags.map(item=> <RandomColorTag key={item}>{item}</RandomColorTag>)}
       </Space>)
     },
 
@@ -88,10 +88,10 @@ export default function NavAuditListPage() {
       columns={columns}
       requestParams={{url: API_NAV_LIST, method: 'GET'}}
       renderOptions={(text, record, _, action) => record.status != NavStatus.reject ? [
-        <Popconfirm title={'确定通过吗？'} onConfirm={() => onActionClick(record._id, action, 0)}>
+        <Popconfirm title={'确定通过吗？'} onConfirm={() => onActionClick(record._id, action, 0)} key="确定通过吗？">
           <a>通过</a>
         </Popconfirm>,
-        <Popconfirm title={'确定拒绝吗？'} onConfirm={() => onActionClick(record._id, action, 2)}>
+        <Popconfirm title={'确定拒绝吗？'} onConfirm={() => onActionClick(record._id, action, 2)} key="确定拒绝吗？" >
           <a>拒绝</a>
         </Popconfirm>
       ] : []}/>

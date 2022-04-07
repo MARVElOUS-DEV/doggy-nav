@@ -32,7 +32,7 @@ export default function TagSelect(props: TagSelectProps) {
 
   return (
     <Select onChange={onSelectChange} value={value} showSearch mode={'tags'} {...props}>
-        {tagList.map(subItem => <Select.Option value={subItem[props.valueKey || '_id']}>{subItem.name}</Select.Option>)}
+        {tagList.map(subItem => <Select.Option value={subItem[props.valueKey || '_id']} key={subItem._id}>{subItem.name}</Select.Option>)}
     </Select>
   )
 }

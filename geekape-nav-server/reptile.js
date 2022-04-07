@@ -3,10 +3,11 @@ const cheerio = require('cheerio');
 const mongoose = require("mongoose");
 const appConfig = require("../geekape-nav-main/nuxt.config");
 var db = mongoose.connect(appConfig.env.mongoUrl, { useNewUrlParser: true });
+db.mongoose=mongoose
 //引入数据模型模块
-const navData = require("./server/model/navSchema");
-const categorySchema = require("./server/model/categorySchema");
-
+const navData = require("./app/model/nav")(db);
+const categorySchema = require("./app/model/category")(db);
+const userSchema = require("./app/model/user")(db);
 class Reptile {
   constructor(url, type) {
     this.rootUrl = 'http://chuangzaoshi.com/'
@@ -67,12 +68,19 @@ class Reptile {
 
 
 async function main() {
-  await Promise.all([
-    new Reptile('index', '设计'),
-    new Reptile('code', '前端'),
-    new Reptile('operate', '运营'),
-    new Reptile('product', '产品'),
-  ])
+  // await Promise.all([
+  //   new Reptile('index', '设计'),
+  //   new Reptile('code', '前端'),
+  //   new Reptile('operate', '运营'),
+  //   new Reptile('product', '产品')
+  // ])
+  let admin = {
+    username: "admin",
+    password: '123456',
+    isAdmin:true
+  }
+  const userDataRes = await userSchema.create(admin)
+  console.log("db init done");
 }
 
 main()

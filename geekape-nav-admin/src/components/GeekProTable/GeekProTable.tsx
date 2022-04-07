@@ -128,7 +128,7 @@ function formatOptions(options: any[], maxCount = 3) {
         overlay={
           <Menu>
             {moreOptions.map(item => (
-              <Menu.Item>{item}</Menu.Item>
+              <Menu.Item key={item}>{item}</Menu.Item>
             ))}
           </Menu>
         }

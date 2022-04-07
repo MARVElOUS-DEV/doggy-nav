@@ -73,7 +73,7 @@
               </div>
               <div class="app-card-content">
                 <el-row :gutter="10">
-                  <el-col span="12" v-for="item in randomNavList" :key="item._id">
+                  <el-col :span="12" v-for="item in randomNavList" :key="item._id">
                     <nuxt-link class="nav-block" :to="`/nav/${item._id}`">
                       <img :src="item.logo" alt="" class="nav-logo">
                       <h4 class="nav-name">{{ item.name }}</h4>
@@ -87,10 +87,10 @@
       </el-row>
 
       <el-row :gutter="20" class="site-detail">
-        <el-col span="18">
+        <el-col :span="18">
           <div class="detail">{{ detail.detail || detail.desc }}}</div>
         </el-col>
-        <el-col span="6">
+        <el-col :span="6">
           <aside></aside>
         </el-col>
       </el-row>
@@ -115,13 +115,16 @@ export default {
   },
   data() {
     return {
+      loading:false,
       detail: {},
       randomNavList: [],
     }
   },
   methods: {
     async getRandomNavList() {
+      this.loading=true;
       const res = await axios.get(API_NAV_RANDOM);
+      this.loading=false;
       this.randomNavList = res.data
     },
     handleNavStarFn() {

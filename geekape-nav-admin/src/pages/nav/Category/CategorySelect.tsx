@@ -26,8 +26,8 @@ export default function CategorySelect(props: any) {
 
   return (
     <Select onChange={onSelectChange} value={value} showSearch {...props}>
-      {categoryList.map(item => <Select.OptGroup label={item.name}>
-        {item.children.map(subItem => <Select.Option value={subItem._id}>{subItem.name}</Select.Option>)}
+      {categoryList.map(item => <Select.OptGroup label={item.name} key={item._id}>
+        {item.children.map(subItem => <Select.Option value={subItem._id} key={subItem._id}>{subItem.name}</Select.Option>)}
       </Select.OptGroup>)}
     </Select>
   )

@@ -3,9 +3,13 @@ module.exports = {
   mode: "universal",
   telemetry: false,
   env: {
-    baseUrl: process.env.root
+    baseUrl: process.env.root,
+    mongoUrl:"mongodb://localhost:27017/navigation"
   },
   server: {},
+  terser:{
+    sourceMap: true,
+  },
   /*`
    ** Headers of the page
    */
@@ -77,7 +81,7 @@ module.exports = {
       target: 'http://localhost:3002/api', // 目标接口域名
       changeOrigin: true,
       pathRewrite: {
-        '^/api' : '/'
+        '^/api' : ''
       }
     },
     '/5a1Fazu8AA54nxGko9WTAnF6hhy': {
@@ -93,6 +97,11 @@ module.exports = {
    ** Build configuration
    */
   build: {
+    babel: {
+      plugins: [
+        '@babel/plugin-proposal-optional-chaining'
+      ]
+    },
     transpile: [/^element-ui/],
     styleResources: {
       scss: './static/styles/var.scss',
@@ -100,7 +109,12 @@ module.exports = {
     /*
      ** You can extend webpack config here
      */
-    extend(config, ctx) {},
+     extend(config, { isClient }) {
+      // Extend only webpack config for client-bundle
+      if (isClient) {
+        config.devtool = 'source-map'
+      }
+    },
     vendor: ["axios"]
   },
 

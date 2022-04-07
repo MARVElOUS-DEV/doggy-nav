@@ -22,7 +22,7 @@
       </div>
     </el-container>
 
-    <AddNavPopup :show.sync="showPopup" />
+    <!-- <AddNavPopup :show.sync="showPopup" /> -->
     <CustomerServiceBtn @showLog="showLog = true" />
     <AppLog :show="showLog" @closeLog="showLog = false" />
   </el-container>
@@ -101,8 +101,8 @@ export default {
       axios.get(API_NAV_RANKING)
     ])
 
-
-    const id = store.state.seletedMenuParentId || categorys[0]._id;
+    console.info(`%c categorys: ${categorys}`,"background-color:red;")
+    const id = store.state.seletedMenuParentId || (categorys.length && categorys[0]._id) || '';
     const { data } = await api.findNav(id);
     return {
       categorys,

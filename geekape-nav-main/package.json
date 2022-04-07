@@ -35,6 +35,7 @@
     "vuex": "^3.6.2"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.16.7",
     "@nuxtjs/proxy": "^2.0.1",
     "chalk": "^4.1.0",
     "css-loader": "^3.6.0",
