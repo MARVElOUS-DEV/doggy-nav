@@ -1,0 +1,20 @@
+/*
+* var
+* --------------------------------------
+ */
+$color-primary: #4700f1;
+$color-link: #3a8ee6;
+
+
+
+/*
+* mixins
+* --------------------------------------
+ */
+@mixin text-overflow($line) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $line;
+}
