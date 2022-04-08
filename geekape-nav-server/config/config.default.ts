@@ -4,7 +4,7 @@ import mongoConfig from './mongodb';
 export default (appInfo: EggAppInfo) => {
     const config = {} as PowerPartial<EggAppConfig>;
 
-    config.keys = 'yuanmeng';
+    config.keys = 'geek-nav';
 
     config.security = {
         csrf: {

@@ -101,7 +101,7 @@ export default {
       axios.get(API_NAV_RANKING)
     ])
 
-    console.info(`%c categorys: ${categorys}`,"background-color:red;")
+    console.info(`%c categorys: ${JSON.stringify(categorys)}`,"color:red;")
     const id = store.state.seletedMenuParentId || (categorys.length && categorys[0]._id) || '';
     const { data } = await api.findNav(id);
     return {

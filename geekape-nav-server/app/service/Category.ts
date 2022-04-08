@@ -1,16 +1,18 @@
 import { Service } from 'egg';
 
-
 export default class CategoryService extends Service {
   formatCategoryList(data) {
-    const stairCategory = data.filter(item=> !item.categoryId)
-    const secondCategory = data.filter(item=> item.categoryId)
-
-    let newData = stairCategory.map(item=> {
-      item.children = [...secondCategory.filter(cate=> item._id == cate.categoryId)]
-      return item
-    })
-
+    const stairCategoryList = data.filter(item=> !item.categoryId)
+    const newData = stairCategoryList.map(item=> this.format({...item.toJSON()},data))
     return newData
+  }
+
+  format(firstItem,data) {
+    let secondCategory = data.filter(item=> firstItem._id.toString()===item.categoryId)
+    if (secondCategory.length===0) {
+      return {...firstItem}
+    }
+    const newSecondCategory = secondCategory.map(i => this.format({...i.toJSON()},data))
+    return {...firstItem,children:[...newSecondCategory]}
   }
 }

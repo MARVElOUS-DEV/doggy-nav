@@ -13,7 +13,6 @@
       />
       <img v-show="isCollapse" class="icon-logo" width="45" src="/logo-nav-icon.png"/>
 
-      <!-- <span>猿梦极客导航后台</span> -->
     </nuxt-link>
 
     <slot name="sidebar">
