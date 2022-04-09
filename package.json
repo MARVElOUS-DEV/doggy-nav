@@ -1,0 +1,42 @@
+{
+  "name": "doggy-nav",
+  "version": "1.0.0",
+  "description": "doggy-nav",
+  "main": "index.js",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/egg",
+      "**/egg/**",
+      "**/egg-*",
+      "**/egg-*/**"
+    ]
+  },
+  "scripts": {
+    "test": "lerna run test",
+    "bootstrap": "lerna bootstrap",
+    "commit": "cz",
+    "server:dev": "yarn workspace doggy-nav-server run dev",
+    "web:dev": "yarn workspace doggy-nav-main run dev",
+    "admin:dev": "yarn workspace doggy-nav-admin run dev"
+  },
+  "repository": "git+https://github.com/MARVElOUS-DEV/geek-nav.git",
+  "keywords": [
+    "bookmarks",
+    "navigation"
+  ],
+  "author": "Marvelous",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MARVElOUS-DEV/geek-nav/issues"
+  },
+  "homepage": "https://github.com/MARVElOUS-DEV/geek-nav#readme",
+  "devDependencies": {
+    "cz": "1.8.2",
+    "lerna": "4.0.0"
+  },
+  "dependencies": {}
+}
