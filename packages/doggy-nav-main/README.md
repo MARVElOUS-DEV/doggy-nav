@@ -1,7 +1,3 @@
-## 版本说明
-- [nuxt ssr版](https://github.com/geekape/geek-navigation/tree/nuxt)：vue nuxt版本，更好的seo，更快的首屏加载速度
-。
-
 ## 应用截图
 
 ![首页](https://cdn.nlark.com/yuque/0/2020/png/225518/1604404219179-bd630676-0434-47d7-88fb-c2d30f6a52f3.png?x-oss-process=image%2Fresize%2Cw_1401)

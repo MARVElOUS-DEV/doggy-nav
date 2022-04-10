@@ -23,7 +23,7 @@
     "web:dev": "yarn workspace doggy-nav-main run dev",
     "admin:dev": "yarn workspace doggy-nav-admin run dev"
   },
-  "repository": "git+https://github.com/MARVElOUS-DEV/geek-nav.git",
+  "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
     "bookmarks",
     "navigation"
@@ -31,9 +31,9 @@
   "author": "Marvelous",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/MARVElOUS-DEV/geek-nav/issues"
+    "url": "https://github.com/MARVElOUS-DEV/doggy-nav/issues"
   },
-  "homepage": "https://github.com/MARVElOUS-DEV/geek-nav#readme",
+  "homepage": "https://github.com/MARVElOUS-DEV/doggy-nav#readme",
   "devDependencies": {
     "cz-conventional-changelog": "3.3.0",
     "lerna": "4.0.0"

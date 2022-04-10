@@ -26,11 +26,7 @@ export default {
   methods: {
     handleCommand(command) {
       console.log('click on item ' + command);
-      if (command === 'b') {
-        window.open('https://support.qq.com/product/330737')
-      } else if (command === 'c') {
-          window.open('https://geekape.net/about')
-      } else if (command === 'a') {
+      if (command === 'a') {
         this.$emit('showLog', true)
       }
     }
