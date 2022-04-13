@@ -11,7 +11,7 @@
         width="180"
         src="/logo-nav.png"
       />
-      <img v-show="isCollapse" class="icon-logo" width="45" src="/logo-nav-icon.png"/>
+      <img v-show="isCollapse" class="icon-logo" width="45" src="/logo-icon.png"/>
 
     </nuxt-link>
 
