@@ -6,7 +6,6 @@ module.exports = {
   // target: 'static', // default is server
   env: {
     baseUrl: process.env.root,
-    mongoUrl:"mongodb://localhost:27017/doggy-dev"
   },
   server: {},//
   terser:{

@@ -1,11 +1,11 @@
+import  mongoCfg from './config/mongodb'
 const fs = require('fs')
 const request = require('request');
 const cheerio = require('cheerio');
 const mongoose = require("mongoose");
-const appConfig = require("../doggy-nav-main/nuxt.config");
 const path = require('path');
-const { eq, map } = require('cheerio/lib/api/traversing');
-var db = mongoose.connect(appConfig.env.mongoUrl, { useNewUrlParser: true });
+
+var db = mongoose.connect(mongoCfg.mongoUrl, { useNewUrlParser: true });
 db.mongoose=mongoose
 //引入数据模型模块
 const navData = require("./app/model/nav")(db);
