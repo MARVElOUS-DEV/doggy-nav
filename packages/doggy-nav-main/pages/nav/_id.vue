@@ -42,11 +42,6 @@
         </el-col>
         <el-col class="item" :md="10" :xs="24">
           <div class="content">
-            <!--            <div class="category-bar">-->
-            <!--              <span class="category">素材资源</span>-->
-            <!--              >-->
-            <!--              <span class="category">LOGO设计</span>-->
-            <!--            </div>-->
             <h1 class="title">{{ detail.name }}</h1>
             <p class="desc">{{ detail.desc }}</p>
             <p class="tags" v-if="detail.tags.length">标签：

@@ -1,5 +1,5 @@
-import  mongoCfg from './config/mongodb'
-const fs = require('fs')
+const  mongoCfg =require('./config/mongodb.ts').default;
+const fs = require('fs');
 const request = require('request');
 const cheerio = require('cheerio');
 const mongoose = require("mongoose");
@@ -14,6 +14,11 @@ const map = new Map()
 
 function extractOrigin (url){
   return url.match(/^https?:\/\/.+?(?=\/)/)[0]
+}
+function getTransformedLogo (origin){
+  // remove http(s)
+  const url = origin.replace(/https?:\/\//,'')
+  return `https://api.iowen.cn/favicon/${url}.png`
 }
 function isAbsoluteUrl (url) {
   return url.startsWith('http') || url.startsWith('//') || url.startsWith("data:image")
@@ -48,7 +53,7 @@ async function getLogo (url){
         }
         console.log("logo,",origin, logo);
         if (!logo) {
-          final=`${origin}/favicon.ico`
+          final=getTransformedLogo(origin)
         } else {
           final = logo
           if(!isAbsoluteUrl(logo)) {
@@ -59,8 +64,8 @@ async function getLogo (url){
         resolve(final)
       } else {
         console.error(`获取${url} 站点logo icon失败,error= ${error}`)
-        map.set(origin,`${origin}/favicon.ico`)
-        resolve(`${origin}/favicon.ico`)
+        map.set(origin,getTransformedLogo(origin))
+        resolve(getTransformedLogo(origin))
       }
     })
   })
@@ -68,7 +73,7 @@ async function getLogo (url){
 async function sleep (ms) {
   return new Promise((r) => {
     setTimeout(()=> {
-      r()
+      r(null)
     },ms)
   })
 }
@@ -77,7 +82,7 @@ async function recursive(children, parentId) {
   for (let index = 0; index < children.length; index++) {
     const el = children[index];
     if (el.type === 'folder') {
-      firstName = el.name
+      const firstName = el.name
       const [f] = await categorySchema.find({
         name: { $eq: firstName },
         categoryId: {$eq: parentId}
