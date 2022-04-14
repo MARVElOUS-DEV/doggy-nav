@@ -88,7 +88,7 @@
 
       <el-row :gutter="20" class="site-detail">
         <el-col :span="18">
-          <div class="detail">{{ detail.detail || detail.desc }}}</div>
+          <div class="detail">{{ detail.detail || detail.desc }}</div>
         </el-col>
         <el-col :span="6">
           <aside></aside>

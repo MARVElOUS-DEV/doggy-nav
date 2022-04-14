@@ -71,15 +71,6 @@ export default {
   },
 
   methods: {
-    async getCategoryList() {
-      const { data: categorys } = await this.$api.getCategoryList();
-      this.categorys = categorys;
-
-      if (Array.isArray(categorys)) {
-        const categoryId = categorys[0]._id;
-        this.findNav(categoryId);
-      }
-    },
     dataScroll() {
       const that = this;
       let scrollTop =
@@ -100,8 +91,6 @@ export default {
       api.getCategoryList(),
       axios.get(API_NAV_RANKING)
     ])
-
-    console.info(`%c categorys: ${JSON.stringify(categorys)}`,"color:red;")
     const id = store.state.seletedMenuParentId || (categorys.length && categorys[0]._id) || '';
     const { data } = await api.findNav(id);
     return {

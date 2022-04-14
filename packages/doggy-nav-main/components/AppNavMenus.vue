@@ -27,30 +27,7 @@
             unique-opened
             :collapse="isCollapse"
           >
-            <el-submenu
-              v-for="(item, index) in categorys"
-              :key="item._id"
-              :index="item._id"
-              style="text-align: left"
-            >
-              <template slot="title">
-                <i
-                  :class="item.icon ? item.icon : `el-icon-eleme icon-title`"
-                ></i>
-                <span slot="title">{{ item.name }}</span>
-              </template>
-              <el-menu-item
-                :index="`${index}-${idx}`"
-                v-for="(nav, idx) in item.children"
-                :key="nav._id"
-                @click="handleMenuItemClick(item._id, nav._id)"
-              >
-                <a>
-                  <i :class="nav.icon"></i>
-                  <span slot="title">{{ nav.name }}</span>
-                </a>
-              </el-menu-item>
-            </el-submenu>
+            <menu-stack :menuList="categorys" @handleSubMenuItemClick="handleSubMenuItemClick"/>
           </el-menu>
         </el-col>
       </el-row>
@@ -71,8 +48,11 @@
 </template>
 
 <script>
+import MenuStack from "./MenuStack.vue"
+
 export default {
   name: "AppNavMenus",
+  components:{ MenuStack },
   props: {
     show: {
       type: Boolean,
@@ -89,9 +69,7 @@ export default {
   },
   data() {
     return {
-      dialogFormVisible: false,
       defaultActive: "0-0",
-      selectedCategoryId: ""
     };
   },
   computed: {
@@ -109,23 +87,10 @@ export default {
     }
   },
   methods: {
-    handleMenuItemClick(parentId, id) {
-      this.$store.commit('saveSeletedId', {
-        parentId,
-        id,
-      })
-
-      if (this.$route.path.includes('/nav')) {
-        this.$router.push('/')
-        return
-      }
-      if (this.selectedCategoryId === parentId) {
-        document.getElementById(id).scrollIntoView();
-        return;
-      }
-      this.selectedCategoryId = parentId;
+    handleSubMenuItemClick(parentId,id){
+      console.log(parentId,id,this.$store.state);
+     
       this.$emit("handleSubMenuClick", parentId, id);
-
     }
   }
 };
@@ -158,7 +123,6 @@ $sidebar-w: auto;
 }
 
 .el-aside {
-  overflow: hidden;
   .el-menu-vertical-demo.el-menu {
     height: 100vh;
     overflow-y: auto;
@@ -197,15 +161,7 @@ $sidebar-w: auto;
   left: 0;
   bottom: 0;
   overflow: hidden;
-  .el-submenu__title i {
-    color: #fff;
-  }
 
-
-  /deep/ .el-menu,
-  /deep/ .el-menu--collapse {
-    border: 0;
-  }
 
   &.aside-hide {
     transform: translateX(-$sidebar-w);
@@ -224,10 +180,9 @@ $sidebar-w: auto;
     justify-content: center;
     cursor: pointer;
   }
-
-  .el-submenu__title,
-  .el-menu-item {
-    text-align: left;
+  /deep/ .el-menu,
+  /deep/ .el-menu--collapse {
+    border: 0;
   }
 }
 
