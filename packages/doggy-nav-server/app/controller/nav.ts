@@ -67,7 +67,7 @@ export default class NavController extends Controller {
             href: url,
           })
         } else {
-          that.error('爬虫爬取失败')
+          that.error('获取站点信息失败')
         }
       })
     })

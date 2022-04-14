@@ -16,7 +16,7 @@
     </nuxt-link>
 
     <slot name="sidebar">
-      <el-row>
+      <el-row class="menu-side-bar">
         <el-col :span="24">
           <el-menu
             class="el-menu-vertical-demo"
@@ -123,8 +123,15 @@ $sidebar-w: auto;
 }
 
 .el-aside {
+  .menu-side-bar {
+    height: calc(100% - 170px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
   .el-menu-vertical-demo.el-menu {
-    height: 100vh;
     overflow-y: auto;
     padding-bottom: 100px;
   }
