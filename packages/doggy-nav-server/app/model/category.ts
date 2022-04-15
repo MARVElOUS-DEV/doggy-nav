@@ -8,7 +8,7 @@ module.exports = app => {
     createAt: Number,
     icon: {
       type: String,
-      default: ''
+      default: '',
     },
     children: [{
       name: String,
@@ -18,7 +18,7 @@ module.exports = app => {
     }],
     showInMenu: {
       type: Boolean,
-      default: true
+      default: true,
     },
   }, { collection: 'category' });
   return mongoose.model('Category', CategorySchema);

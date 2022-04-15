@@ -4,6 +4,5 @@ export default () => {
   const config: PowerPartial<EggAppConfig> = {};
 
 
-
   return config;
 };

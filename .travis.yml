@@ -1,14 +1,13 @@
 
 language: node_js
 node_js:
-  - '8'
-  - '10'
   - '12'
+  - '14'
 before_install:
-  - npm i npminstall -g
+  - npm i yarn -g
 install:
-  - npminstall
+  - yarn
 script:
-  - npm run ci
+  - yarn workspace doggy-nav-server cov
 after_script:
-  - npminstall codecov && codecov
+  - yarn workspace doggy-nav-server clean

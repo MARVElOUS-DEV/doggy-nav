@@ -7,7 +7,7 @@ module.exports = app => {
     parentName: String,
   }, { collection: 'tag' });
 
-  TagSchema.index({ name: 1 }, { unique: true, background: true, dropDups: true })
+  TagSchema.index({ name: 1 }, { unique: true, background: true, dropDups: true });
 
   return mongoose.model('Tag', TagSchema);
 };

@@ -5,7 +5,7 @@ module.exports = app => {
   const NavSchema = new Schema({
     categoryId: String,
     name: String,
-    //网站url
+    // 网站url
     href: String,
     desc: String,
     logo: String,
@@ -15,7 +15,7 @@ module.exports = app => {
     createTime: Date,
     tags: {
       type: Array,
-      default: []
+      default: [],
     },
     view: {
       type: Number,

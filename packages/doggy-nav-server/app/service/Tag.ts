@@ -3,18 +3,18 @@ import { Service } from 'egg';
 
 export default class TagService extends Service {
   async addMultiTag(tags) {
-    if (!Array.isArray(tags)) return
+    if (!Array.isArray(tags)) return;
 
     try {
-      const tagData = tags.map(item=> {
+      const tagData = tags.map(item => {
         return {
-          name: item
-        }
-      })
-      const res = await this.ctx.model.Tag.insertMany(tagData, { ordered: false })
-      return res
+          name: item,
+        };
+      });
+      const res = await this.ctx.model.Tag.insertMany(tagData, { ordered: false });
+      return res;
     } catch (err) {
-      return err
+      return err;
     }
   }
 }
