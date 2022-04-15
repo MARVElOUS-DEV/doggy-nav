@@ -33,7 +33,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: "yarn"
-        cache-dependency-path: packages/doggy-nav-server/yarn.lock
+        cache-dependency-path: yarn.lock
 
     - name: Start MongoDB
       uses: supercharge/mongodb-github-action@1.7.0
