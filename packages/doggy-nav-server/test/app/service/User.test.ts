@@ -5,11 +5,14 @@ import { app,mock } from 'egg-mock/bootstrap';
 describe('test/app/service/User.test.js', () => {
   let ctx: Context;
 
-  before(async () => {
+  beforeEach(async () => {
     ctx = app.mockContext();
     mock(app.jwt,"sign",async ()=> 'testToken')
     mock(ctx.model.User, "findOne",async ()=> ({username:'test',password:"111111"}))
   });
+  afterEach(async()=> {
+    mock.restore()
+  })
 
   it('should login ok', async () => {
     mock(ctx.request,"body",{username:'test',password:"111111"})
