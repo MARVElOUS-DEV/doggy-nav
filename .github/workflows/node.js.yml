@@ -20,8 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ["14.x"]
+        node-version: [14.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        mongodb-version: ['4.2']
 
     steps:
     - name: Checkout Git Source
@@ -32,6 +33,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
+
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.7.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
 
     - name: Install Dependencies
       run: yarn global add lerna && yarn && lerna bootstrap 
