@@ -9,7 +9,7 @@ typings/**/**
 .DS_Store
 *.swp
 !.autod.conf.js
-
+dist
 app/**/*.js
 test/**/*.js
 config/**/*.js

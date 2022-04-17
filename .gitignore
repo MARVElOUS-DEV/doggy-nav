@@ -6,7 +6,6 @@ coverage/
 config/mongodb.ts
 .idea/
 run/
-logs/
 typings/**/**
 .DS_Store
 *.swp

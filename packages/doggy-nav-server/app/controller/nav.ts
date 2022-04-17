@@ -125,7 +125,7 @@ export default class NavController extends Controller {
       });
 
       categorys.map(category => {
-        const nowNavs = navs.filter(nav => nav.categoryId === category._id);
+        const nowNavs = navs.filter(nav => nav.categoryId === category._id.toString());
         resData.push({
           _id: category._id,
           name: category.name,

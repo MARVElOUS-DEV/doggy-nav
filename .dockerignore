@@ -1,0 +1,12 @@
+.cache/
+node_modules/
+**/node_modules/
+public/
+.circleci
+.husky
+__mocks__
+**/dist/
+.umi/
+.umi-production/
+Dockerfile
+logs

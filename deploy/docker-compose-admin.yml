@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  doggy-admin:
+    container_name: doggyadmin
+    image: doggyadmin
+    build:
+      context: ./../.
+      dockerfile: "Dockerfile-Admin"
+    restart: always
+    ports:
+      - 4000:8080
+    environment:
+      - DOGGY_SERVER=localhost:3002

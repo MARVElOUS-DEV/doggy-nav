@@ -75,8 +75,8 @@ async function main() {
     new Reptile('product', '产品')
   ])
   let admin = {
-    username: "admin",
-    password: '123456',
+    username: process.env.USERNAME,
+    password: process.env.PASSWORD,
     isAdmin:true
   }
   const userDataRes = await userSchema.create(admin)

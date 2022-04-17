@@ -1,11 +1,10 @@
 
 module.exports = {
-  mode: "universal",
   telemetry: false,
   // ssr: false,
   // target: 'static', // default is server
   env: {
-    baseUrl: process.env.root,
+    baseUrl: process.env.root || 'http://localhost:3002/',
   },
   server: {},//
   terser:{
@@ -73,7 +72,7 @@ module.exports = {
 
   proxy: {
     '/api': {
-      target: 'http://localhost:3002/api', // 目标接口域名
+      target: `${process.env.root}api`, // 目标接口域名
       changeOrigin: true,
       pathRewrite: {
         '^/api' : ''

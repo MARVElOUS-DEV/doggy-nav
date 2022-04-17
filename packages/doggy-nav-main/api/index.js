@@ -33,37 +33,6 @@ const api = {
   },
   getCategoryList() {
     return axios.get('/api/category/list')
-  //   return Promise.resolve({data:[
-  //     {
-  //       "icon": "",
-  //       "showInMenu": true,
-  //       "_id": "624ea8ce3d1b9129c01fa9c0",
-  //       "name": "设计",
-  //       "categoryId": "",
-  //       "children": [
-  //         {
-  //           "icon": "",
-  //           "showInMenu": true,
-  //           "_id": "624ea8d23d1b9129c01faa0c",
-  //           "categoryId": "624ea8ce3d1b9129c01fa9c0",
-  //           "name": "热门推荐",
-  //           "children": [
-  //             {
-  //               "icon": "",
-  //               "showInMenu": true,
-  //               "_id": "624ea8d13d1b9129c01fa9cc",
-  //               "categoryId": "624ea8d23d1b9129c01faa0c",
-  //               "name": "域名注册",
-  //               "children": [],
-  //               "__v": 0
-  //             }
-  //           ],
-  //           "__v": 0
-  //         }
-  //       ],
-  //       "__v": 0
-  //     }
-  // ]})
   },
 }
 

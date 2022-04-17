@@ -1,0 +1,50 @@
+version: '3.3'
+services:
+  doggy-admin:
+    container_name: doggyadmin
+    image: doggyadmin
+    build:
+      context: ./../.
+      dockerfile: "Dockerfile-Admin"
+    restart: always
+    ports:
+      - 4000:8080
+    depends_on:
+      - doggy-server
+    environment:
+      - DOGGY_SERVER=doggy-server:3002
+  doggy-server:
+    container_name: doggyserver
+    image: doggyserver
+    build:
+      context: ./../.
+      dockerfile: "Dockerfile-Server"
+    restart: always
+    environment:
+      - MONGO_URL=mongodb:27017
+    ports:
+      - 4002:3002
+    depends_on:
+      - mongodb
+  mongodb:
+    container_name: mongodb-container
+    image: mongo:3
+    restart: always
+    volumes:
+      - ./logs/data:/data/db
+    ports:
+      - "27117:27017"
+      - "27118:27018"
+  doggy-main:
+    container_name: doggymain
+    image: doggymain
+    build:
+      context: ./../
+      dockerfile: "Dockerfile-Main"
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - root=http://doggy-server:3002/
+    depends_on:
+      - doggy-server

@@ -10,9 +10,10 @@ export default defineConfig({
   devServer: {
     port: 3001
   },
-  history: {type: 'hash'},
-  base: '/admin/',
-  publicPath: '/admin/',
+  outputPath:'dist',
+  history: {type: 'browser'},
+  base: '/',
+  publicPath: '/',
   antd: {},
   dva: {
     hmr: true,
@@ -60,7 +61,7 @@ export default defineConfig({
       projectName: 'swagger',
     },
   ],
-  // mfsu issue,umi net version will solve this: https://github.com/umijs/umi/issues/7464
+  // mfsu issue,umi next version will solve this: https://github.com/umijs/umi/issues/7464
   // mfsu: {},
   // webpack5:{}
 });
