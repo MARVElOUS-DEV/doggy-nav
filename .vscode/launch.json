@@ -11,8 +11,8 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "localRoot": "${workspaceFolder}/geekape-nav-server",
-      "program": "${workspaceFolder}/geekape-nav-server/node_modules/egg-bin/bin/egg-bin.js",
+      "localRoot": "${workspaceFolder}/packages/doggy-nav-server",
+      "program": "${workspaceFolder}/packages/doggy-nav-server/node_modules/egg-bin/bin/egg-bin.js",
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ],
