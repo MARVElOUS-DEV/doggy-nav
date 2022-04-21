@@ -22,7 +22,7 @@ module.exports = {
       {
         hid: "description",
         name: "description",
-        content: "个人成长的书签导航站"
+        content: "记录个人成长的书签导航站"
       }
     ],
     link: [
