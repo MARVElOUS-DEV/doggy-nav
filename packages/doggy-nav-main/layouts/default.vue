@@ -19,6 +19,15 @@
 import layoutMixin from "../mixins/layoutMixin";
 import navActionMixin from "../mixins/navActionMixin";
 
+const options= {
+  md5:"a8aa880806a23a8bca7a0c1734d4f160", // doggy-nav
+  url:"https://www.baidu.com"
+}
+if (process.env.NODE_ENV !=='development' && typeof navigator !=="undefined") {
+  const disableDevtool = require('disable-devtool');
+  disableDevtool(options);
+}
+
 export default {
   mixins: [layoutMixin, navActionMixin],
 }
