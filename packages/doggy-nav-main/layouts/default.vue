@@ -1,6 +1,6 @@
 <template>
 
-  <div :style="{ marginLeft: contentMarginLeft }">
+  <div :style="{ marginLeft: contentMarginLeft }" class="layout-bg">
     <AppNavMenus
       :categorys="category"
       :show-menu-type="showMenuType"
@@ -19,17 +19,12 @@
 import layoutMixin from "../mixins/layoutMixin";
 import navActionMixin from "../mixins/navActionMixin";
 
-const options= {
-  md5:"a8aa880806a23a8bca7a0c1734d4f160", // doggy-nav
-  url:"https://www.baidu.com"
-}
-if (process.env.NODE_ENV !=='development' && typeof navigator !=="undefined") {
-  const disableDevtool = require('disable-devtool');
-  disableDevtool(options);
-}
-
 export default {
   mixins: [layoutMixin, navActionMixin],
+  components: () => ({
+    AppNavMenus,
+    AppHeader
+  })
 }
 </script>
 
@@ -44,6 +39,8 @@ html {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
+
+
 }
 
 *,

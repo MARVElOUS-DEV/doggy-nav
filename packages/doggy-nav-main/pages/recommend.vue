@@ -4,7 +4,7 @@
         <el-form ref="ruleForm" label-width="100px" :model="form" :rules="rules"  v-loading="formLoading">
 
           <el-form-item label="网站链接" prop="href">
-            <el-input placeholder="http://www.baidu.com/" v-model="form.href"  :disabled="type === 'update'" @blur="getNavInfo" />
+            <el-input placeholder="http://www.baidu.com/" v-model="form.href" @blur="getNavInfo" />
             <span style="color: red">输入链接自动爬取信息</span>
           </el-form-item>
 
@@ -72,7 +72,6 @@
 </template>
 
 <script>
-import layoutMixin from "../mixins/layoutMixin";
 import axios from "../plugins/axios";
 import {API_NAV, API_NAV_REPTILE, API_TAG_LIST} from "../api";
 
@@ -153,7 +152,7 @@ export default {
           if (res.code === 0) {
             this.$message.error(`${res.msg}`)
           } else {
-            this.$message(`感谢您的提交，请等待后台审核通过！`)
+            this.$message(`感谢您的支持，请等待后台审核通过！`)
             this.$refs.ruleForm.resetFields()
           }
           this.loading = false

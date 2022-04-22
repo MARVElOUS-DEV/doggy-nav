@@ -6,6 +6,7 @@ module.exports = {
   env: {
     baseUrl: process.env.root || 'http://localhost:3002/',
   },
+  components: true,
   server: {},//
   terser:{
     sourceMap: process.env.NODE_ENV ==='develop',

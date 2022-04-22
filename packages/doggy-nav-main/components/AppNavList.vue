@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-row class="website" :gutter="20">
+    <el-row type="flex" class="website" :gutter="20">
       <AppNavItem
         v-for="item in list"
         :data="item"
@@ -33,5 +33,6 @@ export default {
 
 <style lang="scss" scoped>
 .website {
+  flex-wrap: wrap;
 }
 </style>

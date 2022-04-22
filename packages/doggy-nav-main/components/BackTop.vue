@@ -27,9 +27,12 @@ export default {
   justify-content: center;
   align-items: center;
   .el-button {
-  cursor: pointer;
+    cursor: pointer;
     width: 40px;
     height: 40px;
+    border-radius: 50%;
+    background-color: $color-btn;
+    color: #fff;
   }
 }
 [class^=el-icon-] {

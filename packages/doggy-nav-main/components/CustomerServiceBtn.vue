@@ -37,11 +37,11 @@ export default {
 <style lang="scss" scoped>
 
 .customer-service-btn {
-  width: 60px; height: 60px; background: #4700f1; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; background: #4700f1; border-radius: 50%; display: flex; align-items: center; justify-content: center;
   position: fixed;
   cursor: pointer;
-  right: 50px;
-  bottom: 50px;
+  right: 20px;
+  bottom: 90px;
   box-shadow: 0 0 20px rgba(#4700f1, .4);
   i {
     color: #fff;

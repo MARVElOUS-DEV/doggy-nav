@@ -20,32 +20,23 @@
             <app-nav-list :list="item.list" />
           </div>
       </div>
+      
     </el-container>
 
-    <!-- <AddNavPopup :show.sync="showPopup" /> -->
-    <CustomerServiceBtn @showLog="showLog = true" />
+    <Toolbar @showLog="showLog = true"/>
     <AppLog :show="showLog" @closeLog="showLog = false" />
   </el-container>
 </template>
 
 <script>
-import AppNavList from "../components/AppNavList";
-
-
 import api from "~/api";
-import AppSearch from "../components/AppSearch";
-import CustomerServiceBtn from "../components/CustomerServiceBtn";
-import AppLog from "../components/AppLog";
 import layoutMixin from "../mixins/layoutMixin";
-import NavRanking from "../components/NavRanking";
 import axios from "../plugins/axios";
 import {API_NAV_RANKING} from "../api";
-import NavRankingList from "../components/NavRankingList";
-import Affiche from "../components/Affiche";
 export default {
   mixins: [layoutMixin],
-  layout: 'second',
-  components: {
+  layout: 'index',
+  components: () => ({
     Affiche,
     NavRankingList,
     NavRanking,
@@ -53,11 +44,12 @@ export default {
     CustomerServiceBtn,
     AppSearch,
     AppNavList,
-  },
+    Toolbar
+  }),
   data() {
     return {
       loading: false,
-      active: "［前端］热门推荐",
+      active: "私人书签",
       data: [],
       categorys: [],
       navRanking: {

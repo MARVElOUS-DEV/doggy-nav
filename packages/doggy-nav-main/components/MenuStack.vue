@@ -73,10 +73,29 @@ export default {
   overflow: hidden;
   visibility: hidden;
   display: inline-block;
+ 
 }
-.el-submenu__title i {
-  color: #fff;
+.el-submenu__title {
+  background-color: var(--color-primary);
+  i {
+    color: #fff;
+  }
 }
+.el-menu--popup {
+    .el-menu-item {
+      padding-left: 3rem !important;
+    }
+
+    .el-submenu__title {
+      span {
+        color:#303133;
+    }
+    i {
+      color: #303133;
+    }
+  }
+  }
+
 .el-submenu__title,
 .el-menu-item {
   text-align: left;

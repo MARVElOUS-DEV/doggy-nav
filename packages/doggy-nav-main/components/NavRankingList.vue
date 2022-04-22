@@ -6,7 +6,7 @@
           <div slot="header" class="clearfix">
             <span>最新导航</span>
           </div>
-          <div v-for="item in data.news" class="text item">
+          <div v-for="item in data.news" class="text item" :key="item.name">
            <nav-ranking :data="item" />
           </div>
         </el-card>
@@ -16,7 +16,7 @@
           <div slot="header" class="clearfix">
             <span>点击最多导航</span>
           </div>
-          <div v-for="item in data.view" class="text item">
+          <div v-for="item in data.view" class="text item" :key="item.name">
             <nav-ranking :data="item" count-type="view" />
           </div>
         </el-card>
@@ -26,7 +26,7 @@
           <div slot="header" class="clearfix">
             <span>点赞最多导航</span>
           </div>
-          <div v-for="item in data.star" class="text item">
+          <div v-for="item in data.star" class="text item" :key="item.name">
             <nav-ranking :data="item" count-type="star" />
           </div>
         </el-card>

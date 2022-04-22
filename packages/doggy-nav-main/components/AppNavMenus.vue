@@ -20,7 +20,7 @@
         <el-col :span="24">
           <el-menu
             class="el-menu-vertical-demo"
-            background-color="#4700f1"
+            background-color="var(--color-primary)"
             text-color="#fff"
             active-text-color="#a27cff"
             :default-active="defaultActive"
@@ -48,11 +48,10 @@
 </template>
 
 <script>
-import MenuStack from "./MenuStack.vue"
 
 export default {
   name: "AppNavMenus",
-  components:{ MenuStack },
+  components:() => ({ MenuStack }),
   props: {
     show: {
       type: Boolean,
