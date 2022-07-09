@@ -1,4 +1,4 @@
-const  mongoCfg =require('./config/mongodb.ts').default;
+const mongoCfg =require('./config/mongodb');
 const fs = require('fs');
 const request = require('request');
 const cheerio = require('cheerio');
@@ -24,7 +24,7 @@ function isAbsoluteUrl (url) {
   return url.startsWith('http') || url.startsWith('//') || url.startsWith("data:image")
 }
 
-async function getBookmarkRoots (path){
+async function getBookmarkRoots (path) :Promise<{roots:any}>{
   return new Promise((resolve) => {
     fs.readFile(path,{encoding:'utf-8'},(err, data) => {
       if (err) throw err;

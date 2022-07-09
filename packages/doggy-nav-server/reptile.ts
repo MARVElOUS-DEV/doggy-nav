@@ -1,7 +1,7 @@
 const request = require('request');
 const cheerio = require('cheerio');
 const mongoose = require("mongoose");
-const  mongoCfg =require('./config/mongodb').default;
+const mongoCfg =require('./config/mongodb');
 var db = mongoose.connect(mongoCfg.mongoUrl, { useNewUrlParser: true,useUnifiedTopology: true });
 db.mongoose=mongoose
 //引入数据模型模块
