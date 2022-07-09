@@ -97,7 +97,8 @@ async function getCategorys(url:string) {
           const name = $aTags.eq(j).find('strong').text().trim()
           const href = $aTags.eq(j).attr('data-url')
           const desc = $aTags.eq(j).attr('data-original-title')
-          const logo = $aTags.eq(j).find('img').attr('src')
+          const logo = $aTags.eq(j).find('img').attr('data-src')
+          
           websites.push(navData.create({
             categoryId: secondCategoryId,
             name,
