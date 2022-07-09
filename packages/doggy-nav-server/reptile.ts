@@ -1,7 +1,7 @@
 const request = require('request');
 const cheerio = require('cheerio');
 const mongoose = require("mongoose");
-const  mongoCfg =require('./config/mongodb.ts').default;
+const  mongoCfg =require('./config/mongodb').default;
 var db = mongoose.connect(mongoCfg.mongoUrl, { useNewUrlParser: true,useUnifiedTopology: true });
 db.mongoose=mongoose
 //引入数据模型模块
@@ -9,8 +9,12 @@ const navData = require("./app/model/nav")(db);
 const categorySchema = require("./app/model/category")(db);
 const userSchema = require("./app/model/user")(db);
 class Reptile {
+  rootUrl: string;
+  url: any;
+  type: any;
+  categoryId: any;
   constructor(url, type) {
-    this.rootUrl = 'http://chuangzaoshi.com/'
+    this.rootUrl = 'https://creativemass.cn/'
     this.url = this.rootUrl + url
     this.type = type
     this.init()
@@ -39,7 +43,7 @@ class Reptile {
             name: secondCategoryName
           })
 
-          const websites = []
+          const websites:any[] = []
           const length = $('.panel').eq(i).find('.card-title').length
           for (let j = 0; j < length; j++) {
             const name = $('.panel').eq(i).find('.card-title').eq(j).text().trim()

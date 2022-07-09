@@ -8,7 +8,7 @@
 ## docker 部署说明
 下载代码后，在项目根目录下执行以下命令,yourAdminUserName是后台管理系统的用户名，yourAdminUserPassword是后台管理系统的密码
 ```
-./deploy/deploy.sh yourAdminUserName yourAdminUserPassword
+cd deploy && ./deploy.sh yourAdminUserName yourAdminUserPassword
 ```
 
 如果deploy.sh脚本执行报权限错误，请在项目根目录下执行下面命令

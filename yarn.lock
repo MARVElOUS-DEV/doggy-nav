@@ -10803,7 +10803,7 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-disable-devtool@^0.2.5:
+disable-devtool@0.2.5:
   version "0.2.5"
   resolved "https://registry.npmmirror.com/disable-devtool/-/disable-devtool-0.2.5.tgz#faef38f8be0e5fb362687550e4f6fddf2e109bd4"
   integrity sha512-zYdWM8elOOIXR0+dvxZOb8M6wP+nCG4TBnkNTW1Clq4GrMWfHqh8IVzznnlraMbAo2AzEa7IDJYsFS4xqZXP9Q==

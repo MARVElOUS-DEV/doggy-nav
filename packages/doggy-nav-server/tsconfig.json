@@ -19,8 +19,10 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "inlineSourceMap": true,
+    // "inlineSourceMap": true,
     "importHelpers": true,
+    "outDir": "./dist",
+    "sourceMap": false
   },
   "exclude": [
     "app/public",

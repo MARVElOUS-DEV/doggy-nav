@@ -5,7 +5,6 @@ public/
 .circleci
 .husky
 __mocks__
-**/dist/
 .umi/
 .umi-production/
 Dockerfile

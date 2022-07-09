@@ -1,15 +1,14 @@
 FROM node:14-alpine as build
 LABEL name="marvelous"
 
-COPY ./packages/doggy-nav-main/package.json /tmp/package.json
-COPY yarn.lock /tmp/yarn.lock
-RUN cd /tmp && yarn
-RUN mkdir -p /app && cp -a /tmp/node_modules /app/
+RUN mkdir -p /app
+COPY ./packages/doggy-nav-main/package.json /app/package.json
+COPY yarn.lock /app/yarn.lock
+RUN cd /app && yarn --production
 
 WORKDIR /app
-ADD ./packages/doggy-nav-main/. ./
+ADD ./packages/doggy-nav-main/.nuxt/. ./.nuxt/
 
-RUN yarn build
 
 EXPOSE 3000
 ENV HOST=0.0.0.0

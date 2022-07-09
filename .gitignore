@@ -11,4 +11,5 @@ typings/**/**
 *.swp
 !.autod.conf.js
 .pnpm/**/*
+dist/*
 

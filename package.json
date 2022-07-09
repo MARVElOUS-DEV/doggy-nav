@@ -21,7 +21,11 @@
     "commit": "cz",
     "server:dev": "yarn workspace doggy-nav-server run dev",
     "web:dev": "yarn workspace doggy-nav-main run dev",
-    "admin:dev": "yarn workspace doggy-nav-admin run dev"
+    "admin:dev": "yarn workspace doggy-nav-admin run dev",
+    "build": "yarn web:build && yarn admin:build && yarn server:build",
+    "web:build": "yarn workspace doggy-nav-main run build",
+    "admin:build": "yarn workspace doggy-nav-admin run build",
+    "server:build": "yarn workspace doggy-nav-server run build"
   },
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
