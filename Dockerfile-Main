@@ -5,6 +5,7 @@ RUN mkdir -p /app
 COPY ./packages/doggy-nav-main/package.json /app/package.json
 COPY yarn.lock /app/yarn.lock
 RUN cd /app && yarn --production
+ADD ./packages/doggy-nav-main/static/. /app/static
 
 WORKDIR /app
 ADD ./packages/doggy-nav-main/.nuxt/. ./.nuxt/

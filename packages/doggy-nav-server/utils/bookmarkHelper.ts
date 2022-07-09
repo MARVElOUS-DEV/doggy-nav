@@ -1,4 +1,4 @@
-const mongoCfg =require('./config/mongodb');
+const mongoCfg =require('../config/mongodb').default;
 const fs = require('fs');
 const request = require('request');
 const cheerio = require('cheerio');
@@ -8,8 +8,8 @@ const path = require('path');
 var db = mongoose.connect(mongoCfg.mongoUrl, { useNewUrlParser: true,useUnifiedTopology: true });
 db.mongoose=mongoose
 //引入数据模型模块
-const navData = require("./app/model/nav")(db);
-const categorySchema = require("./app/model/category")(db);
+const navData = require("../app/model/nav")(db);
+const categorySchema = require("../app/model/category")(db);
 const map = new Map()
 
 function extractOrigin (url){
@@ -139,3 +139,4 @@ async function transform(roots) {
   }
 })()
 
+export default {transform,getBookmarkRoots}
