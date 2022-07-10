@@ -21,7 +21,7 @@ module.exports = (_options, app) => {
         const decode = await app.jwt.verify(token, app.config.jwt.secret);
         ctx.state.userinfo = decode;
         await next();
-      } catch (err) {
+      } catch (err: any) {
         ctx.status = 401;
         ctx.body = {
           code: 401,

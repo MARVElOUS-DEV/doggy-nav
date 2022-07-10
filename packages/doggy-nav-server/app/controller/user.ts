@@ -6,7 +6,7 @@ export default class UserController extends Controller {
     try {
       const res = await ctx.service.user.login();
       this.success(res);
-    } catch (e) {
+    } catch (e: any) {
       this.error(e.message);
     }
   }

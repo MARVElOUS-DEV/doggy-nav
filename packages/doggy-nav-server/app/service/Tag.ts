@@ -13,7 +13,7 @@ export default class TagService extends Service {
       });
       const res = await this.ctx.model.Tag.insertMany(tagData, { ordered: false });
       return res;
-    } catch (err) {
+    } catch (err: any) {
       return err;
     }
   }

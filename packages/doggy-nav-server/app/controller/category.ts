@@ -17,7 +17,7 @@ export default class CategoryController extends Controller {
 
       const newData = ctx.service.category.formatCategoryList(data);
       this.success(newData);
-    } catch (error) {
+    } catch (error:any) {
       this.error(error.message);
     }
   }
@@ -39,7 +39,7 @@ export default class CategoryController extends Controller {
         ctx.model.Category.remove({ categoryId: id }),
       ]);
       this.success(data);
-    } catch (error) {
+    } catch (error:any) {
       this.error(error.message);
     }
   }

@@ -1,7 +1,10 @@
-import React, { ReactNode, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import ProTable, { ProColumns, ProTableProps } from '@ant-design/pro-table';
+import type { ReactNode} from 'react';
+import React, { useImperativeHandle, useMemo, useRef, useState } from 'react';
+import type { ProColumns, ProTableProps } from '@ant-design/pro-table';
+import ProTable from '@ant-design/pro-table';
 import { PageHeaderWrapper } from '@ant-design/pro-layout';
-import { Dropdown, Menu, PageHeaderProps } from 'antd';
+import type { PageHeaderProps } from 'antd';
+import { Dropdown, Menu } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import request from "@/utils/request";
 
@@ -101,7 +104,7 @@ function GeekProTable(props: GeekProTableProps, ref: any) {
         data: res?.data?.data,
         total: res?.data?.total,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
     }
   }

@@ -26,7 +26,7 @@ export default class CommonController extends Controller {
     try {
       const res = await this.ctx.model[tableName].create(request.body);
       this.success(res);
-    } catch (e) {
+    } catch (e: any) {
       this.error(e.message);
     }
   }
@@ -39,7 +39,7 @@ export default class CommonController extends Controller {
       const id = request.body.id;
       const res = await this.ctx.model[tableName].remove({ _id: id });
       this.success(res);
-    } catch (e) {
+    } catch (e: any) {
       this.error(e.message);
     }
   }
@@ -53,7 +53,7 @@ export default class CommonController extends Controller {
       delete request.body.id;
       const res = await this.ctx.model[tableName].update({ _id: id }, request.body);
       this.success(res);
-    } catch (e) {
+    } catch (e: any) {
       this.error(e.message);
     }
   }
@@ -66,7 +66,7 @@ export default class CommonController extends Controller {
       const id = query.id;
       const res = await this.ctx.model[tableName].findOne({ _id: id });
       this.success(res);
-    } catch (e) {
+    } catch (e: any) {
       this.error(e.message);
     }
   }
@@ -94,7 +94,7 @@ export default class CommonController extends Controller {
         total,
         pageNumber: Math.ceil(total / pageSize),
       });
-    } catch (e) {
+    } catch (e: any) {
       this.error(e.message);
     }
   }
@@ -106,7 +106,7 @@ export default class CommonController extends Controller {
     try {
       const res = await this.ctx.model[tableName].aggregate([{ $sample: { size: randomNumber } }]);
       this.success(res);
-    } catch (e) {
+    } catch (e: any) {
       this.error(e.message);
     }
   }

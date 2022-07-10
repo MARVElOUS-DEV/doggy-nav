@@ -133,7 +133,7 @@ export default class NavController extends Controller {
         });
       });
       this.success(resData);
-    } catch (error) {
+    } catch (error:any) {
       this.error(error.message);
     }
   }
