@@ -1,18 +1,6 @@
-FROM node:14-alpine as build
-LABEL name="marvelous"
-
-RUN mkdir -p /app
-COPY ./packages/doggy-nav-admin/package.json /app/package.json
-COPY yarn.lock /app/yarn.lock
-RUN cd /app && yarn --production
-
-WORKDIR /app
-RUN yarn build
-ADD ./packages/doggy-nav-admin/dist/. ./dist/
-
 FROM nginx:1.21-alpine
 ARG nginxCfg=nginx-admin.conf
-COPY --from=build /app/dist /usr/local/share/nginx/html/dist
+COPY ./packages/doggy-nav-admin/dist /usr/local/share/nginx/html/dist
 
 COPY ./deploy/$nginxCfg /etc/nginx/$nginxCfg
 # RUN chmod +r /etc/nginx/$nginxCfg

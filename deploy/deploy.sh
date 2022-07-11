@@ -4,15 +4,16 @@ export USERNAME=$1
 export PASSWORD=$2
 # just for init db, this is optional
 export INIT_DB_URL=$3
-
+export TAG=$(git rev-parse --short HEAD)
+echo $TAG
 # build in the root directory
 yarn && yarn build
 
 # remove obsolete containers and images
-cd deploy && docker-compose -f docker-compose-prod.yml down  -v --rmi all
+cd deploy && docker-compose -f docker-compose-init-prod.yml down  -v --rmi all
 sleep 5
 # build and deploy
-docker-compose -f docker-compose-prod.yml up -d
+docker-compose -f docker-compose-init-prod.yml up -d
 
 if [[ -n $3 ]]; then
   # init your mongodb

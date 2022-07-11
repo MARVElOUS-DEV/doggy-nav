@@ -2,7 +2,7 @@ version: '3.3'
 services:
   doggy-admin:
     container_name: doggyadmin
-    image: doggyadmin
+    image: "doggyadmin:${TAG}"
     build:
       context: ./../.
       dockerfile: "Dockerfile-Admin"
@@ -15,7 +15,7 @@ services:
       - DOGGY_SERVER=doggy-server:3002
   doggy-server:
     container_name: doggyserver
-    image: doggyserver
+    image: "doggyserver:${TAG}"
     build:
       context: ./../.
       dockerfile: "Dockerfile-Server"
@@ -37,7 +37,7 @@ services:
       - "27118:27018"
   doggy-main:
     container_name: doggymain
-    image: doggymain
+    image: "doggymain:${TAG}"
     build:
       context: ./../
       dockerfile: "Dockerfile-Main"
