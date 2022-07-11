@@ -28,11 +28,11 @@
     "https": "^1.0.0",
     "lru-cache": "^6.0.0",
     "nuxt": "2.15.8",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "@nuxtjs/proxy": "^2.0.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.16.7",
-    "@nuxtjs/proxy": "^2.0.1",
     "chalk": "^4.1.0",
     "css-loader": "4.3.0",
     "disable-devtool": "0.2.5",

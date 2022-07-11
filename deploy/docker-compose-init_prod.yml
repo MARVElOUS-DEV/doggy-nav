@@ -2,7 +2,10 @@ version: '3.3'
 services:
   doggy-admin:
     container_name: doggyadmin
-    image: "doggyadmin:${TAG}"
+    image: doggyadmin
+    build:
+      context: ./../.
+      dockerfile: "Dockerfile-Admin"
     restart: always
     ports:
       - 4000:8080
@@ -12,7 +15,10 @@ services:
       - DOGGY_SERVER=doggy-server:3002
   doggy-server:
     container_name: doggyserver
-    image: "doggyserver:${TAG}"
+    image: doggyserver
+    build:
+      context: ./../.
+      dockerfile: "Dockerfile-Server"
     restart: always
     environment:
       - MONGO_URL=mongodb:27017
@@ -31,7 +37,10 @@ services:
       - "27118:27018"
   doggy-main:
     container_name: doggymain
-    image: "doggymain:${TAG}"
+    image: doggymain
+    build:
+      context: ./../
+      dockerfile: "Dockerfile-Main"
     restart: always
     ports:
       - 3000:3000
