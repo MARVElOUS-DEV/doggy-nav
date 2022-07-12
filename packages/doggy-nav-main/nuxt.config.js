@@ -1,8 +1,8 @@
 
 module.exports = {
   telemetry: false,
-  // ssr: false,
-  // target: 'static', // default is server
+  ssr: false,
+  target: 'static', // default is server
   env: {
     baseUrl: process.env.root || 'http://localhost:3002/',
   },
