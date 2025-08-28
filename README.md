@@ -17,5 +17,11 @@ chmod +ux ./deploy/deploy.sh
 ```
 
 ## 建议或意见
-当前项目还有诸多该改进之处，欢迎有想法的小伙伴一起加入完善它
+欢迎PR和issue
+
+## 感谢
+
+[![Github Sponsors](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/bin456789)
+
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
 
