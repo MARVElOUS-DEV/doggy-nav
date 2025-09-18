@@ -4,28 +4,16 @@
   "description": "doggy-nav",
   "main": "index.js",
   "private": true,
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ],
-    "nohoist": [
-      "**/egg",
-      "**/egg/**",
-      "**/egg-*",
-      "**/egg-*/**"
-    ]
-  },
   "scripts": {
-    "test": "lerna run test",
-    "bootstrap": "lerna bootstrap",
+    "test": "pnpm -r test",
     "commit": "cz",
-    "server:dev": "yarn workspace doggy-nav-server run dev",
-    "web:dev": "yarn workspace doggy-nav-main run dev",
-    "admin:dev": "yarn workspace doggy-nav-admin run dev",
-    "build": "yarn web:build && yarn admin:build && yarn server:build",
-    "web:build": "yarn workspace doggy-nav-main run build",
-    "admin:build": "yarn workspace doggy-nav-admin run build",
-    "server:build": "yarn workspace doggy-nav-server run build"
+    "server:dev": "pnpm --filter doggy-nav-server dev",
+    "web:dev": "pnpm --filter doggy-nav-main dev",
+    "admin:dev": "pnpm --filter doggy-nav-admin dev",
+    "build": "pnpm -r build",
+    "web:build": "pnpm --filter doggy-nav-main build",
+    "admin:build": "pnpm --filter doggy-nav-admin build",
+    "server:build": "pnpm --filter doggy-nav-server build"
   },
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
@@ -39,13 +27,15 @@
   },
   "homepage": "https://github.com/MARVElOUS-DEV/doggy-nav#readme",
   "devDependencies": {
-    "cz-conventional-changelog": "3.3.0",
-    "lerna": "4.0.0"
+    "cz-conventional-changelog": "3.3.0"
   },
   "dependencies": {},
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "engines": {
+    "node": ">=20.17.0"
   }
 }

@@ -109,7 +109,7 @@ export default {
     font-size: 14px;
     color: #999;
   }
-  /deep/ .el-submenu__title i {
+  ::v-deep .el-submenu__title i {
     color: #fff;
   }
 
@@ -119,7 +119,7 @@ export default {
 }
 
 
-/deep/ .el-menu--popup-right-start {
+::v-deep .el-menu--popup-right-start {
   height: 500px !important;
   overflow: auto;
 }

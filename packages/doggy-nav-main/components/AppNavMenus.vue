@@ -186,8 +186,8 @@ $sidebar-w: auto;
     justify-content: center;
     cursor: pointer;
   }
-  /deep/ .el-menu,
-  /deep/ .el-menu--collapse {
+  ::v-deep .el-menu,
+  ::v-deep .el-menu--collapse {
     border: 0;
   }
 }

@@ -5,9 +5,9 @@
     "module": "commonjs",
     "strict": true,
     "noImplicitAny": false,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "charset": "utf8",
     "allowJs": false,
     "pretty": true,
     "noEmitOnError": false,
@@ -24,10 +24,5 @@
     "outDir": "./dist",
     "sourceMap": false
   },
-  "exclude": [
-    "app/public",
-    "app/views",
-    "node_modules*",
-    "**/*.js"
-  ]
+  "exclude": ["app/public", "app/views", "node_modules*", "**/*.js"]
 }

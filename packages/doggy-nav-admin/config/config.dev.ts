@@ -1,18 +1,14 @@
-// https://umijs.org/config/
-import { defineConfig } from 'umi';
+import { defineConfig } from '@umijs/max';
 
 export default defineConfig({
-  base: '/',
-  publicPath: '/',
-  plugins: [
-    // https://github.com/zthxxx/react-dev-inspector
-    'react-dev-inspector/plugins/umi/react-inspector',
-  ],
-  // https://github.com/zthxxx/react-dev-inspector#inspector-loader-props
-  inspectorConfig: {
-    exclude: [],
-    babelPlugins: [],
-    babelOptions: {},
+  antd: {},
+  model: {},
+  request: {},
+  initialState: {},
+  proxy: {
+    '/api': {
+      'target': 'http://127.0.0.1:3002/',
+      'changeOrigin': true,
+    },
   },
-  webpack5: {},
 });

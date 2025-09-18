@@ -1,11 +1,11 @@
-import {API_CATEGORY_LIST, API_NAV, API_NAV_LIST} from "@/services/api";
+import { API_NAV, API_NAV_LIST } from "@/services/api";
 import GeekProTable from "@/components/GeekProTable/GeekProTable";
-import {ProColumns} from "@ant-design/pro-table";
+import { ProColumns } from "@ant-design/pro-table";
 import useGeekProTablePopup from "@/components/GeekProTable/useGeekProTablePopup";
 import NavListForm from "@/pages/nav/List/NavListForm";
-import {Form, Popconfirm, Select} from "antd";
+import { Popconfirm } from "antd";
 import request from "@/utils/request";
-import {useRef, useState} from "react";
+import { useRef } from "react";
 import CategorySelect from "@/pages/nav/Category/CategorySelect";
 
 export default function NavListPage() {

@@ -1,18 +1,18 @@
 const request = require('request');
 const cheerio = require('cheerio');
 const mongoose = require('mongoose');
-const mongoCfg = require('../config/mongodb').default;
-const db = mongoose.connect(mongoCfg.mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+const { mongoUrl } = require('../config/mongodb.ts');
+const db = mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 db.mongoose = mongoose;
 // 引入数据模型模块
-const navData = require('../app/model/nav')(db);
-const categorySchema = require('../app/model/category')(db);
-const userSchema = require('../app/model/user')(db);
+const navData = require('../app/model/nav.ts')(db);
+const categorySchema = require('../app/model/category.ts')(db);
+const userSchema = require('../app/model/user.ts')(db);
 class Reptile {
-  rootUrl: string;
-  url: any;
-  type: any;
-  categoryId: any;
+  rootUrl;
+  url;
+  type;
+  categoryId;
   constructor(url, type) {
     this.rootUrl = process.env.INIT_DB_URL ?? '';
     this.url = this.rootUrl + url;
@@ -44,7 +44,7 @@ class Reptile {
             name: secondCategoryName,
           });
 
-          const websites:any[] = [];
+          const websites = [];
           const length = $('.panel').eq(i).find('.card-title').length;
           for (let j = 0; j < length; j++) {
             const name = $('.panel').eq(i).find('.card-title')
@@ -79,7 +79,7 @@ class Reptile {
 }
 
 
-async function getCategorys(url:string) {
+async function getCategorys(url) {
   const categoryList = [ '常用推荐', '产品汪', '设计狮', '程序猿', '运营马', '数据可视化', '数据分析', '物联网IOT', '办公' ];
   return request(url, async (error, res, body) => {
     if (!error && res.statusCode == 200) {
@@ -101,7 +101,7 @@ async function getCategorys(url:string) {
           name: secondCategoryName,
         });
 
-        const websites:any[] = [];
+        const websites = [];
         const $aTags = $cardBlock.eq(i).find('.url-card a.card');
         const length = $aTags.length;
         for (let j = 0; j < length; j++) {
@@ -145,7 +145,7 @@ async function main() {
 }
 
 main();
-export default {
-  getCategorys,
-  Reptile,
-};
+// export default {
+//   getCategorys,
+//   Reptile,
+// };

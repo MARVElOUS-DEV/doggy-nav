@@ -145,11 +145,11 @@ export default {
     width: 300px;
     border-right: 1px solid #eee;
   }
-  /deep/ .el-input-group__append, /deep/ .el-input-group__prepend {
+  ::v-deep .el-input-group__append, ::v-deep .el-input-group__prepend {
     border: 0;
   }
 
-  /deep/ .el-input__inner {
+  ::v-deep .el-input__inner {
     border: 0;
     box-shadow: none;
     background: #f5f7fa;
@@ -159,7 +159,7 @@ export default {
     width: 80px;
   }
 
-  /deep/ .el-select .el-input.is-focus .el-input__inner {
+  ::v-deep .el-select .el-input.is-focus .el-input__inner {
     border-color: #dfe1e5;
     box-shadow: 0 0 20px rgba(#000, .1);
   }
@@ -184,16 +184,16 @@ export default {
 //  flex-direction: column;
 //  align-items: center;
 //
-//  /deep/ .el-tabs__header,
-//  /deep/ .el-input__inner {
+//  ::v-deep .el-tabs__header,
+//  ::v-deep .el-input__inner {
 //    max-width: 600px;
 //    width: 600px;
 //    margin: auto;
 //  }
-//  /deep/ .el-tabs__nav-wrap::after {
+//  ::v-deep .el-tabs__nav-wrap::after {
 //    background-color: transparent;
 //  }
-//  /deep/ .el-input__inner {
+//  ::v-deep .el-input__inner {
 //    border-radius: 30px;
 //  }
 //  .el-tabs {

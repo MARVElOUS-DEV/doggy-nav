@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import {Avatar, Dropdown, Menu, Spin} from 'antd';
-import { history, useModel } from 'umi';
+import { history, useModel } from '@umijs/max';
 import { stringify } from 'querystring';
 import styles from './index.less';
 

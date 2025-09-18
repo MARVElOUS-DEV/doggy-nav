@@ -1,37 +1,30 @@
 import {
-  AlipayCircleOutlined,
-  LockOutlined,
-  MobileOutlined,
-  TaobaoCircleOutlined,
-  UserOutlined,
-  WeiboCircleOutlined,
+  LockOutlined, UserOutlined
 } from '@ant-design/icons';
-import {Alert, Space, message, Tabs} from 'antd';
-import React, {useState} from 'react';
-import ProForm, {ProFormCaptcha, ProFormCheckbox, ProFormText} from '@ant-design/pro-form';
-import {Link, history, useModel} from 'umi';
+import { message } from 'antd';
+import React, { useState } from 'react';
+import ProForm, { ProFormText } from '@ant-design/pro-form';
+import { Link, history, useLocation, useModel } from '@umijs/max';
 import Footer from '@/components/Footer';
 import styles from './index.less';
-import {login} from "@/services/api";
-import {setPersistenceData} from "@/utils/persistence";
-import {CURRENT_USER, TOKEN} from "@/constants";
+import { login } from "@/services/api";
+import { setPersistenceData } from "@/utils/persistence";
+import { CURRENT_USER, TOKEN } from "@/constants";
 
 
-const goto = () => {
+const goto = (search) => {
   if (!history) return;
   setTimeout(() => {
-    const {query} = history.location;
-    const {redirect} = query as {
-      redirect: string;
-    };
+    const redirect = search.get('redirect')
     history.push(redirect || '/');
   }, 10);
 };
 
 const Login: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
-  const {initialState, setInitialState} = useModel('@@initialState');
-
+  const {setInitialState} = useModel('@@initialState');
+  const {search: searchStr} = useLocation();
+  const search = new URLSearchParams(searchStr);
 
   const handleSubmit = async (values: API.LoginParams) => {
     setSubmitting(true);
@@ -49,7 +42,7 @@ const Login: React.FC = () => {
             access: 'admin',
           }
         })
-        goto();
+        goto(search);
         setPersistenceData(TOKEN, res.data)
         setPersistenceData(CURRENT_USER, { name: values.username })
         return;
