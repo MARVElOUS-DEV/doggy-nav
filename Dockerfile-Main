@@ -1,17 +1,18 @@
-FROM node:14-alpine as build
+FROM node:22-alpine AS build
 LABEL name="marvelous"
 
 RUN mkdir -p /app
 COPY ./packages/doggy-nav-main/package.json /app/package.json
-RUN cd /app && yarn
+COPY ./pnpm-lock.yaml /app/pnpm-lock.yaml
+RUN cd /app && pnpm i
 ADD ./packages/doggy-nav-main/static/. /app/static
-COPY ./packages/doggy-nav-main/nuxt.config.js /app/nuxt.config.js
+COPY ./packages/doggy-nav-main/next.config.js /app/next.config.js
 
 WORKDIR /app
-ADD ./packages/doggy-nav-main/.nuxt/. ./.nuxt/
+ADD ./packages/doggy-nav-main/.next/. ./.next/
 
 
 EXPOSE 3000
 ENV HOST=0.0.0.0
 
-CMD [ "/usr/local/bin/yarn", "start" ]
+CMD [ "/usr/local/bin/pnpm i", "start" ]

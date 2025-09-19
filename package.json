@@ -10,10 +10,12 @@
     "server:dev": "pnpm --filter doggy-nav-server dev",
     "web:dev": "pnpm --filter doggy-nav-main dev",
     "admin:dev": "pnpm --filter doggy-nav-admin dev",
+    "next:dev": "pnpm --filter doggy-nav-next dev",
     "build": "pnpm -r build",
     "web:build": "pnpm --filter doggy-nav-main build",
     "admin:build": "pnpm --filter doggy-nav-admin build",
-    "server:build": "pnpm --filter doggy-nav-server build"
+    "server:build": "pnpm --filter doggy-nav-server build",
+    "next:build": "pnpm --filter doggy-nav-next build"
   },
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [

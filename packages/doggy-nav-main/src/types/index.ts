@@ -1,0 +1,56 @@
+
+export interface CategoryChild {
+  _id: string;
+  name: string;
+  categoryId: string;
+  createAt: number;
+  showInMenu: boolean;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  categoryId: string;
+  createAt: number;
+  icon?: string;
+  children?: CategoryChild[];
+  showInMenu: boolean;
+}
+
+export interface NavItem {
+  _id: string;
+  categoryId: string;
+  name: string;
+  href: string;
+  desc: string;
+  logo: string;
+  authorName?: string;
+  authorUrl?: string;
+  auditTime?: string;
+  createTime?: string;
+  tags: string[];
+  view: number;
+  star: number;
+  status: number;
+  list?: NavItem[];
+}
+
+export interface Tag {
+  _id: string;
+  name: string;
+  parentName?: string;
+  value?: string;
+  label?: string;
+}
+
+export interface RecommendFormValues {
+  href: string;
+  tags: string[];
+  name: string;
+  logo: string;
+  desc: string;
+  categoryId: string;
+  authorName?: string;
+  authorUrl?: string;
+  detail?: string;
+}
