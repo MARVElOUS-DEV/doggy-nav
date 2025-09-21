@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip, Grid } from '@arco-design/web-react';
 import { NavItem } from '@/types';
+import { useUrlStatus } from '@/utils/urlStatus';
 
 const { Col } = Grid;
 
@@ -15,6 +16,7 @@ interface AppNavItemProps {
 export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: AppNavItemProps) {
   const [isStar, setIsStar] = useState(false);
   const [isView, setIsView] = useState(false);
+  const urlStatus = useUrlStatus(data.href);
 
   const handleNavStar = () => {
     onHandleNavStar(data, () => {
@@ -22,9 +24,39 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
     });
   };
 
+  const getStatusIndicator = () => {
+    const baseClasses = "absolute top-3 right-3 w-3 h-3 rounded-full z-10 border-2 border-white shadow-sm";
+
+    switch (urlStatus.status) {
+      case 'checking':
+        return (
+          <Tooltip content="检查中...">
+            <div className={`${baseClasses} bg-yellow-400 animate-pulse`} />
+          </Tooltip>
+        );
+      case 'accessible':
+        return (
+          <Tooltip content={`网站可访问 (${urlStatus.responseTime}ms)`}>
+            <div className={`${baseClasses} bg-green-500 shadow-green-200`}>
+              <div className="w-full h-full bg-green-400 rounded-full animate-ping opacity-75" />
+            </div>
+          </Tooltip>
+        );
+      case 'inaccessible':
+        return (
+          <Tooltip content="网站不可访问">
+            <div className={`${baseClasses} bg-red-500 shadow-red-200`} />
+          </Tooltip>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Col xs={24} sm={8} md={6} lg={4} className="website-item text-xs mb-5 overflow-hidden cursor-pointer transition-all duration-300 text-gray-500 relative">
-      <div className="wrap rounded-md bg-white cursor-pointer shadow-lg">
+      <div className="wrap rounded-md bg-white cursor-pointer shadow-lg relative">
+        {getStatusIndicator()}
         <div className="link absolute right-5 top-2.5 hidden z-10" onClick={() => onHandleNavClick(data)}>
           <Tooltip content="链接直达">
             <i className="iconfont icon-tiaozhuan"></i>

@@ -9,7 +9,7 @@ export const debugHydration = () => {
         console.trace('Stack trace');
         console.groupEnd();
       }
-      if (args[0] && args[0].includes('findDOMNode is deprecated')) {
+      if (args[0] && typeof args[0] === 'string' && args[0]?.includes('findDOMNode is deprecated')) {
         return; // Suppress this specific warning
       }
       originalError.apply(console, args);

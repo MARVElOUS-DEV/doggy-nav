@@ -14,11 +14,11 @@ const api = {
 
   // Find nav by category id
   findNavByCategory: (categoryId: string): Promise<NavItem[]> =>
-    axios.get(`/api/nav/find?id=${categoryId}`),
+    axios.get(`/api/nav/find?categoryId=${categoryId}`),
 
   // Find nav by id (single item)
   findNavById: (id: string): Promise<NavItem> =>
-    axios.get(`/api/nav/${id}`),
+    axios.get(`/api/nav?id=${id}`),
 
   // Get nav ranking
   getNavRanking: (): Promise<{ view: NavItem[]; star: NavItem[]; news: NavItem[] }> =>

@@ -1,32 +1,30 @@
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
+import { Tooltip } from '@arco-design/web-react';
 
 export default function LanguageSwitcher() {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
 
-  const changeLanguage = (locale: string) => {
-    router.push(router.pathname, router.asPath, { locale });
+  const toggleLanguage = () => {
+    const newLocale = router.locale === 'zh' ? 'en' : 'zh';
+    router.push(router.pathname, router.asPath, { locale: newLocale });
   };
 
+  const currentLang = router.locale === 'zh' ? 'CN' : 'EN';
+  const nextLang = router.locale === 'zh' ? 'English' : '中文';
+
   return (
-    <div className="flex items-center gap-2">
+    <Tooltip content={`Switch to ${nextLang}`}>
       <button
-        onClick={() => changeLanguage('zh')}
-        className={`px-2 py-1 text-sm rounded ${
-          router.locale === 'zh' ? 'bg-blue-500 text-white' : 'text-gray-500'
-        }`}
+        onClick={toggleLanguage}
+        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center min-w-[40px]"
+        aria-label={`Switch to ${nextLang}`}
       >
-        中文
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {currentLang}
+        </span>
       </button>
-      <button
-        onClick={() => changeLanguage('en')}
-        className={`px-2 py-1 text-sm rounded ${
-          router.locale === 'en' ? 'bg-blue-500 text-white' : 'text-gray-500'
-        }`}
-      >
-        English
-      </button>
-    </div>
+    </Tooltip>
   );
 }

@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import "@arco-design/web-react/dist/css/arco.css";
+@import "tailwindcss";
 
 :root {
   --background: #ffffff;

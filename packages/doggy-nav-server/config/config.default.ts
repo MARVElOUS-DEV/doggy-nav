@@ -46,7 +46,27 @@ export default (appInfo: EggAppInfo) => {
     '/api/index',
     '/api/category/list',
     '/api/tag/list',
+    '/api/url-checker/status',
+    '/api/url-checker/nav-status',
   ];
+
+  // URL Checker Configuration
+  config.urlChecker = {
+    // Enable/disable URL checking
+    enabled: false,
+    // Cron expression for scheduling checks (default: every 6 hours)
+    cronExpression: '0 */6 * * *',
+    // Maximum age for last check before rechecking (default: 1 hour)
+    maxCheckAge: 60 * 60 * 1000,
+    // Number of concurrent URL checks (default: 5)
+    concurrentChecks: 5,
+    // Batch size for processing nav items (default: 100)
+    batchSize: 100,
+    // Timeout for individual URL checks in milliseconds (default: 5 seconds)
+    requestTimeout: 5000,
+    // Auto-start timer on application startup
+    autoStart: true,
+  };
 
   return {
     ...config,

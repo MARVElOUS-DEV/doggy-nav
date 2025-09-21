@@ -1,30 +1,30 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Grid, Tooltip, Message, Spin } from '@arco-design/web-react';
+import { Grid, Tooltip, Spin } from '@arco-design/web-react';
 import api from '@/utils/api';
-import { API_NAV, API_NAV_RANDOM } from '@/utils/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { NavItem } from '@/types';
-import { useParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 
 const { Row, Col } = Grid
 
 export default function NavDetail() {
-    const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { id } = router.query;
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<NavItem>({
     _id: '',
-    categoryId: "string;",
-    name: "string;",
-    href: "string;",
-    desc: "string;",
+    categoryId: "",
+    name: "detail",
+    href: "/",
+    desc: "this is description",
     logo: "https://img.alicdn.com/imgextra/i1/O1CN014dDq4L1Zc3guRwcse_!!6000000003214-2-tps-1600-941.png",
-    authorName: "string;",
-    authorUrl: "string;",
-    auditTime: "string;",
-    createTime: "string;",
-    tags: ["aaa"],
+    authorName: "doggy-nav",
+    authorUrl: "/admin",
+    auditTime: new Date().toLocaleString(),
+    createTime: new Date().toLocaleString(),
+    tags: ["private"],
     view: 1,
     star: 1,
     status: 1,
@@ -37,7 +37,7 @@ export default function NavDetail() {
       setLoading(true)
       try {
         const [detail, randomNavList] = await Promise.all([
-          api.findNavById(params.id),
+          api.findNavById(id as string),
           api.getRandomNav(),
         ])
         setDetail(detail || { tags: [] })
@@ -48,8 +48,8 @@ export default function NavDetail() {
         setLoading(false)
       }
     }
-    fetchData()
-  }, [params.id])
+    id && typeof id === 'string' && fetchData()
+  }, [id])
 
   const handleNavStarFn = async () => {
     if (detail) {

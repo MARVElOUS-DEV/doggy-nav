@@ -9,7 +9,7 @@ import Toolbar from '../Toolbar';
 import AppLog from '../AppLog';
 import api from '@/utils/api';
 import i18n from '@/i18n';
-import { categoriesAtom, showMenuTypeAtom, contentMarginLeftAtom, showLogAtom } from '@/store/store';
+import { categoriesAtom, showMenuTypeAtom, contentMarginLeftAtom, showLogAtom, selectedCategoryAtom, tagsAtom } from '@/store/store';
 
 export default function RootLayout({
   children,
@@ -20,18 +20,41 @@ export default function RootLayout({
   const [showMenuType, setShowMenuType] = useAtom(showMenuTypeAtom);
   const [contentMarginLeft, setContentMarginLeft] = useAtom(contentMarginLeftAtom);
   const [showLog, setShowLog] = useAtom(showLogAtom);
+  const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
+  const [tags, setTags] = useAtom(tagsAtom);
 
+  // Fetch categories and tags on layout initialization
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
         const categoriesData = await api.getCategoryList();
         setCategories(categoriesData);
+        // Set the first category as default selected category if none is selected
+        if (categoriesData.length && !selectedCategory) {
+          setSelectedCategory(categoriesData[0]._id);
+        }
       } catch (error) {
         console.error("Failed to fetch categories", error);
       }
     };
-    fetchData();
-  }, [setCategories]);
+
+    const fetchTags = async () => {
+      try {
+        const { data } = await api.getTagList();
+        const options = data?.map((item) => {
+          item.value = item.name;
+          item.label = item.name;
+          return item;
+        }) || [];
+        setTags(options);
+      } catch (error) {
+        console.error("Failed to fetch tags", error);
+      }
+    };
+
+    fetchCategories();
+    fetchTags();
+  }, [setCategories, setSelectedCategory, selectedCategory, setTags]);
 
   useEffect(() => {
     setContentMarginLeft(showMenuType ? '220px' : '70px');
@@ -41,9 +64,9 @@ export default function RootLayout({
     setShowMenuType((prev) => !prev);
   };
 
-  const handleSubMenuClick = async (id: string) => {
-    // This is just for the layout, actual navigation would be handled by the page
-    console.log('Sub menu clicked:', id);
+  const handleSubMenuClick = async (parentId: string, id: string) => {
+    // Set the selected category to trigger data fetch in HomePage
+    setSelectedCategory(id);
   };
 
   return (

@@ -1,3 +1,4 @@
+
 const mongoCfg = require('../config/mongodb').default;
 const fs = require('fs');
 const request = require('request');
@@ -24,7 +25,7 @@ function isAbsoluteUrl(url) {
   return url.startsWith('http') || url.startsWith('//') || url.startsWith('data:image');
 }
 
-async function getBookmarkRoots(path) :Promise<{roots:any}> {
+async function getBookmarkRoots(path) {
   return new Promise(resolve => {
     fs.readFile(path, { encoding: 'utf-8' }, (err, data) => {
       if (err) throw err;
@@ -131,12 +132,11 @@ async function transform(roots) {
     const macPath = `${process.env.HOME}/Library/Application\ Support/Google/Chrome/Default/Bookmarks`;
     const p = path.resolve(macPath);
     console.log(p);
-    const bookmarks = await getBookmarkRoots(p);
-    await transform(bookmarks.roots);
+    const bookmarks = await getBookmarkRoots(p) as any;
+    await transform(bookmarks?.roots ?? {bookmark_bar: {children: []}});
     console.info('import bookmarks done✅✅✅✅');
-  } catch (error:any) {
+  } catch (error) {
     console.error(error);
   }
 })();
 
-export default { transform, getBookmarkRoots };

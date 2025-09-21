@@ -130,6 +130,9 @@ importers:
 
   packages/doggy-nav-server:
     dependencies:
+      axios:
+        specifier: ^0.21.4
+        version: 0.21.4
       cheerio:
         specifier: 1.0.0-rc.10
         version: 1.0.0-rc.10
@@ -151,6 +154,9 @@ importers:
       mongoose:
         specifier: ^8.18.1
         version: 8.18.1
+      node-cron:
+        specifier: ^4.2.1
+        version: 4.2.1
       request:
         specifier: 2.88.2
         version: 2.88.2
@@ -164,6 +170,9 @@ importers:
       '@types/node':
         specifier: 7.0.12
         version: 7.0.12
+      '@types/node-cron':
+        specifier: ^3.0.11
+        version: 3.0.11
       '@types/supertest':
         specifier: 2.0.0
         version: 2.0.0
@@ -2108,6 +2117,9 @@ packages:
   '@types/mongoose@5.11.97':
     resolution: {integrity: sha512-cqwOVYT3qXyLiGw7ueU2kX9noE8DPGRY6z8eUxudhXY8NZ7DMKYAxyZkLSevGfhCX3dO/AoX5/SO9lAzfjon0Q==}
     deprecated: Mongoose publishes its own types, so you do not need to install this package.
+
+  '@types/node-cron@3.0.11':
+    resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
 
   '@types/node@10.17.60':
     resolution: {integrity: sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==}
@@ -7408,6 +7420,10 @@ packages:
 
   node-addon-api@7.1.1:
     resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
+
+  node-cron@4.2.1:
+    resolution: {integrity: sha512-lgimEHPE/QDgFlywTd8yTR61ptugX3Qer29efeyWw2rv259HtGBNn1vZVmp8lB9uo9wC0t/AT4iGqXxia+CJFg==}
+    engines: {node: '>=6.0.0'}
 
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
@@ -12839,6 +12855,8 @@ snapshots:
       - snappy
       - socks
       - supports-color
+
+  '@types/node-cron@3.0.11': {}
 
   '@types/node@10.17.60': {}
 
@@ -20123,6 +20141,8 @@ snapshots:
 
   node-addon-api@7.1.1:
     optional: true
+
+  node-cron@4.2.1: {}
 
   node-domexception@1.0.0: {}
 

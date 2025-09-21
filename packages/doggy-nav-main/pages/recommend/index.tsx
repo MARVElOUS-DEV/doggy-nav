@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Card,
   Form,
@@ -10,35 +10,19 @@ import {
   Spin,
 } from '@arco-design/web-react'
 import axios from '@/utils/axios'
-import api, { API_NAV, API_NAV_REPTILE } from '@/utils/api'
-import { Tag, Category, RecommendFormValues } from '@/types'
+import { API_NAV, API_NAV_REPTILE } from '@/utils/api'
+import { useAtom } from 'jotai'
+import { RecommendFormValues } from '@/types'
+import { categoriesAtom, tagsAtom } from '@/store/store'
 
 const FormItem = Form.Item
 
 export default function Recommend() {
   const [loading, setLoading] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [tags, setTags] = useState<Tag[]>([])
+  const [categories] = useAtom(categoriesAtom)
+  const [tags] = useAtom(tagsAtom)
   const [form] = Form.useForm()
-
-  useEffect(() => {
-    const getTags = async () => {
-      const { data } = await api.getTagList()
-      const options = data?.map((item) => {
-        item.value = item.name
-        item.label = item.name
-        return item
-      })
-      setTags(options)
-    }
-    const getCategories = async () => {
-      const data = await api.getCategoryList()
-      setCategories(data??[])
-    }
-    getTags()
-    getCategories()
-  }, [])
 
   const addNav = async (values: RecommendFormValues) => {
     setLoading(true)

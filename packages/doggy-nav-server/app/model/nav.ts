@@ -29,6 +29,22 @@ module.exports = app => {
       type: Number,
       default: 0,
     },
+    // URL accessibility status
+    urlStatus: {
+      type: String,
+      enum: ['unknown', 'checking', 'accessible', 'inaccessible'],
+      default: 'unknown',
+    },
+    // Last URL check time
+    lastUrlCheck: {
+      type: Date,
+      default: null,
+    },
+    // Response time in milliseconds
+    responseTime: {
+      type: Number,
+      default: null,
+    },
   }, { collection: 'nav' });
   return mongoose.model('Nav', NavSchema);
 };

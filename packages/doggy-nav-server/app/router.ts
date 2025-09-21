@@ -25,4 +25,14 @@ export default (app: Application) => {
   router.delete('/api/tag', controller.tag.remove);
   router.put('/api/tag', controller.tag.update);
   router.get('/api/tag/list', controller.tag.getList);
+
+  // URL Checker routes
+  router.get('/api/url-checker/status', controller.urlChecker.status);
+  router.post('/api/url-checker/start', controller.urlChecker.start);
+  router.post('/api/url-checker/stop', controller.urlChecker.stop);
+  router.post('/api/url-checker/restart', controller.urlChecker.restart);
+  router.put('/api/url-checker/config', controller.urlChecker.updateConfig);
+  router.post('/api/url-checker/check', controller.urlChecker.triggerCheck);
+  router.post('/api/url-checker/check/:id', controller.urlChecker.checkNavItem);
+  router.get('/api/url-checker/nav-status', controller.urlChecker.getNavUrlStatus);
 };

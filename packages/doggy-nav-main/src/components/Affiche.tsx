@@ -14,21 +14,21 @@ export default function Affiche() {
       <Carousel direction="vertical" style={{ height: 30, flex: 1 }}>
         <div>
           <p className="m-0">
-            一个好的产品要经历千锤百炼，我们需要你的建议。
+            如果您有建议，请
             <Link
-              className="text-blue-500 underline"
+              className="text-blue-500 !underline hover:text-blue-700"
               href="https://github.com/MARVElOUS-DEV/doggy-nav"
               target="_blank"
               rel="noopener noreferrer"
             >
-              去围观
+              前往提交
             </Link>
           </p>
         </div>
         <div>
           <p className="m-0">
             支持提交网站带个人信息了，欢迎大家提交网站
-            <Link className="text-blue-500 underline" href="/recommend">
+            <Link className="text-blue-500 !underline hover:text-blue-700" href="/recommend">
               去提交
             </Link>
           </p>
