@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Carousel } from '@arco-design/web-react';
+import Link from 'next/link';
 
 export default function Affiche() {
   const [show, setShow] = useState(true);
@@ -14,22 +15,22 @@ export default function Affiche() {
         <div>
           <p className="m-0">
             一个好的产品要经历千锤百炼，我们需要你的建议。
-            <a
+            <Link
               className="text-blue-500 underline"
               href="https://github.com/MARVElOUS-DEV/doggy-nav"
               target="_blank"
               rel="noopener noreferrer"
             >
               去围观
-            </a>
+            </Link>
           </p>
         </div>
         <div>
           <p className="m-0">
             支持提交网站带个人信息了，欢迎大家提交网站
-            <a className="text-blue-500 underline" href="/recommend">
+            <Link className="text-blue-500 underline" href="/recommend">
               去提交
-            </a>
+            </Link>
           </p>
         </div>
       </Carousel>

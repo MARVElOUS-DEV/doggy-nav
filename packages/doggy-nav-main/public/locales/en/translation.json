@@ -6,5 +6,7 @@
   "back_to_top": "Back to Top",
   "latest": "Latest",
   "most_clicks": "Most Clicks",
-  "most_likes": "Most Likes"
+  "most_likes": "Most Likes",
+  "switch_to_dark_mode": "Switch to dark mode",
+  "switch_to_light_mode": "Switch to light mode"
 }

@@ -8,7 +8,7 @@
     "declarations": true
   },
   "scripts": {
-    "start": "MONGO_URL='127.0.0.1:27017' EGG_SERVER_ENV=prod egg-scripts start --daemon --title=doggy-nav-server",
+    "start": "MONGO_URL='127.0.0.1:27017' EGG_SERVER_ENV=prod egg-scripts start  --port=3002 --daemon --title=doggy-nav-server",
     "docker-start": "EGG_SERVER_ENV=prod egg-scripts start --title=doggy-nav-server",
     "build": "yarn tsc",
     "stop": "egg-scripts stop --title=doggy-nav-server",

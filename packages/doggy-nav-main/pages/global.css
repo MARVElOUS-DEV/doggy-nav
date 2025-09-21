@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "@arco-design/web-react/dist/css/arco.css";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --primary-color: rgb(232 221 255 / var(--tw-bg-opacity, 1));
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --primary-color: #7a62f6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary-color);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-size: 12px;
+  color: #4d4d4d;
+  font-family: Helvetica Neue, Microsoft Yahei;
+  height: 100vh;
+  background: #f7f8fb;
+}
+
+.iconfont {
+  padding-right: 4px;
+}
+
+/* Custom layout styles */
+.user-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.body {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.main {
+  min-height: calc(100vh - 64px); /* Adjust based on header height */
+}
+
+.website-wrapper {
+  margin-top: 20px;
+}
+
+.website-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+  padding-left: 10px;
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main {
+    padding: 10px;
+  }
+
+  .website-title {
+    font-size: 16px;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Theme-specific styles */
+.dark ::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip } from '@arco-design/web-react';
 import AppSearch from './AppSearch';
+import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 import { useTranslation } from 'react-i18next';
 
 interface AppHeaderProps {
@@ -10,7 +12,7 @@ interface AppHeaderProps {
 }
 
 export default function AppHeader({ onHandleShowMenu, onHandleShowPopup }: AppHeaderProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('translation');
 
   return (
     <header className="flex justify-between items-center bg-white sticky top-0 z-10 shadow-md p-4">
@@ -26,6 +28,12 @@ export default function AppHeader({ onHandleShowMenu, onHandleShowPopup }: AppHe
             <i className="el-icon-circle-plus"></i>
           </Link>
         </Tooltip>
+        <div className="ml-4">
+          <LanguageSwitcher />
+        </div>
+        <div className="ml-2">
+          <ThemeToggle />
+        </div>
         <div className="menu-toggle-btn md:hidden">
           <i className="el-icon-menu text-2xl ml-8 text-gray-500 cursor-pointer" onClick={onHandleShowMenu}></i>
         </div>

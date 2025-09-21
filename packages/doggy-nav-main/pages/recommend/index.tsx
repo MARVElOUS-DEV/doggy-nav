@@ -10,11 +10,10 @@ import {
   Spin,
 } from '@arco-design/web-react'
 import axios from '@/utils/axios'
-import { API_NAV, API_NAV_REPTILE, API_TAG_LIST } from '@/utils/api'
-import { Tag, Category, RecommendFormValues } from '@/types';
+import api, { API_NAV, API_NAV_REPTILE } from '@/utils/api'
+import { Tag, Category, RecommendFormValues } from '@/types'
 
 const FormItem = Form.Item
-
 
 export default function Recommend() {
   const [loading, setLoading] = useState(false)
@@ -25,20 +24,17 @@ export default function Recommend() {
 
   useEffect(() => {
     const getTags = async () => {
-      const res = await axios.get(API_TAG_LIST)
-      if (res.data.code === 1) {
-        let data: Tag[] = res.data.data || [];
-        data = data.map((item) => {
-          item.value = item.name
-          item.label = item.name
-          return item
-        })
-        setTags(data)
-      }
+      const { data } = await api.getTagList()
+      const options = data?.map((item) => {
+        item.value = item.name
+        item.label = item.name
+        return item
+      })
+      setTags(options)
     }
     const getCategories = async () => {
-      const { data } = await axios.get('/api/category/list')
-      setCategories(data)
+      const data = await api.getCategoryList()
+      setCategories(data??[])
     }
     getTags()
     getCategories()
@@ -102,7 +98,7 @@ export default function Recommend() {
   }
 
   return (
-    <div className="container" style={{ margin: '30px' }}>
+    <div className="container p-4">
       <Card>
         <Form form={form} layout="vertical" onSubmit={addNav}>
           {formLoading && <Spin />}

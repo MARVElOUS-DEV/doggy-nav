@@ -9,13 +9,12 @@
     "commit": "cz",
     "server:dev": "pnpm --filter doggy-nav-server dev",
     "web:dev": "pnpm --filter doggy-nav-main dev",
+    "web:start": "pnpm --filter doggy-nav-main --filter doggy-nav-server start",
     "admin:dev": "pnpm --filter doggy-nav-admin dev",
-    "next:dev": "pnpm --filter doggy-nav-next dev",
     "build": "pnpm -r build",
     "web:build": "pnpm --filter doggy-nav-main build",
     "admin:build": "pnpm --filter doggy-nav-admin build",
-    "server:build": "pnpm --filter doggy-nav-server build",
-    "next:build": "pnpm --filter doggy-nav-next build"
+    "server:build": "pnpm --filter doggy-nav-server build"
   },
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
@@ -29,9 +28,9 @@
   },
   "homepage": "https://github.com/MARVElOUS-DEV/doggy-nav#readme",
   "devDependencies": {
+    "cross-env": "^10.0.0",
     "cz-conventional-changelog": "3.3.0"
   },
-  "dependencies": {},
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"

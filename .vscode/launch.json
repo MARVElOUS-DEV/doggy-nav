@@ -8,16 +8,37 @@
       "type": "node",
       "request": "launch",
       "name": "nav-server",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "localRoot": "${workspaceFolder}/packages/doggy-nav-server",
       "program": "${workspaceFolder}/packages/doggy-nav-server/node_modules/egg-bin/bin/egg-bin.js",
-      "outFiles": [
-        "${workspaceFolder}/**/*.js"
-      ],
-      "args": ["dev" ,"--port=3002"],
+      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "args": ["dev", "--port=3002"],
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Next.js: debug server-side",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm --filter doggy-nav-main web:dev"
+    },
+    {
+      "name": "Next.js: debug full stack",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/doggy-nav-main/node_modules/next/dist/bin/next",
+      "args": ["build"],
+      "cwd": "${workspaceFolder}/packages/doggy-nav-main",
+      // "runtimeArgs": ["--inspect"],
+      "console": "integratedTerminal",
+      "stopOnEntry": true,
+      "skipFiles": ["<node_internals>/**"],
+      "serverReadyAction": {
+        "action": "debugWithChrome",
+        "killOnServerStop": true,
+        "pattern": "- Local:.+(https?://.+)",
+        "uriFormat": "%s",
+        "webRoot": "${workspaceFolder}/packages/doggy-nav-main"
+      }
     }
   ]
 }

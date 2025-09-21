@@ -1,10 +1,10 @@
-'use client'
-import { useState, useEffect } from 'react'
-import { Grid, Tooltip, Message, Spin } from '@arco-design/web-react'
-import axios from '@/utils/axios'
-import { API_NAV, API_NAV_RANDOM } from '@/utils/api'
-import Link from 'next/link'
-import Image from 'next/image'
+'use client';
+import { useState, useEffect } from 'react';
+import { Grid, Tooltip, Message, Spin } from '@arco-design/web-react';
+import api from '@/utils/api';
+import { API_NAV, API_NAV_RANDOM } from '@/utils/api';
+import Link from 'next/link';
+import Image from 'next/image';
 import { NavItem } from '@/types';
 import { useParams } from 'next/navigation';
 
@@ -13,33 +13,52 @@ const { Row, Col } = Grid
 export default function NavDetail() {
     const params = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false)
-  const [detail, setDetail] = useState<NavItem| null>(null)
+  const [detail, setDetail] = useState<NavItem>({
+    _id: '',
+    categoryId: "string;",
+    name: "string;",
+    href: "string;",
+    desc: "string;",
+    logo: "https://img.alicdn.com/imgextra/i1/O1CN014dDq4L1Zc3guRwcse_!!6000000003214-2-tps-1600-941.png",
+    authorName: "string;",
+    authorUrl: "string;",
+    auditTime: "string;",
+    createTime: "string;",
+    tags: ["aaa"],
+    view: 1,
+    star: 1,
+    status: 1,
+  })
   const [randomNavList, setRandomNavList] = useState<NavItem[]>([])
   const [isStar, setIsStar] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      const [detailRes, randomRes] = await Promise.all([
-        axios.get(`${API_NAV}?id=${params.id}`),
-        axios.get(API_NAV_RANDOM),
-      ])
-      setDetail(detailRes.data)
-      setRandomNavList(randomRes.data)
-      setLoading(false)
+      try {
+        const [detail, randomNavList] = await Promise.all([
+          api.findNavById(params.id),
+          api.getRandomNav(),
+        ])
+        setDetail(detail || { tags: [] })
+        setRandomNavList(randomNavList || [])
+      } catch (error) {
+        console.error('Failed to fetch data', error)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [params.id])
 
   const handleNavStarFn = async () => {
     if (detail) {
-      
       try {
-        await axios.post('/api/nav/star', { id: detail?._id })
+        await api.updateNavStar(detail._id)
         setIsStar(true)
         setDetail({ ...detail, star: detail.star + 1 })
       } catch (error) {
-        Message.error('点赞失败')
+        console.error('Star failed', error)
       }
     }
   }
@@ -50,9 +69,14 @@ export default function NavDetail() {
 
   const getRandomNavList = async () => {
     setLoading(true)
-    const res = await axios.get(API_NAV_RANDOM)
-    setLoading(false)
-    setRandomNavList(res.data)
+    try {
+      const randomNavList = await api.getRandomNav()
+      setRandomNavList(randomNavList || [])
+    } catch (error) {
+      console.error('Failed to get random nav list', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!detail) {
@@ -96,10 +120,10 @@ export default function NavDetail() {
           <div className="content">
             <h1 className="title text-3xl font-bold my-5">{detail.name}</h1>
             <p className="desc text-base mb-5">{detail.desc}</p>
-            {detail.tags.length > 0 && (
+            {(detail?.tags?.length??0) > 0 && (
               <p className="tags mb-5">
                 标签：
-                {detail.tags.map((tag: string, index: number) => (
+                {detail?.tags?.map((tag: string, index: number) => (
                   <span key={tag}>{index !== 0 ? '，' : ''}{tag}</span>
                 ))}
               </p>

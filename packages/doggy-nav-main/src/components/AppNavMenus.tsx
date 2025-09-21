@@ -1,34 +1,24 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, Layout } from '@arco-design/web-react';
+import { Menu } from '@arco-design/web-react';
 import { Category } from '@/types';
 import MenuStack from './MenuStack';
 
-const { Sider } = Layout;
 
-
-export default function AppNavMenus({ categories, showMenuType, onShowMenus, onHandleSubMenuClick }: { categories: Category[], showMenuType: string, onShowMenus: () => void, onHandleSubMenuClick: (parentId: string, id: string) => void }) {
-  const [defaultActive, setDefaultActive] = useState('0-0');
-
+export default function AppNavMenus({ categories, showMenuType, onShowMenus, onHandleSubMenuClick }: { categories: Category[], showMenuType: boolean, onShowMenus: () => void, onHandleSubMenuClick: (parentId: string, id: string) => void }) {
   const sideBarWidth = () => {
-    if (showMenuType === 'half') {
-      return 70;
-    } else if (showMenuType === 'all') {
-      return 220;
-    } else {
-      return 0;
-    }
+    return showMenuType ? 220 : 70;
   };
 
-  const isCollapse = showMenuType === 'half';
+  const isCollapse = !showMenuType;
 
   return (
-    <Sider
-      width={sideBarWidth()}
-      className="bg-blue-500 text-gray-300 text-center transition-all duration-500 z-50 fixed top-0 left-0 bottom-0 overflow-hidden"
+    <div
+      className="bg-blue-500 text-gray-300 text-center transition-all duration-300 z-50 fixed top-0 left-0 h-screen overflow-hidden flex flex-col"
+      style={{ width: sideBarWidth() }}
     >
-      <Link href="/" className="text-lg p-5 text-white flex items-center justify-center cursor-pointer">
+      <Link href="/" className="text-lg p-5 text-white flex items-center justify-center cursor-pointer flex-shrink-0">
         <Image
           src={isCollapse ? "/logo-icon.png" : "/logo-nav.png"}
           alt="logo"
@@ -38,23 +28,22 @@ export default function AppNavMenus({ categories, showMenuType, onShowMenus, onH
         />
       </Link>
 
-      <div className="menu-side-bar h-full overflow-y-auto overflow-x-hidden">
+      <div className="menu-side-bar flex-1 overflow-y-auto overflow-x-hidden">
         <Menu
-          defaultOpenKeys={[defaultActive]}
           collapse={isCollapse}
-          className="bg-blue-500 border-0"
+          className="bg-blue-500 border-0 h-full"
         >
           <MenuStack menuList={categories} onHandleSubMenuItemClick={onHandleSubMenuClick} />
         </Menu>
       </div>
 
-      <div className="sidebar-fix absolute left-0 bottom-0 w-full">
+      <div className="sidebar-fix flex-shrink-0 mt-auto">
         <ul>
-          <li className="item p-4 text-left cursor-pointer bg-blue-500" onClick={onShowMenus}>
+          <li className="item p-4 text-left cursor-pointer bg-blue-500 hover:bg-blue-600 transition-colors" onClick={onShowMenus}>
             <i className={`text-xl text-white ${isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold'}`}></i>
           </li>
         </ul>
       </div>
-    </Sider>
+    </div>
   );
 }
