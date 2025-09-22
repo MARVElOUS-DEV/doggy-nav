@@ -1,8 +1,8 @@
-import {Select} from "antd";
+import { Select } from "antd";
 import request from "@/utils/request";
-import {API_CATEGORY_LIST} from "@/services/api";
-import {useEffect, useState} from "react";
-import {CategoryModel} from "@/constants/api";
+import { API_CATEGORY_LIST } from "@/services/api";
+import { useEffect, useState } from "react";
+import { CategoryModel } from "@/constants/api";
 
 export default function CategorySelect(props: any) {
   const [categoryList, setCategoryList] = useState<CategoryModel[]>([]);

@@ -1,12 +1,10 @@
 import {
-  ModalForm, ProFormDependency, ProFormSelect, ProFormSwitch, ProFormText,
-  ProFormUploadButton,
+  ModalForm, ProFormDependency, ProFormSelect, ProFormSwitch, ProFormText
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
 import useGeekProForm from "@/components/GeekProForm/useGeekProForm";
-import {API_CATEGORY, API_CATEGORY_LIST, API_NAV} from "@/services/api";
+import { API_CATEGORY } from "@/services/api";
 import request from "@/utils/request";
-import {useMemo} from "react";
 
 export default function CategoryForm(props: any) {
   const formProps = useGeekProForm({

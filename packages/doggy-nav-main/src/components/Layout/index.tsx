@@ -21,7 +21,7 @@ export default function RootLayout({
   const [contentMarginLeft, setContentMarginLeft] = useAtom(contentMarginLeftAtom);
   const [showLog, setShowLog] = useAtom(showLogAtom);
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
-  const [tags, setTags] = useAtom(tagsAtom);
+  const [_, setTags] = useAtom(tagsAtom);
 
   // Fetch categories and tags on layout initialization
   useEffect(() => {

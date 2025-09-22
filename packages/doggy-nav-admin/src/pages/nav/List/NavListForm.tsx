@@ -1,14 +1,11 @@
 import {
-  DrawerForm, ProFormDependency, ProFormSelect,
-  ProFormText,
-  ProFormTextArea,
-  ProFormUploadButton,
-  ProFormUploadDragger
+  DrawerForm, ProFormDependency, ProFormText,
+  ProFormTextArea
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
-import {Form, UploadProps} from "antd";
+import { Form } from "antd";
 import useGeekProForm from "@/components/GeekProForm/useGeekProForm";
-import {API_NAV} from "@/services/api";
+import { API_NAV } from "@/services/api";
 import request from "@/utils/request";
 import CategorySelect from "@/pages/nav/Category/CategorySelect";
 import TagSelect from "@/pages/nav/Tag/TagSelect";

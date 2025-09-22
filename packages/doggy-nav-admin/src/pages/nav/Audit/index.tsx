@@ -1,9 +1,9 @@
 import GeekProTable from "@/components/GeekProTable/GeekProTable";
-import {API_NAV_AUDIT, API_NAV_LIST} from "@/services/api";
-import {ProColumns} from "@ant-design/pro-table";
-import {Popconfirm, Tag, Space} from "antd";
+import { API_NAV_AUDIT, API_NAV_LIST } from "@/services/api";
+import { ProColumns } from "@ant-design/pro-table";
+import { Popconfirm, Tag, Space } from "antd";
 import request from "@/utils/request";
-import {NavStatus} from "@/constants/api";
+import { NavStatus } from "@/constants/api";
 
 function RandomColorTag({ children }) {
   const colors = [

@@ -1,6 +1,6 @@
 {
   "name": "doggy-nav-admin",
-  "version": "5.0.0-beta.3",
+  "version": "1.0.0",
   "private": true,
   "description": "An out-of-box UI solution for enterprise applications",
   "scripts": {

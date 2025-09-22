@@ -1,13 +1,13 @@
-import {Button, Popconfirm} from "antd";
+import { Button, Popconfirm } from "antd";
 import request from "@/utils/request";
-import {API_CATEGORY, API_CATEGORY_LIST} from "@/services/api";
+import { API_CATEGORY, API_CATEGORY_LIST } from "@/services/api";
 import GeekProTable from "@/components/GeekProTable/GeekProTable";
-import {ActionType, ProColumns} from "@ant-design/pro-table";
-import {PlusOutlined} from "@ant-design/icons";
+import { ActionType, ProColumns } from "@ant-design/pro-table";
+import { PlusOutlined } from "@ant-design/icons";
 import useGeekProTablePopup from "@/components/GeekProTable/useGeekProTablePopup";
 import CategoryForm from "@/pages/nav/Category/CategoryForm";
-import {useRef, useState} from "react";
-import {CategoryModel} from "@/constants/api";
+import { useRef, useState } from "react";
+import { CategoryModel } from "@/constants/api";
 
 
 function transformCategoryList(list: any) {

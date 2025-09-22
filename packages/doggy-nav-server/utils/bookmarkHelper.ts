@@ -1,3 +1,4 @@
+import { URL } from "url";
 
 const mongoCfg = require('../config/mongodb').default;
 const fs = require('fs');
@@ -5,6 +6,7 @@ const request = require('request');
 const cheerio = require('cheerio');
 const mongoose = require('mongoose');
 const path = require('path');
+const getFaviconSrv =(url, size=32)=> {return [`https://api.iowen.cn/favicon/${url}.png`, `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=${size}`][0]}
 
 const db = mongoose.connect(mongoCfg.mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 db.mongoose = mongoose;
@@ -19,7 +21,7 @@ function extractOrigin(url) {
 function getTransformedLogo(origin) {
   // remove http(s)
   const url = origin.replace(/https?:\/\//, '');
-  return `https://api.iowen.cn/favicon/${url}.png`;
+  return getFaviconSrv(url);
 }
 function isAbsoluteUrl(url) {
   return url.startsWith('http') || url.startsWith('//') || url.startsWith('data:image');

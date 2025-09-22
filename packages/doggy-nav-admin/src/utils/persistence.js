@@ -1,4 +1,4 @@
-import {PERSISTENCE_TYPE} from "@/constants";
+import { PERSISTENCE_TYPE } from "@/constants";
 
 
 export function setPersistenceData(key, value, type = PERSISTENCE_TYPE) {

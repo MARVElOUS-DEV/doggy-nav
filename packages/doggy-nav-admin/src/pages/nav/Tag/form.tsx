@@ -3,7 +3,7 @@ import {
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
 import useGeekProForm from "@/components/GeekProForm/useGeekProForm";
-import {API_TAG} from "@/services/api";
+import { API_TAG } from "@/services/api";
 import request from "@/utils/request";
 
 export default function TagForm(props: any) {

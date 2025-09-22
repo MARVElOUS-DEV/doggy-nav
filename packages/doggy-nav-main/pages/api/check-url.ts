@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       responseTime,
     });
   } catch (error) {
-    const responseTime = Date.now() - Date.now();
+    const responseTime = Date.now() - startTime;
     res.status(200).json({
       accessible: false,
       status: 0,

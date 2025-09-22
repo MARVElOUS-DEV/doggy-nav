@@ -2,8 +2,8 @@ import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
 import { notification } from 'antd';
 import type { RequestConfig } from '@umijs/max';
 import { history } from '@umijs/max';
-import {getPersistenceData} from "@/utils/persistence";
-import {CURRENT_USER, TOKEN} from "@/constants";
+import { getPersistenceData } from "@/utils/persistence";
+import { CURRENT_USER, TOKEN } from "@/constants";
 
 const loginPath = '/user/login';
 // const isDev = process.env.NODE_ENV === 'development';

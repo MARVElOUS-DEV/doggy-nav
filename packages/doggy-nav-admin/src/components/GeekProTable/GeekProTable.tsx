@@ -1,4 +1,4 @@
-import type { ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import React, { useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { ProColumns, ProTableProps } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -7,17 +7,6 @@ import type { PageHeaderProps } from 'antd';
 import { Dropdown, Menu } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import request from "@/utils/request";
-
-/**
- * 封装 ProTable 功能
- * 1. 组合 PageHeaderWrapper
- * 2. 导出 ref
- * 3. table的请求
- * 4. 操作栏触发弹窗
- * 5. 导入table action，方便在完成后刷新表格
- * 6. 表格超过3个操作，加到更多里面去
- * @constructor
- */
 
 interface GeekProTableProps extends ProTableProps<any, any> {
   showPageHeader?: boolean;
@@ -57,16 +46,6 @@ function GeekProTable(props: GeekProTableProps, ref: any) {
     }
     return columns
   }, [renderOptions, columns]);
-
-  // useEffect(() => {
-  //   if (renderOptions) {
-  //     columns.push({
-  //       title: '操作',
-  //       valueType: 'option',
-  //       render: (text, record, _, action) => formatOptions(renderOptions(text, record, _, action)),
-  //     });
-  //   }
-  // }, [columns, renderOptions]);
 
   const proTable = (
     <ProTable

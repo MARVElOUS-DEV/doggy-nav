@@ -12,4 +12,5 @@ typings/**/**
 !.autod.conf.js
 .pnpm/**/*
 dist/*
+feat.md
 

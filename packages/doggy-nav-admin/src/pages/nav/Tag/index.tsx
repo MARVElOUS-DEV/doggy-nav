@@ -1,11 +1,11 @@
-import {Button, Popconfirm} from "antd";
+import { Button, Popconfirm } from "antd";
 import request from "@/utils/request";
-import {API_TAG, API_TAG_list} from "@/services/api";
+import { API_TAG, API_TAG_list } from "@/services/api";
 import GeekProTable from "@/components/GeekProTable/GeekProTable";
-import type {ActionType, ProColumns} from "@ant-design/pro-table";
-import {PlusOutlined} from "@ant-design/icons";
+import type { ActionType, ProColumns } from "@ant-design/pro-table";
+import { PlusOutlined } from "@ant-design/icons";
 import useGeekProTablePopup from "@/components/GeekProTable/useGeekProTablePopup";
-import {useRef, useState} from "react";
+import { useRef, useState } from "react";
 import TagForm from "@/pages/nav/Tag/form";
 
 

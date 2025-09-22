@@ -1,7 +1,7 @@
-import {getPersistenceData} from "@/utils/persistence";
-import {TOKEN} from "@/constants";
-import {request as umiRequest} from "@umijs/max";
-import {message, notification} from "antd";
+import { getPersistenceData } from "@/utils/persistence";
+import { TOKEN } from "@/constants";
+import { request as umiRequest } from "@umijs/max";
+import { message, notification } from "antd";
 
 // const codeMessage = {
 //   200: '服务器成功返回请求的数据。',

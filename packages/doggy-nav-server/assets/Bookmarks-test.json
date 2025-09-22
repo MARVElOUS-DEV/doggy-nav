@@ -1,0 +1,1118 @@
+{
+   "checksum": "xxxxxxxx",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "children": [ {
+               "children": [ {
+                  "date_added": "13230131548000000",
+                  "date_last_used": "0",
+                  "guid": "f55c3212-0b0e-4c8b-a2de-d404dea9cb67",
+                  "id": "15",
+                  "name": "Git - 记录每次更新到仓库",
+                  "type": "url",
+                  "url": "https://git-scm.com/book/zh/v2/Git-%E5%9F%BA%E7%A1%80-%E8%AE%B0%E5%BD%95%E6%AF%8F%E6%AC%A1%E6%9B%B4%E6%96%B0%E5%88%B0%E4%BB%93%E5%BA%93"
+               }, {
+                  "date_added": "13230719528000000",
+                  "date_last_used": "0",
+                  "guid": "1a9370c1-8288-4527-93f1-d3584151720b",
+                  "id": "16",
+                  "name": "Git比对文件之间的差异-蚂蚁部落",
+                  "type": "url",
+                  "url": "https://www.softwhy.com/article-8698-1.html"
+               }, {
+                  "date_added": "13231577520000000",
+                  "date_last_used": "0",
+                  "guid": "610bcb92-4d9a-42ce-94d9-de652ed9a5f8",
+                  "id": "17",
+                  "name": "git stash提交PR的正确步骤&git squash技术 - 董铂然 - 博客园",
+                  "type": "url",
+                  "url": "https://www.cnblogs.com/dsxniubility/p/4460834.html"
+               }],
+               "date_added": "13294896983211379",
+               "date_last_used": "0",
+               "date_modified": "13294896983211379",
+               "guid": "7bd172ee-2c97-4728-a0fa-040a2e79a1c2",
+               "id": "14",
+               "name": "git",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13266508699762492",
+                  "date_last_used": "0",
+                  "guid": "28a82c37-91eb-4916-8ea4-13b06dfe5776",
+                  "id": "23",
+                  "name": "聊聊TypeScript类型兼容，协变、逆变、双向协变以及不变性 - SegmentFault 思否",
+                  "type": "url",
+                  "url": "https://segmentfault.com/a/1190000022724899"
+               }, {
+                  "date_added": "13266509800267304",
+                  "date_last_used": "0",
+                  "guid": "97b37e77-32ab-49ce-862d-637f8b3ef975",
+                  "id": "24",
+                  "name": "React + TypeScript 实践",
+                  "type": "url",
+                  "url": "https://mp.weixin.qq.com/s/mUblBpj6pmdxz9mLKEDJTw"
+               }, {
+                  "date_added": "13266509804979272",
+                  "date_last_used": "0",
+                  "guid": "d715bbc7-8f5f-46da-b322-46168adc33fa",
+                  "id": "25",
+                  "name": "TypeScript Playground - Indexed Types",
+                  "type": "url",
+                  "url": "https://www.typescriptlang.org/play?&q=136#code/JYOwLgpgTgZghgYwgAgIImAWzgG2QbwF8BYAKFElkRQBEB7Ac2QgA9IQATAZzQ2z3xlkyAO50RACgCUALgBudYBzIly4aPCTIAwnUwAHOFGgAeACoA+AkOQI9h4xLgzkZgDTIARi7OzkIAFdMT2gVMg4IBBwjFBwIMGQ4PlxdAxioF1SHU3QsXAtwyOjjZDiEjkYs9Mz7dJN6BgLSJLycKuMoZABeZAqGdtDSPoHOnpb+EaA"
+               }],
+               "date_added": "13307854244333218",
+               "date_last_used": "0",
+               "date_modified": "13307854244333218",
+               "guid": "60950e5b-0119-45a4-b172-4b1520cdba83",
+               "id": "22",
+               "name": "TS",
+               "type": "folder"
+            }, {
+               "date_added": "13253598729460810",
+               "date_last_used": "13394275625003755",
+               "guid": "b448a62d-2f28-4d43-a507-cfb91883387e",
+               "id": "30",
+               "name": "ECMA in detail",
+               "type": "url",
+               "url": "http://dmitrysoshnikov.com/ecmascript/es5-chapter-2-strict-mode/#more-1341"
+            }, {
+               "date_added": "13258430103706884",
+               "date_last_used": "0",
+               "guid": "fb533965-c462-4eae-a574-f7c1e5cb0e85",
+               "id": "31",
+               "name": "国内前端社区技术会议资料大汇总 · 语雀",
+               "type": "url",
+               "url": "https://www.yuque.com/zaotalk/nt/zag3du"
+            }],
+            "date_added": "13273570273369480",
+            "date_last_used": "0",
+            "date_modified": "13302455053594601",
+            "guid": "b7fbe0ed-07b5-46b1-b08b-21fa4ab6e46b",
+            "id": "13",
+            "name": "frameworks",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "children": [ {
+                  "date_added": "13383648357413583",
+                  "date_last_used": "0",
+                  "guid": "700d7432-8708-4f31-973e-aa89a4afe01f",
+                  "id": "43",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "web前端面试 - 面试官系列",
+                  "type": "url",
+                  "url": "https://vue3js.cn/interview/"
+               }],
+               "date_added": "13383648344519925",
+               "date_last_used": "0",
+               "date_modified": "13394696031411189",
+               "guid": "2989c48e-2929-4130-8f74-6d5a331aabc4",
+               "id": "42",
+               "name": "interview",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13229683799000000",
+                  "date_last_used": "0",
+                  "guid": "c46c2d00-87d5-4d08-bd73-5b7f48a3f3eb",
+                  "id": "55",
+                  "name": "理解react16.3的fiber架构_JavaScript_songshuzhong的博客-CSDN博客",
+                  "type": "url",
+                  "url": "https://blog.csdn.net/songshuzhong/article/details/80642651?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task"
+               },{
+                  "date_added": "13249894142979908",
+                  "date_last_used": "0",
+                  "guid": "09ad730c-579e-4007-abf9-f54124ba677e",
+                  "id": "67",
+                  "name": "react-dnd 用法详解 - 掘金",
+                  "type": "url",
+                  "url": "https://juejin.im/post/6844903801120358407"
+               }, {
+                  "date_added": "13369478054142398",
+                  "date_last_used": "0",
+                  "guid": "ebf3f2fb-a0de-4339-b30a-0a1710d040c9",
+                  "id": "68",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "Under-the-hood-ReactJS/stack/languages/chinese/book/Part-1.md at master · Bogdan-Lyashenko/Under-the-hood-ReactJS",
+                  "type": "url",
+                  "url": "https://github.com/Bogdan-Lyashenko/Under-the-hood-ReactJS/blob/master/stack/languages/chinese/book/Part-1.md"
+               } ],
+               "date_added": "13279010089974904",
+               "date_last_used": "0",
+               "date_modified": "13369478054142398",
+               "guid": "b2c0e635-15fd-46cd-b039-cd95f2d5fab7",
+               "id": "54",
+               "name": "react",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13250943331649105",
+                  "date_last_used": "0",
+                  "guid": "aff2e467-e7b9-4b77-8b88-6e203790a6aa",
+                  "id": "70",
+                  "name": "Vue 项目性能优化实践",
+                  "type": "url",
+                  "url": "https://mp.weixin.qq.com/s?__biz=MzAxODE4MTEzMA==&mid=2650080658&idx=2&sn=7a6cdd8b5a4223e60e1d93a84fa78079&chksm=83db98f7b4ac11e1fe5015b1790a5a5a6a62c43fac5e11d4e833a3a56f2977e897ef5b86c1ca&scene=21#wechat_redirect"
+               }],
+               "date_added": "13273570273396973",
+               "date_last_used": "0",
+               "date_modified": "13294335611816112",
+               "guid": "622bb508-18e3-4c98-b4dc-7b118a327304",
+               "id": "69",
+               "name": "Vue",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13249894148665981",
+                  "date_last_used": "0",
+                  "guid": "4da48ce0-f09c-41ca-b571-e846cb3fa4d3",
+                  "id": "87",
+                  "name": "总结18个webpack插件，总会有你想要的！ - 掘金",
+                  "type": "url",
+                  "url": "https://juejin.im/post/5ee9c98c6fb9a0587c6b136c"
+               }],
+               "date_added": "13279010089974125",
+               "date_last_used": "0",
+               "date_modified": "13279010089974125",
+               "guid": "db2629df-9f16-4d62-8583-198bcbd8c410",
+               "id": "86",
+               "name": "webpack",
+               "type": "folder"
+            }, {
+               "children": [{
+                  "date_added": "13394685871249269",
+                  "date_last_used": "0",
+                  "guid": "a207e661-a91f-4e9f-adae-e1db156e0ca7",
+                  "id": "117",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "OI Wiki - OI Wiki",
+                  "type": "url",
+                  "url": "https://oi-wiki.org/"
+               }],
+               "date_added": "13279010089972468",
+               "date_last_used": "0",
+               "date_modified": "13395032947444939",
+               "guid": "19cd7e98-0682-4710-90d9-4e6450399b53",
+               "id": "94",
+               "name": "algorithm",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13283151280002451",
+                  "date_last_used": "0",
+                  "guid": "16997a1c-f9c9-4b69-9ebb-b91c5b069a82",
+                  "id": "123",
+                  "name": "编程书籍 ~ 一个小众的技术书籍文档汇总-Js中文网 · 前端进阶资源教程",
+                  "type": "url",
+                  "url": "https://www.javascriptc.com/books-navigation"
+               }],
+               "date_added": "13294844417241382",
+               "date_last_used": "0",
+               "date_modified": "13303096103374114",
+               "guid": "33ab8d7a-f995-4207-8719-0da7e99ea5ed",
+               "id": "122",
+               "name": "ProgrammingBooks",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13249894142979710",
+                  "date_last_used": "0",
+                  "guid": "744e31dd-c48b-4f7a-9d1f-722cbe2c64ef",
+                  "id": "127",
+                  "name": "使用 React Testing Library 和 Jest 完成单元测试_ITPUB博客",
+                  "type": "url",
+                  "url": "http://blog.itpub.net/31559758/viewspace-2682344/"
+               }, {
+                  "date_added": "13231675558000000",
+                  "date_last_used": "0",
+                  "guid": "9a7dfa0e-1ae5-40e1-bf3b-b520d4ca9470",
+                  "id": "128",
+                  "name": "jest+enzyme测试react组件 - 简书",
+                  "type": "url",
+                  "url": "https://www.jianshu.com/p/1c660a5f1699"
+               }, {
+                  "date_added": "13231684501000000",
+                  "date_last_used": "0",
+                  "guid": "cd6fb40f-f875-4467-be99-26c1844c6291",
+                  "id": "129",
+                  "name": "填坑之路：Jest对React全家桶的单元测试 - 简书",
+                  "type": "url",
+                  "url": "https://www.jianshu.com/p/ed4e0d551aae"
+               } ],
+               "date_added": "13294896965652161",
+               "date_last_used": "0",
+               "date_modified": "13294896965652161",
+               "guid": "e863e127-93c4-47d9-9517-4dc21983c351",
+               "id": "126",
+               "name": "tesing",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13296710693447640",
+                  "date_last_used": "0",
+                  "guid": "1913708f-10a7-45cf-86cf-42f4f4983969",
+                  "id": "131",
+                  "name": "Dart packages",
+                  "type": "url",
+                  "url": "https://pub.dev/"
+               }, {
+                  "date_added": "13296830766831680",
+                  "date_last_used": "0",
+                  "guid": "9b0deb15-6216-45ae-bb09-0e39316649bb",
+                  "id": "132",
+                  "name": "5.6 空间适配 FittedBox | 《Flutter实战·第二版》",
+                  "type": "url",
+                  "url": "https://book.flutterchina.club/chapter5/fittedbox.html#_5-6-1-fittedbox"
+               }],
+               "date_added": "13296710431843073",
+               "date_last_used": "0",
+               "date_modified": "13306409179651890",
+               "guid": "b723a419-7e0f-4d67-92df-743d4f4d6865",
+               "id": "130",
+               "name": "Flutter",
+               "type": "folder"
+            }, {
+               "date_added": "13233821983000000",
+               "date_last_used": "0",
+               "guid": "aa74e358-b53f-470e-bf24-d374d36593d1",
+               "id": "136",
+               "name": "分类目录 - Postbird - 猫既吾命",
+               "type": "url",
+               "url": "http://www.ptbird.cn/list.html"
+            }, {
+               "children": [ {
+                  "date_added": "13258648337957843",
+                  "date_last_used": "0",
+                  "guid": "881ce193-955f-4ccc-ac4b-b0d9968e5026",
+                  "id": "138",
+                  "name": "JavaScript. The Core. – Dmitry Soshnikov",
+                  "type": "url",
+                  "url": "http://dmitrysoshnikov.com/ecmascript/javascript-the-core/"
+               }, {
+                  "date_added": "13253614871855065",
+                  "date_last_used": "13396024383124666",
+                  "guid": "23e0b124-087e-476c-9d2e-4bbb6abad6e5",
+                  "id": "139",
+                  "name": "深入理解JavaScript系列 - 汤姆大叔 - 博客园",
+                  "type": "url",
+                  "url": "https://www.cnblogs.com/TomXu/archive/2011/12/15/2288411.html"
+               }],
+               "date_added": "13367740500145603",
+               "date_last_used": "0",
+               "date_modified": "13367740500145603",
+               "guid": "9937b396-072c-43ed-84ee-2423b08c3bd3",
+               "id": "137",
+               "name": "JS-Base",
+               "type": "folder"
+            },{
+               "date_added": "13391234117109357",
+               "date_last_used": "0",
+               "guid": "7070d0d2-6708-4201-b84e-439c3408dac2",
+               "id": "176",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Top 19 Remote Resources For Developers - Dev Resources",
+               "type": "url",
+               "url": "https://devresourc.es/category/remote"
+            }],
+            "date_added": "13273570273372819",
+            "date_last_used": "0",
+            "date_modified": "13394690296313604",
+            "guid": "0fca9833-ae16-43ff-91e3-f5ea5b55b2db",
+            "id": "41",
+            "name": "DED",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "date_added": "13239513459155703",
+               "date_last_used": "0",
+               "guid": "abad0edc-a6dd-45b7-b6c7-178a84baf790",
+               "id": "185",
+               "meta_info": {
+                  "last_visited_desktop": "13239513459155815"
+               },
+               "name": "Tridiv | CSS 3D Editor",
+               "type": "url",
+               "url": "http://tridiv.com/"
+            }, {
+               "date_added": "13265782091409720",
+               "date_last_used": "13353075114360670",
+               "guid": "8845d48e-9f98-46c1-b7c4-ed70c2d69cd3",
+               "id": "210",
+               "name": "SCSS详解 - MasterYao - 博客园",
+               "type": "url",
+               "url": "https://www.cnblogs.com/MasterYao/p/9413974.html"
+            } ],
+            "date_added": "13273570273384844",
+            "date_last_used": "0",
+            "date_modified": "13376977594981102",
+            "guid": "18f0c175-61fa-4032-953d-83548c6833e5",
+            "id": "184",
+            "name": "css",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "children": [ {
+                  "date_added": "13232011945000000",
+                  "date_last_used": "0",
+                  "guid": "a292332e-0938-41f6-9bcf-85d7415dbdd4",
+                  "id": "215",
+                  "name": "电子书 | 在线格式转换 All2All",
+                  "type": "url",
+                  "url": "http://www.alltoall.net/%e7%94%b5%e5%ad%90%e4%b9%a6/"
+               }, {
+                  "date_added": "13246639093300856",
+                  "date_last_used": "0",
+                  "guid": "58c4b7e4-99d7-437d-a15e-f6a28e1a9adb",
+                  "id": "216",
+                  "name": "LoreFree-去中心化免费电子书共享社区",
+                  "type": "url",
+                  "url": "https://ebook2.lorefree.com/"
+               }],
+               "date_added": "13279010089980640",
+               "date_last_used": "0",
+               "date_modified": "13307544641518042",
+               "guid": "67625f9f-fb39-495f-9ddb-4a5dc767716d",
+               "id": "214",
+               "name": "ebook",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13279985637931153",
+                  "date_last_used": "0",
+                  "guid": "9c48fe8d-0c7c-4716-a089-709c28c45225",
+                  "id": "226",
+                  "name": "极限苹果-Mac论坛-提供Mac软件和macOS苹果系统镜像下载",
+                  "type": "url",
+                  "url": "https://www.applex.net/"
+               }, {
+                  "date_added": "13287641349299899",
+                  "date_last_used": "0",
+                  "guid": "4d0e2765-4b3a-4d77-8fff-f1eb2e98bc66",
+                  "id": "230",
+                  "name": "AppKed - Download Free Mac Apps and Mac Games for Apple Mac.",
+                  "type": "url",
+                  "url": "https://www.macbed.com/"
+               } ],
+               "date_added": "13279988290256161",
+               "date_last_used": "0",
+               "date_modified": "13287641349299899",
+               "guid": "42b3081a-d83c-4e0f-bc89-4db3e99228b3",
+               "id": "225",
+               "name": "MAC",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13240043747465569",
+                  "date_last_used": "0",
+                  "guid": "4d002d09-41c0-4938-873a-3ff0d107a0da",
+                  "id": "232",
+                  "meta_info": {
+                     "last_visited_desktop": "13240043747465714"
+                  },
+                  "name": "Zamzar - video converter, audio converter, image converter, eBook converter",
+                  "type": "url",
+                  "url": "https://www.zamzar.com/"
+               }, {
+                  "date_added": "13324566087686525",
+                  "date_last_used": "13401694199965770",
+                  "guid": "4b8c3383-5e70-4e97-86ed-068a6ad6b2bf",
+                  "id": "254",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "WebP to Base64 | Image | Base64 Encode | Base64 Converter | Base64",
+                  "type": "url",
+                  "url": "https://base64.guru/converter/encode/image/webp"
+               }, {
+                  "date_added": "13332327818463037",
+                  "date_last_used": "0",
+                  "guid": "b563659f-72a4-4705-bec2-84700f4d5126",
+                  "id": "255",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "Postimages — 免费图片托管 / 图片上传",
+                  "type": "url",
+                  "url": "https://postimages.org/"
+               } ],
+               "date_added": "13287077036169081",
+               "date_last_used": "0",
+               "date_modified": "13338643945558941",
+               "guid": "1ab6842d-3544-4bc7-b02e-49b40032ef79",
+               "id": "231",
+               "name": "image+video tools",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13286291414759974",
+                  "date_last_used": "0",
+                  "guid": "d4839660-68e6-4560-8494-118ee77747f1",
+                  "id": "257",
+                  "name": "mockAPI",
+                  "type": "url",
+                  "url": "https://mockapi.io/projects/61dc1d5b591c3a0017e1a6eb"
+               }, {
+                  "date_added": "13332321287731037",
+                  "date_last_used": "0",
+                  "guid": "080d9920-d4cd-4573-b1e6-267ad38cf8cc",
+                  "id": "270",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "Markdown转Word - 在线免费将Markdown转换成Word文件 - 易转换",
+                  "type": "url",
+                  "url": "https://www.easeconvert.com/markdown-to-word/"
+               }, {
+                  "date_added": "13269523379311953",
+                  "date_last_used": "0",
+                  "guid": "98822100-0c1b-4947-ac93-98183b0dcf24",
+                  "id": "271",
+                  "name": "Word to Markdown Converter",
+                  "type": "url",
+                  "url": "https://word2md.com/"
+               } ],
+               "date_added": "13287077036169810",
+               "date_last_used": "0",
+               "date_modified": "13332321287731037",
+               "guid": "dc719012-21e2-45eb-8b4a-b9ca8327400e",
+               "id": "256",
+               "name": "efficiency",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13273562277255857",
+                  "date_last_used": "0",
+                  "guid": "23ef22d5-f083-4701-ad05-902c4dfed7ed",
+                  "id": "273",
+                  "name": "Google Play Store APKs - APKMirror",
+                  "type": "url",
+                  "url": "https://www.apkmirror.com/apk/google-inc/google-play-store/"
+               } ],
+               "date_added": "13306244653452574",
+               "date_last_used": "0",
+               "date_modified": "13365350044952077",
+               "guid": "e455efeb-c792-49f7-b0ea-b0e4245b08a2",
+               "id": "272",
+               "name": "app",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13249992713424584",
+                  "date_last_used": "0",
+                  "guid": "2ed1ff27-b86e-4823-90a8-736ec5b5d16c",
+                  "id": "338",
+                  "name": "前后端分离开发模式的 mock 平台预研_CntChen的前端分享 - SegmentFault 思否",
+                  "type": "url",
+                  "url": "https://segmentfault.com/a/1190000007494196"
+               }, {
+                  "date_added": "13252485041771387",
+                  "date_last_used": "0",
+                  "guid": "731db8ff-4e65-42a3-b1c3-fdfa331f78f1",
+                  "id": "345",
+                  "name": "mongoose中的Schema和Model_威廉用javaScript的博客-CSDN博客",
+                  "type": "url",
+                  "url": "https://blog.csdn.net/weixin_37823121/article/details/82789106?utm_medium=distribute.pc_relevant.none-task-blog-OPENSEARCH-8.control&depth_1-utm_source=distribute.pc_relevant.none-task-blog-OPENSEARCH-8.control"
+               } ],
+               "date_added": "13273570273395025",
+               "date_last_used": "0",
+               "date_modified": "13273570273395025",
+               "guid": "6e18d1db-be80-4687-8334-58038aca300d",
+               "id": "337",
+               "name": "YApi",
+               "type": "folder"
+            }, {
+               "children": [{
+                  "date_added": "13356518165976431",
+                  "date_last_used": "13365414397542702",
+                  "guid": "8d894367-48be-464b-9b72-d174d5b8b663",
+                  "id": "358",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "千帆搜索 - 资源超丰富的聚合网盘搜索引擎！",
+                  "type": "url",
+                  "url": "https://pan.qianfan.app/"
+               } ],
+               "date_added": "13384592521909086",
+               "date_last_used": "0",
+               "date_modified": "13384592521909086",
+               "guid": "b55e35f6-d9d1-4819-a685-04246d63cd2b",
+               "id": "351",
+               "name": "Pan",
+               "type": "folder"
+            }, {
+               "date_added": "13401450031384081",
+               "date_last_used": "0",
+               "guid": "5bcf4740-ad81-4ca5-a541-24b9593f7a01",
+               "id": "376",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "GitStar - 发现热门GitHub项目和开源工具",
+               "type": "url",
+               "url": "https://ghubstar.com/?category=a6104471-6bf2-42b8-8bbb-38f6af466ffb"
+            }, {
+               "date_added": "13401535658626007",
+               "date_last_used": "0",
+               "guid": "45adcc10-81e6-479d-87aa-ad29f1f312b3",
+               "id": "377",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "MinerU-免费全能的文档解析神器",
+               "type": "url",
+               "url": "https://mineru.net/OpenSourceTools/Extractor"
+            }],
+            "date_added": "13273570273388268",
+            "date_last_used": "0",
+            "date_modified": "13402944585983397",
+            "guid": "63b47a09-23da-4d13-9e96-16badbcb842d",
+            "id": "213",
+            "name": "工具",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "children": [ {
+                  "date_added": "13214398512721498",
+                  "date_last_used": "0",
+                  "guid": "60471eae-4d75-4699-91bf-599efc078044",
+                  "id": "380",
+                  "name": "龙轩导航-做个有用的导航",
+                  "type": "url",
+                  "url": "http://ilxdh.com/"
+               }, {
+                  "date_added": "13274082014543506",
+                  "date_last_used": "13372611684359417",
+                  "guid": "f27f41ee-e393-4249-80d0-207fbc94f858",
+                  "id": "381",
+                  "name": "SBKKO导航 | 轻松浏览，便捷上网，效率生活从这里开始！",
+                  "type": "url",
+                  "url": "https://nav.sbkko.com/"
+               }],
+               "date_added": "13367741724072206",
+               "date_last_used": "0",
+               "date_modified": "13367741724072206",
+               "guid": "1cc27bd6-5c75-4dac-8288-b48942c5a057",
+               "id": "379",
+               "name": "navigatoin",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13214398575606836",
+                  "date_last_used": "0",
+                  "guid": "eeadad91-34e2-4a7a-85c2-1a867d4f6f4a",
+                  "id": "394",
+                  "name": "疯狂影视搜索-最有用的影视搜索引擎",
+                  "type": "url",
+                  "url": "http://ifkdy.com/"
+               }],
+               "date_added": "13367742260300290",
+               "date_last_used": "0",
+               "date_modified": "13367742260300290",
+               "guid": "f420c3a6-9e19-4175-8d9e-ebdcda110181",
+               "id": "452",
+               "name": "somebody-blog",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13249894167276711",
+                  "date_last_used": "0",
+                  "guid": "177d8229-b5aa-4f44-b094-fd9a5fff5fbb",
+                  "id": "461",
+                  "name": "粉笔网",
+                  "type": "url",
+                  "url": "https://fenbi.com/page/zixundetail/56/409825282673664"
+               }],
+               "date_added": "13273570273424544",
+               "date_last_used": "0",
+               "date_modified": "13313392578645134",
+               "guid": "28f1a740-cd58-4f52-8c13-96dbe1c650b6",
+               "id": "460",
+               "name": "常用",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13249894356058368",
+                  "date_last_used": "0",
+                  "guid": "cbf23236-58bc-49f1-b410-64528f17aad4",
+                  "id": "471",
+                  "name": "服务器 – V2RaySSR综合网",
+                  "type": "url",
+                  "url": "https://www.v2rayssr.com/server"
+               }, {
+                  "date_added": "13249894356058841",
+                  "date_last_used": "0",
+                  "guid": "256a1b4e-136e-4550-a0a4-3d3a462a8e1f",
+                  "id": "472",
+                  "name": "TunSafe: High Performance WireGuard VPN Client for Windows",
+                  "type": "url",
+                  "url": "https://tunsafe.com/vpn"
+               }],
+               "date_added": "13273570273418061",
+               "date_last_used": "0",
+               "date_modified": "13393866068988154",
+               "guid": "fe337d53-b03d-43c9-9f38-a6f0adad34f5",
+               "id": "470",
+               "name": "SSR",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13249894356059500",
+                  "date_last_used": "13393837118433754",
+                  "guid": "1f63bc49-b13e-44f7-a160-1be6f09ccab8",
+                  "id": "514",
+                  "name": "猪の免费大飞机",
+                  "type": "url",
+                  "url": "https://forever.ypork.com/?__cf_chl_jschl_tk__=de442e3b889f437430853faf545c68fb168b8224-1579602896-0-AbUJtCOtovrik6v_ao2CSalQYiDoBvxXXGRPkp5ekZgA8yHJiPh2MIz4lRH91prmJga8lO1-LM38-vODcTbc1YAG07yDv-BBFGxj-z9XSgzwR8ohJ_hqPUNyo281EOThXV96q97f8SA0AfDHUfSrvLlqTqBJMLyNdkBxNCchzZtv5omlD4Bd71bZIl9BiqG6J3Wd0dU79tivGVvjmiyotk70i2kI74ktMFz3Ugt35w92BtTPzAdSFdiBF9efoPBm7XcuyUuphs3dQexXPOHa5eo"
+               }, {
+                  "date_added": "13290415185595373",
+                  "date_last_used": "0",
+                  "guid": "d71f04ed-8674-4978-8ec3-2ab74125dbac",
+                  "id": "515",
+                  "name": "LingLing☁️",
+                  "type": "url",
+                  "url": "https://jiji.lingfeiling.tk/#/dashboard"
+               }],
+               "date_added": "13290694888016559",
+               "date_last_used": "0",
+               "date_modified": "13293621990931587",
+               "guid": "3f13639a-2345-4ea3-87b3-4778d46dd94e",
+               "id": "513",
+               "name": "机场",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13249894356060224",
+                  "date_last_used": "0",
+                  "guid": "f6905aff-522d-4e8d-88bb-d3bc33e4a128",
+                  "id": "530",
+                  "name": "Temp Mail - 临时性 - 匿名电子邮件",
+                  "type": "url",
+                  "url": "https://temp-mail.org/zh/?__cf_chl_jschl_tk__=767737abb22c1c48964f32f6142cea051314bb06-1582948839-0-ATa5KMWgzmtkGK5OOkye_NV_70di4CKBr0EBMcwDdMzR9ohRcoa7IEzPpuWmk5qotunRDqeAgVpa7VVOxra2gpSQBV1wVigTQ7q_qTC0N_QQBbTz2Q1OmzlZpDbO8PUQsalu7v6TQBFJ-uV6zj0R-dKgZ8Pzqpn1R45I-QlQ-4xeU7XdW6A3n6aON5DBgbp_pZqUlwpF6EjGLzvdscWJj8U0puddZMeiSFlHLFXbnqZI58tbRe0evbs76ZnmdhVFjzsqXukwkZC-2QbRTgqx0Ho"
+               }],
+               "date_added": "13290694888021246",
+               "date_last_used": "0",
+               "date_modified": "13364376852293166",
+               "guid": "ebb20fd1-dc9e-41c3-bf53-cbe885687b7c",
+               "id": "529",
+               "name": "mailAndMessage",
+               "type": "folder"
+            }, {
+               "date_added": "13152614770000000",
+               "date_last_used": "0",
+               "guid": "be7b273c-4233-4426-b1a1-5c00223fd203",
+               "id": "546",
+               "name": "XSS跨站脚本攻击 - 那一叶随风 - 博客园",
+               "type": "url",
+               "url": "http://www.cnblogs.com/phpstudy2015-6/p/6767032.html"
+            }, {
+               "date_added": "13157175049000000",
+               "date_last_used": "13401560644761098",
+               "guid": "7b5af8ac-e9a3-4d97-b28f-8053dca0768b",
+               "id": "547",
+               "name": "JavaScript学习笔记之函数记忆_javascript技巧_脚本之家",
+               "type": "url",
+               "url": "http://www.jb51.net/article/123022.htm"
+            }, {
+               "children": [ {
+                  "date_added": "13289486285152637",
+                  "date_last_used": "0",
+                  "guid": "9892e9a3-82e0-484d-b93e-feaa881e9fd6",
+                  "id": "549",
+                  "name": "公开真题库|公务员、事业单位、教师资格、软考等考试题库！",
+                  "type": "url",
+                  "url": "https://www.gkzenti.cn/"
+               }, {
+                  "date_added": "13289742512580437",
+                  "date_last_used": "0",
+                  "guid": "4f2e8fb7-575f-477c-b029-c1615629c863",
+                  "id": "550",
+                  "name": "123.56.138.149/provexam/stulogin/input.htm",
+                  "type": "url",
+                  "url": "http://123.56.138.149/provexam/stulogin/input.htm"
+               } ],
+               "date_added": "13289807854637553",
+               "date_last_used": "0",
+               "date_modified": "13289843813234178",
+               "guid": "6a93236d-cdd9-4e95-a398-b455aded5075",
+               "id": "548",
+               "name": "考试",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13389181886167868",
+                  "date_last_used": "13394711844144161",
+                  "guid": "44af457d-4213-4ebd-9e46-e0a214c3b732",
+                  "id": "563",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "会员喜爱榜-会员爱听排行榜，VIP会员爱听的音乐！ - 无忧音乐网",
+                  "type": "url",
+                  "url": "https://www.qeecc.com/list/vip.html"
+               }],
+               "date_added": "13389181909980792",
+               "date_last_used": "0",
+               "date_modified": "13399547673082301",
+               "guid": "bd429050-f382-4cee-a63d-5c5c48e17efe",
+               "id": "562",
+               "name": "music",
+               "type": "folder"
+            }, {
+               "date_added": "13397586150365785",
+               "date_last_used": "0",
+               "guid": "a361f92d-e6a3-4062-859a-fa2f47de828e",
+               "id": "575",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "公众号里的游戏下载链接汇总 - 飞书云文档",
+               "type": "url",
+               "url": "https://f9a5o6xqpg.feishu.cn/wiki/NQSZwsqLDi5Jn7kj1uBcKlymn8f"
+            }, {
+               "children": [ {
+                  "date_added": "13399549427191920",
+                  "date_last_used": "0",
+                  "guid": "281e0570-43fc-4f88-9fa0-7452ea8a4ee6",
+                  "id": "577",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "灯塔跨境-跨境卖家网站导航",
+                  "type": "url",
+                  "url": "https://123.dtkj.net/"
+               }, {
+                  "date_added": "13399549452374394",
+                  "date_last_used": "0",
+                  "guid": "f3c37124-ec5c-4197-a8e7-b849b72c606f",
+                  "id": "578",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "友情链接 - AMZ123跨境卖家导航",
+                  "type": "url",
+                  "url": "https://www.amz123.com/links"
+               } ],
+               "date_added": "13399549445214799",
+               "date_last_used": "0",
+               "date_modified": "13399549452374394",
+               "guid": "4d696cc9-584b-415e-ae80-c1c86b421ec5",
+               "id": "576",
+               "name": "电商",
+               "type": "folder"
+            } ],
+            "date_added": "13273570273399950",
+            "date_last_used": "0",
+            "date_modified": "13397586150365785",
+            "guid": "91803bb6-f1c4-45a0-b987-3f8531a8d712",
+            "id": "378",
+            "name": "home",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "date_added": "13256011651284724",
+               "date_last_used": "0",
+               "guid": "89ca89f1-06fe-4e79-929a-cf3bc0d5d747",
+               "id": "580",
+               "name": "中国电子云-运营平台",
+               "type": "url",
+               "url": "https://touchui.wadecn.com/demo/cecloud/pc.html"
+            }, {
+               "date_added": "13256011770911975",
+               "date_last_used": "0",
+               "guid": "727a8ee1-0b89-497a-814e-dbb382ba99e9",
+               "id": "581",
+               "name": "中国电子云0130版本上线内容-0118",
+               "type": "url",
+               "url": "https://docs.qq.com/sheet/DSWRQTlZqU3piekZX?tab=BB08J4"
+            }, {
+               "date_added": "13256012357690402",
+               "date_last_used": "13384592732755731",
+               "guid": "dc31d8a2-924c-410b-a6d2-3a16b96f8b10",
+               "id": "582",
+               "name": "中国电子云运营平台界面开发计划",
+               "type": "url",
+               "url": "https://docs.qq.com/sheet/DRGZadlh1Z0NvTGtJ?tab=fkonub"
+            }],
+            "date_added": "13273570273425895",
+            "date_last_used": "0",
+            "date_modified": "13273570273425895",
+            "guid": "d1b03232-56bf-481a-af8f-7d75ed5e667b",
+            "id": "579",
+            "name": "运营平台",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "date_added": "13265461138618999",
+               "date_last_used": "0",
+               "guid": "c7f27de1-7ffc-4abf-9a81-127fa9e39f67",
+               "id": "601",
+               "name": "Home | Salesforce",
+               "type": "url",
+               "url": "https://thoughtworks.lightning.force.com/lightning/page/home"
+            }, {
+               "children": [ {
+                  "children": [{
+                     "date_added": "13274016531118772",
+                     "date_last_used": "0",
+                     "guid": "3d981427-d9d9-41f6-ae9e-5a54839d9893",
+                     "id": "634",
+                     "name": "canvas | 微信开放文档",
+                     "type": "url",
+                     "url": "https://developers.weixin.qq.com/miniprogram/dev/component/canvas.html#Canvas-2D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81"
+                  }],
+                  "date_added": "13286006810727256",
+                  "date_last_used": "0",
+                  "date_modified": "13286006810727256",
+                  "guid": "589fff1e-e7e7-46f6-a4d5-79844936867b",
+                  "id": "625",
+                  "name": "一期",
+                  "type": "folder"
+               }, {
+                  "children": [ {
+                     "date_added": "13284803022030531",
+                     "date_last_used": "0",
+                     "guid": "1c6f60bb-4b79-4bb4-8951-9353518d7d31",
+                     "id": "646",
+                     "name": "大使墙 – Figma",
+                     "type": "url",
+                     "url": "https://www.figma.com/file/Di8iALK9qxJMyXbmYmu5cT/%E5%A4%A7%E4%BD%BF%E5%A2%99?node-id=0%3A5"
+                  }, {
+                     "date_added": "13291702469453625",
+                     "date_last_used": "0",
+                     "guid": "a60d8dd2-66a0-4131-9e5e-2442c3eabeb6",
+                     "id": "662",
+                     "name": "登录-测试-点秀",
+                     "type": "url",
+                     "url": "https://lj.pointshow.cn/#/login"
+                  } ],
+                  "date_added": "13286006810730969",
+                  "date_last_used": "0",
+                  "date_modified": "13291702469453625",
+                  "guid": "26aa1107-c6c8-436c-965a-d8b542777547",
+                  "id": "645",
+                  "name": "二期",
+                  "type": "folder"
+               } ],
+               "date_added": "13271135649699306",
+               "date_last_used": "0",
+               "date_modified": "13271135649699306",
+               "guid": "0be358a7-a832-421f-bef0-657eddcb9920",
+               "id": "624",
+               "name": "lululemon",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13297142667389493",
+                  "date_last_used": "0",
+                  "guid": "147fe561-da0e-44e0-857e-8ff6db4c4392",
+                  "id": "664",
+                  "name": "登录",
+                  "type": "url",
+                  "url": "https://sts.dentsplysirona.com/adfs/ls/?client-request-id=bb2ee48f-f8e3-4b6f-a3e5-f1187630d682&wa=wsignin1.0&wtrealm=urn%3afederation%3aMicrosoftOnline&wctx=LoginOptions%3D3%26estsredirect%3d2%26estsrequest%3drQQIARAAjZG9axNhAMbz5pI0DekHxaFgh4Bxabncdy53IDS1bVL7kRotpi7hvffeNzm8u_e8u6Sko5MgopvooKiLVAXRRSKCc6dOokWXqoOFgjpIRi__gcuz_n7P88wyYoHX86KqSZqmYJaHqsnKvKmyhikpbFErlgwoyKKgqf5UZvLO98K7bwO6-vTH7-ku__HGHjjbDkMv0DnO6UHPsy0EQ4u6QcGxkE8DSsICog73FoADAA7jE7VyJ2yLw6C-tYuP4-MBtjEKmxAh2nHDP_E08WHLwW74gMmrCjENUZJZASpapFXCbEk0DbaESqKGDCQJJnnNpCKCQ9195gz1sGuZOc-nxLJxDjvQsnOUENty8ZCAg-ATA46Y09egVSDQbc2bESjw7F5g-dSFQ9eDBDhOZPmknk5nJiemR3KxQQI8SUblb20_PHVyf7T8ZmXn3vsxPbaf5Oa6Yfn8xba27EibfrdeW3eXLH-pzlUVqtRqqEUuLZLl68FipdI6p-nC3RT4lQI3R2L90fz_7LaXmdvd8MpXKlvNNbXe3WhsV0VWqqzzK1eb8qq5udXeMdTGZdSwobmAXmVAPxt5fp5prr3ElfKLvz8fzyxcmD_M6plsAAlu-tS2aSecmh0ie7qMFCIgU2OLCoxeF2SVhYgUWaxBQUCyKEOZ_zAWG4w_f9Z_9PXL7ZPqPw2&cbcxt=&username=kai.fang%40dentsplysirona.com&mkt=&lc="
+               } ],
+               "date_added": "13297142663232527",
+               "date_last_used": "0",
+               "date_modified": "13305871198291579",
+               "guid": "f19485f7-e2dd-4bd9-8de5-6b3ff289f536",
+               "id": "663",
+               "name": "dentsplysirona",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13280243504019399",
+                  "date_last_used": "0",
+                  "guid": "c853a286-c9af-417a-bdae-32d83d07355c",
+                  "id": "690",
+                  "name": "Content Status Change Workflow - Zoom",
+                  "type": "url",
+                  "url": "https://thoughtworks.zoom.us/rec/play/a_jwYtJxZMAFBvWK2YfRGXmoYIO-uBggNLz6Aa8pXFj4r2Im-w0yWPFOZQX_ART6qglbr3ocOvZ_BWBL.DWOIC_BtL109r-xL?continueMode=true"
+               }],
+               "date_added": "13280116388896813",
+               "date_last_used": "0",
+               "date_modified": "13282810223169922",
+               "guid": "c48ce413-d25c-4a70-bb6d-2507a4e87be2",
+               "id": "689",
+               "name": "sephora",
+               "type": "folder"
+            }, {
+               "children": [ {
+                  "date_added": "13265448481517515",
+                  "date_last_used": "0",
+                  "guid": "97de8c47-0020-4294-afe4-8c92a7578a04",
+                  "id": "716",
+                  "name": "PingCap交付 - Google Drive",
+                  "type": "url",
+                  "url": "https://drive.google.com/drive/u/1/folders/10mClBWMxYNHG3C3uXRiawUtzOfSrdmn0"
+               }, {
+                  "date_added": "13265461744887815",
+                  "date_last_used": "0",
+                  "guid": "ab73606c-9335-4ba8-b1ba-31ecf5237910",
+                  "id": "717",
+                  "name": "PingCAP需求侧跟进 | Trello",
+                  "type": "url",
+                  "url": "https://trello.com/b/TGMlkt4d/pingcap%E9%9C%80%E6%B1%82%E4%BE%A7%E8%B7%9F%E8%BF%9B"
+               }],
+               "date_added": "13266138388488880",
+               "date_last_used": "0",
+               "date_modified": "13269519343321396",
+               "guid": "5465ab6a-13bb-49eb-9d07-9d83f4ae742f",
+               "id": "715",
+               "name": "PingCap",
+               "type": "folder"
+            }, {
+               "date_added": "13353132590666663",
+               "date_last_used": "0",
+               "guid": "5ddcce5a-a713-47e8-8a69-637407401402",
+               "id": "733",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "工具 | Thoughtworks",
+               "type": "url",
+               "url": "https://www.thoughtworks.com/zh-cn/radar/tools/summary/pixie"
+            } ],
+            "date_added": "13273570273429465",
+            "date_last_used": "0",
+            "date_modified": "13353132590666663",
+            "guid": "d27afaf1-eddb-4f2f-8035-da64c95666c0",
+            "id": "600",
+            "name": "TW",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "children": [ {
+                  "date_added": "13396946015424098",
+                  "date_last_used": "0",
+                  "guid": "6c913bc9-234b-48dd-97ec-edb376580050",
+                  "id": "736",
+                  "meta_info": {
+                     "power_bookmark_meta": ""
+                  },
+                  "name": "ZoneABC - Subdomain Management",
+                  "type": "url",
+                  "url": "https://zoneabc.net/domain/4e6db1b3-b5e9-4e3f-be8e-deff0a7db3bc"
+               } ],
+               "date_added": "13397033850460160",
+               "date_last_used": "0",
+               "date_modified": "13397046030760589",
+               "guid": "99868f8a-8907-407e-ab28-fcd1464949e5",
+               "id": "735",
+               "name": "DNS",
+               "type": "folder"
+            }],
+            "date_added": "13273570273436412",
+            "date_last_used": "0",
+            "date_modified": "13401282487329208",
+            "guid": "86b584ab-691f-412c-aef3-8437e361e0b7",
+            "id": "734",
+            "name": "mytool",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "children": [ {
+                  "date_added": "13304269837250011",
+                  "date_last_used": "0",
+                  "guid": "8cdf0594-1d19-43a9-8cf7-e6d7930a7964",
+                  "id": "767",
+                  "name": "ci/cd pipeline gitops演示 - OpenShift4 慢慢走",
+                  "type": "url",
+                  "url": "https://wangzheng422.github.io/docker_env/ocp4/4.9/4.9.ci.cd.demo.html"
+               }, {
+                  "date_added": "13305463583750206",
+                  "date_last_used": "0",
+                  "guid": "43af63c0-bf64-4012-90e1-ef3d3d8496e6",
+                  "id": "772",
+                  "name": "Pod Priority and Preemption | Kubernetes",
+                  "type": "url",
+                  "url": "https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/"
+               } ],
+               "date_added": "13307854287686605",
+               "date_last_used": "0",
+               "date_modified": "13307854287686605",
+               "guid": "fd3ba8c6-4372-4f59-8673-4dd935f2d602",
+               "id": "766",
+               "name": "k8s",
+               "type": "folder"
+            } ],
+            "date_added": "13306041328759278",
+            "date_last_used": "0",
+            "date_modified": "13399629605700530",
+            "guid": "c49ceee1-9e79-44e0-bd46-823057710c58",
+            "id": "765",
+            "name": "gitops",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "date_added": "13307620907253368",
+               "date_last_used": "0",
+               "guid": "1bd1072b-c1c3-4f3e-a96b-1a4e2e7c84bf",
+               "id": "792",
+               "name": "Firefly | 让科技更简单，让生活更智能",
+               "type": "url",
+               "url": "https://www.t-firefly.com/doc/download/page/id/3.html"
+            }],
+            "date_added": "13307630818919549",
+            "date_last_used": "0",
+            "date_modified": "13388318879191775",
+            "guid": "82497893-0f83-4abf-8415-8d8156ef2a1b",
+            "id": "791",
+            "name": "OPW",
+            "type": "folder"
+         }]},
+      "other": {
+         "children": [  ],
+         "date_added": "13401587656604209",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other Bookmarks",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [{
+            "date_added": "13340650266196691",
+            "date_last_used": "13384592064842562",
+            "guid": "6b2b479e-6eaa-4ee1-a103-627645848203",
+            "id": "5",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Frontend Mastery",
+            "type": "url",
+            "url": "https://frontendmastery.com/"
+         }, {
+            "date_added": "13340388133071949",
+            "date_last_used": "0",
+            "guid": "f8dc8794-2465-4a2a-9754-f5809da0d3d5",
+            "id": "6",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Free MP3 Download - Free 320kbps MP3 and FLAC Downloads",
+            "type": "url",
+            "url": "https://xxxx-mp3-download.net/"
+         }],
+         "date_added": "13401587656604209",
+         "date_last_used": "0",
+         "date_modified": "13401643397945888",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile Bookmarks",
+         "type": "folder"
+      }
+   },
+   "sync_metadata": "xxxxxxxx",
+   "version": 1
+}
