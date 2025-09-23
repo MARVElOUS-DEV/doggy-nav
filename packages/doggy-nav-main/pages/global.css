@@ -1,22 +1,32 @@
 @import "@arco-design/web-react/dist/css/arco.css";
 @import "tailwindcss";
+@import "../src/styles/utilities.css";
+@import '../src/styles/icon-font.css';
+@import '../src/styles/override.css';
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary-color: rgb(232 221 255 / var(--tw-bg-opacity, 1));
+  --primary-color: #0ea5e9; /* Primary 500 from design system */
+  --secondary-color: #8b5cf6; /* Secondary 500 from design system */
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
 }
 
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
-  --primary-color: #7a62f6;
+  --primary-color: #0ea5e9;
+  --secondary-color: #8b5cf6;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
 }
 
 body {
@@ -41,12 +51,32 @@ html, body {
   overflow: hidden;
 }
 
+/* Fix for flex layout issues */
+#__next {
+  height: 100%;
+}
+
 body {
-  font-size: 12px;
-  color: #4d4d4d;
-  font-family: Helvetica Neue, Microsoft Yahei;
+  font-size: 0.875rem; /* 14px - text-sm from design system */
+  color: #525252; /* text-secondary from design system */
+  font-family: Helvetica Neue, Microsoft Yahei, system-ui, sans-serif;
   height: 100vh;
-  background: #f7f8fb;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 0.3;
+  z-index: -1;
 }
 
 .iconfont {
@@ -69,26 +99,26 @@ body {
 }
 
 .website-wrapper {
-  margin-top: 20px;
+  margin-top: 1.25rem; /* spacing.lg */
 }
 
 .website-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #333;
-  padding-left: 10px;
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 600; /* semibold */
+  margin-bottom: 1rem; /* spacing.md */
+  color: #171717; /* text-primary */
+  padding-left: 0.5rem; /* spacing.sm */
   border-left: 4px solid var(--primary-color);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main {
-    padding: 10px;
+    padding: 0.625rem; /* spacing.sm */
   }
 
   .website-title {
-    font-size: 16px;
+    font-size: 1.125rem; /* text-lg */
   }
 }
 
@@ -99,16 +129,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* Theme-specific styles */

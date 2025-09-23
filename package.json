@@ -4,6 +4,7 @@
   "description": "doggy-nav",
   "main": "index.js",
   "private": true,
+  "type": "module",
   "scripts": {
     "test": "pnpm -r test",
     "commit": "cz",

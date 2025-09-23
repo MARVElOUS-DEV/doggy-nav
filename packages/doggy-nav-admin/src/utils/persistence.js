@@ -2,7 +2,7 @@ import { PERSISTENCE_TYPE } from "@/constants";
 
 
 export function setPersistenceData(key, value, type = PERSISTENCE_TYPE) {
-  if (typeof value != 'string') value = JSON.stringify(value);
+  if (typeof value !== 'string') value = JSON.stringify(value);
   if (type === 'session') {
     sessionStorage.setItem(key, value);
   } else if (type === 'local') {

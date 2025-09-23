@@ -29,7 +29,7 @@ export function getWebsiteIcon(url: string): string {
  * @param size - The preferred size of the favicon (default: 16)
  * @returns The favicon URL from a third-party service
  */
-export function getWebsiteIconFromService(url: string, size: number = 16): string {
+export function getWebsiteIconFromService(url: string, size = 16): string {
   try {
     // Handle cases where url might be null, undefined or empty
     if (!url) {

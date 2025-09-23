@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { Message } from '@arco-design/web-react';
 
 interface UseApiOptions<T> {
   onSuccess?: (data: T) => void;
@@ -36,7 +37,6 @@ export function useApi<T, P extends any[] = any[]>(
         }
 
         if (options.showSuccessMessage && typeof window !== 'undefined') {
-          const { Message } = await import('@arco-design/web-react');
           Message.success(options.showSuccessMessage);
         }
 

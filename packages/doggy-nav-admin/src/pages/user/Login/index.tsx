@@ -12,7 +12,7 @@ import { setPersistenceData } from "@/utils/persistence";
 import { CURRENT_USER, TOKEN } from "@/constants";
 
 
-const goto = (search) => {
+const goto = (search: URLSearchParams) => {
   if (!history) return;
   setTimeout(() => {
     const redirect = search.get('redirect')

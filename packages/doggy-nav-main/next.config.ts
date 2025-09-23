@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
+import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const nextConfig: NextConfig = {
-  // transpilePackages: [
-  //   '@arco-design/web-react'
-  // ],
   i18n: {
     locales: ['en', 'zh'],
     defaultLocale: 'zh',
@@ -26,17 +24,19 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true,
-    remotePatterns: [{
+    remotePatterns: [
+      {
         protocol: 'https',
         hostname: 'img.alicdn.com',
         port: '',
         pathname: '/imgextra/**',
-      },],
+      }
+    ],
   },
   async rewrites() {
     // 只在开发环境启用代理
     if (process.env.NODE_ENV === 'development') {
-      console.log('Setting up proxy rewrites...');
+      console.info('Setting up proxy rewrites...');
       return [
         {
           source: '/api/:path*',
@@ -44,12 +44,14 @@ const nextConfig: NextConfig = {
         }
       ];
     }
-    
+
     // 生产环境不使用代理
     return [];
   },
 };
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
+
+const bundleAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
-})
-export default withBundleAnalyzer(nextConfig);
+});
+
+export default bundleAnalyzer(nextConfig);

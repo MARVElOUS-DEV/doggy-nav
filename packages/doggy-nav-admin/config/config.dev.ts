@@ -5,6 +5,7 @@ export default defineConfig({
   model: {},
   request: {},
   initialState: {},
+  // layout: Settings,
   proxy: {
     '/api': {
       'target': 'http://127.0.0.1:3002/',

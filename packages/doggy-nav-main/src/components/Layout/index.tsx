@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom, Provider as JotaiProvider } from 'jotai';
 import { I18nextProvider } from 'react-i18next';
+import { useRouter } from 'next/router';
 import AppNavMenus from '../AppNavMenus';
 import AppHeader from '../AppHeader';
 import Toolbar from '../Toolbar';
@@ -10,6 +11,8 @@ import AppLog from '../AppLog';
 import api from '@/utils/api';
 import i18n from '@/i18n';
 import { categoriesAtom, showMenuTypeAtom, contentMarginLeftAtom, showLogAtom, selectedCategoryAtom, tagsAtom } from '@/store/store';
+import { Category } from '@/types';
+import { localCategories } from '@/utils/localCategories';
 
 export default function RootLayout({
   children,
@@ -21,17 +24,20 @@ export default function RootLayout({
   const [contentMarginLeft, setContentMarginLeft] = useAtom(contentMarginLeftAtom);
   const [showLog, setShowLog] = useAtom(showLogAtom);
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
-  const [_, setTags] = useAtom(tagsAtom);
+  const setTags = useSetAtom(tagsAtom);
+  const router = useRouter();
 
   // Fetch categories and tags on layout initialization
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const categoriesData = await api.getCategoryList();
-        setCategories(categoriesData);
-        // Set the first category as default selected category if none is selected
-        if (categoriesData.length && !selectedCategory) {
-          setSelectedCategory(categoriesData[0]._id);
+        if (Array.isArray(categoriesData)) {
+          categoriesData.unshift(...localCategories)
+          if (!selectedCategory) {
+            setSelectedCategory(categoriesData[0]._id);
+          }
+          setCategories(categoriesData);
         }
       } catch (error) {
         console.error("Failed to fetch categories", error);
@@ -51,9 +57,10 @@ export default function RootLayout({
         console.error("Failed to fetch tags", error);
       }
     };
-
-    fetchCategories();
-    fetchTags();
+    if (!selectedCategory) {
+      fetchCategories();
+      fetchTags();
+    }
   }, [setCategories, setSelectedCategory, selectedCategory, setTags]);
 
   useEffect(() => {
@@ -64,39 +71,48 @@ export default function RootLayout({
     setShowMenuType((prev) => !prev);
   };
 
-  const handleSubMenuClick = async (parentId: string, id: string) => {
-    // Set the selected category to trigger data fetch in HomePage
+  const handleSubMenuClick = async (category: Category, id: string) => {
     setSelectedCategory(id);
+    router.push(category.href?? `/navcontents?category=${id}`);
   };
 
   return (
     <I18nextProvider i18n={i18n}>
+      <JotaiProvider>
       <div className="flex h-screen">
-        {/* Sidebar */}
-        <AppNavMenus
-          onHandleSubMenuClick={handleSubMenuClick}
-          categories={categories}
-          showMenuType={showMenuType}
-          onShowMenus={toggleMenu}
-        />
-
-        {/* Main Content */}
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: contentMarginLeft }}>
           {/* Sticky Header */}
-          <AppHeader
-            onHandleShowPopup={() => {}}
-            onHandleShowMenu={toggleMenu}
-          />
+          <div className="sticky top-0 z-10">
+            <AppHeader
+              onHandleShowPopup={() => {}}
+              onHandleShowMenu={toggleMenu}
+            />
+          </div>
 
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            {children}
+          {/* Scrollable Content Area with Glass Effect */}
+          <div className="flex-1 overflow-y-auto bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150">
+            <div className="p-4">
+              {children}
+            </div>
           </div>
         </div>
 
         <Toolbar onShowLog={() => setShowLog(true)} />
         <AppLog show={showLog} onCloseLog={() => setShowLog(false)} />
       </div>
+
+      {/* Sidebar - positioned absolutely to avoid affecting flex layout */}
+      <div className="fixed top-0 left-0 h-screen z-50">
+        <AppNavMenus
+          onHandleSubMenuClick={handleSubMenuClick}
+          categories={categories}
+          selectedKeys={[selectedCategory]}
+          showMenuType={showMenuType}
+          onShowMenus={toggleMenu}
+        />
+      </div>
+      </JotaiProvider>
     </I18nextProvider>
   );
 }

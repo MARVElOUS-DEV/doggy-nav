@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 
 export type UrlStatus = 'checking' | 'accessible' | 'inaccessible' | 'unknown';
 
@@ -26,7 +26,7 @@ const loadCacheFromStorage = () => {
       // Only load non-expired entries
       for (const [url, cached] of Object.entries(parsedData)) {
         const cachedItem = cached as UrlStatusInfo;
-        if (now - cachedItem.timestamp! < CACHE_EXPIRATION_TIME) {
+        if (cachedItem.timestamp && now - cachedItem.timestamp < CACHE_EXPIRATION_TIME) {
           statusCache.set(url, cachedItem);
         }
       }
@@ -55,7 +55,7 @@ const cleanupExpiredCache = () => {
   let hasExpiredEntries = false;
 
   for (const [url, cached] of statusCache.entries()) {
-    if (now - cached.timestamp! >= CACHE_EXPIRATION_TIME) {
+    if (cached.timestamp && now - cached.timestamp >= CACHE_EXPIRATION_TIME) {
       statusCache.delete(url);
       hasExpiredEntries = true;
     }
@@ -86,9 +86,6 @@ const saveCacheWithDebounce = (() => {
 // Periodically clean up expired cache entries (every 5 minutes)
 setInterval(cleanupExpiredCache, CACHE_EXPIRATION_TIME);
 
-// Load cache from localStorage on module initialization
-loadCacheFromStorage();
-
 // Export cache for debugging
 export const getUrlStatusCache = () => {
   return statusCache;
@@ -99,7 +96,7 @@ export const checkUrlAccessibility = async (url: string): Promise<UrlStatusInfo>
   if (statusCache.has(url)) {
     const cached = statusCache.get(url);
     // Return cached result if not expired
-    if (cached && Date.now() - cached.timestamp! < CACHE_EXPIRATION_TIME) {
+    if (cached && cached.timestamp && Date.now() - cached.timestamp < CACHE_EXPIRATION_TIME) {
       return cached;
     }
     // Remove expired cache entry
@@ -108,7 +105,7 @@ export const checkUrlAccessibility = async (url: string): Promise<UrlStatusInfo>
 
   const startTime = Date.now();
 
-  // First, try direct client-side HEAD request
+  // Try direct client-side HEAD request
   try {
     // Use a lightweight HEAD request to check accessibility directly from the browser
     const controller = new AbortController();
@@ -182,11 +179,15 @@ export const checkUrlAccessibility = async (url: string): Promise<UrlStatusInfo>
   }
 };
 
-export const useUrlStatus = (url: string, enabled: boolean = true) => {
+export const useUrlStatus = (url: string, enabled = true) => {
   const [statusInfo, setStatusInfo] = useState<UrlStatusInfo>({
     status: 'unknown',
     checked: false,
   });
+  useLayoutEffect(() => {
+    // Load cache from localStorage on module initialization
+    loadCacheFromStorage();
+  }, [])
 
   useEffect(() => {
     if (!url || !enabled) return;

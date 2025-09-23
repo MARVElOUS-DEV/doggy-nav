@@ -1,0 +1,208 @@
+/* Utility Classes for Doggy Nav */
+/* Based on the design system in design-system.ts */
+
+/* Glassmorphism Utilities */
+.glass-light {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-medium {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-dark {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(15px) saturate(150%);
+  -webkit-backdrop-filter: blur(15px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Color Utilities */
+.text-primary { color: #171717; }
+.text-secondary { color: #525252; }
+.text-tertiary { color: #737373; }
+.text-disabled { color: #a3a3a3; }
+.text-inverse { color: #ffffff; }
+
+.bg-primary { background-color: #171717; }
+.bg-secondary { background-color: #525252; }
+.bg-tertiary { background-color: #737373; }
+.bg-disabled { background-color: #a3a3a3; }
+.bg-inverse { background-color: #ffffff; }
+
+/* Primary Color Palette */
+.text-primary-50 { color: #f0f9ff; }
+.text-primary-100 { color: #e0f2fe; }
+.text-primary-200 { color: #bae6fd; }
+.text-primary-300 { color: #7dd3fc; }
+.text-primary-400 { color: #38bdf8; }
+.text-primary-500 { color: #0ea5e9; }
+.text-primary-600 { color: #0284c7; }
+.text-primary-700 { color: #0369a1; }
+.text-primary-800 { color: #075985; }
+.text-primary-900 { color: #0c4a6e; }
+
+.bg-primary-50 { background-color: #f0f9ff; }
+.bg-primary-100 { background-color: #e0f2fe; }
+.bg-primary-200 { background-color: #bae6fd; }
+.bg-primary-300 { background-color: #7dd3fc; }
+.bg-primary-400 { background-color: #38bdf8; }
+.bg-primary-500 { background-color: #0ea5e9; }
+.bg-primary-600 { background-color: #0284c7; }
+.bg-primary-700 { background-color: #0369a1; }
+.bg-primary-800 { background-color: #075985; }
+.bg-primary-900 { background-color: #0c4a6e; }
+
+/* Secondary Color Palette */
+.text-secondary-50 { color: #f5f3ff; }
+.text-secondary-100 { color: #ede9fe; }
+.text-secondary-200 { color: #ddd6fe; }
+.text-secondary-300 { color: #c4b5fd; }
+.text-secondary-400 { color: #a78bfa; }
+.text-secondary-500 { color: #8b5cf6; }
+.text-secondary-600 { color: #7c3aed; }
+.text-secondary-700 { color: #6d28d9; }
+.text-secondary-800 { color: #5b21b6; }
+.text-secondary-900 { color: #4c1d95; }
+
+.bg-secondary-50 { background-color: #f5f3ff; }
+.bg-secondary-100 { background-color: #ede9fe; }
+.bg-secondary-200 { background-color: #ddd6fe; }
+.bg-secondary-300 { background-color: #c4b5fd; }
+.bg-secondary-400 { background-color: #a78bfa; }
+.bg-secondary-500 { background-color: #8b5cf6; }
+.bg-secondary-600 { background-color: #7c3aed; }
+.bg-secondary-700 { background-color: #6d28d9; }
+.bg-secondary-800 { background-color: #5b21b6; }
+.bg-secondary-900 { background-color: #4c1d95; }
+
+/* Status Colors */
+.text-success { color: #10b981; }
+.text-warning { color: #f59e0b; }
+.text-error { color: #ef4444; }
+.text-info { color: #3b82f6; }
+
+.bg-success { background-color: #10b981; }
+.bg-warning { background-color: #f59e0b; }
+.bg-error { background-color: #ef4444; }
+.bg-info { background-color: #3b82f6; }
+
+/* Typography Utilities */
+.text-xs { font-size: 0.75rem; }      /* 12px */
+.text-sm { font-size: 0.875rem; }     /* 14px */
+.text-base { font-size: 1rem; }       /* 16px */
+.text-lg { font-size: 1.125rem; }     /* 18px */
+.text-xl { font-size: 1.25rem; }      /* 20px */
+.text-2xl { font-size: 1.5rem; }      /* 24px */
+.text-3xl { font-size: 1.875rem; }    /* 30px */
+.text-4xl { font-size: 2.25rem; }     /* 36px */
+
+.font-thin { font-weight: 100; }
+.font-extralight { font-weight: 200; }
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.font-extrabold { font-weight: 800; }
+.font-black { font-weight: 900; }
+
+/* Spacing Utilities */
+.p-xs { padding: 0.25rem; }
+.p-sm { padding: 0.5rem; }
+.p-md { padding: 1rem; }
+.p-lg { padding: 1.5rem; }
+.p-xl { padding: 2rem; }
+.p-2xl { padding: 3rem; }
+.p-3xl { padding: 4rem; }
+
+.m-xs { margin: 0.25rem; }
+.m-sm { margin: 0.5rem; }
+.m-md { margin: 1rem; }
+.m-lg { margin: 1.5rem; }
+.m-xl { margin: 2rem; }
+.m-2xl { margin: 3rem; }
+.m-3xl { margin: 4rem; }
+
+/* Border Radius Utilities */
+.rounded-none { border-radius: 0; }
+.rounded-sm { border-radius: 0.125rem; }
+.rounded-md { border-radius: 0.25rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+.rounded-full { border-radius: 9999px; }
+
+/* Shadow Utilities */
+.shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+.shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+.shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+.shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
+.shadow-none { box-shadow: none; }
+
+/* Transition Utilities */
+.transition-all { transition: all 0.2s ease-in-out; }
+.transition-slow { transition: all 0.3s ease-in-out; }
+.transition-fast { transition: all 0.1s ease-in-out; }
+
+/* Layout Utilities */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-size {
+  width: 100%;
+  height: 100%;
+}
+
+/* Responsive Utilities */
+@media (min-width: 640px) {
+  .sm\:flex { display: flex; }
+  .sm\:hidden { display: none; }
+}
+
+@media (min-width: 768px) {
+  .md\:flex { display: flex; }
+  .md\:hidden { display: none; }
+}
+
+@media (min-width: 1024px) {
+  .lg\:flex { display: flex; }
+  .lg\:hidden { display: none; }
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: all 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.hover-glass:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}

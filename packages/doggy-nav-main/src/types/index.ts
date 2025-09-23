@@ -1,20 +1,13 @@
 
-export interface CategoryChild {
-  _id: string;
-  name: string;
-  categoryId: string;
-  createAt: number;
-  showInMenu: boolean;
-}
-
 export interface Category {
   _id: string;
   name: string;
   categoryId: string;
   createAt: number;
   icon?: string;
-  children?: CategoryChild[];
+  children?: Category[];
   showInMenu: boolean;
+  href?: string
 }
 
 export interface NavItem {

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Carousel } from '@arco-design/web-react';
+import { Link as ArcoLink } from '@arco-design/web-react';
+import { IconCloseCircle } from '@arco-design/web-react/icon';
 import Link from 'next/link';
 
 export default function Affiche() {
@@ -10,13 +12,23 @@ export default function Affiche() {
   }
 
   return (
-    <div className="affiche flex items-center bg-white rounded-md p-2 text-sm">
-      <Carousel direction="vertical" style={{ height: 30, flex: 1 }}>
-        <div>
-          <p className="m-0">
+    <div className="bg-white rounded-md p-2 text-sm relative">
+      <ArcoLink
+        icon={<IconCloseCircle className="text-gray-400 hover:text-gray-600"/>}
+        onClick={() => setShow(false)}
+        className="absolute top-1 right-1"
+      />
+      <Carousel
+        direction="vertical"
+        style={{ height: 30 }}
+        className="pointer-events-none"
+        showArrow={"hover"}
+        autoPlay
+      >
+          <p className="m-0" key={'suggest'} onClick={console.info}>
             如果您有建议，请
             <Link
-              className="text-blue-500 !underline hover:text-blue-700"
+              className="text-blue-500 !underline hover:text-blue-700 pointer-events-auto"
               href="https://github.com/MARVElOUS-DEV/doggy-nav"
               target="_blank"
               rel="noopener noreferrer"
@@ -24,17 +36,13 @@ export default function Affiche() {
               前往提交
             </Link>
           </p>
-        </div>
-        <div>
-          <p className="m-0">
+          <p className="m-0" key={'issue'} onClick={console.info}>
             支持提交网站带个人信息了，欢迎大家提交网站
-            <Link className="text-blue-500 !underline hover:text-blue-700" href="/recommend">
+            <Link className="text-blue-500 !underline hover:text-blue-700 pointer-events-auto" href="/recommend">
               去提交
             </Link>
           </p>
-        </div>
       </Carousel>
-      <i className="el-icon-close text-lg font-bold cursor-pointer" onClick={() => setShow(false)}></i>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function AppHeader({ onHandleShowMenu, onHandleShowPopup }: AppHe
   const { t } = useTranslation('translation');
 
   return (
-    <header className="flex justify-between items-center bg-white sticky top-0 z-10 shadow-md p-4">
+    <header className="flex justify-between items-center bg-white shadow-md p-4 w-full">
       <div className="flex items-center">
         <Link href="/">
           <Image src="/logo-nav.png" alt="logo" width={150} height={40} className="filter invert" />

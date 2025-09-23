@@ -43,7 +43,7 @@ export default function Recommend() {
     try {
       const { data } = await axios.get(`${API_NAV_REPTILE}?url=${url}`)
       form.setFieldsValue({
-        logo: `https://www.google.com/s2/favicons?domain=${url}`,
+        logo: data?.logo??`https://www.google.com/s2/favicons?domain=${url}`,
         name: data?.name,
         desc: data?.desc,
       })
