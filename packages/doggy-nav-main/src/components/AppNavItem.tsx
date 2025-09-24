@@ -31,27 +31,27 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
   };
 
   const getStatusIndicator = () => {
-    const baseClasses = "absolute top-3 right-3 w-3 h-3 rounded-full z-10 border-2 border-white shadow-sm";
+    const baseClasses = "absolute top-4 right-4 w-3 h-3 rounded-full z-10 border-2 border-white shadow-sm";
 
     switch (urlStatus.status) {
       case 'checking':
         return (
           <Tooltip content="检查中...">
-            <div className={`${baseClasses} bg-warning animate-pulse`} />
+            <div className={`${baseClasses} bg-yellow-400 animate-pulse`} />
           </Tooltip>
         );
       case 'accessible':
         return (
           <Tooltip content={`网站可访问 (${urlStatus.responseTime}ms)`}>
-            <div className={`${baseClasses} bg-success shadow-green-200`}>
-              <div className="w-full h-full bg-success rounded-full animate-ping opacity-75" />
+            <div className={`${baseClasses} bg-green-500 shadow-green-200`}>
+              <div className="w-full h-full bg-green-500 rounded-full animate-ping opacity-75" />
             </div>
           </Tooltip>
         );
       case 'inaccessible':
         return (
           <Tooltip content="网站不可访问">
-            <div className={`${baseClasses} bg-error shadow-red-200`} />
+            <div className={`${baseClasses} bg-red-500 shadow-red-200`} />
           </Tooltip>
         );
       default:
@@ -60,56 +60,123 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
   };
 
   return (
-    <Col xs={24} sm={12} md={8} lg={6} className="website-item text-xs mb-5 overflow-hidden cursor-pointer transition-all duration-300 text-gray-500 relative group">
+    <Col
+      xs={24}
+      sm={12}
+      md={8}
+      lg={6}
+      xl={6}
+      className="website-item"
+    >
       <div
         ref={intersectionRef}
-        className="wrap rounded-xl glass-medium cursor-pointer shadow-lg relative h-full flex flex-col transition-all duration-300 ease-in-out transform group-hover:-translate-y-1 group-hover:shadow-xl group-hover:bg-opacity-30"
+        className="group relative h-full bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border border-gray-100 hover:border-blue-200 overflow-hidden"
       >
+        {/* Status Indicator */}
         {getStatusIndicator()}
-        <div className="link absolute right-5 top-2.5 hidden z-10 group-hover:block transition-opacity duration-300" onClick={() => onHandleNavClick(data)}>
-          <Tooltip content="链接直达">
-            <i className="iconfont icon-tiaozhuan text-primary-500 hover:text-primary-700 transition-colors duration-200"></i>
-          </Tooltip>
-        </div>
+
+        {/* Main Content */}
         <Link
           href={`/nav/${data._id}`}
-          className="info transition-all duration-300 bg-transparent bg-opacity-20 p-5 flex flex-col justify-start rounded-t-xl flex-grow group-hover:bg-gradient-to-br from-white from-opacity-20 to-primary-50 to-opacity-30"
+          className="p-6 h-full flex flex-col min-h-[120px]"
         >
-          <div className="info-header flex items-center overflow-auto min-h-[40px]">
-            <div className="logo-container relative">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="logo-container flex-shrink-0">
               <Image
                 src={logoSrc}
                 alt={data.name}
-                width={35}
-                height={35}
-                className="logo min-w-[35px] w-[35px] h-[35px] rounded-full mr-4 flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                width={48}
+                height={48}
+                className="logo w-12 h-12 rounded-xl shadow-md transition-transform duration-300 group-hover:scale-110"
                 onError={handleLogoError}
               />
             </div>
-            <div className="info-header-right flex flex-col">
-              <strong className="title text-primary-600 text-base truncate group-hover:text-primary-800 transition-colors duration-200">{data.name}</strong>
-              <div className="desc mt-1 text-xs truncate group-hover:text-gray-700 transition-colors duration-200">{data.desc || '这个网站什么描述也没有...'}</div>
+            <div className="flex-1 min-w-0">
+              <h3
+                className="title text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-200 truncate"
+                title={typeof (data.highlightedName || data.name) === 'string' ? (data.highlightedName || data.name) : undefined}
+              >
+                {data.highlightedName || data.name}
+              </h3>
+              <p
+                className="desc text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-200 line-clamp-2 max-h-[40px] overflow-hidden"
+                title={typeof (data.highlightedDesc || data.desc || '这个网站什么描述也没有...') === 'string' ? (data.highlightedDesc || data.desc || '这个网站什么描述也没有...') : undefined}
+              >
+                {data.highlightedDesc || data.desc || '这个网站什么描述也没有...'}
+              </p>
             </div>
           </div>
+
+          {/* Tags */}
+          {data.tags && data.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-4">
+              {data.tags.slice(0, 3).map((tag, index) => (
+                <span
+                  key={index}
+                  className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
+                >
+                  {tag}
+                </span>
+              ))}
+              {data.tags.length > 3 && (
+                <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                  +{data.tags.length - 3}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Author Info */}
+          {data.authorName && (
+            <div className="flex items-center text-xs text-gray-500 mb-4">
+              <span className="mr-1">👤</span>
+              <span>{data.authorName}</span>
+            </div>
+          )}
         </Link>
-        <div className="website-item__footer border-t border-white border-opacity-20 bg-transparent bg-opacity-20 p-2.5 text-right flex flex-shrink-0 rounded-b-xl group-hover:border-primary-200 group-hover:border-opacity-30 transition-all duration-200">
-          <div className="left text-xs">
-            {data.authorUrl && (
-              <a href={data.authorUrl} target="_blank" rel="noopener noreferrer" className="flex items-center group-hover:text-primary-600 transition-colors duration-200">
-                <span className="iconfont icon-zuozhe"></span>
-                <span>{data.authorName}</span>
-              </a>
-            )}
-          </div>
-          <div className="right flex-1">
-            <span className={`website-item__icon ${isStar ? 'text-primary-500' : ''} group-hover:text-primary-500 transition-colors duration-200`}>
-              <span className="iconfont icon-attentionfill"></span>
-              {data.view}
-            </span>
-            <span className={`website-item__icon ${isStar ? 'text-primary-500' : ''} ml-4 group-hover:text-primary-500 transition-colors duration-200`} onClick={handleNavStar}>
-              <span className="iconfont icon-appreciatefill"></span>
-              {data.star}
-            </span>
+
+        {/* Footer */}
+        <div className="mt-auto border-t border-gray-100 px-6 py-4 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="left flex items-center space-x-4">
+              <button
+                onClick={() => onHandleNavClick(data)}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
+                title="链接直达"
+              >
+                <i className="iconfont icon-tiaozhuan mr-1"></i>
+                <span>直达</span>
+              </button>
+              <div className="text-xs text-gray-500">
+                {data.authorUrl && (
+                  <a
+                    href={data.authorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-600 transition-colors duration-200 flex items-center"
+                  >
+                    <span className="iconfont icon-zuozhe mr-1"></span>
+                    <span>作者</span>
+                  </a>
+                )}
+              </div>
+            </div>
+            <div className="right flex items-center space-x-4">
+              <button
+                onClick={handleNavStar}
+                className={`flex items-center space-x-1 text-sm transition-colors duration-200 ${
+                  isStar ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                }`}
+                title="点赞"
+              >
+                <i className="iconfont icon-appreciatefill"></i>
+                <span>{data.star}</span>
+              </button>
+              <div className="flex items-center space-x-1 text-sm text-blue-500">
+                <i className="iconfont icon-attentionfill"></i>
+                <span>{data.view}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

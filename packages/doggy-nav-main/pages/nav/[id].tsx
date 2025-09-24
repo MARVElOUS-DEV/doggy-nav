@@ -84,102 +84,109 @@ export default function NavDetail() {
   }
 
   return (
-    <div className="container p-4 mx-auto">
+    <div className="container p-4 mx-auto max-w-7xl">
       {loading && <Spin />}
-      <Row gutter={25} className="site-info mt-12">
-        <Col md={6} xs={24} className="item">
-          <div className="left bg-gray-200 rounded-lg p-5 relative shadow-lg">
-            <div className="img-wrap h-48 flex items-center justify-center">
+      <Row gutter={32} className="site-info mt-8">
+        <Col md={8} xs={24} className="item">
+          <div className="left bg-white rounded-xl shadow-lg p-6 relative border border-gray-100">
+            <div className="img-wrap h-56 flex items-center justify-center bg-gray-50 rounded-lg">
               <Link href="/">
-                <Image src={detail.logo} alt={detail.name} width={100} height={100} className="object-cover" />
+                <Image src={detail.logo} alt={detail.name} width={120} height={120} className="object-cover rounded-lg shadow-md" />
               </Link>
             </div>
-            <div className="tool absolute bottom-5 left-1/2 transform -translate-x-1/2 flex">
+            <div className="tool absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-4">
               <Tooltip content="访问数">
-                <div className="tool-item flex flex-col items-center justify-center w-12 h-12 bg-gray-100 rounded-full shadow-md text-gray-600">
-                  <i className="iconfont icon-attentionfill"></i>
-                  <p className="m-0 text-xs">{detail.view}</p>
+                <div className="tool-item flex flex-col items-center justify-center w-14 h-14 bg-blue-50 rounded-full shadow-md text-blue-600 hover:bg-blue-100 transition-colors">
+                  <i className="iconfont icon-attentionfill text-lg"></i>
+                  <p className="m-0 text-xs font-medium">{detail.view}</p>
                 </div>
               </Tooltip>
-              <div style={{ width: '30px' }}></div>
               <Tooltip content="点赞数">
                 <div
-                  className={`tool-item flex flex-col items-center justify-center w-12 h-12 bg-gray-100 rounded-full shadow-md cursor-pointer ${
-                    isStar ? 'text-blue-500' : 'text-gray-600'
+                  className={`tool-item flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-md cursor-pointer transition-colors ${
+                    isStar ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                   }`}
                   onClick={handleNavStarFn}
                 >
-                  <i className="iconfont icon-appreciatefill"></i>
-                  <p className="m-0 text-xs">{detail.star}</p>
+                  <i className="iconfont icon-appreciatefill text-lg"></i>
+                  <p className="m-0 text-xs font-medium">{detail.star}</p>
                 </div>
               </Tooltip>
             </div>
           </div>
         </Col>
-        <Col md={10} xs={24} className="item">
+        <Col md={16} xs={24} className="item">
           <div className="content">
-            <h1 className="title text-3xl font-bold my-5">{detail.name}</h1>
-            <p className="desc text-base mb-5">{detail.desc}</p>
+            <h1 className="title text-4xl font-bold text-gray-800 mb-4">{detail.name}</h1>
+            <p className="desc text-lg text-gray-600 mb-6 leading-relaxed">{detail.desc}</p>
             {(detail?.tags?.length??0) > 0 && (
-              <p className="tags mb-5">
-                标签：
+              <div className="tags mb-6">
+                <span className="text-gray-700 font-medium mr-2">标签：</span>
                 {detail?.tags?.map((tag: string, index: number) => (
-                  <span key={tag}>{index !== 0 ? '，' : ''}{tag}</span>
+                  <span key={tag} className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full mr-2 mb-2">
+                    {tag}
+                  </span>
                 ))}
-              </p>
+              </div>
             )}
             {detail.authorName && (
-              <p className="author">
-                <span className="el-icon-user-solid"></span>
-                <span>推荐人：</span>
-                <a href={detail.authorUrl}>{detail.authorName}</a>
-              </p>
+              <div className="author mb-6 flex items-center text-gray-700">
+                <span className="mr-2">👤</span>
+                <span className="mr-2">推荐人：</span>
+                <a href={detail.authorUrl} className="text-blue-600 hover:text-blue-800 transition-colors font-medium">
+                  {detail.authorName}
+                </a>
+              </div>
             )}
-            <div className="btn-group flex">
+            <div className="btn-group flex mt-8">
               <div
                 onClick={() => handleNavClick(detail)}
-                className="btn-link btn-group-item bg-gray-300 text-gray-700 px-5 py-2 rounded-md flex items-center cursor-pointer hover:bg-black hover:text-white transition-all"
+                className="btn-link btn-group-item bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg flex items-center cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
                 链接直达
-                <i className="iconfont icon-Icons_ToolBar_ArrowRight ml-2 text-xs"></i>
-              </div>
-            </div>
-          </div>
-        </Col>
-        <Col md={8} xs={24} className="item">
-          <div className="right">
-            <div className="app-card border-2 border-gray-200 bg-gray-50">
-              <div className="app-card-header flex justify-between p-5">
-                <h3 className="app-card-title m-0">随机网址</h3>
-                <div className="app-card-extra">
-                  <i
-                    className="iconfont icon-shuaxin cursor-pointer"
-                    onClick={getRandomNavList}
-                  ></i>
-                </div>
-              </div>
-              <div className="app-card-content flex flex-wrap p-5 pt-0">
-                <Row gutter={10}>
-                  {randomNavList.map((item) => (
-                    <Col span={12} key={item._id}>
-                      <Link href={`/nav/${item._id}`} className="nav-block flex items-center p-1 bg-gray-100 border border-transparent text-gray-700 hover:opacity-80 mb-2">
-                        <Image src={item.logo} alt="" className="nav-logo w-5 h-5 mr-2" width={20} height={20}/>
-                        <h4 className="nav-name m-0 truncate">{item.name}</h4>
-                      </Link>
-                    </Col>
-                  ))}
-                </Row>
+                <i className="iconfont icon-Icons_ToolBar_ArrowRight ml-2 text-sm"></i>
               </div>
             </div>
           </div>
         </Col>
       </Row>
-      <Row gutter={20} className="site-detail mt-72">
-        <Col span={18}>
-          <div className="detail text-base">{detail.desc}</div>
+
+      <Row gutter={32} className="random-section mt-12">
+        <Col span={24}>
+          <div className="app-card bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="app-card-header flex justify-between items-center p-6 border-b border-gray-100">
+              <h3 className="app-card-title m-0 text-xl font-bold text-gray-800">随机网址</h3>
+              <div className="app-card-extra">
+                <i
+                  className="iconfont icon-shuaxin cursor-pointer text-gray-500 hover:text-blue-600 transition-colors text-lg"
+                  onClick={getRandomNavList}
+                ></i>
+              </div>
+            </div>
+            <div className="app-card-content p-6">
+              <Row gutter={[16, 16]}>
+                {randomNavList.map((item) => (
+                  <Col span={12} sm={8} md={6} key={item._id}>
+                    <Link href={`/nav/${item._id}`} className="nav-block flex items-center p-3 bg-gray-50 border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-800 transition-all duration-200 rounded-lg">
+                      <Image src={item.logo} alt="" className="nav-logo w-6 h-6 mr-3 rounded" width={24} height={24}/>
+                      <h4 className="nav-name m-0 truncate text-sm font-medium">{item.name}</h4>
+                    </Link>
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          </div>
         </Col>
-        <Col span={6}>
-          <aside></aside>
+      </Row>
+
+      <Row gutter={32} className="site-detail mt-12 mb-12">
+        <Col span={24}>
+          <div className="detail bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">详细信息</h2>
+            <div className="detail text-gray-600 leading-relaxed whitespace-pre-wrap">
+              {detail.desc}
+            </div>
+          </div>
         </Col>
       </Row>
     </div>

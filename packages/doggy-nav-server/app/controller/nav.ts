@@ -143,15 +143,53 @@ export default class NavController extends Controller {
     const { ctx } = this;
     const { id, keyword } = ctx.query;
 
-    let res;
-
     if (id) {
-      res = await super.get();
+      const nav = await ctx.model.Nav.findOne({ _id: id });
+      if (nav && nav.categoryId) {
+        const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
+        if (category) {
+          const navObj = nav.toObject();
+          navObj.categoryName = category.name;
+          this.success(navObj);
+        } else {
+          this.success(nav);
+        }
+      } else {
+        this.success(nav);
+      }
     } else if (keyword) {
       const reg = new RegExp(keyword, 'i');
-      await super.getList({
-        name: { $regex: reg },
-      }, table => table.limit(10));
+      let { pageSize = 10, pageNumber = 1 } = ctx.query;
+      pageSize = Number(pageSize);
+      pageNumber = Number(pageNumber);
+      const skipNumber = pageSize * pageNumber - pageSize;
+
+      const [navs, total] = await Promise.all([
+        ctx.model.Nav.find({
+          name: { $regex: reg },
+        }).skip(skipNumber).limit(pageSize).sort({ _id: -1 }),
+        ctx.model.Nav.find({
+          name: { $regex: reg },
+        }).count(),
+      ]);
+
+      const navsWithCategory = await Promise.all(navs.map(async (nav) => {
+        if (nav.categoryId) {
+          const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
+          const navObj = nav.toObject();
+          if (category) {
+            navObj.categoryName = category.name;
+          }
+          return navObj;
+        }
+        return nav.toObject();
+      }));
+
+      this.success({
+        data: navsWithCategory,
+        total,
+        pageNumber: Math.ceil(total / pageSize),
+      });
     }
   }
 

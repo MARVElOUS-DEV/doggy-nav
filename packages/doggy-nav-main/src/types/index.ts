@@ -13,6 +13,7 @@ export interface Category {
 export interface NavItem {
   _id: string;
   categoryId: string;
+  categoryName?: string;
   name: string;
   href: string;
   desc: string;
@@ -26,6 +27,8 @@ export interface NavItem {
   star: number;
   status: number;
   list?: NavItem[];
+  highlightedName?: React.ReactNode;
+  highlightedDesc?: React.ReactNode;
 }
 
 export interface Tag {

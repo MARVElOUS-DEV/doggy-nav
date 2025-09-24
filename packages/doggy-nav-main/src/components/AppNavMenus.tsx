@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Menu } from '@arco-design/web-react';
 import { Category } from '@/types';
 import MenuStack from './MenuStack';
@@ -10,33 +9,34 @@ import {
 } from '@arco-design/web-react/icon';
 
 
-export default function AppNavMenus({ categories, showMenuType, onShowMenus,selectedKeys, onHandleSubMenuClick }: { categories: Category[], showMenuType: boolean, selectedKeys: string[], onShowMenus: () => void, onHandleSubMenuClick: (category: Category, id: string) => void }) {
-  const sideBarWidth = () => {
-    return showMenuType ? 220 : 70;
-  };
-
+export default function AppNavMenus({ categories, showMenuType, onShowMenus, onHandleSubMenuClick }: { categories: Category[], showMenuType: boolean, onShowMenus: () => void, onHandleSubMenuClick: (category: Category, id: string) => void }) {
   const isCollapse = !showMenuType;
 
   return (
-    <div
-      className=" text-gray-300 text-center transition-all duration-300 h-screen overflow-hidden flex flex-col"
-      style={{ width: sideBarWidth() }}
-    >
-      <Link href="/" className="text-lg p-5 text-white flex items-center justify-center cursor-pointer flex-shrink-0">
-        <Image
-          src={isCollapse ? "/logo-icon.png" : "/logo-nav.png"}
-          alt="logo"
-          width={isCollapse ? 45 : 180}
-          height={40}
-          className="icon-logo"
-        />
-      </Link>
+    <div className="h-full flex flex-col overflow-hidden bg-gradient-to-b from-blue-50 to-indigo-50 text-gray-800">
+      {/* Sidebar Header */}
+      <div className="p-4 border-b border-blue-200 flex items-center justify-between">
+        <Link href="/" className="flex items-center space-x-3 text-lg font-bold hover:text-blue-600 transition-colors">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-2 rounded-lg shadow-sm">
+            <span className="text-white font-bold">DN</span>
+          </div>
+          {!isCollapse && <span className="text-xl text-gray-800 font-semibold">DoggyNav</span>}
+        </Link>
+        <button
+          onClick={onShowMenus}
+          className="text-gray-600 hover:text-blue-600 p-1 rounded hover:bg-blue-100 transition-colors"
+        >
+          {isCollapse ? <IconMenuUnfold /> : <IconMenuFold />}
+        </button>
+      </div>
 
-      <div className="menu-side-bar flex-1 overflow-y-auto overflow-x-hidden">
+      {/* Navigation Menu */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4">
         <Menu
           collapse={isCollapse}
-          className="border-0 h-full"
+          className="border-0 bg-transparent text-gray-700"
           defaultSelectedKeys={[OVERVIEW._id]}
+          style={{ backgroundColor: 'transparent' }}
           onClickMenuItem={(...a) => {
             console.log("🚀 ~ e:", a)
           }}
@@ -45,13 +45,12 @@ export default function AppNavMenus({ categories, showMenuType, onShowMenus,sele
         </Menu>
       </div>
 
-      <div className="sidebar-fix flex-shrink-0 mt-auto">
-        <ul>
-          <li className="item p-4 text-left cursor-pointer transition-colors flex-center" onClick={onShowMenus}>
-            {isCollapse ? <IconMenuUnfold /> : <IconMenuFold />}
-          </li>
-        </ul>
-      </div>
+      {/* Sidebar Footer */}
+      {!isCollapse && (
+        <div className="p-4 border-t border-blue-200 text-xs text-gray-500">
+          <p className="text-center">© {new Date().getFullYear()} DoggyNav</p>
+        </div>
+      )}
     </div>
   );
 }

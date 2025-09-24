@@ -10,7 +10,7 @@ import Toolbar from '../Toolbar';
 import AppLog from '../AppLog';
 import api from '@/utils/api';
 import i18n from '@/i18n';
-import { categoriesAtom, showMenuTypeAtom, contentMarginLeftAtom, showLogAtom, selectedCategoryAtom, tagsAtom } from '@/store/store';
+import { categoriesAtom, showMenuTypeAtom, showLogAtom, selectedCategoryAtom, tagsAtom } from '@/store/store';
 import { Category } from '@/types';
 import { localCategories } from '@/utils/localCategories';
 
@@ -21,7 +21,6 @@ export default function RootLayout({
 }>) {
   const [categories, setCategories] = useAtom(categoriesAtom);
   const [showMenuType, setShowMenuType] = useAtom(showMenuTypeAtom);
-  const [contentMarginLeft, setContentMarginLeft] = useAtom(contentMarginLeftAtom);
   const [showLog, setShowLog] = useAtom(showLogAtom);
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
   const setTags = useSetAtom(tagsAtom);
@@ -63,9 +62,6 @@ export default function RootLayout({
     }
   }, [setCategories, setSelectedCategory, selectedCategory, setTags]);
 
-  useEffect(() => {
-    setContentMarginLeft(showMenuType ? '220px' : '70px');
-  }, [setContentMarginLeft, showMenuType]);
 
   const toggleMenu = () => {
     setShowMenuType((prev) => !prev);
@@ -79,39 +75,41 @@ export default function RootLayout({
   return (
     <I18nextProvider i18n={i18n}>
       <JotaiProvider>
-      <div className="flex h-screen">
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: contentMarginLeft }}>
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10">
-            <AppHeader
-              onHandleShowPopup={() => {}}
-              onHandleShowMenu={toggleMenu}
+        <div className="flex h-screen">
+          {/* Sidebar - positioned as flex item */}
+          <div
+            className="bg-gray-800 text-white transition-all duration-300 flex flex-col overflow-hidden"
+            style={{ width: showMenuType ? 220 : 70 }}
+          >
+            <AppNavMenus
+              onHandleSubMenuClick={handleSubMenuClick}
+              categories={categories}
+              showMenuType={showMenuType}
+              onShowMenus={toggleMenu}
             />
           </div>
 
-          {/* Scrollable Content Area with Glass Effect */}
-          <div className="flex-1 overflow-y-auto bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150">
-            <div className="p-4">
-              {children}
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-30">
+              <AppHeader
+                onHandleShowPopup={() => {}}
+                onHandleShowMenu={toggleMenu}
+              />
+            </div>
+
+            {/* Scrollable Content Area with Glass Effect */}
+            <div className="flex-1 overflow-y-auto bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150">
+              <div className="p-4">
+                {children}
+              </div>
             </div>
           </div>
+
+          <Toolbar onShowLog={() => setShowLog(true)} />
+          <AppLog show={showLog} onCloseLog={() => setShowLog(false)} />
         </div>
-
-        <Toolbar onShowLog={() => setShowLog(true)} />
-        <AppLog show={showLog} onCloseLog={() => setShowLog(false)} />
-      </div>
-
-      {/* Sidebar - positioned absolutely to avoid affecting flex layout */}
-      <div className="fixed top-0 left-0 h-screen z-50">
-        <AppNavMenus
-          onHandleSubMenuClick={handleSubMenuClick}
-          categories={categories}
-          selectedKeys={[selectedCategory]}
-          showMenuType={showMenuType}
-          onShowMenus={toggleMenu}
-        />
-      </div>
       </JotaiProvider>
     </I18nextProvider>
   );

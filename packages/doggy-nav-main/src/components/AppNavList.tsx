@@ -18,15 +18,17 @@ export default function AppNavList({ list }: AppNavListProps) {
   };
 
   return (
-    <Row gutter={20} className="flex-wrap">
-      {list.map((item) => (
-        <AppNavItem
-          key={item._id}
-          data={item}
-          onHandleNavClick={handleNavClick}
-          onHandleNavStar={handleNavStar}
-        />
-      ))}
-    </Row>
+    <div className="nav-list-container">
+      <Row gutter={[24, 24]}>
+        {list.map((item) => (
+          <AppNavItem
+            key={item._id}
+            data={item}
+            onHandleNavClick={handleNavClick}
+            onHandleNavStar={handleNavStar}
+          />
+        ))}
+      </Row>
+    </div>
   );
 }

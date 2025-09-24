@@ -22,6 +22,8 @@ export function useApi<T, P extends any[] = any[]>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const apiFunctionRef = React.useRef(apiFunction);
+  const optionsRef = React.useRef(options);
 
   const execute = useCallback(
     async (...params: P): Promise<T | void> => {
@@ -29,15 +31,15 @@ export function useApi<T, P extends any[] = any[]>(
         setLoading(true);
         setError(null);
 
-        const result = await apiFunction(...params);
+        const result = await apiFunctionRef.current(...params);
         setData(result);
 
-        if (options.onSuccess) {
-          options.onSuccess(result);
+        if (optionsRef.current.onSuccess) {
+          optionsRef.current.onSuccess(result);
         }
 
-        if (options.showSuccessMessage && typeof window !== 'undefined') {
-          Message.success(options.showSuccessMessage);
+        if (optionsRef.current.showSuccessMessage && typeof window !== 'undefined') {
+          Message.success(optionsRef.current.showSuccessMessage);
         }
 
         return result;
@@ -45,8 +47,8 @@ export function useApi<T, P extends any[] = any[]>(
         const error = err instanceof Error ? err : new Error('Unknown error');
         setError(error);
 
-        if (options.onError) {
-          options.onError(error);
+        if (optionsRef.current.onError) {
+          optionsRef.current.onError(error);
         }
 
         throw error;
@@ -54,7 +56,7 @@ export function useApi<T, P extends any[] = any[]>(
         setLoading(false);
       }
     },
-    [apiFunction, options]
+    []
   );
 
   const reset = useCallback(() => {

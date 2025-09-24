@@ -30,7 +30,7 @@ const api = {
     page?: number;
     limit?: number;
     keyword?: string;
-  }): Promise<NavItem[]> =>
+  }): Promise<{data: NavItem[], total: number, pageNumber: number}> =>
     axios.get(API_NAV, { params }),
 
   // Get random nav items
