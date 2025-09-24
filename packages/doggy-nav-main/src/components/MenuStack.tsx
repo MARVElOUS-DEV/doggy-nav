@@ -28,11 +28,11 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
                     <span className="font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
                       {category.name}
                     </span>
-                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
                       <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                    </div>
+                    </div> */}
                   </div>
                 }
               >

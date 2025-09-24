@@ -13,4 +13,5 @@ typings/**/**
 .pnpm/**/*
 dist/*
 feat.md
+CLAUDE*
 

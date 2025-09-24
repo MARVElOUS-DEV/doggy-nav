@@ -2,33 +2,81 @@ import { useState, useEffect } from 'react'
 import { Spin } from '@arco-design/web-react'
 import Affiche from '@/components/Affiche'
 import NavRankingList from '@/components/NavRankingList'
+import VerticalTimelineContainer from '@/components/timeline/VerticalTimelineContainer'
 import api from '@/utils/api'
+import { createMockTimelineData } from '@/utils/timelineData'
 import { useAtom } from 'jotai'
 import { navRankingAtom } from '@/store/store'
 import Link from 'next/link'
+import { TimelineItem as TimelineItemType } from '@/types/timeline'
 
 export default function HomePage() {
   const [navRanking, setNavRanking] = useAtom(navRankingAtom);
   const [loading, setLoading] = useState(false);
+  const [currentYearData, setCurrentYearData] = useState<any>(null);
+  const currentYear = new Date().getFullYear();
+  const [selectedItem, setSelectedItem] = useState<TimelineItemType | undefined>();
 
-  // Initial nav ranking fetch - only run once on component mount
+  // Initial data fetch - nav ranking and timeline data
   useEffect(() => {
-    const fetchNavRanking = async () => {
+    const fetchData = async () => {
       setLoading(true)
       try {
         const navRankingData = await api.getNavRanking();
         setNavRanking(navRankingData);
+
+        // Create mock timeline data
+        const timelineData = createMockTimelineData();
+        console.log('Generated current year data:', timelineData);
+        if (timelineData && timelineData.length > 0) {
+          setCurrentYearData(timelineData[0]); // 只取第一年（当前年）
+        }
       } catch (error) {
-        console.error("Failed to fetch nav ranking data", error);
-      } finally{
+        console.error("Failed to fetch data", error);
+      } finally {
         setLoading(false)
       }
     };
-    fetchNavRanking();
+    fetchData();
   }, [setNavRanking]);
 
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    // Navigation keys
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case 'f':
+          e.preventDefault();
+          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+          break;
+        case 'j':
+          e.preventDefault();
+          // Navigate to next item (implementation would depend on app structure)
+          break;
+        case 'k':
+          e.preventDefault();
+          // Navigate to previous item (implementation would depend on app structure)
+          break;
+      }
+    }
+
+    // Escape key to close expanded sections
+    if (e.key === 'Escape') {
+      setSelectedItem(undefined);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div
+      className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
+      onKeyDown={onKeyDown}
+      tabIndex={-1}
+      role="application"
+      aria-label="Website Navigation Dashboard"
+    >
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Hero Section */}
         <div className="mb-12">
@@ -68,6 +116,18 @@ export default function HomePage() {
               <Spin size={40} />
               <p className="mt-4 text-gray-600">正在加载精彩内容...</p>
             </div>
+          </div>
+        )}
+
+        {/* Timeline Section */}
+        {!loading && currentYearData && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <VerticalTimelineContainer
+              year={currentYearData.year}
+              items={currentYearData.items}
+              onItemSelect={setSelectedItem}
+              selectedItem={selectedItem}
+            />
           </div>
         )}
 

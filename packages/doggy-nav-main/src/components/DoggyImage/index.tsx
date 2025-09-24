@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Image from 'next/image';
 
-export default ({logo="/default-web.png", name="logo", width=20, height=20}) => {
+export default function DoggyImage({logo="/default-web.png", name="logo", width=20, height=20}) {
   const [logoSrc, setLogoSrc] = useState(logo);
   const handleLogoError = () => {
     setLogoSrc('/default-web.png');
@@ -12,7 +12,7 @@ export default ({logo="/default-web.png", name="logo", width=20, height=20}) => 
       alt={name}
       width={width}
       height={height}
-      className="rounded-full mr-2 flex-shrink-0"
+      className={`rounded-full mr-2 flex-shrink-0 w-[${width}px] h-[${height}px] object-cover`}
       onError={handleLogoError}
     />
   )
