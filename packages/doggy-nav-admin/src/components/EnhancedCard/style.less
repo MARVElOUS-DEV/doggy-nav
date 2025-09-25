@@ -1,0 +1,55 @@
+.enhanced-card {
+  border-radius: 16px !important;
+  border: none !important;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &.gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white;
+  }
+
+  &.gradient-secondary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    color: white;
+  }
+
+  &.gradient-accent {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    color: white;
+  }
+
+  &.elevation-low {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  &.elevation-medium {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  &.elevation-high {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  &.elevation-medium:hover,
+  &.elevation-high:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .ant-card-head {
+    border-bottom: none !important;
+    background: transparent !important;
+  }
+
+  .ant-card-head-title {
+    font-weight: 600;
+    color: inherit;
+  }
+
+  .ant-card-body {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+  }
+}

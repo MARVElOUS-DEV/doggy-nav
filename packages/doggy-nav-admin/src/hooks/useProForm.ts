@@ -6,7 +6,7 @@ interface IProps extends ProFormProps {
   [name: string]: any
 }
 
-export default function useGeekProForm(props: IProps) {
+export default function useProForm(props: IProps) {
   const form = useRef<any>({});
 
   useEffect(() => {

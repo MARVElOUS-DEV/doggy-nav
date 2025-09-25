@@ -4,14 +4,14 @@ import {
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
 import { Form } from "antd";
-import useGeekProForm from "@/components/GeekProForm/useGeekProForm";
+import useProForm from "@/hooks/useProForm";
 import { API_NAV } from "@/services/api";
 import request from "@/utils/request";
 import CategorySelect from "@/pages/nav/Category/CategorySelect";
 import TagSelect from "@/pages/nav/Tag/TagSelect";
 
 export default function NavListForm(props: any) {
-  const formProps = useGeekProForm({
+  const formProps = useProForm({
     ...props,
     onFinish: async (values) => {
       const data = {
@@ -58,7 +58,7 @@ export default function NavListForm(props: any) {
     label: '作者网站',
   })
   return (
-    <DrawerForm {...props} {...formProps}>
+    <DrawerForm {...props} {...formProps} drawerProps={{ width: 600 }}>
       <ProFormDependency name={['logo']}>
         {({ logo })=> <ProFormText {...logoProps} formItemProps={{extra: <img width={50} src={logo} />}} />}
       </ProFormDependency>

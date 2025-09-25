@@ -40,7 +40,7 @@ if (pwa) {
         );
       }); // Refresh current page to use the updated HTML and other assets after SW has skiped waiting
 
-      window.location.reload(true);
+      window.location.reload();
       return true;
     };
 
@@ -49,7 +49,7 @@ if (pwa) {
       <Button
         type="primary"
         onClick={() => {
-          notification.close(key);
+          notification.destroy(key);
           reloadSW();
         }}
       >
@@ -80,7 +80,7 @@ if (pwa) {
     if (sw) sw.unregister();
   }); // remove all caches
 
-  if (window.caches && window.caches.keys()) {
+  if (window.caches) {
     caches.keys().then((keys) => {
       keys.forEach((key) => {
         caches.delete(key);

@@ -2,30 +2,54 @@ import { Select } from "antd";
 import request from "@/utils/request";
 import { API_CATEGORY_LIST } from "@/services/api";
 import { useEffect, useState } from "react";
-import { CategoryModel } from "@/constants/api";
+import { CategoryModel } from "@/types/api";
 
-export default function CategorySelect(props: any) {
+interface CategorySelectProps {
+  onChange?: (value: string) => void;
+  value?: string;
+  [key: string]: any;
+}
+
+export default function CategorySelect(props: CategorySelectProps) {
+  const { onChange, value } = props;
   const [categoryList, setCategoryList] = useState<CategoryModel[]>([]);
-  const [value, setValue] = useState('')
+  const [internalValue, setInternalValue] = useState<string>('');
 
   useEffect(()=> {
+    let isMounted = true;
+
     async function getCategoryList() {
       const res = await request({
         url: API_CATEGORY_LIST,
         method: 'GET'
       })
-      setCategoryList(res.data)
+      if (isMounted) {
+        setCategoryList(res.data)
+      }
     }
 
     getCategoryList()
+
+    return () => {
+      isMounted = false;
+    };
   }, [])
 
   function onSelectChange(value: string) {
-    setValue(value)
+    setInternalValue(value);
+    if (onChange) {
+      onChange(value);
+    }
   }
 
+  const currentValue = value !== undefined ? value : internalValue;
+
   return (
-    <Select onChange={onSelectChange} value={value} showSearch {...props}>
+    <Select
+      onChange={onSelectChange}
+      value={currentValue}
+      showSearch
+    >
       {categoryList.map(item => <Select.OptGroup label={item.name} key={item._id}>
         {item.children.map(subItem => <Select.Option value={subItem._id} key={subItem._id}>{subItem.name}</Select.Option>)}
       </Select.OptGroup>)}

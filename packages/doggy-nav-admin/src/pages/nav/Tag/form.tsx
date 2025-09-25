@@ -2,12 +2,12 @@ import {
   ModalForm, ProFormText,
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
-import useGeekProForm from "@/components/GeekProForm/useGeekProForm";
+import useProForm from "@/hooks/useProForm";
 import { API_TAG } from "@/services/api";
 import request from "@/utils/request";
 
 export default function TagForm(props: any) {
-  const formProps = useGeekProForm({
+  const formProps = useProForm({
     ...props,
     onInitialValues(values: any): object {
       return values
@@ -36,7 +36,7 @@ export default function TagForm(props: any) {
   }
 
   return (
-    <ModalForm {...props} {...formProps} onFinish={onFinish} width={350}>
+    <ModalForm {...props} {...formProps} onFinish={onFinish} width={400}>
       <ProFormText {...nameProps} />
     </ModalForm>
   )

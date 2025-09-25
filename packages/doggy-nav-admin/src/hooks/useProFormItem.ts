@@ -1,6 +1,6 @@
-import { ProFormFieldItemProps } from "@ant-design/pro-form/es/interface";
+import { ProFormFieldProps } from "@ant-design/pro-form";
 
-export default function useProFormItem<T>(props: ProFormFieldItemProps & T): ProFormFieldItemProps & T {
+export default function useProFormItem<T>(props: ProFormFieldProps & T): ProFormFieldProps & T {
   if (props.required) {
     props.rules = [{required: true}]
   }

@@ -1,13 +1,14 @@
 import { Button, Popconfirm } from "antd";
 import request from "@/utils/request";
 import { API_CATEGORY, API_CATEGORY_LIST } from "@/services/api";
-import GeekProTable from "@/components/GeekProTable/GeekProTable";
+import GeekProTable from "@/components/TableCom";
 import { ActionType, ProColumns } from "@ant-design/pro-table";
 import { PlusOutlined } from "@ant-design/icons";
-import useGeekProTablePopup from "@/components/GeekProTable/useGeekProTablePopup";
+import useGeekProTablePopup from "@/components/TableCom/useTableComPopup";
 import CategoryForm from "@/pages/nav/Category/CategoryForm";
 import { useRef, useState } from "react";
-import { CategoryModel } from "@/constants/api";
+import { CategoryModel } from "@/types/api";
+import { PageContainer } from "@ant-design/pro-layout";
 
 
 function transformCategoryList(list: any) {
@@ -72,7 +73,7 @@ export default function NavAuditListPage() {
     },
   ]
   return (
-      <div>
+      <PageContainer header={{title: false}}>
         <GeekProTable
           actionRef={tableRef}
           columns={columns}
@@ -89,6 +90,6 @@ export default function NavAuditListPage() {
           ])}
         />
         <CategoryForm {...formProps} tableRef={tableRef.current} categoryList={categoryList} />
-      </div>
+      </PageContainer>
   );
 }

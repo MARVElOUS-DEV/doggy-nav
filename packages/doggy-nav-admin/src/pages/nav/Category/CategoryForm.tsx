@@ -2,12 +2,12 @@ import {
   ModalForm, ProFormDependency, ProFormSelect, ProFormSwitch, ProFormText
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
-import useGeekProForm from "@/components/GeekProForm/useGeekProForm";
+import useProForm from "@/hooks/useProForm";
 import { API_CATEGORY } from "@/services/api";
 import request from "@/utils/request";
 
 export default function CategoryForm(props: any) {
-  const formProps = useGeekProForm({
+  const formProps = useProForm({
     ...props,
     onInitialValues(values: any): object {
       return values
@@ -61,7 +61,7 @@ export default function CategoryForm(props: any) {
   }
 
   return (
-    <ModalForm {...props} {...formProps} onFinish={onFinish} width={350}>
+    <ModalForm {...props} {...formProps} onFinish={onFinish} width={500}>
       <ProFormText {...nameProps} />
       <ProFormSelect {...categoryProps} options={props.categoryList.reduce((t, v) => [...t, {label: v.name, value: v._id}], [])}/>
       <ProFormDependency name={['icon']}>

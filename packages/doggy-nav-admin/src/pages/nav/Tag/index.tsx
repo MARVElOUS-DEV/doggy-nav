@@ -1,16 +1,17 @@
 import { Button, Popconfirm } from "antd";
 import request from "@/utils/request";
 import { API_TAG, API_TAG_list } from "@/services/api";
-import GeekProTable from "@/components/GeekProTable/GeekProTable";
+import TableCom from "@/components/TableCom";
 import type { ActionType, ProColumns } from "@ant-design/pro-table";
 import { PlusOutlined } from "@ant-design/icons";
-import useGeekProTablePopup from "@/components/GeekProTable/useGeekProTablePopup";
+import useTableComPopup from "@/components/TableCom/useTableComPopup";
 import { useRef, useState } from "react";
 import TagForm from "@/pages/nav/Tag/form";
+import { PageContainer } from "@ant-design/pro-layout";
 
 
 export default function NavTagListPage() {
-  const formProps = useGeekProTablePopup()
+  const formProps = useTableComPopup()
   const tableRef = useRef<ActionType>();
   const [tagList, setTagList] = useState([]);
 
@@ -46,11 +47,11 @@ export default function NavTagListPage() {
     },
   ]
   return (
-      <div>
-        <GeekProTable
+      <PageContainer header={{title: false}}>
+        <TableCom
           actionRef={tableRef}
           columns={columns}
-          pageHeaderProps={{
+          PageContainerProps={{
             extra: <Button type='primary' onClick={()=> formProps.show()}><PlusOutlined />添加标签</Button>
           }}
           search={false}
@@ -63,6 +64,6 @@ export default function NavTagListPage() {
           ])}
         />
         <TagForm {...formProps} tableRef={tableRef.current} tagList={tagList} />
-      </div>
+      </PageContainer>
   );
 }

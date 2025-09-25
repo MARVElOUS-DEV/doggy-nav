@@ -1,0 +1,108 @@
+.content-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 16px 24px;
+  border-radius: 8px 8px 0 0;
+  margin: -16px -16px 16px -16px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  box-sizing: border-box;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .menu-toggle-btn {
+      color: white;
+      border: none;
+      font-size: 18px;
+      padding: 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+    }
+
+    .header-title-section {
+      .breadcrumb {
+        font-size: 12px;
+        margin-bottom: 4px;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+
+        span {
+          opacity: 0.9;
+        }
+      }
+
+      .title-section {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+
+        h3 {
+          margin: 0 !important;
+          color: white !important;
+        }
+      }
+    }
+  }
+
+  .header-right {
+    .search-btn,
+    .notification-btn {
+      color: white !important;
+      border: none;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+
+    .user-menu-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .content-header {
+    padding: 12px 16px;
+
+    .header-left {
+      .header-title-section {
+        .title-section {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 2px;
+        }
+      }
+    }
+
+    .header-right {
+      .ant-space-item {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+}
