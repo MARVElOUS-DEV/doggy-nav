@@ -15,7 +15,9 @@ export type NextPageWithLayout<P = Record<string, any>, IP = P> = NextPage<P, IP
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout
 }
+
 debugHydration();
+
 export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const router = useRouter();
 
@@ -27,11 +29,11 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   }, [router.locale]);
 
   // Use the layout defined at the page level, if available
-  const getLayout = Component.getLayout ?? ((page) => (
+  const getLayout = Component.getLayout || ((page: ReactElement) => (
     <RootLayout>
       {page}
     </RootLayout>
-  ))
+  ));
 
-  return getLayout(<Component {...pageProps} />)
+  return getLayout(<Component {...pageProps} />);
 }

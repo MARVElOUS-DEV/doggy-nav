@@ -1,5 +1,5 @@
 import axios from './axios';
-import type { Category, NavItem, Tag } from '@/types';
+import type { Category, NavItem, Tag, User, LoginFormValues } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
@@ -57,6 +57,16 @@ const api = {
   // Update nav star count
   updateNavStar: (id: string): Promise<void> =>
     axios.patch(`${API_NAV}/${id}/star`),
+
+  // Authentication APIs - using Next.js proxy routes
+  login: (credentials: LoginFormValues): Promise<string> =>
+    axios.post('/api/auth/login', credentials),
+
+  logout: (): Promise<void> =>
+    axios.post('/api/auth/logout'),
+
+  getCurrentUser: (): Promise<User> =>
+    axios.get('/api/auth/me'),
 };
 
 export default api;

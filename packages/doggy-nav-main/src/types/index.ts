@@ -50,3 +50,23 @@ export interface RecommendFormValues {
   authorUrl?: string;
   detail?: string;
 }
+
+export interface User {
+  _id: string;
+  username: string;
+  email?: string;
+  avatar?: string;
+  role?: string;
+  createTime?: string;
+}
+
+export interface LoginFormValues {
+  username: string;
+  password: string;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  token: string | null;
+}

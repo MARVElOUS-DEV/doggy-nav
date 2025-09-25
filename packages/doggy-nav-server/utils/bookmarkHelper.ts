@@ -7,7 +7,7 @@ import cheerio from 'cheerio';
 import mongoose, { ConnectOptions } from 'mongoose';
 import navModel from '../app/model/nav';
 import categoryModel from '../app/model/category';
-import { chromeTimeToDate, dateToChromeTime } from './timeUtil';
+import { dateToChromeTime } from './timeUtil';
 
 const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/navigation`;
 const getFaviconSrv = (hostname, size = 32, provider = 'faviconIm') => {
@@ -149,14 +149,20 @@ const handle = async (...args) => {
       return;
     }
     console.info('import bookmarks from mac chrome default path');
-    if (platform() === 'darwin') {
-      const macPath = `${process.env.HOME}/Library/Application\ Support/Google/Chrome/Default/Bookmarks`;
-      const p = path.resolve(macPath);
-      console.info('import bookmarks from:', p);
-      const bookmarks = await getBookmarkRoots(p) as any;
-      await transform(bookmarks?.roots ?? { bookmark_bar: { children: [] } });
-      console.info('import bookmarks done ✅✅✅✅');
+    const platformStr = platform();
+    let bookmarkPath=''
+    if (platformStr=== 'darwin') {
+      bookmarkPath = `${process.env.HOME}/Library/Application\ Support/Google/Chrome/Default/Bookmarks`;
+    } else if (platformStr === 'win32') {
+      bookmarkPath =  `${process.env.HOME}/AppData/Local/Google/Chrome/User\ Data/Default/Bookmarks`;
+    } else {
+      throw new Error('current platform not supported!')
     }
+    const p = path.resolve(bookmarkPath);
+    console.info('import bookmarks from:', p);
+    const bookmarks = await getBookmarkRoots(p) as any;
+    await transform(bookmarks?.roots ?? { bookmark_bar: { children: [] } });
+    console.info('import bookmarks done ✅✅✅✅');
 
   } catch (error) {
     console.error(error);

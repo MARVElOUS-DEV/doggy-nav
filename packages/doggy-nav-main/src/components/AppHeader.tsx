@@ -1,11 +1,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip, Button } from '@arco-design/web-react';
+import { useEffect } from 'react';
+import { useAtom } from 'jotai';
 import AppSearch from './AppSearch';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
+import UserAvatar from './UserAvatar';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
+import { initAuthFromStorageAtom } from '@/store/store';
 
 interface AppHeaderProps {
   onHandleShowMenu: () => void;
@@ -15,6 +19,12 @@ interface AppHeaderProps {
 export default function AppHeader({ onHandleShowMenu, onHandleShowPopup }: AppHeaderProps) {
   const { t } = useTranslation('translation');
   const [showSearch, setShowSearch] = useState(false);
+  const [, initAuth] = useAtom(initAuthFromStorageAtom);
+
+  // Initialize auth state from localStorage on mount
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
 
   return (
     <header className="flex justify-between items-center bg-white shadow-lg p-4 w-full sticky top-0 z-50 bg-gradient-to-r from-white to-blue-50 min-h-[80px]">
@@ -70,6 +80,11 @@ export default function AppHeader({ onHandleShowMenu, onHandleShowPopup }: AppHe
         </div>
         <div className="ml-1">
           <ThemeToggle />
+        </div>
+
+        {/* User Avatar */}
+        <div className="ml-3">
+          <UserAvatar />
         </div>
 
         <div className="menu-toggle-btn md:hidden ml-2">

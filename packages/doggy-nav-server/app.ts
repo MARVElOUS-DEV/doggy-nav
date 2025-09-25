@@ -1,6 +1,4 @@
 import { Application } from 'egg';
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local', override: true });
 
 export default (app: Application) => {
   app.beforeStart(async () => {

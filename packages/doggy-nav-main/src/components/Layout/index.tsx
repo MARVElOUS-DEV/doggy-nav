@@ -10,7 +10,7 @@ import Toolbar from '../Toolbar';
 import AppLog from '../AppLog';
 import api from '@/utils/api';
 import i18n from '@/i18n';
-import { categoriesAtom, showMenuTypeAtom, showLogAtom, selectedCategoryAtom, tagsAtom } from '@/store/store';
+import { categoriesAtom, showMenuTypeAtom, showLogAtom, selectedCategoryAtom, tagsAtom, initAuthFromStorageAtom } from '@/store/store';
 import { Category } from '@/types';
 import { localCategories } from '@/utils/localCategories';
 
@@ -24,7 +24,13 @@ export default function RootLayout({
   const [showLog, setShowLog] = useAtom(showLogAtom);
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
   const setTags = useSetAtom(tagsAtom);
+  const [, initAuth] = useAtom(initAuthFromStorageAtom);
   const router = useRouter();
+
+  // Initialize auth state from localStorage
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
 
   // Fetch categories and tags on layout initialization
   useEffect(() => {

@@ -1,4 +1,6 @@
 import { EggPlugin } from 'egg';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local', override: true });
 
 const plugin: EggPlugin = {
   // static: true,
