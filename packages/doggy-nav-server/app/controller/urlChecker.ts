@@ -178,7 +178,7 @@ export default class UrlCheckerController extends BaseController {
       const limitNum = parseInt(limit as string);
       const skip = (pageNum - 1) * limitNum;
 
-      const [navItems, total] = await Promise.all([
+      const [ navItems, total ] = await Promise.all([
         ctx.model.Nav.find(query)
           .select('name href urlStatus lastUrlCheck responseTime')
           .skip(skip)

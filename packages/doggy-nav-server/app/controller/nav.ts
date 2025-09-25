@@ -1,6 +1,6 @@
 import Controller from '../core/base_controller';
-const request = require('request');
-const cheerio = require('cheerio');
+import * as request from 'request';
+import * as cheerio from 'cheerio';
 
 enum NAV_STATUS {
   pass,
@@ -53,7 +53,6 @@ export default class NavController extends Controller {
   async reptile() {
     const { ctx } = this;
     const { url } = ctx.query;
-    const that = this;
     const res = await new Promise(resolve => {
       request(url, (error, requestData, body) => {
         if (!error && requestData.statusCode === 200) {
@@ -67,7 +66,7 @@ export default class NavController extends Controller {
             href: url,
           });
         } else {
-          that.error('获取站点信息失败');
+          resolve({ error: '获取站点信息失败' });
         }
       });
     });
@@ -131,6 +130,7 @@ export default class NavController extends Controller {
           name: category.name,
           list: nowNavs,
         });
+        return category;
       });
       this.success(resData);
     } catch (error:any) {
@@ -164,16 +164,17 @@ export default class NavController extends Controller {
       pageNumber = Number(pageNumber);
       const skipNumber = pageSize * pageNumber - pageSize;
 
-      const [navs, total] = await Promise.all([
+      const [ navs, total ] = await Promise.all([
         ctx.model.Nav.find({
           name: { $regex: reg },
-        }).skip(skipNumber).limit(pageSize).sort({ _id: -1 }),
+        }).skip(skipNumber).limit(pageSize)
+          .sort({ _id: -1 }),
         ctx.model.Nav.find({
           name: { $regex: reg },
-        }).count(),
+        }).countDocuments(),
       ]);
 
-      const navsWithCategory = await Promise.all(navs.map(async (nav) => {
+      const navsWithCategory = await Promise.all(navs.map(async nav => {
         if (nav.categoryId) {
           const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
           const navObj = nav.toObject();

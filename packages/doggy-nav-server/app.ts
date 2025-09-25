@@ -1,9 +1,11 @@
 import { Application } from 'egg';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local', override: true });
 
 export default (app: Application) => {
-  // Application lifecycle hooks
   app.beforeStart(async () => {
     app.logger.info('Application is starting...');
+    app.logger.info(`Using MongoDB URL: ${app.config?.mongoose?.client?.url}`);
   });
 
   app.ready(async () => {

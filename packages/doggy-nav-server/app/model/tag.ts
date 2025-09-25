@@ -1,4 +1,4 @@
-module.exports = app => {
+export default function(app: any) {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
 
@@ -10,4 +10,4 @@ module.exports = app => {
   TagSchema.index({ name: 1 }, { unique: true, background: true, dropDups: true });
 
   return mongoose.model('Tag', TagSchema);
-};
+}

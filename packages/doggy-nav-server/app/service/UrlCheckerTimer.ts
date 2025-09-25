@@ -125,7 +125,7 @@ export default class UrlCheckerTimer extends Service {
       // Get nav items that need checking
       const navItems = await ctx.service.urlChecker.getNavItemsForUrlCheck(
         config.urlChecker.maxCheckAge,
-        config.urlChecker.batchSize
+        config.urlChecker.batchSize,
       );
 
       if (navItems.length === 0) {
@@ -138,7 +138,7 @@ export default class UrlCheckerTimer extends Service {
       // Check URLs
       const results = await ctx.service.urlChecker.checkMultipleNavUrls(
         navItems,
-        config.urlChecker.concurrentChecks
+        config.urlChecker.concurrentChecks,
       );
 
       // Log results summary
@@ -191,7 +191,7 @@ export default class UrlCheckerTimer extends Service {
       logger.info('Triggering manual URL check for all nav items');
 
       const navItems = await ctx.model.Nav.find({
-        href: { $exists: true, $nin: [null, ''] },
+        href: { $exists: true, $nin: [ null, '' ] },
       }).exec();
 
       if (navItems.length === 0) {
@@ -201,7 +201,7 @@ export default class UrlCheckerTimer extends Service {
 
       const results = await ctx.service.urlChecker.checkMultipleNavUrls(
         navItems,
-        config.urlChecker.concurrentChecks
+        config.urlChecker.concurrentChecks,
       );
 
       const successful = results.filter(r => r.success).length;

@@ -1,11 +1,18 @@
-module.exports = app => {
+import { chromeTimeToDate, dateToChromeTime } from "../../utils/timeUtil";
+
+export default function(app: any) {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
 
   const CategorySchema = new Schema({
     name: String,
     categoryId: String,
-    createAt: Number,
+    createAt: Number, // Chrome time number
+    // Whether to hide in the navigation contents
+    hide: {
+      type: Boolean,
+      default: false,
+    },
     icon: {
       type: String,
       default: '',
@@ -13,13 +20,43 @@ module.exports = app => {
     children: [{
       name: String,
       categoryId: String,
-      createAt: Number,
+      createAt: Number, // Chrome time number
       showInMenu: Boolean,
     }],
     showInMenu: {
       type: Boolean,
       default: true,
     },
-  }, { collection: 'category' });
+  }, {
+    collection: 'category',
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  });
+
+  // Virtual getter to convert Chrome time to user-friendly Date
+  CategorySchema.virtual('createAtDate').get(function() {
+    return chromeTimeToDate(this.createAt);
+  });
+
+  // Virtual setter to convert Date to Chrome time
+  CategorySchema.virtual('createAtDate').set(function(date: Date) {
+    if (date instanceof Date) {
+      this.createAt = dateToChromeTime(date);
+    }
+  });
+
+  // Also add to children array elements
+  CategorySchema.virtual('childrenWithDates').get(function() {
+    if (this.children && Array.isArray(this.children)) {
+      return this.children.map(child => {
+        const childObj = { ...child };
+        if (child.createAt && typeof child.createAt === 'number') {
+          childObj.createAtDate = chromeTimeToDate(child.createAt);
+        }
+        return childObj;
+      });
+    }
+    return this.children;
+  });
   return mongoose.model('Category', CategorySchema);
-};
+}

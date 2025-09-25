@@ -37,7 +37,7 @@ export default class CommonController extends Controller {
     const tableName = this.tableName();
     try {
       const id = request.body.id;
-      const res = await this.ctx.model[tableName].remove({ _id: id });
+      const res = await this.ctx.model[tableName].deleteOne({ _id: id });
       this.success(res);
     } catch (e: any) {
       this.error(e.message);
@@ -51,7 +51,7 @@ export default class CommonController extends Controller {
     try {
       const id = request.body.id;
       delete request.body.id;
-      const res = await this.ctx.model[tableName].update({ _id: id }, request.body);
+      const res = await this.ctx.model[tableName].updateOne({ _id: id }, request.body);
       this.success(res);
     } catch (e: any) {
       this.error(e.message);
@@ -86,7 +86,7 @@ export default class CommonController extends Controller {
       const [ data, total ] = await Promise.all([
         otherCMD(table.find(findObj).skip(skipNumber).limit(pageSize)
           .sort({ _id: -1 })),
-        table.find(findObj).count(),
+        table.find(findObj).countDocuments(),
       ]);
 
       this.success({

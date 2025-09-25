@@ -4,7 +4,7 @@
     "target": "es2020",
     "module": "commonjs",
     "lib": ["es2020"],
-    "strict": true,
+    "strict": false,
     "noImplicitAny": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,

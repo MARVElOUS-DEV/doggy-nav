@@ -1,28 +1,30 @@
-import { URL } from "url";
+import { platform } from 'os';
+import { URL } from 'url';
+import fs from 'fs';
+import path from 'path';
+import request from 'request';
+import cheerio from 'cheerio';
+import mongoose, { ConnectOptions } from 'mongoose';
+import navModel from '../app/model/nav';
+import categoryModel from '../app/model/category';
+import { chromeTimeToDate, dateToChromeTime } from './timeUtil';
 
-const mongoCfg = require('../config/mongodb').default;
-const fs = require('fs');
-const request = require('request');
-const cheerio = require('cheerio');
-const mongoose = require('mongoose');
-const path = require('path');
-const getFaviconSrv =(url, size=32)=> {return [`https://api.iowen.cn/favicon/${url}.png`, `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=${size}`][0]}
+const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/navigation`;
+const getFaviconSrv = (hostname, size = 32, provider = 'faviconIm') => {
+  return {
+    faviconIm: `https://favicon.im/zh/${hostname}`,
+    faviconIowen: `https://api.iowen.cn/favicon/${hostname}.png`,
+    google: `https://www.google.com/s2/favicons?domain=${hostname}&sz=${size}`,
+  }[provider] ?? '/default-web.png';
+};
 
-const db = mongoose.connect(mongoCfg.mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true } as ConnectOptions) as any;
 db.mongoose = mongoose;
 // 引入数据模型模块
-const navData = require('../app/model/nav')(db);
-const categorySchema = require('../app/model/category')(db);
+const navData = navModel(db);
+const categorySchema = categoryModel(db);
 const map = new Map();
 
-function extractOrigin(url) {
-  return url.match(/^https?:\/\/.+?(?=\/)/)[0];
-}
-function getTransformedLogo(origin) {
-  // remove http(s)
-  const url = origin.replace(/https?:\/\//, '');
-  return getFaviconSrv(url);
-}
 function isAbsoluteUrl(url) {
   return url.startsWith('http') || url.startsWith('//') || url.startsWith('data:image');
 }
@@ -37,13 +39,13 @@ async function getBookmarkRoots(path) {
 }
 
 async function getLogo(url) {
-  const origin = extractOrigin(url);
+  const { origin, hostname } = new URL(url);
   if (map.has(origin)) {
     return map.get(origin);
   }
   return new Promise(resolve => {
     request(origin, { timeout: 10000 }, (error, requestData, body) => {
-      if (!error && requestData.statusCode == 200) {
+      if (!error && requestData.statusCode === 200) {
         const $ = cheerio.load(body);
         let logo = '';
         let final = '';
@@ -56,7 +58,7 @@ async function getLogo(url) {
         }
         console.log('logo,', origin, logo);
         if (!logo) {
-          final = getTransformedLogo(origin);
+          final = getFaviconSrv(hostname);
         } else {
           final = logo;
           if (!isAbsoluteUrl(logo)) {
@@ -67,8 +69,8 @@ async function getLogo(url) {
         resolve(final);
       } else {
         console.error(`获取${url} 站点logo icon失败,error= ${error}`);
-        map.set(origin, getTransformedLogo(origin));
-        resolve(getTransformedLogo(origin));
+        map.set(origin, getFaviconSrv(hostname));
+        resolve(getFaviconSrv(hostname));
       }
     });
   });
@@ -97,6 +99,7 @@ async function recursive(children, parentId) {
         const { _id } = await categorySchema.create({
           categoryId: parentId,
           name: firstName,
+          createAt: el.date_added ? el.date_added : dateToChromeTime(new Date()),
         });
         secondCategoryId = _id;
       }
@@ -108,7 +111,8 @@ async function recursive(children, parentId) {
         name,
         href,
         desc: name,
-        createDate: new Date(),
+        createTime: el.date_added,
+        hide: false,
         logo: await getLogo(href),
       });
     }
@@ -117,7 +121,7 @@ async function recursive(children, parentId) {
 
 async function transform(roots) {
   const categoryData = {
-    name: '私人书签',
+    name: '我的书签',
     categoryId: '',
   };
   const categoryDataRes = await categorySchema.create(categoryData);
@@ -125,20 +129,39 @@ async function transform(roots) {
   await recursive(firstStage, categoryDataRes._id);
 }
 
-(async () => {
+const handle = async (...args) => {
+  const arg2 = args[2];
   try {
-    if (!process.env.HOME) {
-      console.info('try start with 【 npx ts-node && HOME=yourHomeDirName ts-node bookmarkHelper.js 】');
+    if (arg2 === 'help' || arg2 === '--help' || arg2 === '-h') {
+      console.info('try start with 【 HOME=${HOME} npx ts-node bookmarkHelper.ts 】');
       return;
     }
-    const macPath = `${process.env.HOME}/Library/Application\ Support/Google/Chrome/Default/Bookmarks`;
-    const p = path.resolve(macPath);
-    console.log(p);
-    const bookmarks = await getBookmarkRoots(p) as any;
-    await transform(bookmarks?.roots ?? {bookmark_bar: {children: []}});
-    console.info('import bookmarks done✅✅✅✅');
+    if (arg2 === '-file' && args[3]) {
+      const p = path.resolve(args[3]);
+      console.info('import bookmarks from:', p);
+      const bookmarks = await getBookmarkRoots(p) as any;
+      await transform(bookmarks?.roots ?? { bookmark_bar: { children: [] } });
+      console.info('import bookmarks done ✅✅✅✅');
+      return;
+    }
+    if (!process.env.HOME) {
+      console.info('try start with 【 HOME=${HOME} npx ts-node bookmarkHelper.ts 】or 【 npx ts-node bookmarkHelper.ts -file /path/to/your/bookmark/file 】');
+      return;
+    }
+    console.info('import bookmarks from mac chrome default path');
+    if (platform() === 'darwin') {
+      const macPath = `${process.env.HOME}/Library/Application\ Support/Google/Chrome/Default/Bookmarks`;
+      const p = path.resolve(macPath);
+      console.info('import bookmarks from:', p);
+      const bookmarks = await getBookmarkRoots(p) as any;
+      await transform(bookmarks?.roots ?? { bookmark_bar: { children: [] } });
+      console.info('import bookmarks done ✅✅✅✅');
+    }
+
   } catch (error) {
     console.error(error);
   }
-})();
+};
+
+handle(process.argv);
 

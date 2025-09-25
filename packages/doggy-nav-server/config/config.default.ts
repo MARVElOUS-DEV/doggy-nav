@@ -1,5 +1,6 @@
 import { EggAppConfig, EggAppInfo, PowerPartial } from 'egg';
 import mongoConfig from './mongodb';
+import { ConnectOptions } from 'mongoose';
 
 export default (appInfo: EggAppInfo) => {
   const config = {} as PowerPartial<EggAppConfig>;
@@ -22,7 +23,7 @@ export default (appInfo: EggAppInfo) => {
   config.mongoose = {
     client: {
       url: mongoConfig.mongoUrl,
-      options: { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
+      options: { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true } as ConnectOptions,
     },
   };
 

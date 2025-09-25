@@ -35,8 +35,8 @@ export default class CategoryController extends Controller {
     try {
       const { id } = ctx.request.body;
       const data = await Promise.all([
-        ctx.model.Category.remove({ _id: id }),
-        ctx.model.Category.remove({ categoryId: id }),
+        ctx.model.Category.deleteOne({ _id: id }),
+        ctx.model.Category.deleteOne({ categoryId: id }),
       ]);
       this.success(data);
     } catch (error:any) {

@@ -49,15 +49,15 @@ export default class UrlChecker extends Service {
           responseTime,
           error: error.message,
         };
-      } else {
-        // Other error
-        this.logger.debug(`URL check failed for ${url}: ${error.message} (${responseTime}ms)`);
-        return {
-          status: 'inaccessible',
-          responseTime,
-          error: error.message,
-        };
       }
+      // Other error
+      this.logger.debug(`URL check failed for ${url}: ${error.message} (${responseTime}ms)`);
+      return {
+        status: 'inaccessible',
+        responseTime,
+        error: error.message,
+      };
+
     }
   }
 
@@ -125,7 +125,7 @@ export default class UrlChecker extends Service {
    * @param navItems - Array of nav items to check
    * @param concurrent - Number of concurrent checks (default: 5)
    */
-  async checkMultipleNavUrls(navItems: any[], concurrent: number = 5) {
+  async checkMultipleNavUrls(navItems: any[], concurrent = 5) {
     const { ctx } = this;
     const results: any[] = [];
 
@@ -133,7 +133,7 @@ export default class UrlChecker extends Service {
     for (let i = 0; i < navItems.length; i += concurrent) {
       const batch = navItems.slice(i, i + concurrent);
 
-      const batchPromises = batch.map(async (navItem) => {
+      const batchPromises = batch.map(async navItem => {
         try {
           const result = await this.checkAndUpdateNavUrl(navItem);
           return { navId: navItem._id, success: true, result };
@@ -142,7 +142,7 @@ export default class UrlChecker extends Service {
         }
       });
 
-      const batchResults = await Promise.all(batchPromises.map(async (promise) => {
+      const batchResults = await Promise.all(batchPromises.map(async promise => {
         try {
           return await promise;
         } catch (error) {
@@ -166,7 +166,7 @@ export default class UrlChecker extends Service {
    * @param maxAge - Maximum age in milliseconds for last check (default: 1 hour)
    * @param limit - Maximum number of items to return (default: 100)
    */
-  async getNavItemsForUrlCheck(maxAge: number = 60 * 60 * 1000, limit: number = 100) {
+  async getNavItemsForUrlCheck(maxAge: number = 60 * 60 * 1000, limit = 100) {
     const { ctx } = this;
     const cutoffTime = new Date(Date.now() - maxAge);
 
@@ -176,7 +176,7 @@ export default class UrlChecker extends Service {
         { lastUrlCheck: { $lt: cutoffTime } },
         { urlStatus: 'unknown' },
       ],
-      href: { $exists: true, $nin: [null, ''] },
+      href: { $exists: true, $nin: [ null, '' ] },
     };
 
     return ctx.model.Nav.find(query).limit(limit).exec();

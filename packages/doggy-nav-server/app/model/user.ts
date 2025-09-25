@@ -1,4 +1,4 @@
-module.exports = app => {
+export default function(app: any) {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
 
@@ -8,4 +8,4 @@ module.exports = app => {
     isAdmin: Boolean,
   }, { collection: 'user' });
   return mongoose.model('User', UserSchema);
-};
+}

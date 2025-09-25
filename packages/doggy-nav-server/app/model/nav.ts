@@ -1,4 +1,6 @@
-module.exports = app => {
+import { chromeTimeToDate, dateToChromeTime } from "../../utils/timeUtil";
+
+export default function(app: any) {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
 
@@ -12,7 +14,11 @@ module.exports = app => {
     authorName: String,
     authorUrl: String,
     auditTime: Date,
-    createTime: Date,
+    createTime: Number, // Chrome time number
+    hide: {
+      type: Boolean,
+      default: false,
+    },
     tags: {
       type: Array,
       default: [],
@@ -32,12 +38,12 @@ module.exports = app => {
     // URL accessibility status
     urlStatus: {
       type: String,
-      enum: ['unknown', 'checking', 'accessible', 'inaccessible'],
+      enum: [ 'unknown', 'checking', 'accessible', 'inaccessible' ],
       default: 'unknown',
     },
-    // Last URL check time
+    // Last URL check time (Chrome time number)
     lastUrlCheck: {
-      type: Date,
+      type: Number,
       default: null,
     },
     // Response time in milliseconds
@@ -45,6 +51,32 @@ module.exports = app => {
       type: Number,
       default: null,
     },
-  }, { collection: 'nav' });
+  }, {
+    collection: 'nav',
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  });
+
+  // Virtual getters to convert Chrome time to user-friendly Date
+  NavSchema.virtual('createTimeDate').get(function() {
+    return chromeTimeToDate(this.createTime);
+  });
+
+  NavSchema.virtual('lastUrlCheckDate').get(function() {
+    return chromeTimeToDate(this.lastUrlCheck);
+  });
+
+  // Virtual setters to convert Date to Chrome time
+  NavSchema.virtual('createTimeDate').set(function(date: Date) {
+    if (date instanceof Date) {
+      this.createTime = dateToChromeTime(date);
+    }
+  });
+
+  NavSchema.virtual('lastUrlCheckDate').set(function(date: Date) {
+    if (date instanceof Date) {
+      this.lastUrlCheck = dateToChromeTime(date);
+    }
+  });
   return mongoose.model('Nav', NavSchema);
-};
+}

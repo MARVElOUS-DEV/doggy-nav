@@ -1,4 +1,5 @@
 import { Service } from 'egg';
+import { SortOrder } from 'mongoose';
 
 export enum NAV_STATUS {
   pass,
@@ -9,7 +10,7 @@ export enum NAV_STATUS {
 
 export default class NavService extends Service {
   async findMaxValueList(value) {
-    return await this.ctx.model.Nav.find({ status: NAV_STATUS.pass }).sort({ [value]: -1 }).limit(10);
+    return await this.ctx.model.Nav.find({ status: NAV_STATUS.pass }).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
   }
 
   /**
@@ -43,21 +44,21 @@ export default class NavService extends Service {
           _id: null,
           total: { $sum: 1 },
           accessibleUrls: {
-            $sum: { $cond: [{ $eq: ['$urlStatus', 'accessible'] }, 1, 0] },
+            $sum: { $cond: [{ $eq: [ '$urlStatus', 'accessible' ] }, 1, 0 ] },
           },
           inaccessibleUrls: {
-            $sum: { $cond: [{ $eq: ['$urlStatus', 'inaccessible'] }, 1, 0] },
+            $sum: { $cond: [{ $eq: [ '$urlStatus', 'inaccessible' ] }, 1, 0 ] },
           },
           unknownUrls: {
-            $sum: { $cond: [{ $eq: ['$urlStatus', 'unknown'] }, 1, 0] },
+            $sum: { $cond: [{ $eq: [ '$urlStatus', 'unknown' ] }, 1, 0 ] },
           },
           checkingUrls: {
-            $sum: { $cond: [{ $eq: ['$urlStatus', 'checking'] }, 1, 0] },
+            $sum: { $cond: [{ $eq: [ '$urlStatus', 'checking' ] }, 1, 0 ] },
           },
           avgResponseTime: {
             $avg: {
               $cond: [
-                { $and: [{ $ne: ['$responseTime', null] }, { $gt: ['$responseTime', 0] }] },
+                { $and: [{ $ne: [ '$responseTime', null ] }, { $gt: [ '$responseTime', 0 ] }] },
                 '$responseTime',
                 null,
               ],
