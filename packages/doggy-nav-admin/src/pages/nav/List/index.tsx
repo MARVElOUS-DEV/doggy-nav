@@ -1,13 +1,13 @@
 import { API_NAV, API_NAV_LIST } from "@/services/api";
-import GeekProTable from "@/components/TableCom";
 import { ProColumns } from "@ant-design/pro-table";
-import useGeekProTablePopup from "@/components/TableCom/useTableComPopup";
+import useTableComPopup from "@/components/TableCom/useTableComPopup";
 import NavListForm from "@/pages/nav/List/NavListForm";
-import { Popconfirm, Tag, Space, Button } from "antd";
-import { PlusOutlined } from '@ant-design/icons';
+import { Popconfirm, Tag, Space, message, Modal, Button } from "antd";
+import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import request from "@/utils/request";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import CategorySelect from "@/pages/nav/Category/CategorySelect";
+import TableCom from "@/components/TableCom";
 
 function RandomColorTag({ children }) {
   const colors = [
@@ -27,8 +27,45 @@ function RandomColorTag({ children }) {
 }
 
 export default function NavListPage() {
-  const tableRef = useRef();
-  const formProps = useGeekProTablePopup()
+  const tableRef = useRef<any>();
+  const formProps = useTableComPopup();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  const handleBatchDelete = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('请先选择要删除的项目');
+      return;
+    }
+
+    Modal.confirm({
+      title: '批量删除确认',
+      content: `确定要删除选中的 ${selectedRowKeys.length} 个项目吗？此操作不可恢复。`,
+      okText: '确定删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          // Create array of delete requests
+          const deleteRequests = selectedRowKeys.map(id =>
+            request({
+              url: API_NAV,
+              method: 'DELETE',
+              data: { id }
+            })
+          );
+
+          // Execute all delete requests
+          await Promise.all(deleteRequests);
+
+          message.success(`成功删除 ${selectedRowKeys.length} 个项目`);
+          setSelectedRowKeys([]);
+          tableRef.current?.reload();
+        } catch (error) {
+          message.error('批量删除失败，请重试');
+        }
+      }
+    });
+  };
 
   const columns: ProColumns[] = [
     {
@@ -66,6 +103,35 @@ export default function NavListPage() {
       search: false,
     },
     {
+      title: '显示状态',
+      dataIndex: 'hide',
+      search: false,
+      width: 100,
+      render: (_, record) => (
+        <Space>
+          {record.hide ? (
+            <EyeInvisibleOutlined
+              style={{ color: '#ff4d4f', fontSize: '16px' }}
+              title="已隐藏"
+            />
+          ) : (
+            <EyeOutlined
+              style={{ color: '#52c41a', fontSize: '16px' }}
+              title="显示中"
+            />
+          )}
+        </Space>
+      ),
+      filters: [
+        { text: '显示', value: false },
+        { text: '隐藏', value: true }
+      ],
+      valueEnum: {
+        false: { text: '显示', status: 'Success' },
+        true: { text: '隐藏', status: 'Error' }
+      }
+    },
+    {
       title: '创建时间',
       dataIndex: 'createTime',
       search: false,
@@ -73,34 +139,61 @@ export default function NavListPage() {
     },
   ]
 
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedKeys: React.Key[]) => {
+      setSelectedRowKeys(selectedKeys);
+    },
+  };
+
   return (
     <>
-      <div className="table-container">
-        <GeekProTable
-          actionRef={tableRef}
-          columns={columns}
-          requestParams={{url: API_NAV_LIST, method: 'GET'}}
-          showPageHeader={false}
-          scroll={{ x: 'max-content' }}
-          renderOptions={(text, record, _, action) => record.status != 2 ? [
-            <a onClick={() => formProps.show({action, data: record, type: 'edit'})}>编辑</a>,
-            <Popconfirm
-              title={'确定删除吗?'}
-              onConfirm={async () => {
-                await request({
-                  url: API_NAV,
-                  method: 'DELETE',
-                  data: {
-                    id: record?._id
-                  },
-                  msg: '删除成功'
-                })
-                action.reload()
-              }}>
-              <a>删除</a>
-            </Popconfirm>,
-          ] : []}></GeekProTable>
-      </div>
+      <TableCom
+        actionRef={tableRef}
+        columns={columns}
+        requestParams={{url: API_NAV_LIST, method: 'GET'}}
+        showPageHeader={false}
+        scroll={{ x: 'max-content' }}
+        rowSelection={rowSelection}
+        toolbar={{
+          actions: [
+            <Button
+              key="add-nav"
+              type="primary"
+              onClick={() => formProps.show()}
+            >
+              添加导航
+            </Button>,
+            <Button
+              key="batch-delete"
+              type="primary"
+              danger
+              // icon={<DeleteOutlined />}
+              onClick={handleBatchDelete}
+              disabled={selectedRowKeys.length === 0}
+            >
+              批量删除 ({selectedRowKeys.length})
+            </Button>
+          ],
+        }}
+        renderOptions={(_, record, __, action) => record.status != 2 ? [
+          <a onClick={() => formProps.show({action, data: record, type: 'edit'})}>编辑</a>,
+          <Popconfirm
+            title={'确定删除吗?'}
+            onConfirm={async () => {
+              await request({
+                url: API_NAV,
+                method: 'DELETE',
+                data: {
+                  id: record?._id
+                },
+                msg: '删除成功'
+              })
+              action.reload()
+            }}>
+            <a>删除</a>
+          </Popconfirm>,
+        ] : []}/>
       <NavListForm {...formProps} tableRef={tableRef.current} />
     </>
   )

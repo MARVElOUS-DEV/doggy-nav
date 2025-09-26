@@ -17,7 +17,7 @@ interface TableComProps extends ProTableProps<any, any> {
 
 function TableCom(props: TableComProps, ref: any) {
   const {
-    showPageHeader = true,
+    showPageHeader = false,
     PageContainerProps = {},
     requestParams = {},
     defaultRequestData = {},
@@ -168,7 +168,12 @@ function TableCom(props: TableComProps, ref: any) {
   }
 
   if (!showPageHeader) {
-    return proTable;
+    return (
+    <>
+      {proTable}
+      {children}
+    </>
+  );
   }
 
   return (

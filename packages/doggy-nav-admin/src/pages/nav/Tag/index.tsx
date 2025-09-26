@@ -7,7 +7,6 @@ import { PlusOutlined } from "@ant-design/icons";
 import useTableComPopup from "@/components/TableCom/useTableComPopup";
 import { useRef, useState } from "react";
 import TagForm from "@/pages/nav/Tag/form";
-import { PageContainer } from "@ant-design/pro-layout";
 
 
 export default function NavTagListPage() {
@@ -47,7 +46,7 @@ export default function NavTagListPage() {
     },
   ]
   return (
-      <PageContainer header={{title: false}}>
+      <div>
         <TableCom
           actionRef={tableRef}
           columns={columns}
@@ -64,6 +63,6 @@ export default function NavTagListPage() {
           ])}
         />
         <TagForm {...formProps} tableRef={tableRef.current} tagList={tagList} />
-      </PageContainer>
+      </div>
   );
 }

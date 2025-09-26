@@ -4,7 +4,6 @@ import { ProColumns } from "@ant-design/pro-table";
 import { Popconfirm, Tag, Space } from "antd";
 import request from "@/utils/request";
 import { NavStatus } from "@/types/api";
-import { PageContainer } from "@ant-design/pro-layout";
 
 function RandomColorTag({ children }) {
   const colors = [
@@ -85,18 +84,16 @@ export default function NavAuditListPage() {
   }
 
   return (
-    <PageContainer header={{title: false}}>
-      <GeekProTable
-        columns={columns}
-        requestParams={{url: API_NAV_LIST, method: 'GET'}}
-        renderOptions={(text, record, _, action) => record.status != NavStatus.reject ? [
-          <Popconfirm title={'确定通过吗？'} onConfirm={() => onActionClick(record._id, action, 0)} key="确定通过吗？">
-            <a>通过</a>
-          </Popconfirm>,
-          <Popconfirm title={'确定拒绝吗？'} onConfirm={() => onActionClick(record._id, action, 2)} key="确定拒绝吗？" >
-            <a>拒绝</a>
-          </Popconfirm>
-        ] : []}/>
-    </PageContainer>
+    <GeekProTable
+      columns={columns}
+      requestParams={{url: API_NAV_LIST, method: 'GET'}}
+      renderOptions={(text, record, _, action) => record.status != NavStatus.reject ? [
+        <Popconfirm title={'确定通过吗？'} onConfirm={() => onActionClick(record._id, action, 0)} key="确定通过吗？">
+          <a>通过</a>
+        </Popconfirm>,
+        <Popconfirm title={'确定拒绝吗？'} onConfirm={() => onActionClick(record._id, action, 2)} key="确定拒绝吗？" >
+          <a>拒绝</a>
+        </Popconfirm>
+      ] : []}/>
   )
 }

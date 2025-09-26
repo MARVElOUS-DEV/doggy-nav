@@ -4,6 +4,9 @@ import type { RequestConfig } from '@umijs/max';
 import { history } from '@umijs/max';
 import { getPersistenceData } from "@/utils/persistence";
 import { CURRENT_USER, TOKEN } from "@/constants";
+import type { RunTimeLayoutConfig } from '@umijs/max';
+import React from 'react';
+import ContentHeader from './components/ContentHeader';
 
 const loginPath = '/user/login';
 // const isDev = process.env.NODE_ENV === 'development';
@@ -58,4 +61,70 @@ export const request: RequestConfig = {
     },
   }
 };
+
+// 页面标题和子标题映射
+const pageTitles: Record<string, { title: string; subtitle: string; showUserMenu?: boolean; showSearch?: boolean; actions?: React.ReactNode[] }> = {
+  '/nav/admin': { title: '仪表盘', subtitle: '系统概览', showUserMenu: true, showSearch: false,},
+  '/nav/list': {
+    title: '导航列表',
+    subtitle: '管理网站导航链接',
+    showUserMenu: true,
+    showSearch: false,
+  },
+  '/nav/category': { title: '分类管理', subtitle: '管理网站分类', showUserMenu: true, showSearch: false,},
+  '/nav/tag': { title: '标签管理', subtitle: '管理网站标签', showUserMenu: true, showSearch: false, },
+  '/nav/audit': { title: '审核管理', subtitle: '审核网站提交', showUserMenu: true,showSearch: false, },
+};
+
+export const layout: RunTimeLayoutConfig = ({ initialState }) => {
+  return {
+    disableContentMargin: false,
+    waterMarkProps: {
+      content: initialState?.currentUser?.name,
+    },
+    isChildrenLayout: false,
+    onPageChange: () => {
+      const { location } = history;
+      // 如果没有登录，重定向到 login
+      const token = getPersistenceData(TOKEN)
+      if (!token && location.pathname !== loginPath) {
+        history.push(loginPath);
+      }
+    },
+    menuHeaderRender: (logo)=> logo,
+    headerRender: (props) => {
+      const pathname = history.location.pathname;
+      const pageInfo = pageTitles[pathname] || {
+        title: '页面',
+        subtitle: '页面管理',
+        showUserMenu: true,
+        showSearch: false,
+        actions: []
+      };
+
+      return (
+        <div style={{
+          overflow: 'hidden',
+          maxWidth: '100%',
+          boxSizing: 'border-box'
+        }}>
+          {pathname !== loginPath && pathname !== '/404' && (
+            <ContentHeader
+              title={pageInfo.title}
+              subtitle={pageInfo.subtitle}
+              showUserMenu={pageInfo.showUserMenu}
+              showSearch={pageInfo.showSearch}
+              actions={pageInfo.actions}
+            />
+          )}
+        </div>
+      );
+    },
+    layout: 'mix',
+    // 自定义 403 页面
+    unAccessible: <div>unAccessible</div>,
+    ...initialState?.settings,
+  };
+};
+
 

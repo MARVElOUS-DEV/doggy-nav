@@ -8,7 +8,6 @@ const { Title, Paragraph } = Typography;
 export default (): React.ReactNode => {
   return (
     <>
-
       <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
           <EnhancedCard gradient="primary" elevation="medium" style={{ height: '100%' }}>
@@ -55,7 +54,7 @@ export default (): React.ReactNode => {
       <EnhancedCard gradient="primary" elevation="medium">
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
           <Title level={2} style={{ color: 'white', marginBottom: 16 }}>
-            <SmileTwoTone /> 欢迎使用狗头导航管理系统 <HeartTwoTone twoToneColor="#ff6b6b" />
+            <SmileTwoTone /> 欢迎使用狗狗导航管理系统 <HeartTwoTone twoToneColor="#ff6b6b" />
           </Title>
           <Paragraph style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px', marginBottom: 24 }}>
             一个现代化、功能强大的导航网站管理平台

@@ -1,10 +1,13 @@
 import {
   ModalForm, ProFormDependency, ProFormSelect, ProFormSwitch, ProFormText
 } from "@ant-design/pro-form";
+import { Form } from "antd";
 import useProFormItem from "@/hooks/useProFormItem";
 import useProForm from "@/hooks/useProForm";
 import { API_CATEGORY } from "@/services/api";
 import request from "@/utils/request";
+import IconPicker from "@/components/IconPicker";
+import "./style.less";
 
 export default function CategoryForm(props: any) {
   const formProps = useProForm({
@@ -64,9 +67,9 @@ export default function CategoryForm(props: any) {
     <ModalForm {...props} {...formProps} onFinish={onFinish} width={500}>
       <ProFormText {...nameProps} />
       <ProFormSelect {...categoryProps} options={props.categoryList.reduce((t, v) => [...t, {label: v.name, value: v._id}], [])}/>
-      <ProFormDependency name={['icon']}>
-        {({ icon })=> <ProFormText {...categoryIconProps} formItemProps={{extra: <i className={icon}></i>}} />}
-      </ProFormDependency>
+      <Form.Item name="icon" label={categoryIconProps.label} rules={[{ required: categoryIconProps.required }]}>
+        <IconPicker placeholder="选择分类图标" />
+      </Form.Item>
       <ProFormSwitch {...showMenuProps} />
     </ModalForm>
   )

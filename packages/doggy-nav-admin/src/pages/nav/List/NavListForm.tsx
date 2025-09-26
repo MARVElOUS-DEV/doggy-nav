@@ -1,6 +1,6 @@
 import {
   DrawerForm, ProFormDependency, ProFormText,
-  ProFormTextArea
+  ProFormTextArea, ProFormSwitch
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
 import { Form } from "antd";
@@ -57,6 +57,12 @@ export default function NavListForm(props: any) {
     name: 'authorUrl',
     label: '作者网站',
   })
+
+  const statusProps = useProFormItem({
+    name: 'hide',
+    label: '隐藏状态',
+    required: false,
+  })
   return (
     <DrawerForm {...props} {...formProps} drawerProps={{ width: 600 }}>
       <ProFormDependency name={['logo']}>
@@ -74,6 +80,14 @@ export default function NavListForm(props: any) {
       <ProFormText {...urlProps} />
       <ProFormText {...authorProps} />
       <ProFormText {...authorUrlProps} />
+      <ProFormSwitch
+        {...statusProps}
+        fieldProps={{
+          checkedChildren: '隐藏',
+          unCheckedChildren: '显示'
+        }}
+        initialValue={false}
+      />
     </DrawerForm>
   )
 }

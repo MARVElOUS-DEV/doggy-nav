@@ -2,7 +2,7 @@ import {
   LockOutlined, UserOutlined
 } from '@ant-design/icons';
 import { message } from 'antd';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ProForm, { ProFormText } from '@ant-design/pro-form';
 import { Link, history, useLocation, useModel } from '@umijs/max';
 import Footer from '@/components/Footer';
@@ -10,7 +10,6 @@ import styles from './index.less';
 import { login } from "@/services/api";
 import { setPersistenceData } from "@/utils/persistence";
 import { CURRENT_USER, TOKEN } from "@/constants";
-import { PageContainer } from '@ant-design/pro-layout';
 
 
 const goto = (search: URLSearchParams) => {
@@ -26,6 +25,38 @@ const Login: React.FC = () => {
   const {setInitialState} = useModel('@@initialState');
   const {search: searchStr} = useLocation();
   const search = new URLSearchParams(searchStr);
+  const formRef = useRef<any>();
+
+  // Handle Enter key press
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' && !submitting) {
+      event.preventDefault();
+      if (formRef.current) {
+        formRef.current.submit();
+      }
+    }
+  };
+
+  // Add global Enter key listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !submitting) {
+        // Check if focus is within the login form
+        const activeElement = document.activeElement;
+        const isFormElement = activeElement?.closest('.ant-form, .ant-input, .ant-input-password');
+
+        if (isFormElement && formRef.current) {
+          event.preventDefault();
+          formRef.current.submit();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [submitting]);
 
   const handleSubmit = async (values: API.LoginParams) => {
     setSubmitting(true);
@@ -59,80 +90,81 @@ const Login: React.FC = () => {
   };
 
   return (
-    <PageContainer header={{title: false}}>
-      <div className={styles.container}>
-        <div className={styles.content}>
-          <div className={styles.top}>
-            <div className={styles.header}>
-              <Link to="/">
-                <img alt="logo" className={styles.logo} src="/logo-icon.png"/>
-                <span className={styles.title}>狗狗导航</span>
-              </Link>
-            </div>
-            <div className={styles.desc}>{'狗狗导航--个人成长过程中收藏的资源导航平台'}</div>
+    <div className={styles.container}>
+      <div className={styles.content}>
+        <div className={styles.top}>
+          <div className={styles.header}>
+            <Link to="/">
+              <img alt="logo" className={styles.logo} src="/logo-icon.png"/>
+              <span className={styles.title}>狗狗导航</span>
+            </Link>
           </div>
-
-          <div className={styles.main}>
-            <ProForm
-              initialValues={{
-                autoLogin: true,
-              }}
-              submitter={{
-                searchConfig: {
-                  submitText: '登录',
-                },
-                render: (_, dom) => dom.pop(),
-                submitButtonProps: {
-                  loading: submitting,
-                  size: 'large',
-                  style: {
-                    width: '100%',
-                  },
-                },
-              }}
-              onFinish={async (values) => {
-                handleSubmit(values as API.LoginParams);
-              }}
-            >
-
-
-              <>
-                <ProFormText
-                  name="username"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <UserOutlined className={styles.prefixIcon}/>,
-                  }}
-                  placeholder={'输入用户名'}
-                  rules={[
-                    {
-                      required: true,
-                      message: '用户名是必填项！',
-                    },
-                  ]}
-                />
-                <ProFormText.Password
-                  name="password"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <LockOutlined className={styles.prefixIcon}/>,
-                  }}
-                  placeholder={'输入密码'}
-                  rules={[
-                    {
-                      required: true,
-                      message: '密码是必填项！',
-                    },
-                  ]}
-                />
-              </>
-
-            </ProForm>
-          </div>
+          <div className={styles.desc}>{'狗狗导航--记录个人/团队成长过程的资源导航平台'}</div>
         </div>
-        <Footer/>
+
+        <div className={styles.main}>
+          <ProForm
+            formRef={formRef}
+            initialValues={{
+              autoLogin: true,
+            }}
+            submitter={{
+              searchConfig: {
+                submitText: '登录',
+              },
+              render: (_, dom) => dom.pop(),
+              submitButtonProps: {
+                loading: submitting,
+                size: 'large',
+                style: {
+                  width: '100%',
+                },
+              },
+            }}
+            onFinish={async (values) => {
+              handleSubmit(values as API.LoginParams);
+            }}
+          >
+
+
+            <>
+              <ProFormText
+                name="username"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <UserOutlined className={styles.prefixIcon}/>,
+                  onKeyDown: handleKeyDown,
+                }}
+                placeholder={'输入用户名'}
+                rules={[
+                  {
+                    required: true,
+                    message: '用户名是必填项！',
+                  },
+                ]}
+              />
+              <ProFormText.Password
+                name="password"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <LockOutlined className={styles.prefixIcon}/>,
+                  onKeyDown: handleKeyDown,
+                }}
+                placeholder={'输入密码'}
+                rules={[
+                  {
+                    required: true,
+                    message: '密码是必填项！',
+                  },
+                ]}
+              />
+            </>
+
+          </ProForm>
+        </div>
       </div>
-    </PageContainer>
+      <Footer/>
+    </div>
   );
 };
 
