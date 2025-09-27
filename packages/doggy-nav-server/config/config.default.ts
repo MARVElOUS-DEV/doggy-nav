@@ -58,22 +58,8 @@ export default (appInfo: EggAppInfo) => {
     secret: JWT_SECRET,
   };
 
-  config.routerAuth = [
-    '/api/nav',
-    '/api/nav/random',
-    '/api/nav/find',
-    '/api/nav/list',
-    '/api/nav/reptile',
-    '/api/nav/ranking',
-    '/api/login',
-    '/api/user/register',
-    '/api/user/verify-client-secret',
-    '/api/index',
-    '/api/category/list',
-    '/api/tag/list',
-    '/api/url-checker/status',
-    '/api/url-checker/nav-status',
-  ];
+  // Route access control is now handled by the access-control.js configuration
+  // config.routerAuth is deprecated
 
   // Rate limiting configuration
   config.ratelimiter = {
