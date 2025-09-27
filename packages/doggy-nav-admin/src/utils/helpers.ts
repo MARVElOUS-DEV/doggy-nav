@@ -19,7 +19,7 @@ export const getIconComponent = (iconName: string, fontSize = 14): React.ReactNo
       return React.createElement(
         React.Suspense,
         { fallback: React.createElement('span', { style: { fontSize: `${fontSize}px` } }, '...') },
-        React.createElement(IconComponent, { style: { fontSize: `${fontSize}px`, marginRight: '4px' } })
+        React.createElement(IconComponent, { style: { fontSize: `${fontSize}px`,width: `${fontSize}px`, marginRight: '4px' } })
       );
     }
     return React.createElement('span', { style: { fontSize: `${fontSize}px` } }, iconName);

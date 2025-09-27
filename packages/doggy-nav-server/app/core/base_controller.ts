@@ -2,6 +2,40 @@ import { Controller } from 'egg';
 
 export default class CommonController extends Controller {
 
+  // Input sanitization function
+  private sanitizeInput(input: any): any {
+    if (typeof input === 'string') {
+      return input
+        .replace(/[<>]/g, '')
+        .replace(/javascript:/gi, '')
+        .replace(/on\w+\s*=/gi, '')
+        .trim();
+    }
+    if (typeof input === 'object' && input !== null && !Array.isArray(input)) {
+      const sanitized: any = {};
+      for (const key in input) {
+        if (input.hasOwnProperty(key)) {
+          sanitized[key] = this.sanitizeInput(input[key]);
+        }
+      }
+      return sanitized;
+    }
+    if (Array.isArray(input)) {
+      return input.map(item => this.sanitizeInput(item));
+    }
+    return input;
+  }
+
+  // Get sanitized request body
+  protected getSanitizedBody() {
+    return this.sanitizeInput(this.ctx.request.body);
+  }
+
+  // Get sanitized query parameters
+  protected getSanitizedQuery() {
+    return this.sanitizeInput(this.ctx.query);
+  }
+
   // Check if user is authenticated
   isAuthenticated(): boolean {
     return !!this.ctx.state.userinfo;
@@ -11,31 +45,88 @@ export default class CommonController extends Controller {
   getUserInfo() {
     return this.ctx.state.userinfo;
   }
+
   tableName() {
     return '';
   }
+
   success(data) {
+    const sanitizedData = this.sanitizeResponseData(data);
     this.ctx.body = {
       code: 1,
       msg: 'ok',
-      data,
+      data: sanitizedData,
     };
   }
+
   error(msg) {
     this.ctx.body = {
       code: 0,
-      msg,
+      msg: typeof msg === 'string' ? msg.replace(/[<>]/g, '') : msg,
       data: null,
     };
   }
 
+  // Sanitize response data to prevent sensitive info leakage
+  private sanitizeResponseData(data: any): any {
+    if (!data) return data;
+
+    if (typeof data === 'object' && data !== null) {
+      if (Array.isArray(data)) {
+        return data.map(item => this.sanitizeResponseData(item));
+      }
+
+      const sanitized: any = {};
+      for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+          if (key === 'password' || key === 'resetPasswordToken') {
+            continue;
+          }
+          sanitized[key] = this.sanitizeResponseData(data[key]);
+        }
+      }
+      return sanitized;
+    }
+
+    return data;
+  }
+
+  // Convert Mongoose documents to plain objects using toJSON
+  private toPlainObject(doc: any): any {
+    if (!doc) return doc;
+
+    // If it's a Mongoose document or array of documents, use toJSON method
+    if (doc.toJSON && typeof doc.toJSON === 'function') {
+      return doc.toJSON();
+    }
+
+    // If it's an array, process each item
+    if (Array.isArray(doc)) {
+      return doc.map(item => this.toPlainObject(item));
+    }
+
+    // If it's a regular object, recursively process its properties
+    if (typeof doc === 'object' && doc !== null) {
+      const plain: any = {};
+      for (const key in doc) {
+        if (doc.hasOwnProperty(key) && !key.startsWith('$')) {
+          plain[key] = this.toPlainObject(doc[key]);
+        }
+      }
+      return plain;
+    }
+
+    return doc;
+  }
+
   // 添加
   async add() {
-    const { request } = this.ctx;
+    const body = this.getSanitizedBody();
     const tableName = this.tableName();
     try {
-      const res = await this.ctx.model[tableName].create(request.body);
-      this.success(res);
+      const res = await this.ctx.model[tableName].create(body);
+      const plainRes = this.toPlainObject(res);
+      this.success(plainRes);
     } catch (e: any) {
       this.error(e.message);
     }
@@ -43,10 +134,13 @@ export default class CommonController extends Controller {
 
   // 删除
   async remove() {
-    const { request } = this.ctx;
+    const body = this.getSanitizedBody();
     const tableName = this.tableName();
     try {
-      const id = request.body.id;
+      const id = body.id;
+      if (!id) {
+        throw new Error('ID is required');
+      }
       const res = await this.ctx.model[tableName].deleteOne({ _id: id });
       this.success(res);
     } catch (e: any) {
@@ -56,12 +150,15 @@ export default class CommonController extends Controller {
 
   // 更新
   async update() {
-    const { request } = this.ctx;
+    const body = this.getSanitizedBody();
     const tableName = this.tableName();
     try {
-      const id = request.body.id;
-      delete request.body.id;
-      const res = await this.ctx.model[tableName].updateOne({ _id: id }, request.body);
+      const id = body.id;
+      if (!id) {
+        throw new Error('ID is required');
+      }
+      delete body.id;
+      const res = await this.ctx.model[tableName].updateOne({ _id: id }, body);
       this.success(res);
     } catch (e: any) {
       this.error(e.message);
@@ -70,12 +167,16 @@ export default class CommonController extends Controller {
 
   // 查找一个
   async get() {
-    const { request, query } = this.ctx;
+    const query = this.getSanitizedQuery();
     const tableName = this.tableName();
     try {
       const id = query.id;
+      if (!id) {
+        throw new Error('ID is required');
+      }
       const res = await this.ctx.model[tableName].findOne({ _id: id });
-      this.success(res);
+      const plainRes = this.toPlainObject(res);
+      this.success(plainRes);
     } catch (e: any) {
       this.error(e.message);
     }
@@ -83,19 +184,20 @@ export default class CommonController extends Controller {
 
   // 查找多个
   async getList(findObj = {}, otherCMD = (_table: any) => _table) {
-    const { request, query } = this.ctx;
+    const query = this.getSanitizedQuery();
     const tableName = this.tableName();
 
     try {
       let { pageSize = 10, pageNumber = 1 } = query;
-      pageSize = Number(pageSize);
-      pageNumber = Number(pageNumber);
+      pageSize = Math.min(Math.max(Number(pageSize) || 10, 1), 100);
+      pageNumber = Math.max(Number(pageNumber) || 1, 1);
       const skipNumber = pageSize * pageNumber - pageSize;
       const table = this.ctx.model[tableName];
 
       const [ data, total ] = await Promise.all([
         otherCMD(table.find(findObj).skip(skipNumber).limit(pageSize)
-          .sort({ _id: -1 })),
+          .sort({ _id: -1 }))
+          .then((docs: any) => this.toPlainObject(docs)),
         table.find(findObj).countDocuments(),
       ]);
 
@@ -111,10 +213,10 @@ export default class CommonController extends Controller {
 
   // 查找随机数量列表
   async getRandomList(randomNumber = 10) {
-    const { request, query } = this.ctx;
     const tableName = this.tableName();
     try {
-      const res = await this.ctx.model[tableName].aggregate([{ $sample: { size: randomNumber } }]);
+      const safeRandomNumber = Math.min(Math.max(Number(randomNumber) || 10, 1), 50);
+      const res = await this.ctx.model[tableName].aggregate([{ $sample: { size: safeRandomNumber } }]);
       this.success(res);
     } catch (e: any) {
       this.error(e.message);

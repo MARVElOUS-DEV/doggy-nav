@@ -69,11 +69,11 @@ export const getIconComponent = (iconName: string, fontSize = 14): React.ReactNo
         { fallback: React.createElement('span', { style: { fontSize: `${fontSize}px` } }, '...') },
         React.createElement(
           IconComponent,
-          { style: { fontSize: fontSize, marginRight: '4px' } } as React.ComponentProps<any>
+          { style: { fontSize: `${fontSize}px`,width: `${fontSize}px`, marginRight: '4px' } } as React.ComponentProps<any>
         )
       );
     }
-    return React.createElement('span', { style: { fontSize: `${fontSize}px` } }, iconName);
+    return React.createElement('img', { style: { fontSize: `${fontSize}px`, width: `${fontSize}px`,  marginRight: '4px' }, src: iconName });
   } catch (error) {
     return null;
   }

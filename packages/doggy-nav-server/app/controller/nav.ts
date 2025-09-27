@@ -15,7 +15,6 @@ export default class NavController extends Controller {
 
   async list() {
     const { ctx } = this;
-    const { model } = ctx;
     const { status = 0, categoryId, name, hide } = ctx.query;
 
     let findParam: any = {};

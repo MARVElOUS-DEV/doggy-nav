@@ -5,17 +5,39 @@ import { ConnectOptions } from 'mongoose';
 export default (appInfo: EggAppInfo) => {
   const config = {} as PowerPartial<EggAppConfig>;
 
-  config.keys = 'doggy-nav';
+  // Use environment variables for critical secrets
+  const JWT_SECRET = process.env.JWT_SECRET || 'a_strange_jwt_token_when_you_see_it';
+
+  config.keys = appInfo.name + '_' + Math.random().toString(36).substr(2, 8);
 
   config.security = {
     csrf: {
       enable: false,
+      ignoreJSON: true,
+    },
+    xframe: {
+      value: 'SAMEORIGIN',
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubdomains: true,
+    },
+    csp: {
+      policy: {
+        'default-src': '\'self\'',
+        'img-src': '\'self\' data:',
+        'script-src': '\'self\' \'unsafe-inline\'',
+        'style-src': '\'self\' \'unsafe-inline\'',
+      },
+    },
+    xssProtection: {
+      value: '1; mode=block',
     },
   };
 
   config.cluster = {
     listen: {
-      port: 3002,
+      port: parseInt(process.env.PORT || '3002', 10),
       hostname: '0.0.0.0',
     },
   };
@@ -33,7 +55,7 @@ export default (appInfo: EggAppInfo) => {
   };
 
   config.jwt = {
-    secret: 'a_strange_jwt_token_when_you_see_it',
+    secret: JWT_SECRET,
   };
 
   config.routerAuth = [
@@ -44,12 +66,29 @@ export default (appInfo: EggAppInfo) => {
     '/api/nav/reptile',
     '/api/nav/ranking',
     '/api/login',
+    '/api/user/register',
+    '/api/user/verify-client-secret',
     '/api/index',
     '/api/category/list',
     '/api/tag/list',
     '/api/url-checker/status',
     '/api/url-checker/nav-status',
   ];
+
+  // Rate limiting configuration
+  config.ratelimiter = {
+    enable: process.env.NODE_ENV === 'production',
+    limit: 100,
+    interval: 60000,
+    headers: true,
+    message: 'Too many requests, please try again later.',
+    statusCode: 429,
+    keyGenerator: (ctx: any) => {
+      return ctx.ip;
+    },
+    whitelist: [],
+    blacklist: [],
+  };
 
   // URL Checker Configuration
   config.urlChecker = {
