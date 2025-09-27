@@ -8,7 +8,7 @@ db.mongoose = mongoose;
 // 引入数据模型模块
 const userSchema = userModel(db);
 
-(async (password) => {
+(async (password="admin123") => {
   console.info("mongoUrl", mongoUrl, `passwd=> ${password}`);
   const [ f ] = await userSchema.find({
         username: { $eq: 'admin' },

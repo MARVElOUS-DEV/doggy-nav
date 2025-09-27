@@ -1,6 +1,16 @@
 import { Controller } from 'egg';
 
 export default class CommonController extends Controller {
+
+  // Check if user is authenticated
+  isAuthenticated(): boolean {
+    return !!this.ctx.state.userinfo;
+  }
+
+  // Get user info if authenticated
+  getUserInfo() {
+    return this.ctx.state.userinfo;
+  }
   tableName() {
     return '';
   }

@@ -16,12 +16,14 @@ export default class NavController extends Controller {
   async list() {
     const { ctx } = this;
     const { model } = ctx;
-    const { status = 0, categoryId, name } = ctx.query;
+    const { status = 0, categoryId, name, hide } = ctx.query;
 
-    let findParam: any = {
-      status,
-    };
-    if (!status) {
+    let findParam: any = {};
+
+    // Handle status filter
+    if (status !== undefined && status !== '') {
+      findParam.status = Number(status);
+    } else {
       findParam = {
         $or: [
           { status: { $exists: false } },
@@ -29,6 +31,19 @@ export default class NavController extends Controller {
         ],
       };
     }
+
+    // Filter hide based on authentication state
+    const isAuthenticated = this.isAuthenticated();
+    if (!isAuthenticated) {
+      // For non-authenticated users, only show non-hidden items
+      if (!hide) {
+        findParam.hide = { $eq: false };
+      }
+    } else if (hide !== undefined) {
+      // For authenticated users, respect the hide parameter if provided
+      findParam.hide = { $eq: hide === 'true' };
+    }
+
     if (categoryId) {
       findParam.categoryId = {
         $eq: categoryId,
@@ -111,17 +126,32 @@ export default class NavController extends Controller {
     try {
       const { id, categoryId } = request.query;
       const resData: any = [];
-      // 取所有子分类
-      const categorys = await model.Category.find({ categoryId });
+      // 取所有子分类， filter by hide based on authentication
+      const isAuthenticated = this.isAuthenticated();
+      const categoryFilter: any = { categoryId };
+
+      // For non-authenticated users, also filter out hidden categories
+      if (!isAuthenticated) {
+        categoryFilter.hide = { $eq: false };
+      }
+
+      const categorys = await model.Category.find(categoryFilter);
       const categoryIds = categorys.reduce((t, v) => [ ...t, v._id ], []);
 
-      const navs = await model.Nav.find({
+      const navFindParam: any = {
         categoryId: { $in: categoryIds },
         $or: [
           { status: { $exists: false } },
           { status: 0 },
         ],
-      });
+      };
+
+      // For non-authenticated users, also filter out hidden nav items
+      if (!isAuthenticated) {
+        navFindParam.hide = { $eq: false };
+      }
+
+      const navs = await model.Nav.find(navFindParam);
 
       categorys.map(category => {
         const nowNavs = navs.filter(nav => nav.categoryId === category._id.toString());

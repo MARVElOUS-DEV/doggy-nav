@@ -21,7 +21,10 @@ export default function(app: any) {
       name: String,
       categoryId: String,
       createAt: Number, // Chrome time number
-      showInMenu: Boolean,
+      showInMenu: {
+        type: Boolean,
+        default: true,
+      },
     }],
     showInMenu: {
       type: Boolean,

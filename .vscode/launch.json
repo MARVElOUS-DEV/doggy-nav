@@ -10,7 +10,7 @@
       "name": "nav-server",
       "skipFiles": ["<node_internals>/**"],
       "localRoot": "${workspaceFolder}/packages/doggy-nav-server",
-      "program": "${workspaceFolder}/packages/doggy-nav-server/node_modules/egg-bin/bin/egg-bin.js",
+      "program": "${workspaceFolder}/packages/doggy-nav-server/node_modules/egg-bin/dist/bin/cli.js",
       "outFiles": ["${workspaceFolder}/**/*.js"],
       "args": ["dev", "--port=3002"],
       "console": "integratedTerminal"

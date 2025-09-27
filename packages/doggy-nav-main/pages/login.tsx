@@ -27,16 +27,20 @@ export default function LoginPage() {
           user: { _id: "admin", username: values.username },
           token: response,
         },
-      });
+      })
 
       Message.success('Login successful!');
       
       // Redirect to home or previous page
       const redirectTo = (router.query.redirect as string) || '/';
       router.push(redirectTo);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
-      Message.error(error instanceof Error ? error.message : 'Login failed');
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        Message.error((error as { message?: string }).message || 'Login failed');
+      } else {
+        Message.error('Login failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -141,7 +145,7 @@ export default function LoginPage() {
             className="text-center mt-6"
           >
             <p className="text-gray-600 text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <button
                 onClick={() => router.push('/register')}
                 className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"

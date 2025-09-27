@@ -1,136 +1,131 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Input, Tabs, Popover, Button } from 'antd';
-import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
-import type { TabsProps } from 'antd';
+import type { InputRef, TabsProps } from 'antd';
+// Arco Design Icons
 import {
-  HomeOutlined,
-  AppstoreOutlined,
-  UnorderedListOutlined,
-  StarOutlined,
-  HeartOutlined,
-  FolderOutlined,
-  FileOutlined,
-  PictureOutlined,
-  VideoCameraOutlined,
-  AudioOutlined,
-  BookOutlined,
-  ReadOutlined,
-  CodeOutlined,
-  SettingOutlined,
-  ToolOutlined,
-  DatabaseOutlined,
-  CloudOutlined,
-  MobileOutlined,
-  DesktopOutlined,
-  GlobalOutlined,
-  MailOutlined,
-  UserOutlined,
-  TeamOutlined,
-  SafetyOutlined,
-  LockOutlined,
-  InfoCircleOutlined,
-  QuestionCircleOutlined,
-  WarningOutlined,
-  BellOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  EnvironmentOutlined,
-  ShopOutlined,
-  ShoppingCartOutlined,
-  DollarOutlined,
-  HeartTwoTone,
-  StarTwoTone,
-  SmileOutlined,
-  FrownOutlined,
-  MehOutlined,
-} from '@ant-design/icons';
+  IconHome,
+  IconApps,
+  IconList,
+  IconStar,
+  IconHeart,
+  IconFolder,
+  IconFile,
+  IconImage,
+  IconVideoCamera,
+  IconMusic,
+  IconBook,
+  IconBug,
+  IconCode,
+  IconSettings,
+  IconTool,
+  IconStorage,
+  IconCloud,
+  IconMobile,
+  IconDesktop,
+  IconPublic,
+  IconEmail,
+  IconUser,
+  IconUserGroup,
+  IconSafe,
+  IconLock,
+  IconInfoCircle,
+  IconQuestionCircle,
+  IconExclamationCircle,
+  IconNotification,
+  IconCalendar,
+  IconClockCircle,
+  IconLocation,
+  IconTag,
+  IconTags,
+  IconInteraction,
+  IconFaceSmileFill,
+  IconFaceMehFill,
+  IconFaceFrownFill,
+} from '@arco-design/web-react/icon';
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 
-// Popular Ant Design icons for categories
-const antDesignIcons = [
-  'HomeOutlined',
-  'AppstoreOutlined',
-  'UnorderedListOutlined',
-  'StarOutlined',
-  'HeartOutlined',
-  'FolderOutlined',
-  'FileOutlined',
-  'PictureOutlined',
-  'VideoCameraOutlined',
-  'AudioOutlined',
-  'BookOutlined',
-  'ReadOutlined',
-  'CodeOutlined',
-  'SettingOutlined',
-  'ToolOutlined',
-  'DatabaseOutlined',
-  'CloudOutlined',
-  'MobileOutlined',
-  'DesktopOutlined',
-  'GlobalOutlined',
-  'MailOutlined',
-  'UserOutlined',
-  'TeamOutlined',
-  'SafetyOutlined',
-  'LockOutlined',
-  'InfoCircleOutlined',
-  'QuestionCircleOutlined',
-  'WarningOutlined',
-  'BellOutlined',
-  'CalendarOutlined',
-  'ClockCircleOutlined',
-  'EnvironmentOutlined',
-  'ShopOutlined',
-  'ShoppingCartOutlined',
-  'DollarOutlined',
-  'HeartTwoTone',
-  'StarTwoTone',
-  'SmileOutlined',
-  'FrownOutlined',
-  'MehOutlined',
+// Popular Arco Design icons for categories
+const arcoDesignIcons = [
+  'IconHome',
+  'IconApps',
+  'IconList',
+  'IconStar',
+  'IconHeart',
+  'IconFolder',
+  'IconFile',
+  'IconImage',
+  'IconVideoCamera',
+  'IconMusic',
+  'IconBook',
+  'IconBug',
+  'IconCode',
+  'IconSettings',
+  'IconTool',
+  'IconStorage',
+  'IconCloud',
+  'IconMobile',
+  'IconDesktop',
+  'IconPublic',
+  'IconEmail',
+  'IconUser',
+  'IconUserGroup',
+  'IconSafe',
+  'IconLock',
+  'IconInfoCircle',
+  'IconQuestionCircle',
+  'IconExclamationCircle',
+  'IconNotification',
+  'IconCalendar',
+  'IconClockCircle',
+  'IconLocation',
+  'IconTag',
+  'IconTags',
+  'IconInteraction',
+  'IconFaceSmileFill',
+  'IconFaceMehFill',
+  'IconFaceFrownFill',
 ];
 
-// Mapping icon names to actual components
-const antIconMap = {
-  HomeOutlined,
-  AppstoreOutlined,
-  UnorderedListOutlined,
-  StarOutlined,
-  HeartOutlined,
-  FolderOutlined,
-  FileOutlined,
-  PictureOutlined,
-  VideoCameraOutlined,
-  AudioOutlined,
-  BookOutlined,
-  ReadOutlined,
-  CodeOutlined,
-  SettingOutlined,
-  ToolOutlined,
-  DatabaseOutlined,
-  CloudOutlined,
-  MobileOutlined,
-  DesktopOutlined,
-  GlobalOutlined,
-  MailOutlined,
-  UserOutlined,
-  TeamOutlined,
-  SafetyOutlined,
-  LockOutlined,
-  InfoCircleOutlined,
-  QuestionCircleOutlined,
-  WarningOutlined,
-  BellOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  EnvironmentOutlined,
-  ShopOutlined,
-  ShoppingCartOutlined,
-  DollarOutlined,
-  HeartTwoTone,
-  StarTwoTone,
-  SmileOutlined,
-  FrownOutlined,
-  MehOutlined,
+// Mapping Arco icon names to actual components
+const arcoIconMap = {
+  IconHome,
+  IconApps,
+  IconList,
+  IconStar,
+  IconHeart,
+  IconFolder,
+  IconFile,
+  IconImage,
+  IconVideoCamera,
+  IconMusic,
+  IconBook,
+  IconBug,
+  IconCode,
+  IconSettings,
+  IconTool,
+  IconStorage,
+  IconCloud,
+  IconMobile,
+  IconDesktop,
+  IconPublic,
+  IconEmail,
+  IconUser,
+  IconUserGroup,
+  IconSafe,
+  IconLock,
+  IconInfoCircle,
+  IconQuestionCircle,
+  IconExclamationCircle,
+  IconNotification,
+  IconCalendar,
+  IconClockCircle,
+  IconLocation,
+  IconTag,
+  IconTags,
+  IconInteraction,
+  IconFaceSmileFill,
+  IconFaceMehFill,
+  IconFaceFrownFill,
 };
 
 // Popular emojis for categories
@@ -168,16 +163,6 @@ interface IconPickerProps {
   disabled?: boolean;
 }
 
-// Dynamically import Ant Design icons
-const getIconComponent = (iconName: string) => {
-  try {
-    // This would be dynamically imported, but for now we'll use a simple approach
-    return React.createElement('span', { className: 'anticon', style: { fontSize: '18px' } }, iconName);
-  } catch (error) {
-    return null;
-  }
-};
-
 const IconPicker: React.FC<IconPickerProps> = ({
   value,
   onChange,
@@ -187,7 +172,7 @@ const IconPicker: React.FC<IconPickerProps> = ({
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('ant');
-  const searchInputRef = useRef<Input>(null);
+  const searchInputRef = useRef<InputRef>(null);
 
   // Focus search input when modal opens
   useEffect(() => {
@@ -198,7 +183,7 @@ const IconPicker: React.FC<IconPickerProps> = ({
     }
   }, [open]);
 
-  const filteredAntIcons = antDesignIcons.filter(icon =>
+  const filteredArcoIcons = arcoDesignIcons.filter(icon =>
     icon.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -216,10 +201,10 @@ const IconPicker: React.FC<IconPickerProps> = ({
     onChange?.('');
   };
 
-  const renderIconPreview = (icon: string, isEmoji: boolean = false) => {
+  const renderIconPreview = (icon: string, isEmoji: boolean = false, iconType: 'ant' | 'arco' = 'ant') => {
     if (isEmoji) {
       return (
-        <div className="icon-picker-item" onClick={() => handleIconSelect(icon)}>
+        <div className="icon-picker-item" onClick={() => handleIconSelect(`type:emoji_${icon}`)}>
           <span className="icon-emoji" style={{ fontSize: '18px' }}>
             {icon}
           </span>
@@ -227,15 +212,17 @@ const IconPicker: React.FC<IconPickerProps> = ({
       );
     }
 
-    const IconComponent = antIconMap[icon as keyof typeof antIconMap];
-    if (IconComponent) {
-      return (
-        <div className="icon-picker-item" onClick={() => handleIconSelect(icon)}>
-          <div className="icon-ant">
-            <IconComponent style={{ fontSize: '18px' }} />
+if (iconType === 'arco') {
+      const IconComponent = arcoIconMap[icon as keyof typeof arcoIconMap];
+      if (IconComponent) {
+        return (
+          <div className="icon-picker-item" onClick={() => handleIconSelect(`type:arco_${icon}`)}>
+            <div className="icon-arco">
+              <IconComponent style={{ fontSize: '18px' }} />
+            </div>
           </div>
-        </div>
-      );
+        );
+      }
     }
 
     return null;
@@ -243,12 +230,12 @@ const IconPicker: React.FC<IconPickerProps> = ({
 
   const tabItems: TabsProps['items'] = [
     {
-      key: 'ant',
-      label: 'Ant图标',
+      key: 'arco',
+      label: 'Arco图标',
       children: (
         <div className="icon-picker-grid">
-          {filteredAntIcons.length > 0 ? (
-            filteredAntIcons.map(icon => renderIconPreview(icon, false))
+          {filteredArcoIcons.length > 0 ? (
+            filteredArcoIcons.map(icon => renderIconPreview(icon, false, 'arco'))
           ) : (
             <div className="no-results">没有找到匹配的图标</div>
           )}
@@ -297,16 +284,23 @@ const IconPicker: React.FC<IconPickerProps> = ({
       );
     } else {
       // Check if it's an emoji
-      const isEmoji = flatEmojis.includes(value);
+      const isEmoji = value?.startsWith('type:emoji_');
+      const iconType = value?.startsWith('type:arco_') ? 'arco' : 'ant';
+
       content = (
         <div className="icon-picker-trigger">
           {isEmoji ? (
-            <span className="selected-emoji" style={{ fontSize: '18px' }}>{value}</span>
+            <span className="selected-emoji" style={{ fontSize: '18px' }}>
+              {value?.replace('type:emoji_', '')}
+            </span>
           ) : (
             (() => {
-              const IconComponent = antIconMap[value as keyof typeof antIconMap];
-              if (IconComponent) {
-                return <IconComponent style={{ fontSize: '18px' }} />;
+              if (iconType === 'arco') {
+                const iconName = value?.replace('type:arco_', '') || '';
+                const IconComponent = arcoIconMap[iconName as keyof typeof arcoIconMap];
+                if (IconComponent) {
+                  return <IconComponent style={{ fontSize: '18px' }} />;
+                }
               }
               return <span className="selected-icon">{value}</span>;
             })()
@@ -323,13 +317,19 @@ const IconPicker: React.FC<IconPickerProps> = ({
               <>
                 <div className="preview-title">当前选择：</div>
                 <div className="preview-content">
-                  {flatEmojis.includes(value) ? (
-                    <span className="preview-emoji" style={{ fontSize: '32px' }}>{value}</span>
+                  {value?.startsWith('type:emoji_') ? (
+                    <span className="preview-emoji" style={{ fontSize: '32px' }}>
+                      {value?.replace('type:emoji_', '')}
+                    </span>
                   ) : (
                     (() => {
-                      const IconComponent = antIconMap[value as keyof typeof antIconMap];
-                      if (IconComponent) {
-                        return <IconComponent style={{ fontSize: '32px' }} />;
+                      const iconType = value?.startsWith('type:arco_') ? 'arco' : 'ant';
+                      if (iconType === 'arco') {
+                        const iconName = value?.replace('type:arco_', '') || '';
+                        const IconComponent = arcoIconMap[iconName as keyof typeof arcoIconMap];
+                        if (IconComponent) {
+                          return <IconComponent style={{ fontSize: '32px' }} />;
+                        }
                       }
                       return <span className="preview-icon">{value}</span>;
                     })()

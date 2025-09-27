@@ -4,13 +4,13 @@ import { Message } from '@arco-design/web-react';
 interface ApiResponse<T = any> {
   code: number;
   data: T;
-  message: string;
+  msg: string;
   success: boolean;
 }
 
 interface ApiError {
   code: number;
-  message: string;
+  msg: string;
   timestamp: number;
 }
 
@@ -28,7 +28,7 @@ instance.interceptors.request.use(
     // Add auth token if available
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token && config.headers) {
-      (config.headers as any).Authorization = `Bearer ${token}`;
+      (config.headers as any).Authorization = token;
     }
 
     // Add request timestamp for debugging
@@ -57,11 +57,10 @@ instance.interceptors.response.use(
     if (data && typeof data === 'object' && 'code' in data) {
       if (data.code !== 1) {
         // API returned error but with 200 status
-        const errorMessage = data.message || 'Request failed';
+        const errorMessage = data.msg || 'Request failed';
         Message.error(errorMessage);
         return Promise.reject(new Error(errorMessage));
       }
-      // Return the actual data for successful API responses
       return data.data !== undefined ? data.data : data;
     }
 
@@ -81,14 +80,13 @@ instance.interceptors.response.use(
 
       switch (status) {
         case 400:
-          errorMessage = data?.message || 'Bad Request';
+          errorMessage = data?.msg || 'Bad Request';
           break;
         case 401:
           errorMessage = 'Unauthorized - Please login';
-          // Redirect to login if needed
           if (typeof window !== 'undefined') {
             localStorage.removeItem('token');
-            // You can add router redirect here if needed
+            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
           }
           break;
         case 403:
@@ -98,7 +96,7 @@ instance.interceptors.response.use(
           errorMessage = 'Resource not found';
           break;
         case 422:
-          errorMessage = data?.message || 'Validation Error';
+          errorMessage = data?.msg || 'Validation Error';
           break;
         case 500:
           errorMessage = 'Internal Server Error';
@@ -110,7 +108,7 @@ instance.interceptors.response.use(
           errorMessage = 'Service Unavailable';
           break;
         default:
-          errorMessage = data?.message || `Error ${status}`;
+          errorMessage = data?.msg || `Error ${status}`;
       }
     } else if (error.request) {
       // Network error

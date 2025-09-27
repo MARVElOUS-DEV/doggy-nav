@@ -6,7 +6,7 @@ interface IProps extends ProFormProps {
   [name: string]: any
 }
 
-export default function useProForm(props: IProps) {
+export default function useProForm(props: IProps): IProps & { formRef: any } {
   const form = useRef<any>({});
 
   useEffect(() => {
@@ -17,7 +17,6 @@ export default function useProForm(props: IProps) {
         if (props.onInitialValues) {
           selectedData = props.onInitialValues(props.selectedData)
         }
-        console.log('form.current.setFieldsValue:', selectedData);
         form.current.setFieldsValue(selectedData)
       } else {
         form.current.resetFields()

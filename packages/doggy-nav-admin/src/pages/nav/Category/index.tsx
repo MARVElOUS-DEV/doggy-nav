@@ -8,18 +8,21 @@ import CategoryForm from "@/pages/nav/Category/CategoryForm";
 import { useRef, useState } from "react";
 import { CategoryModel } from "@/types/api";
 import TableCom from "@/components/TableCom";
+import { getIconComponent } from "@/utils/helpers";
 
 
 function transformCategoryList(list: any) {
   const newList: any = []
-  list.map(item=> {
+  list.map(item => {
     const listItem: any = { key: item._id, ...item, children: [] }
     if (Array.isArray(item.children)) {
-      item.children.map(subItem=> {
+      item.children.map(subItem => {
         listItem.children.push({ key: subItem._id, ...subItem })
+        return subItem
       })
     }
     newList.push(listItem)
+    return item
   })
   return newList
 }
@@ -27,15 +30,12 @@ function transformCategoryList(list: any) {
 export default function NavAuditListPage() {
   const formProps = useTableComPopup()
   const tableRef = useRef<ActionType>();
-  const [categoryList, setCategoryList] = useState([]);
+  const [categoryList, setCategoryList] = useState<{ key: string }[]>([]);
 
   async function onRequestData() {
     const res = await request({
       url: API_CATEGORY_LIST,
       method: 'GET',
-      data: {
-        showInMenu: false
-      }
     })
     const data = transformCategoryList(res.data)
     setCategoryList(data)
@@ -59,7 +59,8 @@ export default function NavAuditListPage() {
   const columns: ProColumns[] = [
     {
       title: '分类名',
-      dataIndex: 'name'
+      dataIndex: 'name',
+      render: (text, record) => (<><span style={{marginRight: '4px'}}>{getIconComponent(record.icon)}</span><span>{text}</span></>)
     },
     {
       title: '显示在菜单',
@@ -80,14 +81,14 @@ export default function NavAuditListPage() {
           request={onRequestData}
           toolbar={{
             actions: [
-              <Button type='primary' onClick={()=> formProps.show()} icon={<PlusOutlined />}>
+              <Button key="add" type='primary' onClick={() => formProps.show()} icon={<PlusOutlined />}>
                 添加分类
               </Button>
             ],
           }}
-          renderOptions={(text, record: CategoryModel, _, action)=> ([
-            <a onClick={()=> formProps.show({type: 'edit', data: record, action})}>编辑</a>,
-            <Popconfirm title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
+          renderOptions={(text, record: CategoryModel, _, action) => ([
+            <a key="edit" onClick={() => formProps.show({ type: 'edit', data: record, action })}>编辑</a>,
+            <Popconfirm key="delete" title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
               <a>删除</a>
             </Popconfirm>,
           ])}

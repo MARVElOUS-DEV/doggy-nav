@@ -16,6 +16,7 @@
     "@ant-design/pro-form": "^2.30.1",
     "@ant-design/pro-layout": "^7.21.1",
     "@ant-design/pro-table": "^3.16.4",
+    "@arco-design/web-react": "^2.66.5",
     "@umijs/max": "^4.5.0",
     "antd": "^5.21.0",
     "react": "^17.0.2",

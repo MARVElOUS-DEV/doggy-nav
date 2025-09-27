@@ -7,12 +7,27 @@ export default class CategoryController extends Controller {
 
   async list() {
     const { ctx } = this;
-    const { showInMenu = true } = ctx.query;
+    const { showInMenu, hide } = ctx.query;
     try {
       const params: any = {};
-      if (showInMenu && showInMenu !== 'false') {
-        params.showInMenu = { $in: [ null, true ] };
+      if (showInMenu) {
+        params.showInMenu = { $eq: showInMenu !== 'false' };
       }
+
+      // Filter hide based on authentication state
+      // If user is not authenticated, exclude hidden items
+      // If user is authenticated, include all items unless hide parameter is explicitly set
+      const isAuthenticated = this.isAuthenticated();
+      if (!isAuthenticated) {
+        // For non-authenticated users, only show non-hidden items
+        if (!hide) {
+          params.hide = { $eq: false };
+        }
+      } else if (hide) {
+        // For authenticated users, respect the hide parameter if provided
+        params.hide = { $eq: hide === 'true' };
+      }
+
       const data = await ctx.model.Category.find(params).limit(100000);
 
       const newData = ctx.service.category.formatCategoryList(data);
