@@ -110,9 +110,9 @@ export default function Recommend() {
           <FormItem label="网站分类" field="categoryId">
             <Select placeholder="请选择" showSearch>
               {categories.map((group) => (
-                <Select.OptGroup key={group._id} label={group.name}>
+                <Select.OptGroup key={group.id} label={group.name}>
                   {group.children?.map((item) => (
-                    <Select.Option key={item._id} value={item._id}>
+                    <Select.Option key={item.id} value={item.id}>
                       {item.name}
                     </Select.Option>
                   ))}

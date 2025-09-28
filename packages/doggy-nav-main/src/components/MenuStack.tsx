@@ -18,7 +18,7 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
           if (hasChildren) {
             return (
               <Menu.SubMenu
-                key={category._id}
+                key={category.id}
                 title={
                   <div className="flex items-center gap-3 w-full py-2.5 transition-all duration-200 group hover:bg-blue-50 hover:shadow-sm rounded-xl">
                     {category.icon && (getIconComponent(category.icon, 16))}
@@ -31,8 +31,8 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
                   ?.filter(child => child.showInMenu)
                   .map((child) => (
                     <Menu.Item
-                      key={child._id}
-                      onClick={() => onHandleSubMenuItemClick(child, child._id)}
+                      key={child.id}
+                      onClick={() => onHandleSubMenuItemClick(child, child.id)}
                       className="group"
                     >
                       <div className="flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 group hover:bg-blue-50/50 rounded-xl">
@@ -50,8 +50,8 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
 
           return (
             <Menu.Item
-              key={category._id}
-              onClick={() => onHandleSubMenuItemClick(category, category._id)}
+              key={category.id}
+              onClick={() => onHandleSubMenuItemClick(category, category.id)}
             >
               <div className="flex items-center gap-3 w-full py-2.5 transition-all duration-200 group hover:bg-blue-50 hover:shadow-sm rounded-xl">
                 {category.icon && (getIconComponent(category.icon, 16))}

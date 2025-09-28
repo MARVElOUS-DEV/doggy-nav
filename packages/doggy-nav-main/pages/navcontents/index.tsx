@@ -35,7 +35,7 @@ export default function NavContentsPage() {
             {data && data.length > 0 ? (
               data.map((item, index) => (
                 <div
-                  key={item._id}
+                  key={item.id}
                   className={`category-section bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                     index === 0 ? 'ring-2 ring-blue-100' : ''
                   }`}
@@ -45,7 +45,7 @@ export default function NavContentsPage() {
                       <div className="flex items-center space-x-4">
                         <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
                         <h2
-                          id={item._id}
+                          id={item.id}
                           className="text-2xl font-bold text-gray-800"
                         >
                           {item.name}

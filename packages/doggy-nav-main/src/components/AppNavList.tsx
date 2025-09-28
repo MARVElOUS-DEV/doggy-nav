@@ -22,7 +22,7 @@ export default function AppNavList({ list }: AppNavListProps) {
       <Row gutter={[24, 24]}>
         {list.map((item) => (
           <AppNavItem
-            key={item._id}
+            key={item.id}
             data={item}
             onHandleNavClick={handleNavClick}
             onHandleNavStar={handleNavStar}

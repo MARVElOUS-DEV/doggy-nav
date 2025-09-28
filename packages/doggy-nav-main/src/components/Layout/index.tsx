@@ -40,7 +40,7 @@ export default function RootLayout({
         if (Array.isArray(categoriesData)) {
           categoriesData.unshift(...localCategories)
           if (!selectedCategory) {
-            setSelectedCategory(categoriesData[0]._id);
+            setSelectedCategory(categoriesData[0].id);
           }
           setCategories(categoriesData);
         }

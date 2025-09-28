@@ -72,52 +72,26 @@ export default class CommonController extends Controller {
     if (!data) return data;
 
     if (typeof data === 'object' && data !== null) {
+      const plainData = data.toObject ? data.toObject() : data;
       if (Array.isArray(data)) {
         return data.map(item => this.sanitizeResponseData(item));
       }
 
       const sanitized: any = {};
-      for (const key in data) {
-        if (data.hasOwnProperty(key)) {
+      for (const key in plainData) {
+        if (plainData.hasOwnProperty(key)) {
           if (key === 'password' || key === 'resetPasswordToken') {
             continue;
           }
-          sanitized[key] = this.sanitizeResponseData(data[key]);
+          sanitized[key] = this.sanitizeResponseData(plainData[key]);
         }
       }
       return sanitized;
     }
 
-    return data;
+    return data.toObject ? data.toObject() : data;
   }
 
-  // Convert Mongoose documents to plain objects using toJSON
-  private toPlainObject(doc: any): any {
-    if (!doc) return doc;
-
-    // If it's a Mongoose document or array of documents, use toJSON method
-    if (doc.toJSON && typeof doc.toJSON === 'function') {
-      return doc.toJSON();
-    }
-
-    // If it's an array, process each item
-    if (Array.isArray(doc)) {
-      return doc.map(item => this.toPlainObject(item));
-    }
-
-    // If it's a regular object, recursively process its properties
-    if (typeof doc === 'object' && doc !== null) {
-      const plain: any = {};
-      for (const key in doc) {
-        if (doc.hasOwnProperty(key) && !key.startsWith('$')) {
-          plain[key] = this.toPlainObject(doc[key]);
-        }
-      }
-      return plain;
-    }
-
-    return doc;
-  }
 
   // 添加
   async add() {
@@ -125,8 +99,7 @@ export default class CommonController extends Controller {
     const tableName = this.tableName();
     try {
       const res = await this.ctx.model[tableName].create(body);
-      const plainRes = this.toPlainObject(res);
-      this.success(plainRes);
+      this.success(res);
     } catch (e: any) {
       this.error(e.message);
     }
@@ -175,8 +148,7 @@ export default class CommonController extends Controller {
         throw new Error('ID is required');
       }
       const res = await this.ctx.model[tableName].findOne({ _id: id });
-      const plainRes = this.toPlainObject(res);
-      this.success(plainRes);
+      this.success(res);
     } catch (e: any) {
       this.error(e.message);
     }
@@ -196,13 +168,12 @@ export default class CommonController extends Controller {
 
       const [ data, total ] = await Promise.all([
         otherCMD(table.find(findObj).skip(skipNumber).limit(pageSize)
-          .sort({ _id: -1 }))
-          .then((docs: any) => this.toPlainObject(docs)),
+          .sort({ _id: -1 })),
         table.find(findObj).countDocuments(),
       ]);
 
       this.success({
-        data,
+        data: data.toObject ? data.toObject() : data,
         total,
         pageNumber: Math.ceil(total / pageSize),
       });

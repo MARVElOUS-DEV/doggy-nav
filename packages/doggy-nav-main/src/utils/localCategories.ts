@@ -1,5 +1,5 @@
 export const OVERVIEW = {
-  _id: 'doggy-overview-id',
+  id: 'doggy-overview-id',
   categoryId: 'doggy-overview-categoryId',
   createAt: Date.now(),
   name: 'Overview',

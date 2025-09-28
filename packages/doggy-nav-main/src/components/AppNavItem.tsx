@@ -77,7 +77,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
 
         {/* Main Content */}
         <Link
-          href={`/nav/${data._id}`}
+          href={`/nav/${data.id}`}
           className="p-6 h-full flex flex-col min-h-[120px]"
         >
           <div className="flex items-center space-x-4 mb-4">

@@ -24,7 +24,7 @@ export default function LoginPage() {
       dispatchAuth({
         type: 'LOGIN',
         payload: {
-          user: { _id: "admin", username: values.username },
+          user: { id: "admin", username: values.username },
           token: response,
         },
       })

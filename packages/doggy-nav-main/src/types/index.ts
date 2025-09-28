@@ -1,6 +1,6 @@
 
 export interface Category {
-  _id: string;
+  id: string;
   name: string;
   categoryId: string;
   createAt: number;
@@ -11,7 +11,7 @@ export interface Category {
 }
 
 export interface NavItem {
-  _id: string;
+  id: string;
   categoryId: string;
   categoryName?: string;
   name: string;
@@ -32,7 +32,7 @@ export interface NavItem {
 }
 
 export interface Tag {
-  _id: string;
+  id: string;
   name: string;
   parentName?: string;
   value?: string;
@@ -52,7 +52,7 @@ export interface RecommendFormValues {
 }
 
 export interface User {
-  _id: string;
+  id: string;
   username: string;
   email?: string;
   avatar?: string;

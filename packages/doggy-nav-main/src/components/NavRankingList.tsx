@@ -22,7 +22,7 @@ export default function NavRankingList({ data }: NavRankingListProps) {
         </h3>
         <div className="space-y-3">
           {data.news?.map((item) => (
-            <NavRanking key={item._id} data={item} />
+            <NavRanking key={item.id} data={item} />
           )) || <div className="text-gray-500 text-center py-4">暂无数据</div>}
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function NavRankingList({ data }: NavRankingListProps) {
         </h3>
         <div className="space-y-3">
           {data.view?.map((item) => (
-            <NavRanking key={item._id} data={item} countType="view" />
+            <NavRanking key={item.id} data={item} countType="view" />
           )) || <div className="text-gray-500 text-center py-4">暂无数据</div>}
         </div>
       </div>
@@ -46,7 +46,7 @@ export default function NavRankingList({ data }: NavRankingListProps) {
         </h3>
         <div className="space-y-3">
           {data.star?.map((item) => (
-            <NavRanking key={item._id} data={item} countType="star" />
+            <NavRanking key={item.id} data={item} countType="star" />
           )) || <div className="text-gray-500 text-center py-4">暂无数据</div>}
         </div>
       </div>

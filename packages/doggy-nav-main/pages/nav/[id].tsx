@@ -14,7 +14,7 @@ export default function NavDetail() {
   const { id } = router.query;
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<NavItem>({
-    _id: '',
+    id: '',
     categoryId: "",
     name: "detail",
     href: "/",
@@ -54,7 +54,7 @@ export default function NavDetail() {
   const handleNavStarFn = async () => {
     if (detail) {
       try {
-        await api.updateNavStar(detail._id)
+        await api.updateNavStar(detail.id)
         setIsStar(true)
         setDetail({ ...detail, star: detail.star + 1 })
       } catch (error) {
@@ -166,8 +166,8 @@ export default function NavDetail() {
             <div className="app-card-content p-6">
               <Row gutter={[16, 16]}>
                 {randomNavList.map((item) => (
-                  <Col span={12} sm={8} md={6} key={item._id}>
-                    <Link href={`/nav/${item._id}`} className="nav-block flex items-center p-3 bg-gray-50 border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-800 transition-all duration-200 rounded-lg">
+                  <Col span={12} sm={8} md={6} key={item.id}>
+                    <Link href={`/nav/${item.id}`} className="nav-block flex items-center p-3 bg-gray-50 border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-800 transition-all duration-200 rounded-lg">
                       <Image src={item.logo} alt="" className="nav-logo w-6 h-6 mr-3 rounded" width={24} height={24}/>
                       <h4 className="nav-name m-0 truncate text-sm font-medium">{item.name}</h4>
                     </Link>

@@ -20,7 +20,7 @@ export default function NavRanking({ data, countType = 'createTime' }: NavRankin
 
   return (
     <Link
-      href={`/nav/${data._id}`}
+      href={`/nav/${data.id}`}
       className="flex items-center text-gray-800 mb-3 cursor-pointer min-h-[30px] transition-all duration-200 hover:bg-blue-50 hover:bg-opacity-50 rounded-lg p-2 -m-2 group"
     >
       <DoggyImage logo={data.logo} name={data.name} />
