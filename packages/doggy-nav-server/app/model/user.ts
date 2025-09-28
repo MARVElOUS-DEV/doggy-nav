@@ -61,8 +61,6 @@ export default function(app: any) {
     timestamps: true,
   });
 
-  UserSchema.index({ username: 1 });
-  UserSchema.index({ email: 1 });
   UserSchema.index({ clientSecret: 1 });
 
   return mongoose.model('User', UserSchema);
