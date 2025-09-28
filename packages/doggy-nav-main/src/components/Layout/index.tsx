@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAtom, useSetAtom, Provider as JotaiProvider } from 'jotai';
 import { I18nextProvider } from 'react-i18next';
 import { useRouter } from 'next/router';
@@ -26,11 +26,41 @@ export default function RootLayout({
   const setTags = useSetAtom(tagsAtom);
   const [, initAuth] = useAtom(initAuthFromStorageAtom);
   const router = useRouter();
+  const [isMobile, setIsMobile] = useState(false);
 
   // Initialize auth state from localStorage
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  // Check if screen is mobile/tablet for responsive behavior
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const isMobileScreen = window.innerWidth < 1024; // Tablet width threshold
+      setIsMobile(isMobileScreen);
+
+      // Automatically collapse menu on mobile/tablet screens
+      if (isMobileScreen) {
+        setShowMenuType(false);
+      } else {
+        // On desktop, restore the menu to open state
+        setShowMenuType(true);
+      }
+    };
+
+    // Check screen size on initial load
+    if (typeof window !== 'undefined') {
+      checkScreenSize();
+    }
+
+    // Add resize listener
+    window.addEventListener('resize', checkScreenSize);
+
+    // Clean up listener on unmount
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+    };
+  }, [setShowMenuType]);
 
   // Fetch categories and tags on layout initialization
   useEffect(() => {
@@ -70,7 +100,13 @@ export default function RootLayout({
 
 
   const toggleMenu = () => {
-    setShowMenuType((prev) => !prev);
+    // Only allow manual toggle on desktop, not on mobile/tablet
+    if (!isMobile) {
+      setShowMenuType((prev) => !prev);
+    } else {
+      // On mobile, always collapse the menu when the toggle button is clicked
+      setShowMenuType(false);
+    }
   };
 
   const handleSubMenuClick = async (category: Category, id: string) => {

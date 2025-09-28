@@ -1,3 +1,12 @@
 .arco-menu-collapse {
   width: 70px;
 }
+.recommend-sel-container.arco-select {
+  .arco-select-view {
+    border-radius: 0.75rem;
+    height: 100%;
+  }
+  .arco-input-tag-view {
+    height: 100%;
+  }
+}

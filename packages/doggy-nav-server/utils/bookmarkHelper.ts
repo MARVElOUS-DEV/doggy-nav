@@ -150,13 +150,13 @@ const handle = async (...args) => {
     }
     console.info('import bookmarks from mac chrome default path');
     const platformStr = platform();
-    let bookmarkPath=''
-    if (platformStr=== 'darwin') {
+    let bookmarkPath = '';
+    if (platformStr === 'darwin') {
       bookmarkPath = `${process.env.HOME}/Library/Application\ Support/Google/Chrome/Default/Bookmarks`;
     } else if (platformStr === 'win32') {
-      bookmarkPath =  `${process.env.HOME}/AppData/Local/Google/Chrome/User\ Data/Default/Bookmarks`;
+      bookmarkPath = `${process.env.HOME}/AppData/Local/Google/Chrome/User\ Data/Default/Bookmarks`;
     } else {
-      throw new Error('current platform not supported!')
+      throw new Error('current platform not supported!');
     }
     const p = path.resolve(bookmarkPath);
     console.info('import bookmarks from:', p);

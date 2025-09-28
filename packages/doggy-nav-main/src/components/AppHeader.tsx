@@ -10,6 +10,7 @@ import UserAvatar from './UserAvatar';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { initAuthFromStorageAtom } from '@/store/store';
+import { IconPlusCircle } from '@arco-design/web-react/icon';
 
 interface AppHeaderProps {
   onHandleShowMenu: () => void;
@@ -62,7 +63,7 @@ export default function AppHeader({ onHandleShowMenu, onHandleShowPopup }: AppHe
             href="/recommend"
             className="text-2xl text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-50"
           >
-            <i className="el-icon-circle-plus"></i>
+            <IconPlusCircle />
           </Link>
         </Tooltip>
 

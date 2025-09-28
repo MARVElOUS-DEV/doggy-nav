@@ -1,6 +1,22 @@
 {
-  "extends": "eslint-config-egg/typescript",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "eslint-config-egg/typescript"
+  ],
   "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
     "project": "./tsconfig.json"
+  },
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/ban-types": "warn",
+    "no-restricted-imports": "off",
+    "node/prefer-promises/fs": "off",
+    "semi": ["error", "always"],
+    "indent": ["error", 2]
   }
 }

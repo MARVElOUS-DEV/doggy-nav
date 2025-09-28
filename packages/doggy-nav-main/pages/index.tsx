@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Spin } from '@arco-design/web-react'
 import Affiche from '@/components/Affiche'
 import NavRankingList from '@/components/NavRankingList'
+import NavStatsChart from '@/components/NavStatsChart'
 import VerticalTimelineContainer from '@/components/timeline/VerticalTimelineContainer'
 import api from '@/utils/api'
 import { createMockTimelineData } from '@/utils/timelineData'
@@ -129,6 +130,11 @@ export default function HomePage() {
               selectedItem={selectedItem}
             />
           </div>
+        )}
+
+        {/* Statistics Chart Section */}
+        {!loading && navRanking && (
+          <NavStatsChart data={navRanking} />
         )}
 
         {/* Content Section */}

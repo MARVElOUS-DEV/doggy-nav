@@ -5,8 +5,9 @@ import * as readline from 'readline';
 const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/navigation`;
 const db = mongoose.connect(mongoUrl) as any;
 db.mongoose = mongoose;
-// 引入数据模型模块
+
 const userSchema = userModel(db);
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -31,25 +32,15 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
   try {
     console.info('mongoUrl', mongoUrl);
 
-    const username = await askQuestion('Enter the username which you want to reset', false);
-    const finalUsername = username.trim();
-    if (!finalUsername) {
-      console.error('Username cannot be empty!');
-      process.exit(1);
-    }
-    const [ f ] = await userSchema.find({
-      username: { $eq: finalUsername },
-    });
-    if (!f) {
-      console.error(`User ${finalUsername} does not exist!`);
-      process.exit(1);
-    }
-    const password = await askQuestion('Enter password you want to reset to (default: admin123)', true);
+    const username = await askQuestion('Enter username (default: admin)', false);
+    const finalUsername = username.trim() || 'admin';
+
+    const password = await askQuestion('Enter password (default: admin123)', true);
     const finalPassword = password.trim() || 'admin123';
 
     const res = await userSchema.updateOne({
       username: { $eq: finalUsername },
-    }, { password: finalPassword });
+    }, { password: finalPassword, isAdmin: true, email: 'admin@doggy-nav.cn' }, { create: true });
 
     if (res) {
       console.info(`create user ${finalUsername} with password ${finalPassword} success ✅`);
