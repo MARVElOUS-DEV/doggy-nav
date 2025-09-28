@@ -6,11 +6,10 @@ import { I18nextProvider } from 'react-i18next';
 import { useRouter } from 'next/router';
 import AppNavMenus from '../AppNavMenus';
 import AppHeader from '../AppHeader';
-import Toolbar from '../Toolbar';
-import AppLog from '../AppLog';
+import RightSideToolbar from '../RightSideToolbar';
 import api from '@/utils/api';
 import i18n from '@/i18n';
-import { categoriesAtom, showMenuTypeAtom, showLogAtom, selectedCategoryAtom, tagsAtom, initAuthFromStorageAtom } from '@/store/store';
+import { categoriesAtom, showMenuTypeAtom, selectedCategoryAtom, tagsAtom, initAuthFromStorageAtom } from '@/store/store';
 import { Category } from '@/types';
 import { localCategories } from '@/utils/localCategories';
 
@@ -21,7 +20,6 @@ export default function RootLayout({
 }>) {
   const [categories, setCategories] = useAtom(categoriesAtom);
   const [showMenuType, setShowMenuType] = useAtom(showMenuTypeAtom);
-  const [showLog, setShowLog] = useAtom(showLogAtom);
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
   const setTags = useSetAtom(tagsAtom);
   const [, initAuth] = useAtom(initAuthFromStorageAtom);
@@ -38,25 +36,14 @@ export default function RootLayout({
     const checkScreenSize = () => {
       const isMobileScreen = window.innerWidth < 1024; // Tablet width threshold
       setIsMobile(isMobileScreen);
-
-      // Automatically collapse menu on mobile/tablet screens
-      if (isMobileScreen) {
-        setShowMenuType(false);
-      } else {
-        // On desktop, restore the menu to open state
-        setShowMenuType(true);
-      }
+      setShowMenuType(isMobileScreen ? false: true);
     };
 
-    // Check screen size on initial load
     if (typeof window !== 'undefined') {
       checkScreenSize();
     }
-
-    // Add resize listener
     window.addEventListener('resize', checkScreenSize);
 
-    // Clean up listener on unmount
     return () => {
       window.removeEventListener('resize', checkScreenSize);
     };
@@ -135,10 +122,7 @@ export default function RootLayout({
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Sticky Header */}
             <div className="sticky top-0 z-30">
-              <AppHeader
-                onHandleShowPopup={() => {}}
-                onHandleShowMenu={toggleMenu}
-              />
+              <AppHeader onHandleShowMenu={toggleMenu} />
             </div>
 
             {/* Scrollable Content Area with Glass Effect */}
@@ -149,8 +133,7 @@ export default function RootLayout({
             </div>
           </div>
 
-          <Toolbar onShowLog={() => setShowLog(true)} />
-          <AppLog show={showLog} onCloseLog={() => setShowLog(false)} />
+          <RightSideToolbar />
         </div>
       </JotaiProvider>
     </I18nextProvider>

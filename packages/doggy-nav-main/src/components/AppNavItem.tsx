@@ -94,13 +94,13 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
             <div className="flex-1 min-w-0">
               <h3
                 className="title text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-200 truncate"
-                title={typeof (data.highlightedName || data.name) === 'string' ? (data.highlightedName || data.name) : undefined}
+                title={((typeof data.highlightedName  === 'string')? data.highlightedName : data.name? data.name : undefined) }
               >
                 {data.highlightedName || data.name}
               </h3>
               <p
                 className="desc text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-200 line-clamp-2 max-h-[40px] overflow-hidden"
-                title={typeof (data.highlightedDesc || data.desc || '这个网站什么描述也没有...') === 'string' ? (data.highlightedDesc || data.desc || '这个网站什么描述也没有...') : undefined}
+                title={typeof (data.highlightedDesc)  === 'string' ? data.highlightedDesc: data.desc? data.desc: '这个网站什么描述也没有' }
               >
                 {data.highlightedDesc || data.desc || '这个网站什么描述也没有...'}
               </p>

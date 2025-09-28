@@ -1,31 +1,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip, Button } from '@arco-design/web-react';
-import { useEffect } from 'react';
-import { useAtom } from 'jotai';
 import AppSearch from './AppSearch';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import UserAvatar from './UserAvatar';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { initAuthFromStorageAtom } from '@/store/store';
 import { IconPlusCircle } from '@arco-design/web-react/icon';
 
 interface AppHeaderProps {
   onHandleShowMenu: () => void;
-  onHandleShowPopup: () => void;
 }
 
-export default function AppHeader({ onHandleShowMenu, onHandleShowPopup }: AppHeaderProps) {
+export default function AppHeader({ onHandleShowMenu }: AppHeaderProps) {
   const { t } = useTranslation('translation');
   const [showSearch, setShowSearch] = useState(false);
-  const [, initAuth] = useAtom(initAuthFromStorageAtom);
-
-  // Initialize auth state from localStorage on mount
-  useEffect(() => {
-    initAuth();
-  }, [initAuth]);
 
   return (
     <header className="flex justify-between items-center bg-white shadow-lg p-4 w-full sticky top-0 z-50 bg-gradient-to-r from-white to-blue-50 min-h-[80px]">
