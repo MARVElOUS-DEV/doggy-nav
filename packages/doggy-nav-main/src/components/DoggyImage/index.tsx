@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Image from 'next/image';
+import dynamic from "next/dynamic";
+import React from "react";
 
 export default function DoggyImage({logo="/default-web.png", name="logo", width=20, height=20}) {
   const [logoSrc, setLogoSrc] = useState(logo);
@@ -16,4 +18,26 @@ export default function DoggyImage({logo="/default-web.png", name="logo", width=
       onError={handleLogoError}
     />
   )
+}
+
+export const DynamicIcon = ({iconName, fontSize=14}) => {
+    if (!iconName) return null;
+    if (iconName.startsWith('type:emoji_')) {
+      const emoji = iconName.replace('type:emoji_', '');
+      return <span style= {{ fontSize: `${fontSize}px` }}>{emoji}</span>;
+    }
+    if (iconName.startsWith('type:arco_')) {
+      const IconComponent = dynamic(() => import(`@arco-design/web-react/icon`).then((module: any) => {
+          if (module[iconName]) {
+            return { default: module[iconName] };
+          }
+          throw new Error(`Icon ${iconName} not found`);
+        }), { ssr: false }) as unknown as React.JSX.ElementType
+      return (
+        <React.Suspense fallback ='...'>
+          <IconComponent style={{fontSize}}/>
+        </React.Suspense>
+      )
+    }
+    return <Image style={{ fontSize: `${fontSize}px` }} height={fontSize} width={fontSize} src={iconName} />;
 }

@@ -78,9 +78,6 @@ importers:
       '@arco-design/web-react':
         specifier: ^2.66.5
         version: 2.66.5(@types/react@18.3.24)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/three':
-        specifier: ^0.180.0
-        version: 0.180.0
       axios:
         specifier: ^0.21.4
         version: 0.21.4
@@ -145,6 +142,9 @@ importers:
       '@types/react-dom':
         specifier: ^18
         version: 18.3.7(@types/react@18.3.24)
+      '@types/three':
+        specifier: ^0.180.0
+        version: 0.180.0
       '@typescript-eslint/parser':
         specifier: ^8.44.1
         version: 8.44.1(eslint@8.57.1)(typescript@5.9.2)

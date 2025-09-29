@@ -1,6 +1,6 @@
 import { Menu } from '@arco-design/web-react';
 import { Category } from '@/types';
-import { getIconComponent } from '@/utils/getWebsiteIcon';
+import { DynamicIcon } from './DoggyImage';
 
 interface MenuStackProps {
   menuList: Category[];
@@ -22,7 +22,7 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
                 className={"transition-all duration-200 hover:bg-blue-50 hover:shadow-sm"}
                 title={
                   <div className="group flex items-center gap-3 w-full py-2.5">
-                    {category.icon && (getIconComponent(category.icon, 16))}
+                    {category.icon && <DynamicIcon iconName= {category.icon} fontSize={16} />}
                     <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
                       {category.name}
                     </span>
@@ -38,7 +38,7 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
                       onClick={() => onHandleSubMenuItemClick(child, child.id)}
                     >
                       <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 hover:bg-blue-50/50 rounded-xl">
-                        {child.icon && (getIconComponent(child.icon, 16))}
+                        {child.icon && <DynamicIcon iconName= {child.icon} fontSize={16} />}
                         <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors font-medium">
                           {child.name}
                         </span>
@@ -57,7 +57,7 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
               className="transition-all duration-200 hover:bg-blue-50 hover:shadow-sm"
             >
               <div className="group flex items-center gap-3 w-full py-2.5">
-                {category.icon && (getIconComponent(category.icon, 16))}
+                {category.icon && <DynamicIcon iconName= {category.icon} fontSize={16} />}
                 <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
                   {category.name}
                 </span>
