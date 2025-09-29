@@ -1,5 +1,5 @@
 import { Provider as JotaiProvider } from 'jotai';
-import { Suspense, useEffect, type ReactElement, type ReactNode } from 'react';
+import { useEffect, type ReactElement, type ReactNode } from 'react';
 import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import RootLayout from '@/components/Layout';
@@ -30,11 +30,9 @@ export default function MyApp({ Component, pageProps }: { Component: NextPageWit
     </RootLayout>
   ));
   return (
-    <JotaiProvider>
-      <Suspense fallback={<div>Loading navigation...</div>}>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        {getLayout(<Component {...pageProps} />)}
-      </Suspense>
+  <JotaiProvider>
+      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+      {/* @ts-ignore */}
+      {getLayout(<Component {...pageProps} />)}
   </JotaiProvider>)
 }

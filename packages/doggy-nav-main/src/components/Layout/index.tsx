@@ -6,6 +6,7 @@ import AppHeader from '../AppHeader';
 import i18n from '@/i18n';
 import { showMenuTypeAtom, initAuthFromStorageAtom, mobileAtom } from '@/store/store';
 import RightSideToolbar from '../RightSideToolbar';
+import LightbulbRope from '../LightbulbRope';
 import router from 'next/router';
 
 export default function RootLayout({
@@ -86,6 +87,7 @@ export default function RootLayout({
         </div>
 
         <RightSideToolbar />
+        <LightbulbRope />
       </div>
     </I18nextProvider>
   );

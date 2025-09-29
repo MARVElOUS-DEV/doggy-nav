@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip, Grid } from '@arco-design/web-react';
@@ -20,13 +20,54 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
   const [intersectionRef, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const urlStatus = useUrlStatus(data.href, isVisible);
 
+  // Check if item is in favorites on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const storedFavorites = localStorage.getItem('favorites');
+        if (storedFavorites) {
+          const favorites = JSON.parse(storedFavorites);
+          const isFavorited = Array.isArray(favorites) && favorites.some((item: NavItem) => item.id === data.id);
+          setIsStar(isFavorited);
+        }
+      } catch (err) {
+        console.error('Failed to check favorites:', err);
+      }
+    }
+  }, [data.id]);
+
   const handleLogoError = () => {
     setLogoSrc('/default-web.png');
   };
 
   const handleNavStar = () => {
     onHandleNavStar(data, () => {
-      setIsStar(true);
+      // Update localStorage favorites
+      if (typeof window !== 'undefined') {
+        try {
+          const storedFavorites = localStorage.getItem('favorites');
+          let favorites: NavItem[] = [];
+
+          if (storedFavorites) {
+            favorites = JSON.parse(storedFavorites);
+          }
+
+          // Toggle favorite status
+          if (isStar) {
+            // Remove from favorites
+            favorites = favorites.filter(item => item.id !== data.id);
+          } else {
+            // Add to favorites
+            favorites = [...favorites, data];
+          }
+
+          localStorage.setItem('favorites', JSON.stringify(favorites));
+        } catch (err) {
+          console.error('Failed to update favorites:', err);
+        }
+      }
+
+      setIsStar(!isStar);
     });
   };
 

@@ -34,20 +34,17 @@ export default function RightSideToolbar(props: any) {
   };
 
   const handleMouseLeave = () => {
-    // Clear show timeout if still waiting
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
 
-    // Set hide timeout for 5 seconds
     hideTimeoutRef.current = setTimeout(() => {
       setPopupVisible(false);
     }, 5000);
   };
 
   const handlePopupMouseEnter = () => {
-    // Clear hide timeout when hovering over popup
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -55,7 +52,6 @@ export default function RightSideToolbar(props: any) {
   };
 
   const handlePopupMouseLeave = () => {
-    // Set hide timeout when leaving popup
     hideTimeoutRef.current = setTimeout(() => {
       setPopupVisible(false);
     }, 1000);
@@ -140,7 +136,7 @@ export default function RightSideToolbar(props: any) {
           visibleHeight={30}
           easing={'quintIn'}
           duration={200}
-          target={() => document.getElementById('doggy-content-area')}
+          target={() => document.getElementById('doggy-content-area')|| window}
         >
           <div className="transition-all duration-300 hover:scale-110">
             <Tooltip content={t('back_to_top')} position="left">
