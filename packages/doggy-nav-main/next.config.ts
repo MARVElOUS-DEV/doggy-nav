@@ -9,19 +9,19 @@ const nextConfig: NextConfig = {
   // output: 'export',
   distDir: 'dist',
   // 临时禁用静态优化来定位问题
-  skipTrailingSlashRedirect: true,
+  // skipTrailingSlashRedirect: true,
   // 启用详细日志
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
   // 启用详细日志
-  webpack: (config, { dev, isServer }) => {
-    if (dev) {
-      config.devtool = isServer? false: 'eval-source-map';
-    }
-    return config;
-  },
+  // webpack: (config, { dev, isServer }) => {
+  //   if (dev) {
+  //     config.devtool = isServer? false: 'eval-source-map';
+  //   }
+  //   return config;
+  // },
   images: {
     unoptimized: true,
     remotePatterns: [

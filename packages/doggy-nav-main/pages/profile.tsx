@@ -1,11 +1,12 @@
-import { useState } from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import { Form, Input, Button, Card, Message, Upload, Avatar } from '@arco-design/web-react';
 import { useAtom } from 'jotai';
 import { motion } from 'framer-motion';
 import AuthGuard from '@/components/AuthGuard';
 import { authStateAtom, authActionsAtom } from '@/store/store';
-import api from '@/utils/api';
 import { useTranslation } from 'react-i18next';
+import Image from 'next/image';
 
 const FormItem = Form.Item;
 
@@ -19,13 +20,12 @@ function ProfileContent() {
 
   const user = authState.user!;
 
-  // Initialize form with user data
-  useState(() => {
-    form.setFieldsValue({
+  useEffect(() => {
+    user.username && form.setFieldsValue({
       username: user.username,
       email: user.email || '',
     });
-  }, [user]);
+  }, [user, form]);
 
   const handleSubmit = async (values: { username: string; email: string }) => {
     setLoading(true);
@@ -113,7 +113,7 @@ function ProfileContent() {
             <div className="flex items-center mb-8 pb-6 border-b border-gray-200">
               <div className="mr-6">
                 {user.avatar ? (
-                  <Avatar size={80} src={user.avatar} className="shadow-lg" />
+                  <Avatar size={80} className="shadow-lg"> <Image src={user.avatar} alt="Avatar" /></Avatar>
                 ) : (
                   <div
                     className={`${getAvatarColors(user.username)} rounded-full flex items-center justify-center text-white font-bold shadow-lg`}

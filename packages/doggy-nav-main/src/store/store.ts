@@ -7,6 +7,7 @@ export const selectedCategoryAtom = atom<string>('');
 export const tagsAtom = atom<Tag[]>([]);
 export const navRankingAtom = atom<{ view: NavItem[]; star: NavItem[]; news: NavItem[] }>({ view: [], star: [], news: [] });
 export const showMenuTypeAtom = atom(true);
+export const mobileAtom = atom(false);
 
 // Authentication atoms
 export const userAtom = atom<User | null>(null);

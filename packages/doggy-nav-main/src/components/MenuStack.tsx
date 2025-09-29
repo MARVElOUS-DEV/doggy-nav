@@ -19,11 +19,14 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
             return (
               <Menu.SubMenu
                 key={category.id}
+                className={"transition-all duration-200 hover:bg-blue-50 hover:shadow-sm"}
                 title={
-                  <div className="flex items-center gap-3 w-full py-2.5 transition-all duration-200 group hover:bg-blue-50 hover:shadow-sm rounded-xl">
+                  <div className="group flex items-center gap-3 w-full py-2.5">
                     {category.icon && (getIconComponent(category.icon, 16))}
-                    {category.name}
-                    <div className="w-2 h-2 rounded-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
+                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
+                      {category.name}
+                    </span>
+                    <div className="ml-auto w-2 h-2 rounded-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
                   </div>
                 }
               >
@@ -33,9 +36,8 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
                     <Menu.Item
                       key={child.id}
                       onClick={() => onHandleSubMenuItemClick(child, child.id)}
-                      className="group"
                     >
-                      <div className="flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 group hover:bg-blue-50/50 rounded-xl">
+                      <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 hover:bg-blue-50/50 rounded-xl">
                         {child.icon && (getIconComponent(child.icon, 16))}
                         <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors font-medium">
                           {child.name}
@@ -52,13 +54,14 @@ export default function MenuStack({ menuList, onHandleSubMenuItemClick }: MenuSt
             <Menu.Item
               key={category.id}
               onClick={() => onHandleSubMenuItemClick(category, category.id)}
+              className="transition-all duration-200 hover:bg-blue-50 hover:shadow-sm"
             >
-              <div className="flex items-center gap-3 w-full py-2.5 transition-all duration-200 group hover:bg-blue-50 hover:shadow-sm rounded-xl">
+              <div className="group flex items-center gap-3 w-full py-2.5">
                 {category.icon && (getIconComponent(category.icon, 16))}
                 <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
                   {category.name}
                 </span>
-                <div className="w-2 h-2 rounded-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
+                <div className="ml-auto w-2 h-2 rounded-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
               </div>
             </Menu.Item>
           );

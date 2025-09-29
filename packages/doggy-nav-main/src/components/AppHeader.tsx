@@ -83,7 +83,7 @@ export default function AppHeader({ onHandleShowMenu }: AppHeaderProps) {
             className="text-2xl text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-50"
             onClick={onHandleShowMenu}
           >
-            <i className="el-icon-menu"></i>
+            test
           </button>
         </div>
       </div>

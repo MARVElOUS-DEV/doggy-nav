@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
 import { Spin, Empty } from '@arco-design/web-react'
 import AppNavList from '@/components/AppNavList'
 import api from '@/utils/api'
 import { useApi } from '@/hooks/useApi'
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
 export default function NavContentsPage() {
   const router = useRouter();
   const { category } = router.query;
-  const {loading, data, execute:findNavByCategoryAction} = useApi(api.findNavByCategory)
+  const {loading, data= [], execute:findNavByCategoryAction} = useApi(api.findNavByCategory)
 
   useEffect(() => {
     if (!category) return;
@@ -41,24 +41,19 @@ export default function NavContentsPage() {
                   }`}
                 >
                   <div className="section-header bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
-                        <h2
-                          id={item.id}
-                          className="text-2xl font-bold text-gray-800"
-                        >
-                          {item.name}
-                        </h2>
-                        {item.list && (
-                          <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                            {item.list.length} 项
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500">共 {item.list?.length || 0} 个网站</span>
-                      </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+                      <h2
+                        id={item.id}
+                        className="text-2xl font-bold text-gray-800"
+                      >
+                        {item.name}
+                      </h2>
+                      {item.list && (
+                        <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                          {item.list.length} 项
+                        </span>
+                      )}
                     </div>
                   </div>
 

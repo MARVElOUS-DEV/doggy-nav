@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
-import { Spin } from '@arco-design/web-react'
-import Affiche from '@/components/Affiche'
-import NavRankingList from '@/components/NavRankingList'
-import NavStatsChart from '@/components/NavStatsChart'
-import VerticalTimelineContainer from '@/components/timeline/VerticalTimelineContainer'
-import api from '@/utils/api'
-import { createMockTimelineData } from '@/utils/timelineData'
-import { useAtom } from 'jotai'
-import { navRankingAtom } from '@/store/store'
-import Link from 'next/link'
-import { TimelineItem as TimelineItemType } from '@/types/timeline'
+import { useState, useEffect } from 'react';
+import { Spin } from '@arco-design/web-react';
+import Affiche from '@/components/Affiche';
+import NavRankingList from '@/components/NavRankingList';
+import NavStatsChart from '@/components/NavStatsChart';
+import VerticalTimelineContainer from '@/components/timeline/VerticalTimelineContainer';
+import api from '@/utils/api';
+import { createMockTimelineData } from '@/utils/timelineData';
+import { useAtom } from 'jotai';
+import { navRankingAtom } from '@/store/store';
+import Link from 'next/link';
+import { TimelineItem as TimelineItemType } from '@/types/timeline';
 
 export default function HomePage() {
   const [navRanking, setNavRanking] = useAtom(navRankingAtom);
@@ -39,7 +39,7 @@ export default function HomePage() {
       }
     };
     fetchData();
-  }, [setNavRanking]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     // Navigation keys

@@ -14,7 +14,7 @@ export default class CommonController extends Controller {
     if (typeof input === 'object' && input !== null && !Array.isArray(input)) {
       const sanitized: any = {};
       for (const key in input) {
-        if (input.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(input, key)) {
           sanitized[key] = this.sanitizeInput(input[key]);
         }
       }
@@ -79,7 +79,7 @@ export default class CommonController extends Controller {
 
       const sanitized: any = {};
       for (const key in plainData) {
-        if (plainData.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(plainData, key)) {
           if (key === 'password' || key === 'resetPasswordToken') {
             continue;
           }

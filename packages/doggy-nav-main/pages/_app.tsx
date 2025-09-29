@@ -1,39 +1,40 @@
-import { useEffect } from 'react';
-import type { ReactElement, ReactNode } from 'react';
+import { Provider as JotaiProvider } from 'jotai';
+import { Suspense, useEffect, type ReactElement, type ReactNode } from 'react';
 import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
-import { useRouter } from 'next/router';
 import RootLayout from '@/components/Layout';
 import { debugHydration } from '@/utils/hydrationDebug';
 import i18n from '@/i18n';
+import { useRouter } from 'next/router';
 import './global.css';
 
 export type NextPageWithLayout<P = Record<string, any>, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
 }
 
-type AppPropsWithLayout = AppProps & {
-  Component: NextPageWithLayout
-}
-
 debugHydration();
 
-export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+export default function MyApp({ Component, pageProps }: { Component: NextPageWithLayout, pageProps: AppProps }) {
   const router = useRouter();
-
+  
   useEffect(() => {
-    // Sync i18next language with Next.js locale
-    if (router.locale && i18n.language !== router.locale) {
+    if (router.isReady && router.locale && i18n.language !== router.locale) {
       i18n.changeLanguage(router.locale);
     }
-  }, [router.locale]);
+  }, [router.locale, router.isReady]);
 
   // Use the layout defined at the page level, if available
-  const getLayout = Component.getLayout || ((page: ReactElement) => (
+  const getLayout = Component.getLayout ?? ((page: ReactElement) => (
     <RootLayout>
       {page}
     </RootLayout>
   ));
-
-  return getLayout(<Component {...pageProps} />);
+  return (
+    <JotaiProvider>
+      <Suspense fallback={<div>Loading navigation...</div>}>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        {getLayout(<Component {...pageProps} />)}
+      </Suspense>
+  </JotaiProvider>)
 }

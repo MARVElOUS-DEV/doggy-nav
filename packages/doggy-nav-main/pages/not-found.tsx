@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-
 import { Button } from '@arco-design/web-react';
 
 export default function NotFound() {
@@ -34,3 +33,7 @@ export default function NotFound() {
     </div>
   );
 }
+
+NotFound.getLayout = function getLayout(page: React.ReactElement) {
+  return <>{page}</>;
+};
