@@ -1,4 +1,4 @@
-import { chromeTimeToDate, dateToChromeTime } from "../../utils/timeUtil";
+import { chromeTimeToDate, dateToChromeTime } from '../../utils/timeUtil';
 
 export default function(app: any) {
   const mongoose = app.mongoose;
@@ -7,6 +7,7 @@ export default function(app: any) {
   const CategorySchema = new Schema({
     name: String,
     categoryId: String,
+    description: String,
     createAt: Number, // Chrome time number
     // Whether to hide in the navigation contents
     hide: {

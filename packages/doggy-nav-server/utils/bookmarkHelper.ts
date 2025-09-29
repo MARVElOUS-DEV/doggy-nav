@@ -8,6 +8,7 @@ import mongoose, { ConnectOptions } from 'mongoose';
 import navModel from '../app/model/nav';
 import categoryModel from '../app/model/category';
 import { dateToChromeTime } from './timeUtil';
+import { privateCategoryName } from '../constants';
 
 const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/navigation`;
 const getFaviconSrv = (hostname, size = 32, provider = 'faviconIm') => {
@@ -75,6 +76,7 @@ async function getLogo(url) {
     });
   });
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function sleep(ms) {
   return new Promise(r => {
     setTimeout(() => {
@@ -121,7 +123,7 @@ async function recursive(children, parentId) {
 
 async function transform(roots) {
   const categoryData = {
-    name: '我的书签',
+    name: privateCategoryName,
     categoryId: '',
   };
   const categoryDataRes = await categorySchema.create(categoryData);
@@ -166,6 +168,10 @@ const handle = async (...args) => {
 
   } catch (error) {
     console.error(error);
+  } finally {
+    await mongoose.disconnect();
+    console.info('🔌 Database connection closed.');
+    process.exit(0);
   }
 };
 

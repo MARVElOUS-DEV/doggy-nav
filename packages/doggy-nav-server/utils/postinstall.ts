@@ -48,6 +48,8 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
   } catch (error) {
     console.error('Error creating user:', error);
   } finally {
+    await mongoose.disconnect();
+    console.info('🔌 Database connection closed.');
     rl.close();
     process.exit(0);
   }

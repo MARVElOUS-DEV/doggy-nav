@@ -21,6 +21,7 @@
     "tsc": "ets && tsc -p tsconfig.json",
     "bundle:bookmark": "esbuild dist/bookmarkHelper-standalone.ts --bundle --platform=node --outfile=dist/bookmarkHelper-bundle.js --format=cjs --external:mongodb --external:mongoose",
     "bundle:cli": "esbuild dist/bookmarkHelper-cli.ts --bundle --platform=node --outfile=dist/bookmarkHelper-cli-bundle.js --format=cjs",
+    "init:categories": "ts-node utils/initCategories.ts",
     "ci": "npm run lint && npm run cov && npm run tsc",
     "autod": "autod",
     "lint": "eslint . --ext .ts",

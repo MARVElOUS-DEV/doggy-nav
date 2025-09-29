@@ -83,15 +83,15 @@ export function getRoutePermission(method: string, path: string): RoutePermissio
 // Check if user has required access level
 export function hasAccess(permission: RoutePermission, user: any): boolean {
   switch (permission.access) {
-    case 'public':
-      return true;
-    case 'authenticated':
-      return !!user;
-    case 'admin':
-      return !!user && user.isAdmin === true;
-    case 'optional':
-      return true; // Always allow, but provide user info if available
-    default:
-      return false;
+  case 'public':
+    return true;
+  case 'authenticated':
+    return !!user;
+  case 'admin':
+    return !!user && user.isAdmin === true;
+  case 'optional':
+    return true; // Always allow, but provide user info if available
+  default:
+    return false;
   }
 }
