@@ -7,19 +7,31 @@ import ThemeToggle from './ThemeToggle';
 import UserAvatar from './UserAvatar';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { IconPlusCircle } from '@arco-design/web-react/icon';
+import { IconPlusCircle, IconMenuFold, IconMenuUnfold } from '@arco-design/web-react/icon';
 
 interface AppHeaderProps {
   onHandleShowMenu: () => void;
+  showMenuType?: boolean;
 }
 
-export default function AppHeader({ onHandleShowMenu }: AppHeaderProps) {
+export default function AppHeader({ onHandleShowMenu, showMenuType = false }: AppHeaderProps) {
   const { t } = useTranslation('translation');
   const [showSearch, setShowSearch] = useState(false);
 
   return (
     <header className="flex justify-between items-center bg-white shadow-lg p-4 w-full sticky top-0 z-50 bg-gradient-to-r from-white to-blue-50 min-h-[80px]">
       <div className="flex items-center">
+        {/* Menu Toggle Button */}
+        <Tooltip content={showMenuType ? t('collapse_menu', 'Collapse Menu') : t('expand_menu', 'Expand Menu')}>
+          <Button
+            className="mr-3 text-gray-600 hover:text-blue-600 p-2 rounded hover:bg-blue-100 transition-colors"
+            onClick={onHandleShowMenu}
+            icon={showMenuType ? <IconMenuFold /> : <IconMenuUnfold />}
+            type="text"
+            size="large"
+          />
+        </Tooltip>
+
         <Link href="/" className="flex items-center">
           <Image
             src="/logo-nav-black.png"
@@ -76,15 +88,6 @@ export default function AppHeader({ onHandleShowMenu }: AppHeaderProps) {
         {/* User Avatar */}
         <div className="ml-3">
           <UserAvatar />
-        </div>
-
-        <div className="menu-toggle-btn md:hidden ml-2">
-          <button
-            className="text-2xl text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-50"
-            onClick={onHandleShowMenu}
-          >
-            test
-          </button>
         </div>
       </div>
     </header>

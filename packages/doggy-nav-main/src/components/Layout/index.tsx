@@ -74,11 +74,11 @@ export default function RootLayout({
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Sticky Header */}
           <div className="sticky top-0 z-30">
-            <AppHeader onHandleShowMenu={toggleMenu} />
+            <AppHeader onHandleShowMenu={toggleMenu} showMenuType={showMenuType} />
           </div>
 
           {/* Scrollable Content Area with Glass Effect */}
-          <div className="flex-1 overflow-y-auto bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150">
+          <div id="doggy-content-area" className="flex-1 overflow-y-auto bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150">
             <div className="p-4">
               {children}
             </div>

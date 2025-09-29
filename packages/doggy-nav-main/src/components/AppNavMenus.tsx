@@ -3,10 +3,6 @@ import { Menu } from '@arco-design/web-react';
 import { Category } from '@/types';
 import MenuStack from './MenuStack';
 import { localCategories, OVERVIEW } from '@/utils/localCategories';
-import {
-  IconMenuFold,
-  IconMenuUnfold,
-} from '@arco-design/web-react/icon';
 import { categoriesAtom, selectedCategoryAtom, tagsAtom } from '@/store/store';
 import { useAtom, useSetAtom } from 'jotai';
 import router from 'next/router';
@@ -61,19 +57,13 @@ export default function AppNavMenus({ showMenuType, onShowMenus }: { showMenuTyp
   return (
     <div className="h-full flex flex-col overflow-hidden bg-gradient-to-b from-blue-50 to-indigo-50 text-gray-800">
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-blue-200 flex items-center justify-between">
+      <div className="p-4 border-b border-blue-200 flex items-center justify-center">
         <Link href="/" className="flex items-center space-x-3 text-lg font-bold hover:text-blue-600 transition-colors">
           <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-2 rounded-lg shadow-sm">
             <span className="text-white font-bold">DN</span>
           </div>
           {!isCollapse && <span className="text-xl text-gray-800 font-semibold">DoggyNav</span>}
         </Link>
-        <button
-          onClick={onShowMenus}
-          className="text-gray-600 hover:text-blue-600 p-1 rounded hover:bg-blue-100 transition-colors"
-        >
-          {isCollapse ? <IconMenuUnfold /> : <IconMenuFold />}
-        </button>
       </div>
 
       {/* Navigation Menu */}
