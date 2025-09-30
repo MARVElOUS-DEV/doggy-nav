@@ -1,9 +1,9 @@
-import GeekProTable from "@/components/TableCom";
 import { API_NAV_AUDIT, API_NAV_LIST } from "@/services/api";
 import { ProColumns } from "@ant-design/pro-table";
 import { Popconfirm, Tag, Space } from "antd";
 import request from "@/utils/request";
 import { NavStatus } from "@/types/api";
+import TableCom from "@/components/TableCom";
 
 function RandomColorTag({ children }) {
   const colors = [
@@ -16,7 +16,6 @@ function RandomColorTag({ children }) {
     'green',
     'cyan',
     'blue',
-    'geekblue',
     'purple',
   ]
   return <Tag color={colors[Math.floor(Math.random() * colors.length)]}>{children}</Tag>
@@ -84,7 +83,7 @@ export default function NavAuditListPage() {
   }
 
   return (
-    <GeekProTable
+    <TableCom
       columns={columns}
       requestParams={{url: API_NAV_LIST, method: 'GET'}}
       renderOptions={(text, record, _, action) => record.status != NavStatus.reject ? [

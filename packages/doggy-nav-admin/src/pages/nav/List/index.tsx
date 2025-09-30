@@ -20,7 +20,6 @@ function RandomColorTag({ children }) {
     'green',
     'cyan',
     'blue',
-    'geekblue',
     'purple',
   ]
   return <Tag color={colors[Math.floor(Math.random() * colors.length)]}>{children}</Tag>
