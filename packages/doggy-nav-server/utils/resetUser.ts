@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import userModel from '../app/model/user';
 import * as readline from 'readline';
+import * as bcrypt from 'bcrypt';
 
 const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/navigation`;
 const db = mongoose.connect(mongoUrl) as any;
@@ -45,7 +46,7 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
       process.exit(1);
     }
     const password = await askQuestion('Enter password you want to reset to (default: admin123)', true);
-    const finalPassword = password.trim() || 'admin123';
+    const finalPassword = await bcrypt.hash(password.trim() || 'admin123', 12);
 
     const res = await userSchema.updateOne({
       username: { $eq: finalUsername },

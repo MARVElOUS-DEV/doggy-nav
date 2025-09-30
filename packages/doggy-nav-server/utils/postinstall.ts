@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import * as bcrypt from 'bcrypt';
 import userModel from '../app/model/user';
 import * as readline from 'readline';
 
@@ -6,7 +7,7 @@ const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/naviga
 const db = mongoose.connect(mongoUrl) as any;
 db.mongoose = mongoose;
 
-const userSchema = userModel(db);
+const userSchemaModel = userModel(db);
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -36,11 +37,11 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
     const finalUsername = username.trim() || 'admin';
 
     const password = await askQuestion('Enter password (default: admin123)', true);
-    const finalPassword = password.trim() || 'admin123';
+    const finalPassword = await bcrypt.hash(password.trim() || 'admin123', 12);
 
-    const res = await userSchema.updateOne({
+    const res = await userSchemaModel.updateOne({
       username: { $eq: finalUsername },
-    }, { password: finalPassword, isAdmin: true, email: 'admin@doggy-nav.cn' }, { create: true });
+    }, { password: finalPassword, isAdmin: true, email: 'admin@doggy-nav.cn', isActive: true }, { create: true });
 
     if (res) {
       console.info(`create user ${finalUsername} with password ${finalPassword} success ✅`);

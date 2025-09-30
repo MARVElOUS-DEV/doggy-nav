@@ -35,7 +35,6 @@ export default function LoginPage() {
       const redirectTo = (router.query.redirect as string) || '/';
       router.push(redirectTo);
     } catch (error: unknown) {
-      console.error('Login failed:', error);
       if (typeof error === 'object' && error !== null && 'message' in error) {
         Message.error((error as { message?: string }).message || 'Login failed');
       } else {
