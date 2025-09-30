@@ -8,14 +8,14 @@
   "scripts": {
     "test": "pnpm -r test",
     "commit": "cz",
-    "server:dev": "pnpm --filter doggy-nav-server dev",
-    "web:dev": "pnpm --filter doggy-nav-main dev",
-    "web:start": "pnpm --filter doggy-nav-main --filter doggy-nav-server start",
-    "admin:dev": "pnpm --filter doggy-nav-admin dev",
+    "server:dev": "pnpm -F doggy-nav-server dev",
+    "web:dev": "pnpm -F doggy-nav-main dev",
+    "web:start": "pnpm -F doggy-nav-main -F doggy-nav-server start",
+    "admin:dev": "pnpm -F doggy-nav-admin dev",
     "build": "pnpm -r build",
-    "web:build": "pnpm --filter doggy-nav-main build",
-    "admin:build": "pnpm --filter doggy-nav-admin build",
-    "server:build": "pnpm --filter doggy-nav-server build"
+    "web:build": "pnpm -F doggy-nav-main build",
+    "admin:build": "pnpm -F doggy-nav-admin build",
+    "server:build": "pnpm -F doggy-nav-server build"
   },
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
