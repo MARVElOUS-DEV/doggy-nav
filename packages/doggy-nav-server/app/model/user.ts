@@ -32,10 +32,6 @@ export default function(app: any) {
       type: Boolean,
       default: true,
     },
-    clientSecret: {
-      type: String,
-      required: false,
-    },
     lastLoginAt: {
       type: Date,
       default: null,
@@ -60,8 +56,6 @@ export default function(app: any) {
     collection: 'user',
     timestamps: true,
   });
-
-  UserSchema.index({ clientSecret: 1 });
 
   return mongoose.model('User', UserSchema);
 }

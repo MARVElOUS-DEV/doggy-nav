@@ -1,6 +1,6 @@
 import { getPersistenceData } from "@/utils/persistence";
 import { TOKEN } from "@/constants";
-import { request as umiRequest } from "@umijs/max";
+import { RequestConfig, request as umiRequest } from "@umijs/max";
 import { message, notification } from "antd";
 
 // const codeMessage = {
@@ -63,6 +63,41 @@ function defaultHeaders() {
   const token = getPersistenceData(TOKEN)
   return {
     'Authorization': token
+  }
+}
+
+export function requestConfigure(options= {}): RequestConfig {
+  return {
+    requestInterceptors: [
+      (config) => {
+        return {
+          ...config,
+          headers: {
+            ...config.headers,
+            ...defaultHeaders()
+          }
+        };
+      },
+    ],
+    responseInterceptors: [
+      (response) => {
+        return response;
+      },
+    ],
+    errorConfig: {
+      errorHandler: (error: any) => {
+        const { response } = error;
+    
+        if (!response) {
+          notification.error({
+            description: '您的网络发生异常，无法连接服务器',
+            message: '网络异常',
+          });
+        }
+        throw error;
+      },
+    },
+    ...options, 
   }
 }
 

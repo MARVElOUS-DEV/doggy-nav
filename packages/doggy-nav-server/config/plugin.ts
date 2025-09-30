@@ -11,10 +11,6 @@ const plugin: EggPlugin = {
     enable: true,
     package: 'egg-jwt',
   },
-  security: {
-    enable: true,
-    package: 'egg-security',
-  },
   // Temporarily disable rate limiter due to configuration issues
   // ratelimiter: {
   //   enable: true,

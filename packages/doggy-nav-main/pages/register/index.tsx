@@ -5,40 +5,36 @@ import { useAtom } from 'jotai';
 import { motion } from 'framer-motion';
 import { authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
-import type { LoginFormValues } from '@/types';
+import type { RegisterFormValues } from '@/types';
 import { useTranslation } from 'react-i18next';
 
 const FormItem = Form.Item;
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const { t } = useTranslation('translation');
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [, dispatchAuth] = useAtom(authActionsAtom);
   const router = useRouter();
 
-  const handleSubmit = async (values: LoginFormValues) => {
+  const handleSubmit = async (values: RegisterFormValues) => {
+    if (values.password !== values.confirmPassword) {
+      Message.error('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
-      const { user,token } = await api.login(values);
-      dispatchAuth({
-        type: 'LOGIN',
-        payload: {
-          user: { id: user.id??"admin", username: user?.username },
-          token,
-        },
-      })
-
-      Message.success('Login successful!');
-      
-      // Redirect to home or previous page
-      const redirectTo = (router.query.redirect as string) || '/';
-      router.push(redirectTo);
+      const { user: {username} } = await api.register(values);
+      if(username){
+        Message.success('Registration successful! You may login now.');
+        router.push('/login');
+      }
     } catch (error: unknown) {
       if (typeof error === 'object' && error !== null && 'message' in error) {
-        Message.error((error as { message?: string }).message || 'Login failed');
+        Message.error((error as { message?: string }).message || 'Registration failed');
       } else {
-        Message.error('Login failed');
+        Message.error('Registration failed');
       }
     } finally {
       setLoading(false);
@@ -71,14 +67,14 @@ export default function LoginPage() {
           >
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
               <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your Doggy Nav account</p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Join Doggy Nav</h1>
+            <p className="text-gray-600">Create your account to get started</p>
           </motion.div>
 
-          {/* Login form */}
+          {/* Register form */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -95,7 +91,8 @@ export default function LoginPage() {
                 field="username"
                 rules={[
                   { required: true, message: 'Please enter your username' },
-                  { minLength: 3, message: 'Username must be at least 3 characters' }
+                  { minLength: 3, message: 'Username must be at least 3 characters' },
+                  { maxLength: 20, message: 'Username must be at most 20 characters' }
                 ]}
               >
                 <Input
@@ -103,6 +100,22 @@ export default function LoginPage() {
                   size="large"
                   className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
                   prefix={<i className="iconfont icon-user text-gray-400"></i>}
+                />
+              </FormItem>
+
+              <FormItem
+                label={<span className="text-gray-700 font-medium">Email</span>}
+                field="email"
+                rules={[
+                  { required: true, message: 'Please enter your email' },
+                  { type: 'email', message: 'Please enter a valid email address' }
+                ]}
+              >
+                <Input
+                  placeholder="Enter your email"
+                  size="large"
+                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  prefix={<i className="iconfont icon-email text-gray-400"></i>}
                 />
               </FormItem>
 
@@ -122,6 +135,31 @@ export default function LoginPage() {
                 />
               </FormItem>
 
+              <FormItem
+                label={<span className="text-gray-700 font-medium">Confirm Password</span>}
+                field="confirmPassword"
+                rules={[
+                  { required: true, message: 'Please confirm your password' },
+                  {
+                    validator: (value, callback) => {
+                      const password = form.getFieldValue('password');
+                      if (value && value !== password) {
+                        callback('Passwords do not match');
+                      } else {
+                        callback();
+                      }
+                    }
+                  }
+                ]}
+              >
+                <Input.Password
+                  placeholder="Confirm your password"
+                  size="large"
+                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  prefix={<i className="iconfont icon-lock text-gray-400"></i>}
+                />
+              </FormItem>
+
               <FormItem>
                 <Button
                   type="primary"
@@ -130,7 +168,7 @@ export default function LoginPage() {
                   size="large"
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-xl font-medium text-white shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  {loading ? 'Signing In...' : 'Sign In'}
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </FormItem>
             </Form>
@@ -144,12 +182,12 @@ export default function LoginPage() {
             className="text-center mt-6"
           >
             <p className="text-gray-600 text-sm">
-              Don&apos;t have an account?{' '}
+              Already have an account?{' '}
               <button
-                onClick={() => router.push('/register')}
+                onClick={() => router.push('/login')}
                 className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
               >
-                Sign up
+                Sign in
               </button>
             </p>
             <div className="mt-4 pt-4 border-t border-white border-opacity-30">
@@ -168,6 +206,6 @@ export default function LoginPage() {
 }
 
 // Use custom layout to hide sidebar and header
-LoginPage.getLayout = function getLayout(page: React.ReactElement) {
+RegisterPage.getLayout = function getLayout(page: React.ReactElement) {
   return <>{page}</>;
 };

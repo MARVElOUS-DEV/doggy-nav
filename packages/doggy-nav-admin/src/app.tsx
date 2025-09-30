@@ -1,5 +1,4 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
-import { notification } from 'antd';
 import type { RequestConfig } from '@umijs/max';
 import { history } from '@umijs/max';
 import { getPersistenceData } from "@/utils/persistence";
@@ -7,6 +6,7 @@ import { CURRENT_USER, TOKEN } from "@/constants";
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import React from 'react';
 import ContentHeader from './components/ContentHeader';
+import { requestConfigure } from './utils/request';
 
 const loginPath = '/user/login';
 // const isDev = process.env.NODE_ENV === 'development';
@@ -45,22 +45,6 @@ export async function getInitialState(): Promise<{
     settings: {},
   };
 }
-
-export const request: RequestConfig = {
-  errorConfig: {
-    errorHandler: (error: any) => {
-      const { response } = error;
-  
-      if (!response) {
-        notification.error({
-          description: '您的网络发生异常，无法连接服务器',
-          message: '网络异常',
-        });
-      }
-      throw error;
-    },
-  }
-};
 
 // 页面标题和子标题映射
 const pageTitles: Record<string, { title: string; subtitle: string; showUserMenu?: boolean; showSearch?: boolean; actions?: React.ReactNode[] }> = {
@@ -126,5 +110,5 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     ...initialState?.settings,
   };
 };
-
+export const request: RequestConfig = requestConfigure();
 

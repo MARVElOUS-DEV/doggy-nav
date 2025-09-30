@@ -3,11 +3,17 @@ import { Application } from 'egg';
 export default (app: Application) => {
   const { controller, router } = app;
 
-  router.post('/api/user/register', controller.user.register);
+  router.post('/api/register', controller.user.register);
   router.post('/api/login', controller.user.login);
   router.get('/api/user/profile', controller.user.profile);
-  router.put('/api/user/client-secret', controller.user.updateClientSecret);
-  router.post('/api/user/verify-client-secret', controller.user.verifyClientSecret);
+
+  // Application routes
+  router.post('/api/application', controller.application.create);
+  router.get('/api/application/list', controller.application.list);
+  router.put('/api/application/:id', controller.application.update);
+  router.post('/api/application/:id/regenerate-secret', controller.application.regenerateSecret);
+  router.delete('/api/application/:id/revoke', controller.application.revoke);
+  router.post('/api/application/verify-client-secret', controller.application.verifyClientSecret);
 
   router.post('/api/category', controller.category.add);
   router.delete('/api/category', controller.category.del);

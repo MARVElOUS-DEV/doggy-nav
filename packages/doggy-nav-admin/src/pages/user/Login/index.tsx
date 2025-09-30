@@ -75,7 +75,7 @@ const Login: React.FC = () => {
           }
         })
         goto(search);
-        setPersistenceData(TOKEN, res.data)
+        setPersistenceData(TOKEN, res.data?.token)
         setPersistenceData(CURRENT_USER, { name: values.username })
         return;
       } // 如果失败去设置用户错误信息

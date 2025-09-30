@@ -1,5 +1,5 @@
 import axios from './axios';
-import type { Category, NavItem, Tag, User, LoginFormValues } from '@/types';
+import type { Category, NavItem, Tag, User, LoginFormValues, RegisterFormValues } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
@@ -59,8 +59,11 @@ const api = {
     axios.patch(`${API_NAV}/${id}/star`),
 
   // Authentication APIs - using Next.js proxy routes
-  login: (credentials: LoginFormValues): Promise<string> =>
+  login: (credentials: LoginFormValues): Promise<{token: string, user: User}> =>
     axios.post('/api/auth/login', credentials),
+
+  register: (userData: RegisterFormValues): Promise<{ user: User }> =>
+    axios.post('/api/auth/register', userData),
 
   logout: (): Promise<void> =>
     axios.post('/api/auth/logout'),

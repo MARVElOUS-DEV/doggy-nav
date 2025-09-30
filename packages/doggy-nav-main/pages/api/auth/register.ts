@@ -17,7 +17,7 @@ export default async function handler(
 
   try {
     // Proxy the request to doggy-nav-server
-    const response = await axios.post(`${SERVER_URL}/api/auth/register`, req.body, {
+    const response = await axios.post(`${SERVER_URL}/api/register`, req.body, {
       headers: {
         'Content-Type': 'application/json',
       },

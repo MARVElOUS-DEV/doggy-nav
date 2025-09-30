@@ -57,12 +57,19 @@ export interface User {
   email?: string;
   avatar?: string;
   role?: string;
-  createTime?: string;
+  isAdmin?: boolean;
 }
 
 export interface LoginFormValues {
   username: string;
   password: string;
+}
+
+export interface RegisterFormValues {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface AuthState {

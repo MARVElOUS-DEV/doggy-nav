@@ -7,9 +7,9 @@ const LightbulbRope = () => {
   const router = useRouter();
   const authState = useAtomValue(authStateAtom);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const ropeRef = useRef<HTMLDivElement>(null);
-  const startYRef = useRef(0);
+  const startPosRef = useRef({ x: 0, y: 0 });
   const isNavigatingRef = useRef(false);
   
   // Set up event listeners
@@ -46,8 +46,8 @@ const LightbulbRope = () => {
     if (isNavigatingRef.current) return;
 
     setIsDragging(true);
-    startYRef.current = e.clientY;
-    setDragOffset(0);
+    startPosRef.current = { x: e.clientX, y: e.clientY };
+    setDragOffset({ x: 0, y: 0 });
 
     // Prevent text selection during drag
     e.preventDefault();
@@ -57,28 +57,29 @@ const LightbulbRope = () => {
     if (isNavigatingRef.current) return;
 
     setIsDragging(true);
-    startYRef.current = e.touches[0].clientY;
-    setDragOffset(0);
+    startPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    setDragOffset({ x: 0, y: 0 });
 
     // Prevent scrolling during drag
     e.preventDefault();
   };
 
-  const handleMove = (clientY: number) => {
+  const handleMove = (clientX: number, clientY: number) => {
     if (!isDragging || isNavigatingRef.current) return;
 
-    const currentOffset = clientY - startYRef.current;
-    // Only allow downward dragging
-    setDragOffset(Math.max(0, currentOffset));
+    const offsetX = clientX - startPosRef.current.x;
+    const offsetY = clientY - startPosRef.current.y;
+
+    setDragOffset({ x: offsetX, y: offsetY });
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    handleMove(e.clientY);
+    handleMove(e.clientX, e.clientY);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
     if (e.touches.length > 0) {
-      handleMove(e.touches[0].clientY);
+      handleMove(e.touches[0].clientX, e.touches[0].clientY);
     }
   };
 
@@ -87,28 +88,39 @@ const LightbulbRope = () => {
 
     setIsDragging(false);
 
-    // If dragged more than 100px, navigate to favorites
-    if (dragOffset > 100) {
+    // If dragged more than 100px downward (Y-axis), navigate to favorites
+    if (dragOffset.y > 100) {
       isNavigatingRef.current = true;
       router.push('/favorites');
     } else {
       // Animate back to original position
-      setDragOffset(0);
+      setDragOffset({ x: 0, y: 0 });
     }
   };
 
 
+  // Calculate bulb position based on mode
+  const bulbX = isDragging ? dragOffset.x : 0;
+  const bulbY = isDragging ? dragOffset.y + 100 : 100;  // Add base length to drag offset
+
+  // Calculate rope length (distance from origin to bulb)
+  const ropeLength = Math.sqrt(bulbX * bulbX + bulbY * bulbY);
+  // Rope angle from vertical: positive X = clockwise rotation
+  const ropeAngle = Math.atan2(bulbX, bulbY) * (180 / Math.PI);
+
   return (
     <div className="fixed top-0 right-8 z-50 pointer-events-none">
-      {/* Swaying container */}
+      {/* Swaying container - only when not dragging */}
       <div className={`${!isDragging ? 'animate-sway' : ''}`} style={{ transformOrigin: 'center top' }}>
-        {/* Rope */}
+        {/* Rope - always connects from origin (0,0) to bulb position */}
         <div
           ref={ropeRef}
-          className="w-0.5 bg-gradient-to-b from-amber-200 to-amber-400 mx-auto relative"
+          className="absolute top-0 left-1/2 w-0.5 bg-gradient-to-b from-amber-200 to-amber-400"
           style={{
-            height: `${100 + dragOffset}px`,
-            transition: isDragging ? 'none' : 'height 0.3s ease-out'
+            height: `${ropeLength}px`,
+            transform: `translateX(-50%) rotate(${ropeAngle}deg)`,
+            transformOrigin: 'top center',
+            transition: isDragging ? 'none' : 'all 0.3s ease-out'
           }}
         >
           {/* Small rope details */}
@@ -116,13 +128,13 @@ const LightbulbRope = () => {
           <div className="absolute top-2/3 left-1/2 transform -translate-x-1/2 w-1 h-6 bg-amber-300/50 rounded-full"></div>
         </div>
 
-        {/* Lightbulb */}
+        {/* Lightbulb - positioned at the end of the rope */}
         <div
-          className={`pointer-events-auto cursor-grab active:cursor-grabbing w-12 h-12 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-amber-300 shadow-lg relative flex items-center justify-center transition-all duration-300 ${
+          className={`absolute top-0 left-1/2 pointer-events-auto cursor-grab active:cursor-grabbing w-12 h-12 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-amber-300 shadow-lg flex items-center justify-center transition-all duration-300 ${
             isDragging ? 'scale-110' : 'hover:scale-105'
-          } ${dragOffset > 100 ? 'animate-pulse' : ''}`}
+          } ${dragOffset.y > 100 ? 'animate-pulse' : ''}`}
           style={{
-            transform: `translateY(${dragOffset}px)`,
+            transform: `translate(calc(-50% + ${bulbX}px), ${bulbY}px)`,
             transition: isDragging ? 'none' : 'transform 0.3s ease-out, scale 0.2s ease-out'
           }}
           onMouseDown={handleMouseDown}
@@ -137,22 +149,24 @@ const LightbulbRope = () => {
         </div>
 
         {/* Glow effect when dragged */}
-        {dragOffset > 50 && (
+        {dragOffset.y > 50 && (
           <div className="absolute inset-0 rounded-full bg-amber-300/30 blur-lg animate-pulse"></div>
         )}
+        </div>
       </div>
-    </div>
 
       {/* Instruction text when dragging */}
-      {isDragging && dragOffset > 30 && (
+      {isDragging && dragOffset.y > 30 && (
         <div
-          className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 text-amber-700 text-sm font-medium whitespace-nowrap animate-fade-in-simple"
+          className="absolute text-amber-700 text-sm font-medium whitespace-nowrap animate-fade-in-simple"
           style={{
-            transform: `translateX(-50%) translateY(${dragOffset}px)`,
-            transition: 'transform 0.1s ease-out'
+            top: `${bulbY + 60}px`,
+            left: '50%',
+            transform: `translateX(calc(-50% + ${bulbX}px))`,
+            transition: 'all 0.1s ease-out'
           }}
         >
-          {dragOffset > 100 ? '松开前往收藏页面' : '继续下拉前往收藏页面'}
+          {dragOffset.y > 100 ? '松开前往收藏页面' : '继续下拉前往收藏页面'}
         </div>
       )}
     </div>

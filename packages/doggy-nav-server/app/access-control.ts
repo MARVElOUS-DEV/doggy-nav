@@ -10,11 +10,17 @@ export interface RoutePermission {
 // Route access control matrix
 export const routePermissions: RoutePermission[] = [
   // User authentication routes
-  { method: 'POST', path: '/api/user/register', access: 'public', description: 'User registration' },
+  { method: 'POST', path: '/api/register', access: 'public', description: 'User registration' },
   { method: 'POST', path: '/api/login', access: 'public', description: 'User login' },
   { method: 'GET', path: '/api/user/profile', access: 'authenticated', description: 'Get user profile' },
-  { method: 'PUT', path: '/api/user/client-secret', access: 'authenticated', description: 'Update client secret' },
-  { method: 'POST', path: '/api/user/verify-client-secret', access: 'public', description: 'Verify client secret' },
+
+  // Application routes
+  { method: 'POST', path: '/api/application', access: 'admin', description: 'Create application' },
+  { method: 'GET', path: '/api/application/list', access: 'admin', description: 'List applications' },
+  { method: 'PUT', path: '/api/application/:id', access: 'admin', description: 'Update application' },
+  { method: 'POST', path: '/api/application/:id/regenerate-secret', access: 'admin', description: 'Regenerate application secret' },
+  { method: 'DELETE', path: '/api/application/:id/revoke', access: 'admin', description: 'Revoke application' },
+  { method: 'POST', path: '/api/application/verify-client-secret', access: 'public', description: 'Verify application client secret' },
 
   // Category routes
   { method: 'POST', path: '/api/category', access: 'admin', description: 'Create category' },

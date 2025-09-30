@@ -1,6 +1,6 @@
-import { getRoutePermission, hasAccess } from '../../access-control';
+import { getRoutePermission, hasAccess } from '../access-control';
 
-export default (app: any) => {
+export default () => {
   return async function(ctx: any, next: any) {
     let url = ctx.url;
     if (url.includes('?')) {
@@ -31,13 +31,13 @@ export default (app: any) => {
     // but still try to authenticate if credentials are provided
     if (permission.access === 'optional') {
       // Try to authenticate but don't require it
-      await tryAuthenticate(ctx, app);
+      await tryAuthenticate(ctx, ctx.app);
       await next();
       return;
     }
 
     // For authenticated and admin access, try to authenticate
-    const authResult = await tryAuthenticate(ctx, app);
+    const authResult = await tryAuthenticate(ctx, ctx.app);
 
     // Check if user has required access level
     if (hasAccess(permission, ctx.state.userinfo)) {

@@ -1,7 +1,5 @@
 import { Service } from 'egg';
 import * as bcrypt from 'bcrypt';
-// eslint-disable-next-line no-restricted-imports
-import * as crypto from 'crypto';
 
 export default class UserService extends Service {
 
@@ -54,24 +52,23 @@ export default class UserService extends Service {
     }
 
     const hashedPassword = await this.hashPassword(password);
-    const clientSecret = crypto.randomBytes(32).toString('hex');
 
     const newUser = await ctx.model.User.create({
       username: username.trim(),
       email: email.toLowerCase().trim(),
       password: hashedPassword,
-      clientSecret,
       isAdmin: false,
       isActive: true,
     });
 
     const userResponse = {
-      id: newUser._id,
-      username: newUser.username,
-      email: newUser.email,
-      isAdmin: newUser.isAdmin,
-      clientSecret: newUser.clientSecret,
-      createdAt: newUser.createdAt,
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        isAdmin: newUser.isAdmin,
+        createdAt: newUser.createdAt,
+      },
     };
 
     return userResponse;
@@ -118,7 +115,6 @@ export default class UserService extends Service {
         username: user.username,
         email: user.email,
         isAdmin: user.isAdmin,
-        clientSecret: user.clientSecret,
       },
     };
   }
@@ -135,23 +131,5 @@ export default class UserService extends Service {
     }
 
     return user;
-  }
-
-  async updateClientSecret(userId: string) {
-    const { ctx } = this;
-
-    const clientSecret = crypto.randomBytes(32).toString('hex');
-
-    const user = await ctx.model.User.findByIdAndUpdate(
-      userId,
-      { clientSecret, updatedAt: new Date() },
-      { new: true },
-    ).select('-password -resetPasswordToken');
-
-    if (!user) {
-      throw new Error('用户不存在');
-    }
-
-    return { clientSecret };
   }
 }
