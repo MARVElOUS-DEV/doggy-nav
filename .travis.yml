@@ -1,13 +1,141 @@
+# Travis CI Configuration for Doggy Nav
+# Updated for modern Node.js, pnpm, and comprehensive testing
 
 language: node_js
+
+# Test on multiple Node.js versions
 node_js:
-  - '12'
-  - '14'
+  - '20'   # LTS
+  - '22'   # Current
+  - 'lts/*' # Latest LTS
+
+# Operating systems to test on
+os:
+  - linux
+  - osx
+
+# Environment variables
+env:
+  - NODE_ENV=test
+
+# Service dependencies
+services:
+  - mongodb
+  - docker
+
+# Cache directories to speed up builds
+cache:
+  directories:
+    - ~/.pnpm-store
+    - node_modules
+    - packages/*/node_modules
+  npm: false
+  yarn: false
+
+# Install pnpm and dependencies
 before_install:
-  - npm i yarn -g
+  - curl -fsSL https://get.pnpm.io/install.sh | sh -
+  - export PATH="$HOME/.local/share/pnpm:$PATH"
+  - pnpm --version
+
 install:
-  - yarn
+  - pnpm install --frozen-lockfile
+
+# Default script (overridden by job matrix)
 script:
-  - yarn workspace doggy-nav-server cov
-after_script:
-  - yarn workspace doggy-nav-server clean
+  - pnpm build
+
+# Build matrix for different test scenarios
+jobs:
+  include:
+    # Lint and format checks
+    - stage: "Code Quality"
+      name: "Lint & Format Check"
+      node_js: '20'
+      script:
+        - pnpm --filter doggy-nav-server lint
+        - pnpm --filter doggy-nav-main lint
+        - pnpm --filter doggy-nav-admin lint
+
+    # Unit tests
+    - stage: "Unit Tests"
+      name: "Server Tests"
+      node_js: '20'
+      before_script:
+        - sleep 15 # wait for mongodb
+      script:
+        - pnpm --filter doggy-nav-server test-local
+      after_script:
+        - pnpm --filter doggy-nav-server clean
+
+    # Build tests
+    - stage: "Build Tests"
+      name: "Frontend Build"
+      node_js: '20'
+      script:
+        - pnpm web:build
+
+    - name: "Admin Build"
+      node_js: '20'
+      script:
+        - pnpm admin:build
+
+    - name: "Server Build"
+      node_js: '20'
+      script:
+        - pnpm server:build
+
+    # Docker build tests
+    - stage: "Docker Tests"
+      name: "Docker Build Test"
+      node_js: '20'
+      services:
+        - docker
+      script:
+        - docker build -f Dockerfile-Main -t doggy-nav-frontend:test .
+        - docker build -f Dockerfile-Server -t doggy-nav-backend:test .
+        - docker build -f Dockerfile-Admin -t doggy-nav-admin:test .
+
+    # Coverage and reporting
+    - stage: "Coverage"
+      name: "Test Coverage"
+      node_js: '20'
+      before_script:
+        - sleep 15 # wait for mongodb
+      script:
+        - pnpm --filter doggy-nav-server cov
+      after_success:
+        - bash <(curl -s https://codecov.io/bash) || echo "Codecov failed"
+
+# Deployment configuration
+deploy:
+  - provider: script
+    script: bash scripts/deploy.sh
+    on:
+      branch: main
+      node_js: '20'
+      condition: $TRAVIS_OS_NAME = linux
+
+# Build stages
+stages:
+  - "Code Quality"
+  - "Unit Tests"
+  - "Build Tests"
+  - "Docker Tests"
+  - "Coverage"
+
+# Notifications
+notifications:
+  email:
+    recipients:
+      - your-email@example.com
+    on_success: change
+    on_failure: always
+  slack:
+    rooms:
+      - secure: "your-encrypted-slack-token"
+    on_success: change
+    on_failure: always
+
+# Environment-specific configurations
+if: branch IN (main, develop) OR type IN (pull_request)

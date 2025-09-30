@@ -1,14 +1,134 @@
+# AppVeyor CI Configuration for Doggy Nav
+# Updated for modern Node.js, pnpm, and Windows testing
+
+version: '{build}'
+
+# Build worker image
+image: Visual Studio 2022
+
+# Environment variables
 environment:
   matrix:
-    - nodejs_version: '12'
-    - nodejs_version: '12'
+    - nodejs_version: '20'
+      platform: x64
+    - nodejs_version: '22'
+      platform: x64
+  NODE_ENV: test
+  PNPM_CACHE_FOLDER: $(APPVEYOR_BUILD_FOLDER)\.pnpm-store
+
+# Branches to build
+branches:
+  only:
+    - main
+    - develop
+
+# Skip builds if only documentation changed
+skip_commits:
+  files:
+    - '**/*.md'
+    - 'docs/**/*'
+    - '.gitignore'
+    - 'LICENSE'
+
+# Cache directories
+cache:
+  - '%APPVEYOR_BUILD_FOLDER%\.pnpm-store'
+  - 'node_modules'
+  - 'packages\doggy-nav-main\node_modules'
+  - 'packages\doggy-nav-server\node_modules'
+  - 'packages\doggy-nav-admin\node_modules'
+
+# Clone settings
+clone_depth: 50
+clone_folder: C:\projects\doggy-nav
+
+# Services
+services:
+  - mongodb
+
+# Install phase
 install:
-  - ps: Install-Product node $env:nodejs_version
-  - npm i yarn && node_modules\.bin\yarn
-
-test_script:
+  # Install Node.js
+  - ps: Install-Product node $env:nodejs_version $env:platform
   - node --version
-  - yarn --version
-  - yarn run test
+  - npm --version
 
-build: off
+  # Install pnpm
+  - npm install -g pnpm
+  - pnpm --version
+
+  # Install dependencies
+  - pnpm install --frozen-lockfile
+
+# Build phase
+build_script:
+  - echo "Building all packages..."
+  - pnpm build
+
+# Test phase
+test_script:
+  # Lint checks
+  - echo "Running lint checks..."
+  - pnpm --filter doggy-nav-server lint
+  - pnpm --filter doggy-nav-main lint
+  - pnpm --filter doggy-nav-admin lint
+
+  # Unit tests (server only for now)
+  - echo "Running server tests..."
+  - pnpm --filter doggy-nav-server test-local
+
+# After test phase
+after_test:
+  - pnpm --filter doggy-nav-server clean
+
+# Artifacts
+artifacts:
+  - path: 'packages\doggy-nav-main\dist'
+    name: frontend-build
+    type: zip
+
+  - path: 'packages\doggy-nav-server\dist'
+    name: server-build
+    type: zip
+
+  - path: 'packages\doggy-nav-admin\dist'
+    name: admin-build
+    type: zip
+
+# Deployment
+deploy:
+  - provider: Environment
+    name: staging
+    on:
+      branch: develop
+
+  - provider: Environment
+    name: production
+    on:
+      branch: main
+
+# Notifications
+notifications:
+  - provider: Email
+    to:
+      - your-email@example.com
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
+
+  - provider: Slack
+    incoming_webhook:
+      secure: your-encrypted-slack-webhook-url
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
+
+# Build settings
+configuration: Release
+platform: Any CPU
+
+# Don't build feature branch with open pull requests
+skip_branch_with_pr: true
+
+# Maximum number of concurrent jobs
+max_jobs: 4

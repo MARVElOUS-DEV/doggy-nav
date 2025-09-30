@@ -1,16 +1,71 @@
-FROM node:22-alpine
-LABEL name="marvelous"
+# Multi-stage build for doggy-nav-server (Egg.js Backend)
+FROM node:20-alpine AS base
 
-RUN mkdir -p /app
-COPY ./packages/doggy-nav-server/package.json /app/package.json
-COPY yarn.lock /app/yarn.lock
-RUN cd /app && yarn install --production
-ADD ./packages/doggy-nav-server/dist/. /app
+# Install pnpm globally
+RUN npm install -g pnpm
 
+# Install dependencies only when needed
+FROM base AS deps
 WORKDIR /app
 
+# Copy package.json and lock files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/doggy-nav-server/package.json ./packages/doggy-nav-server/
+COPY packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
+COPY packages/doggy-nav-admin/package.json ./packages/doggy-nav-admin/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build the source code
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/doggy-nav-server/node_modules ./packages/doggy-nav-server/node_modules
+
+# Copy source code
+COPY packages/doggy-nav-server ./packages/doggy-nav-server
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Build the application
+WORKDIR /app/packages/doggy-nav-server
+ENV NODE_ENV=production
+
+# Install production dependencies and build
+RUN pnpm build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Create a non-root user
+RUN addgroup --system --gid 1001 eggjs
+RUN adduser --system --uid 1001 eggjs
+
+# Copy package.json and built application
+COPY --from=builder /app/packages/doggy-nav-server/package.json ./
+COPY --from=builder /app/packages/doggy-nav-server/dist ./dist
+COPY --from=builder /app/packages/doggy-nav-server/app.js ./
+COPY --from=builder /app/packages/doggy-nav-server/config ./config
+COPY --from=builder /app/packages/doggy-nav-server/scripts ./scripts
+
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile
+
+# Change ownership to non-root user
+RUN chown -R eggjs:eggjs /app
+
+USER eggjs
+
 EXPOSE 3002
+
 ENV PORT=3002
-# ENTRYPOINT [ "/bin/sh" ]
-# CMD [ "-c", "while true;do echo 1;sleep 120s;done"]
-CMD [ "/usr/local/bin/yarn", "docker-start" ]
+ENV EGG_SERVER_ENV=prod
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3002/api/health || exit 1
+
+CMD ["node", "scripts/validate-secrets.js", "&&", "npm", "run", "docker-start"]

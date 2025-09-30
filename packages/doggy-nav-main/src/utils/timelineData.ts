@@ -45,7 +45,8 @@ export function generateYearRange(startYear: number, endYear: number): TimelineY
       totalWebsites: 0,
       featuredWebsites: [],
       color: YEAR_COLORS[year % YEAR_COLORS.length],
-      position: { x: 0, y: 0, z: 0, rotation: 0 }
+      position: { x: 0, y: 0, z: 0, rotation: 0 },
+      items: [],
     });
   }
 
@@ -108,7 +109,7 @@ export function createMockTimelineData(): TimelineYear[] {
   months.forEach(month => monthlyItems[month] = []);
 
   // 生成当前年份的数据，分配到不同的月份
-  const totalWebsites = 24 + Math.floor(Math.random() * 12); // 24-36个网站
+  const totalWebsites = 12;
 
   for (let i = 0; i < totalWebsites; i++) {
     const month = Math.floor(Math.random() * 12) + 1; // 1-12月
@@ -171,12 +172,6 @@ export function createMockTimelineData(): TimelineYear[] {
   const yearData: TimelineYear = {
     year: currentYear,
     totalWebsites: allTimelineItems.length,
-    quarterlyData: {
-      q1: [], // 保持向后兼容
-      q2: [],
-      q3: [],
-      q4: []
-    },
     featuredWebsites: [], // 保持向后兼容
     color: YEAR_COLORS[currentYear % YEAR_COLORS.length],
     position: { x: 0, y: 0, z: 0, rotation: 0 },
@@ -200,7 +195,6 @@ export function groupWebsitesByYear(websites: NavItem[]): TimelineYear[] {
       yearMap.set(year, {
         year,
         totalWebsites: 0,
-        quarterlyData: { q1: [], q2: [], q3: [], q4: [] },
         featuredWebsites: [],
         color: YEAR_COLORS[year % YEAR_COLORS.length],
         position: { x: 0, y: 0, z: 0, rotation: 0 },
@@ -225,12 +219,6 @@ export function groupWebsitesByYear(websites: NavItem[]): TimelineYear[] {
       category: website.categoryName || '',
       logo: website.logo
     });
-
-    // 保持原有的季度分组逻辑
-    const quarter = getQuarter(validDate);
-    if (quarter >= 1 && quarter <= 4) {
-      yearData.quarterlyData[`q${quarter}` as keyof typeof yearData.quarterlyData].push(website);
-    }
 
     // 添加到精选网站（按点赞数排序，保留前20个）
     yearData.featuredWebsites.push(website);

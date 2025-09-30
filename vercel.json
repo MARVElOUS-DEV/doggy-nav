@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "name": "doggy-nav",
+  "framework": "nextjs",
+  "buildCommand": "cd packages/doggy-nav-main && npm run build",
+  "outputDirectory": "packages/doggy-nav-main/dist",
+  "installCommand": "pnpm install",
+  "devCommand": "cd packages/doggy-nav-main && npm run dev",
+  "rootDirectory": "./",
+  "projects": [
+    {
+      "name": "doggy-nav-main",
+      "source": "packages/doggy-nav-main"
+    }
+  ],
+  "env": {
+    "SERVER_URL": "@server-url",
+    "ANALYZE": "false"
+  },
+  "build": {
+    "env": {
+      "ANALYZE": "false"
+    }
+  }
+}

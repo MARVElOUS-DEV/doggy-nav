@@ -23,7 +23,7 @@ interface NavStatsChartProps {
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'];
 
-const NavStatsChart: React.FC<NavStatsChartProps> = ({ data }) => {
+function NavStatsChart({ data }: NavStatsChartProps): JSX.Element {
   // Prepare data for top viewed sites
   const topViewedData = useMemo(() => {
     return (data?.view || [])
@@ -172,6 +172,6 @@ const NavStatsChart: React.FC<NavStatsChartProps> = ({ data }) => {
       </div>
     </div>
   );
-};
+}
 
 export default NavStatsChart;

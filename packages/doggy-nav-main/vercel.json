@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "name": "doggy-nav-main",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "installCommand": "pnpm install",
+  "env": {
+    "SERVER_URL": "@server-url",
+    "ANALYZE": "false"
+  },
+  "build": {
+    "env": {
+      "ANALYZE": "false"
+    }
+  },
+  "functions": {
+    "pages/api/**/*.js": {
+      "maxDuration": 30
+    },
+    "pages/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}

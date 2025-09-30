@@ -17,7 +17,7 @@ docker-compose -f docker-compose-init-prod.yml up -d
 
 if [[ -n $3 ]]; then
   # init your mongodb
-  docker exec -e USERNAME=$1 -e PASSWORD=$2 -e INIT_DB_URL=$3 doggyserver npx node ./utils/reptile.js
+  docker exec -e USERNAME=$1 -e PASSWORD=$2 -e INIT_DB_URL=$3 doggyserver npx node ./utils/postinstall.js
 fi
 cd  -
 echo 'deploy finished'

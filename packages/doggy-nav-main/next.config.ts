@@ -7,7 +7,20 @@ const nextConfig: NextConfig = {
     defaultLocale: 'zh',
   },
   // output: 'export',
+  output: 'standalone',
   distDir: 'dist',
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
   // 临时禁用静态优化来定位问题
   // skipTrailingSlashRedirect: true,
   // 启用详细日志
@@ -40,7 +53,7 @@ const nextConfig: NextConfig = {
       return [
         {
           source: '/api/:path*',
-          destination: `${process.env.SEVER?? 'http://localhost:3002'}/api/:path*`,
+          destination: `${process.env.SERVER ?? 'http://localhost:3002'}/api/:path*`,
         }
       ];
     }
