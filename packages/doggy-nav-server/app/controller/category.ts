@@ -25,7 +25,7 @@ export default class CategoryController extends Controller {
         }
       } else if (hide) {
         // For authenticated users, respect the hide parameter if provided
-        params.hide = { $eq: hide === 'true' };
+        params.hide = { $eq: true };
       }
 
       const data = await ctx.model.Category.find(params).limit(100000);

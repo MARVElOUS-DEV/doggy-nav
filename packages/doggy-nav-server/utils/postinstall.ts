@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import userModel from '../app/model/user';
 import * as readline from 'readline';
+import mongoCfg from '../config/mongodb';
 
-const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/navigation`;
+const mongoUrl = mongoCfg.mongoUrl;
 const db = mongoose.connect(mongoUrl) as any;
 db.mongoose = mongoose;
 

@@ -8,22 +8,22 @@ db = db.getSiblingDB('doggy_nav');
 print('📄 Creating collections...');
 
 // Users collection
-db.createCollection('users');
+db.createCollection('user');
 db.users.createIndex({ "email": 1 }, { unique: true });
 db.users.createIndex({ "username": 1 }, { unique: true });
 db.users.createIndex({ "createdAt": 1 });
 
 // Navigation items collection
-db.createCollection('navitems');
+db.createCollection('nav');
 db.navitems.createIndex({ "name": 1 });
-db.navitems.createIndex({ "category": 1 });
+db.navitems.createIndex({ "categoryId": 1 });
 db.navitems.createIndex({ "authorId": 1 });
 db.navitems.createIndex({ "createdAt": 1 });
 db.navitems.createIndex({ "view": -1 });
 db.navitems.createIndex({ "star": -1 });
 
 // Categories collection
-db.createCollection('categories');
+db.createCollection('category');
 db.categories.createIndex({ "name": 1 }, { unique: true });
 db.categories.createIndex({ "order": 1 });
 
@@ -35,7 +35,7 @@ db.favorites.createIndex({ "userId": 1 });
 print('📊 Creating initial data...');
 
 // Insert default categories
-db.categories.insertMany([
+db.category.insertMany([
   {
     name: '开发工具',
     description: '编程开发相关工具',
@@ -81,4 +81,4 @@ print('📝 Default categories inserted');
 // Show collection stats
 print('\n📊 Database status:');
 print('Collections: ' + db.getCollectionNames().length);
-print('Categories: ' + db.categories.countDocuments());
+print('Categories: ' + db.category.countDocuments());

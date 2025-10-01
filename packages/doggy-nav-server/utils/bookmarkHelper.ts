@@ -4,13 +4,14 @@ import fs from 'fs';
 import path from 'path';
 import request from 'request';
 import cheerio from 'cheerio';
-import mongoose, { ConnectOptions } from 'mongoose';
+import mongoose from 'mongoose';
 import navModel from '../app/model/nav';
 import categoryModel from '../app/model/category';
 import { dateToChromeTime } from './timeUtil';
-import { privateCategoryName } from '../constants';
+import { globalRootCategoryId, privateCategoryName } from '../constants';
+import mongoCfg from '../config/mongodb';
 
-const mongoUrl = `mongodb://${process.env.MONGO_URL || '127.0.0.1:27017'}/navigation`;
+const mongoUrl = mongoCfg.mongoUrl;
 const getFaviconSrv = (hostname, size = 32, provider = 'faviconIm') => {
   return {
     faviconIm: `https://favicon.im/zh/${hostname}`,
@@ -19,7 +20,7 @@ const getFaviconSrv = (hostname, size = 32, provider = 'faviconIm') => {
   }[provider] ?? '/default-web.png';
 };
 
-const db = mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true } as ConnectOptions) as any;
+const db = mongoose.connect(mongoUrl) as any;
 db.mongoose = mongoose;
 // 引入数据模型模块
 const navData = navModel(db);
@@ -101,7 +102,7 @@ async function recursive(children, parentId) {
         const { _id } = await categorySchema.create({
           categoryId: parentId,
           name: firstName,
-          createAt: el.date_added ? el.date_added : dateToChromeTime(new Date()),
+          createAt: el.date_added ?? dateToChromeTime(new Date()),
         });
         secondCategoryId = _id;
       }
@@ -124,7 +125,12 @@ async function recursive(children, parentId) {
 async function transform(roots) {
   const categoryData = {
     name: privateCategoryName,
-    categoryId: '',
+    categoryId: globalRootCategoryId,
+    icon: 'type:emoji_🐶',
+    hide: true,
+    createAt: dateToChromeTime(new Date()),
+    showInMenu: true,
+    description: 'private bookmarks',
   };
   const categoryDataRes = await categorySchema.create(categoryData);
   const firstStage = roots.bookmark_bar.children;

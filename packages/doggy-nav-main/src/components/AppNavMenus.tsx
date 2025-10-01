@@ -71,7 +71,7 @@ export default function AppNavMenus({ showMenuType, onShowMenus }: { showMenuTyp
         <Menu
           collapse={isCollapse}
           className="border-0 bg-transparent text-gray-700"
-          defaultSelectedKeys={[OVERVIEW.id]}
+          selectedKeys={selectedCategory ? [selectedCategory] : [OVERVIEW.id]}
           // style={{ backgroundColor: 'transparent' }}
         >
           <MenuStack menuList={categories} onHandleSubMenuItemClick={onHandleSubMenuClick} />
