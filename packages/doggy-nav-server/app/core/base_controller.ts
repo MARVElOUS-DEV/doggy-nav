@@ -218,7 +218,15 @@ export default class CommonController extends Controller {
       pipeline.push({ $sample: { size: safeRandomNumber } });
 
       const res = await this.ctx.model[tableName].aggregate(pipeline);
-      this.success(res);
+
+      // Convert aggregation results to Mongoose documents to apply schema transformations
+      const model = this.ctx.model[tableName];
+      const transformedRes = res.map(doc => {
+        const mongooseDoc = new model(doc);
+        return mongooseDoc.toJSON();
+      });
+
+      this.success(transformedRes);
     } catch (e: any) {
       this.error(e.message);
     }

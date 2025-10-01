@@ -102,7 +102,6 @@ export default class NavController extends Controller {
   }
 
   async audit() {
-    const { ctx } = this;
     this.ctx.request.body.auditTime = new Date();
 
     const { status, id } = this.ctx.request.body;
@@ -123,7 +122,7 @@ export default class NavController extends Controller {
   async info() {
     const { request, model } = this.ctx;
     try {
-      const { id, categoryId } = request.query;
+      const { categoryId } = request.query;
       const resData: any = [];
       // 取所有子分类， filter by hide based on authentication
       const isAuthenticated = this.isAuthenticated();

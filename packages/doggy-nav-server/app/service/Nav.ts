@@ -17,7 +17,9 @@ export default class NavService extends Service {
       query.hide = { $eq: false };
     }
 
-    return await this.ctx.model.Nav.find(query).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
+    const docs = await this.ctx.model.Nav.find(query).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
+    // Convert to JSON to ensure schema transformations are applied (id field instead of _id)
+    return docs.map(doc => doc.toJSON());
   }
 
   /**

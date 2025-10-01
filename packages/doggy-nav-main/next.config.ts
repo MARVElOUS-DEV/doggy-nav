@@ -46,21 +46,21 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  async rewrites() {
-    // 只在开发环境启用代理
-    if (process.env.NODE_ENV === 'development') {
-      console.info('Setting up proxy rewrites...');
-      return [
-        {
-          source: '/api/:path*',
-          destination: `${process.env.SERVER ?? 'http://localhost:3002'}/api/:path*`,
-        }
-      ];
-    }
+  // async rewrites() {
+  //   // 只在开发环境启用代理
+  //   if (process.env.NODE_ENV === 'development') {
+  //     console.info('Setting up proxy rewrites...');
+  //     return [
+  //       {
+  //         source: '/api/:path*',
+  //         destination: `${process.env.SERVER ?? 'http://localhost:3002'}/api/:path*`,
+  //       }
+  //     ];
+  //   }
 
-    // 生产环境不使用代理
-    return [];
-  },
+  //   // 生产环境不使用代理
+  //   return [];
+  // },
 };
 
 const bundleAnalyzer = withBundleAnalyzer({

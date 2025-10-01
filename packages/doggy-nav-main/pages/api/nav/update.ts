@@ -1,6 +1,6 @@
 import { createApiHandler } from '../_apiHandler';
 
 export default createApiHandler({
-  method: 'POST',
-  endpoint: '/api/register'
+  method: 'PUT',
+  endpoint: '/api/nav'
 });
