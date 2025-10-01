@@ -1,6 +1,6 @@
+import { parseHTML } from '../../utils/reptileHelper';
+import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
-import * as request from 'request';
-import * as cheerio from 'cheerio';
 
 enum NAV_STATUS {
   pass,
@@ -60,31 +60,18 @@ export default class NavController extends Controller {
 
   async add() {
     this.ctx.request.body.status = NAV_STATUS.wait;
-    this.ctx.request.body.createTime = new Date();
+    this.ctx.request.body.createTime = nowToChromeTime();
     await super.add();
   }
 
   async reptile() {
     const { ctx } = this;
     const { url } = ctx.query;
-    const res = await new Promise(resolve => {
-      request(url, (error, requestData, body) => {
-        if (!error && requestData.statusCode === 200) {
-          const $ = cheerio.load(body);
-          const name = $('title').text();
-          const desc = $('meta[name="description"]').attr('content');
-
-          resolve({
-            name,
-            desc,
-            href: url,
-          });
-        } else {
-          resolve({ error: '获取站点信息失败' });
-        }
-      });
-    });
-
+    const res = await parseHTML(url);
+    if (res === null) {
+      this.error('获取网站信息失败');
+      return;
+    }
     this.success(res);
   }
 
@@ -126,7 +113,11 @@ export default class NavController extends Controller {
       const resData: any = [];
       // 取所有子分类， filter by hide based on authentication
       const isAuthenticated = this.isAuthenticated();
-      const categoryFilter: any = { categoryId };
+      const categoryFilter: any = {
+        $or: [
+          { categoryId },
+          { _id: categoryId },
+        ] };
 
       // For non-authenticated users, also filter out hidden categories
       if (!isAuthenticated) {

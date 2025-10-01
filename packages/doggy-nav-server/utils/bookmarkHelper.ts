@@ -10,15 +10,9 @@ import categoryModel from '../app/model/category';
 import { dateToChromeTime } from './timeUtil';
 import { globalRootCategoryId, privateCategoryName } from '../constants';
 import mongoCfg from '../config/mongodb';
+import { getFaviconSrv, isAbsoluteUrl } from './reptileHelper';
 
 const mongoUrl = mongoCfg.mongoUrl;
-const getFaviconSrv = (hostname, size = 32, provider = 'faviconIm') => {
-  return {
-    faviconIm: `https://favicon.im/zh/${hostname}`,
-    faviconIowen: `https://api.iowen.cn/favicon/${hostname}.png`,
-    google: `https://www.google.com/s2/favicons?domain=${hostname}&sz=${size}`,
-  }[provider] ?? '/default-web.png';
-};
 
 const db = mongoose.connect(mongoUrl) as any;
 db.mongoose = mongoose;
@@ -26,11 +20,6 @@ db.mongoose = mongoose;
 const navData = navModel(db);
 const categorySchema = categoryModel(db);
 const map = new Map();
-
-function isAbsoluteUrl(url) {
-  return url.startsWith('http') || url.startsWith('//') || url.startsWith('data:image');
-}
-
 async function getBookmarkRoots(path) {
   return new Promise(resolve => {
     fs.readFile(path, { encoding: 'utf-8' }, (err, data) => {
@@ -46,7 +35,7 @@ async function getLogo(url) {
     return map.get(origin);
   }
   return new Promise(resolve => {
-    request(origin, { timeout: 6000, followAllRedirects: true, }, (error, responseData, body) => {
+    request(origin, { timeout: 6000, followAllRedirects: true }, (error, responseData, body) => {
       if (!error && responseData.statusCode === 200) {
         const $ = cheerio.load(body);
         let logo = '';
@@ -75,14 +64,6 @@ async function getLogo(url) {
         resolve(getFaviconSrv(hostname));
       }
     });
-  });
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function sleep(ms) {
-  return new Promise(r => {
-    setTimeout(() => {
-      r(null);
-    }, ms);
   });
 }
 

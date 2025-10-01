@@ -10,7 +10,7 @@ import {
 } from '@arco-design/web-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from '@/utils/axios'
-import { API_NAV, API_NAV_REPTILE } from '@/utils/api'
+import { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api'
 import { useAtom } from 'jotai'
 import { RecommendFormValues } from '@/types'
 import { categoriesAtom, tagsAtom } from '@/store/store'
@@ -26,14 +26,15 @@ export default function Recommend() {
 
   const addNav = async (values: RecommendFormValues) => {
     setLoading(true)
-    const res = await axios.post(API_NAV, values)
-    if (res.data.code === 0) {
-      Message.error(`${res.data.msg}`)
-    } else {
+    try {
+      await axios.post(API_NAV_ADD, values)
       Message.success('感谢您的支持，请等待后台审核通过！')
       form.resetFields()
+    } catch (error) {
+      Message.error(`${error}`)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const getNavInfo = async () => {
@@ -41,11 +42,11 @@ export default function Recommend() {
     if (!url) return
     setFormLoading(true)
     try {
-      const { data } = await axios.get(`${API_NAV_REPTILE}?url=${url}`)
+      const {logo, name, desc} = await axios.get<{logo?:string,name:string,desc:string}>(`${API_NAV_REPTILE}?url=${url}`)as any;
       form.setFieldsValue({
-        logo: data?.logo??`https://www.google.com/s2/favicons?domain=${url}`,
-        name: data?.name,
-        desc: data?.desc,
+        logo: logo??`https://www.google.com/s2/favicons?domain=${url}`,
+        name,
+        desc
       })
     } catch (e) {
       Message.error('请求超时')
@@ -210,15 +211,7 @@ export default function Recommend() {
                     showSearch
                     className="recommend-sel-container h-12 border-2 border-gray-200 focus:border-indigo-400 focus:ring-indigo-200 rounded-xl transition-all duration-300 category-select"
                   >
-                      {categories.map((group) => (
-                        <Select.OptGroup key={group.id} label={group.name}>
-                          {group.children?.map((item) => (
-                            <Select.Option key={item.id} value={item.id}>
-                              {item.name}
-                            </Select.Option>
-                          ))}
-                        </Select.OptGroup>
-                      ))}
+                      {renderCategories(categories)}
                     </Select>
                 </FormItem>
               </motion.div>
@@ -299,3 +292,31 @@ export default function Recommend() {
   )
 }
 
+const renderCategories = (categories) => {
+  const defaultLists: React.ReactNode[] = []
+  const list = categories.map((group) => {
+    if (!group.children || group.children.length === 0) {
+      defaultLists.push((
+      <Select.Option key={group.id} value={group.id}>
+            {group.name}
+        </Select.Option>))
+      return  null
+    }else {
+      return (
+        <Select.OptGroup key={group.id} label={group.name}>
+          {group.children?.map((item) => (
+            <Select.Option key={item.id} value={item.id}>
+              {item.name}
+            </Select.Option>
+          ))}
+        </Select.OptGroup>
+      )
+    }
+  }
+).filter(Boolean);
+  return [
+  (<Select.OptGroup key='default-list-key' label={"default"}>
+      {defaultLists}
+  </Select.OptGroup>),
+  ...list]
+}

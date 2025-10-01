@@ -50,9 +50,17 @@ export default function CategorySelect(props: CategorySelectProps) {
       value={currentValue}
       showSearch
     >
-      {categoryList.map(item => <Select.OptGroup label={item.name} key={item._id}>
-        {item.children.map(subItem => <Select.Option value={subItem._id} key={subItem._id}>{subItem.name}</Select.Option>)}
-      </Select.OptGroup>)}
+      {categoryList.map(item => {
+        if (!item.children || item.children.length === 0) {
+          // Handle categories without children
+          return <Select.Option value={item._id} key={item._id}>{item.name}</Select.Option>;
+        } else {
+          // Handle categories with children
+          return <Select.OptGroup label={item.name} key={item._id}>
+            {item.children.map(subItem => <Select.Option value={subItem._id} key={subItem._id}>{subItem.name}</Select.Option>)}
+          </Select.OptGroup>;
+        }
+      })}
     </Select>
   )
 }

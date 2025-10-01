@@ -1,4 +1,4 @@
-import { chromeTimeToDate, dateToChromeTime } from "../../utils/timeUtil";
+import { chromeTimeToDate, dateToChromeTime } from '../../utils/timeUtil';
 
 export default function(app: any) {
   const mongoose = app.mongoose;

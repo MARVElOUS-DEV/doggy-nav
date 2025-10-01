@@ -3,6 +3,7 @@ import type { Category, NavItem, Tag, User, LoginFormValues, RegisterFormValues 
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
+export const API_NAV_ADD = '/api/nav/add';
 export const API_NAV_REPTILE = '/api/nav/reptile';
 export const API_TAG_LIST = '/api/tag/list';
 export const API_NAV_RANDOM = '/api/nav/random';

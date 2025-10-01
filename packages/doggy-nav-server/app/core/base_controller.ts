@@ -4,6 +4,10 @@ export default class CommonController extends Controller {
 
   // Input sanitization function
   private sanitizeInput(input: any): any {
+    if (input instanceof Date) {
+      // Return Date objects as-is to preserve their type
+      return input;
+    }
     if (typeof input === 'string') {
       return input
         .replace(/[<>]/g, '')
