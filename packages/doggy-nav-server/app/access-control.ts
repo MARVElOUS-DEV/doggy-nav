@@ -26,19 +26,19 @@ export const routePermissions: RoutePermission[] = [
   { method: 'POST', path: '/api/category', access: 'admin', description: 'Create category' },
   { method: 'DELETE', path: '/api/category', access: 'admin', description: 'Delete category' },
   { method: 'PUT', path: '/api/category', access: 'admin', description: 'Update category' },
-  { method: 'GET', path: '/api/category/list', access: 'public', description: 'List categories' },
+  { method: 'GET', path: '/api/category/list', access: 'optional', description: 'List categories' },
 
   // Navigation routes
-  { method: 'GET', path: '/api/nav/list', access: 'public', description: 'List navigation items' },
+  { method: 'GET', path: '/api/nav/list', access: 'optional', description: 'List navigation items' },
   { method: 'POST', path: '/api/nav', access: 'authenticated', description: 'Add navigation item' },
-  { method: 'GET', path: '/api/nav', access: 'public', description: 'Get navigation item' },
+  { method: 'GET', path: '/api/nav', access: 'optional', description: 'Get navigation item' },
   { method: 'PUT', path: '/api/nav/audit', access: 'admin', description: 'Audit navigation item' },
   { method: 'GET', path: '/api/nav/reptile', access: 'public', description: 'Get reptile navigation items' },
-  { method: 'GET', path: '/api/nav/random', access: 'public', description: 'Get random navigation items' },
+  { method: 'GET', path: '/api/nav/random', access: 'optional', description: 'Get random navigation items' },
   { method: 'DELETE', path: '/api/nav', access: 'admin', description: 'Delete navigation item' },
   { method: 'PUT', path: '/api/nav', access: 'authenticated', description: 'Update navigation item' },
-  { method: 'GET', path: '/api/nav/find', access: 'public', description: 'Find navigation item' },
-  { method: 'GET', path: '/api/nav/ranking', access: 'public', description: 'Get navigation rankings' },
+  { method: 'GET', path: '/api/nav/find', access: 'optional', description: 'Find navigation item' },
+  { method: 'GET', path: '/api/nav/ranking', access: 'optional', description: 'Get navigation rankings' },
 
   // Tag routes
   { method: 'POST', path: '/api/tag', access: 'admin', description: 'Create tag' },

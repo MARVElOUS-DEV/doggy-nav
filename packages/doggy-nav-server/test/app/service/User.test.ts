@@ -17,7 +17,7 @@ describe('test/app/service/User.test.js', () => {
   it('should login ok', async () => {
     mock(ctx.request, 'body', { username: 'test', password: '111111' });
     const result = await ctx.service.user.login();
-    assert(result === 'Bearer testToken');
+    assert(result.token === 'Bearer testToken');
   });
   it('should login fail', async () => {
     mock(ctx.request, 'body', { username: 'fake', password: '111111' });
@@ -31,6 +31,6 @@ describe('test/app/service/User.test.js', () => {
     mock(ctx.model.User, 'create', async () => 'ok');
     mock(ctx.request, 'body', { username: 'test', password: '111111' });
     const result = await ctx.service.user.login();
-    assert(result === 'Bearer testToken');
+    assert(result.token === 'Bearer testToken');
   });
 });

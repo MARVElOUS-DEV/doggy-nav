@@ -9,8 +9,15 @@ export enum NAV_STATUS {
 
 
 export default class NavService extends Service {
-  async findMaxValueList(value) {
-    return await this.ctx.model.Nav.find({ status: NAV_STATUS.pass }).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
+  async findMaxValueList(value, isAuthenticated = false) {
+    const query: any = { status: NAV_STATUS.pass };
+
+    // For non-authenticated users, only show non-hidden items
+    if (!isAuthenticated) {
+      query.hide = { $eq: false };
+    }
+
+    return await this.ctx.model.Nav.find(query).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
   }
 
   /**

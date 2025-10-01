@@ -71,25 +71,35 @@ export default class CommonController extends Controller {
   private sanitizeResponseData(data: any): any {
     if (!data) return data;
 
+    // Handle arrays
+    if (Array.isArray(data)) {
+      return data.map(item => this.sanitizeResponseData(item));
+    }
+
+    // Handle mongoose documents and plain objects
     if (typeof data === 'object' && data !== null) {
-      const plainData = data.toObject ? data.toObject() : data;
-      if (Array.isArray(data)) {
-        return data.map(item => this.sanitizeResponseData(item));
+      // For mongoose documents, use toJSON() which applies schema transforms
+      if (data.toJSON) {
+        return data.toJSON();
       }
 
+      // For plain objects, process recursively
       const sanitized: any = {};
-      for (const key in plainData) {
-        if (Object.prototype.hasOwnProperty.call(plainData, key)) {
-          if (key === 'password' || key === 'resetPasswordToken') {
-            continue;
+      for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          // Convert ObjectId to string if present
+          if (key === '_id' && typeof data[key] === 'object' && data[key].toString) {
+            sanitized[key] = data[key].toString();
+          } else {
+            sanitized[key] = this.sanitizeResponseData(data[key]);
           }
-          sanitized[key] = this.sanitizeResponseData(plainData[key]);
         }
       }
+
       return sanitized;
     }
 
-    return data.toObject ? data.toObject() : data;
+    return data;
   }
 
 
@@ -173,7 +183,7 @@ export default class CommonController extends Controller {
       ]);
 
       this.success({
-        data: data.toObject ? data.toObject() : data,
+        data,
         total,
         pageNumber: Math.ceil(total / pageSize),
       });
@@ -187,7 +197,27 @@ export default class CommonController extends Controller {
     const tableName = this.tableName();
     try {
       const safeRandomNumber = Math.min(Math.max(Number(randomNumber) || 10, 1), 50);
-      const res = await this.ctx.model[tableName].aggregate([{ $sample: { size: safeRandomNumber } }]);
+
+      // Add filtering based on authentication and hide field for Nav model
+      const pipeline: any[] = [];
+
+      if (tableName === 'Nav') {
+        const isAuthenticated = this.isAuthenticated();
+        const matchQuery: any = {};
+
+        // For non-authenticated users, only show non-hidden items
+        if (!isAuthenticated) {
+          matchQuery.hide = { $eq: false };
+        }
+
+        if (Object.keys(matchQuery).length > 0) {
+          pipeline.push({ $match: matchQuery });
+        }
+      }
+
+      pipeline.push({ $sample: { size: safeRandomNumber } });
+
+      const res = await this.ctx.model[tableName].aggregate(pipeline);
       this.success(res);
     } catch (e: any) {
       this.error(e.message);

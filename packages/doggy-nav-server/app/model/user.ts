@@ -55,6 +55,32 @@ export default function(app: any) {
   }, {
     collection: 'user',
     timestamps: true,
+    toJSON: {
+      transform(_doc: any, ret: any) {
+        // Convert _id to string
+        if (ret._id) {
+          ret._id = ret._id.toString();
+        }
+        // Remove sensitive fields and __v
+        delete ret.password;
+        delete ret.resetPasswordToken;
+        delete ret.__v;
+        return ret;
+      },
+    },
+    toObject: {
+      transform(_doc: any, ret: any) {
+        // Convert _id to string
+        if (ret._id) {
+          ret._id = ret._id.toString();
+        }
+        // Remove sensitive fields and __v
+        delete ret.password;
+        delete ret.resetPasswordToken;
+        delete ret.__v;
+        return ret;
+      },
+    },
   });
 
   return mongoose.model('User', UserSchema);

@@ -53,8 +53,30 @@ export default function(app: any) {
     },
   }, {
     collection: 'nav',
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform(_doc: any, ret: any) {
+        // Convert _id to string
+        if (ret._id) {
+          ret._id = ret._id.toString();
+        }
+        // Remove __v field
+        delete ret.__v;
+        return ret;
+      },
+    },
+    toObject: {
+      virtuals: true,
+      transform(_doc: any, ret: any) {
+        // Convert _id to string
+        if (ret._id) {
+          ret._id = ret._id.toString();
+        }
+        // Remove __v field
+        delete ret.__v;
+        return ret;
+      },
+    },
   });
 
   // Virtual getters to convert Chrome time to user-friendly Date

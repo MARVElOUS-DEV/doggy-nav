@@ -110,6 +110,17 @@ export default function HomePage() {
           <Affiche />
         </div>
 
+        {/* Top Rankings Section */}
+        {!loading && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">热门推荐</h2>
+              <p className="text-gray-600">基于访问量、点赞数和最新收录的热门网站</p>
+            </div>
+            <NavRankingList data={navRanking} />
+          </div>
+        )}
+
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center items-center py-20">
@@ -122,7 +133,7 @@ export default function HomePage() {
 
         {/* Timeline Section */}
         {!loading && currentYearData && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-8 my-8">
             <VerticalTimelineContainer
               year={currentYearData.year}
               items={currentYearData.items}
@@ -135,17 +146,6 @@ export default function HomePage() {
         {/* Statistics Chart Section */}
         {!loading && navRanking && (
           <NavStatsChart data={navRanking} />
-        )}
-
-        {/* Content Section */}
-        {!loading && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">热门推荐</h2>
-              <p className="text-gray-600">基于访问量、点赞数和最新收录的热门网站</p>
-            </div>
-            <NavRankingList data={navRanking} />
-          </div>
         )}
 
         {/* Stats Section */}

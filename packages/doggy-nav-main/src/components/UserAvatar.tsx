@@ -21,7 +21,7 @@ export default function UserAvatar({ size = 40, className = '' }: UserAvatarProp
   const handleLogout = () => {
     dispatchAuth({ type: 'LOGOUT' });
     setDropdownVisible(false);
-    router.push('/');
+    window.location.href = '/';// force reload to reset state
   };
 
   const handleProfile = () => {

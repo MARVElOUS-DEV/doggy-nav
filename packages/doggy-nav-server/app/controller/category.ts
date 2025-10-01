@@ -20,12 +20,10 @@ export default class CategoryController extends Controller {
       const isAuthenticated = this.isAuthenticated();
       if (!isAuthenticated) {
         // For non-authenticated users, only show non-hidden items
-        if (!hide) {
-          params.hide = { $eq: false };
-        }
-      } else if (hide) {
+        params.hide = { $eq: false };
+      } else if (hide !== undefined) {
         // For authenticated users, respect the hide parameter if provided
-        params.hide = { $eq: true };
+        params.hide = { $eq: hide === 'true' };
       }
 
       const data = await ctx.model.Category.find(params).limit(100000);

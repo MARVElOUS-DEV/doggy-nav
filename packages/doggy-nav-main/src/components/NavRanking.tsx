@@ -6,13 +6,13 @@ import { NavItem } from '@/types';
 
 interface NavRankingProps {
   data: NavItem;
-  countType?: 'createTime' | 'view' | 'star';
+  countType?: 'createTimeDate' | 'view' | 'star';
 }
 
-export default function NavRanking({ data, countType = 'createTime' }: NavRankingProps) {
+export default function NavRanking({ data, countType = 'createTimeDate' }: NavRankingProps) {
 
   const formatAttr = (value: string | number) => {
-    if (countType === 'createTime') {
+    if (countType === 'createTimeDate') {
       return dayjs(value).format('YYYY-MM-DD');
     }
     return value;

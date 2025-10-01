@@ -3,7 +3,7 @@ import { Menu } from '@arco-design/web-react';
 import { Category } from '@/types';
 import MenuStack from './MenuStack';
 import { localCategories, OVERVIEW } from '@/utils/localCategories';
-import { categoriesAtom, selectedCategoryAtom, tagsAtom } from '@/store/store';
+import { categoriesAtom, selectedCategoryAtom, tagsAtom, isAuthenticatedAtom } from '@/store/store';
 import { useAtom, useSetAtom } from 'jotai';
 import router from 'next/router';
 import api from '@/utils/api';
@@ -14,6 +14,7 @@ export default function AppNavMenus({ showMenuType, onShowMenus }: { showMenuTyp
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
   const [categories, setCategories] = useAtom(categoriesAtom);
   const setTags = useSetAtom(tagsAtom);
+  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
   const isCollapse = !showMenuType;
     // Fetch categories and tags on layout initialization
   useEffect(() => {
@@ -45,11 +46,9 @@ export default function AppNavMenus({ showMenuType, onShowMenus }: { showMenuTyp
         console.error("Failed to fetch tags", error);
       }
     };
-    if (!selectedCategory) {
-      fetchCategories();
-      fetchTags();
-    }
-  }, [selectedCategory]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchCategories();
+    fetchTags();
+  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
   const onHandleSubMenuClick = async (category: Category, id: string) => {
     setSelectedCategory(id);
     router.push(category.href?? `/navcontents?category=${id}`);

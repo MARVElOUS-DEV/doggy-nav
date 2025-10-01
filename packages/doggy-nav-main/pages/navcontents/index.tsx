@@ -14,7 +14,7 @@ export default function NavContentsPage() {
     if (!category) return;
     findNavByCategoryAction(category as string)
 
-  }, [category,findNavByCategoryAction])
+  }, [category, findNavByCategoryAction])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">

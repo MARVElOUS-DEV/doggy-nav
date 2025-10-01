@@ -88,7 +88,7 @@ export default function NavDetail() {
       {loading && <Spin />}
       <Row gutter={32} className="site-info mt-8">
         <Col md={8} xs={24} className="item">
-          <div className="left bg-white rounded-xl shadow-lg p-6 relative border border-gray-100">
+          <div className="shiny left rounded-xl shadow-lg p-6 relative border border-gray-100">
             <div className="img-wrap h-56 flex items-center justify-center bg-gray-50 rounded-lg">
               <Link href="/">
                 <Image src={detail.logo} alt={detail.name} width={120} height={120} className="object-cover rounded-lg shadow-md" />

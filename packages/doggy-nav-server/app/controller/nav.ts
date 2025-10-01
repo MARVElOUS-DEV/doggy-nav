@@ -193,14 +193,20 @@ export default class NavController extends Controller {
       pageNumber = Number(pageNumber);
       const skipNumber = pageSize * pageNumber - pageSize;
 
+      const searchQuery: any = {
+        name: { $regex: reg },
+      };
+
+      // For non-authenticated users, also filter out hidden nav items
+      const isAuthenticated = this.isAuthenticated();
+      if (!isAuthenticated) {
+        searchQuery.hide = { $eq: false };
+      }
+
       const [ navs, total ] = await Promise.all([
-        ctx.model.Nav.find({
-          name: { $regex: reg },
-        }).skip(skipNumber).limit(pageSize)
+        ctx.model.Nav.find(searchQuery).skip(skipNumber).limit(pageSize)
           .sort({ _id: -1 }),
-        ctx.model.Nav.find({
-          name: { $regex: reg },
-        }).countDocuments(),
+        ctx.model.Nav.find(searchQuery).countDocuments(),
       ]);
 
       const navsWithCategory = await Promise.all(navs.map(async nav => {
@@ -228,10 +234,12 @@ export default class NavController extends Controller {
   }
 
   async ranking() {
+    const isAuthenticated = this.isAuthenticated();
+
     const [ view, star, news ] = await Promise.all([
-      this.service.nav.findMaxValueList('view'),
-      this.service.nav.findMaxValueList('star'),
-      this.service.nav.findMaxValueList('createTime'),
+      this.service.nav.findMaxValueList('view', isAuthenticated),
+      this.service.nav.findMaxValueList('star', isAuthenticated),
+      this.service.nav.findMaxValueList('createTime', isAuthenticated),
     ]);
 
     this.success({

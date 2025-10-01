@@ -3,7 +3,7 @@ import { URL } from 'url';
 import fs from 'fs';
 import path from 'path';
 import request from 'request';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import mongoose from 'mongoose';
 import navModel from '../app/model/nav';
 import categoryModel from '../app/model/category';
@@ -46,8 +46,8 @@ async function getLogo(url) {
     return map.get(origin);
   }
   return new Promise(resolve => {
-    request(origin, { timeout: 10000 }, (error, requestData, body) => {
-      if (!error && requestData.statusCode === 200) {
+    request(origin, { timeout: 6000, followAllRedirects: true, }, (error, responseData, body) => {
+      if (!error && responseData.statusCode === 200) {
         const $ = cheerio.load(body);
         let logo = '';
         let final = '';
@@ -103,6 +103,9 @@ async function recursive(children, parentId) {
           categoryId: parentId,
           name: firstName,
           createAt: el.date_added ?? dateToChromeTime(new Date()),
+          hide: true,
+          icon: '',
+          description: '',
         });
         secondCategoryId = _id;
       }
@@ -115,7 +118,7 @@ async function recursive(children, parentId) {
         href,
         desc: name,
         createTime: el.date_added,
-        hide: false,
+        hide: true,
         logo: await getLogo(href),
       });
     }
@@ -141,7 +144,7 @@ const handle = async (...args) => {
   const arg2 = args[2];
   try {
     if (arg2 === 'help' || arg2 === '--help' || arg2 === '-h') {
-      console.info('try start with 【 HOME=${HOME} npx ts-node bookmarkHelper.ts 】');
+      console.info('try start with 【 HOME=${HOME} npx ts-node bookmarkHelper.ts [-file] [filepath]】');
       return;
     }
     if (arg2 === '-file' && args[3]) {
@@ -156,10 +159,10 @@ const handle = async (...args) => {
       console.info('try start with 【 HOME=${HOME} npx ts-node bookmarkHelper.ts 】or 【 npx ts-node bookmarkHelper.ts -file /path/to/your/bookmark/file 】');
       return;
     }
-    console.info('import bookmarks from mac chrome default path');
     const platformStr = platform();
     let bookmarkPath = '';
     if (platformStr === 'darwin') {
+      console.info('import bookmarks from mac chrome default path');
       bookmarkPath = `${process.env.HOME}/Library/Application\ Support/Google/Chrome/Default/Bookmarks`;
     } else if (platformStr === 'win32') {
       bookmarkPath = `${process.env.HOME}/AppData/Local/Google/Chrome/User\ Data/Default/Bookmarks`;
@@ -181,5 +184,5 @@ const handle = async (...args) => {
   }
 };
 
-handle(process.argv);
+handle(...process.argv);
 
