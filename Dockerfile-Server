@@ -30,7 +30,7 @@ WORKDIR /app/packages/doggy-nav-server
 ENV NODE_ENV=production
 
 # Install production dependencies and build
-RUN pnpm build
+RUN pnpm server:build
 
 # Production image
 FROM base AS runner
@@ -45,8 +45,8 @@ RUN adduser --system --uid 1001 eggjs
 # Copy package.json and built application
 COPY --from=builder /app/packages/doggy-nav-server/package.json ./
 COPY --from=builder /app/packages/doggy-nav-server/dist ./dist
-COPY --from=builder /app/packages/doggy-nav-server/app.js ./
-COPY --from=builder /app/packages/doggy-nav-server/config ./config
+COPY --from=builder /app/packages/doggy-nav-server/dist/app.js ./
+COPY --from=builder /app/packages/doggy-nav-server/dist/config ./config
 COPY --from=builder /app/packages/doggy-nav-server/scripts ./scripts
 
 # Install only production dependencies
@@ -62,4 +62,4 @@ EXPOSE 3002
 ENV PORT=3002
 ENV EGG_SERVER_ENV=prod
 
-CMD ["cd", "packages/doggy-nav-server", "&&", "npm", "run", "docker-start"]
+CMD ["npm", "run", "docker-start"]
