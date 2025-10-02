@@ -51,7 +51,7 @@ COPY --from=builder /app/packages/doggy-nav-server/dist/config ./config
 COPY --from=builder /app/packages/doggy-nav-server/scripts ./scripts
 
 # Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+RUN CI=false pnpm install --prod --frozen-lockfile
 
 # Change ownership to non-root user
 RUN chown -R eggjs:eggjs /app
