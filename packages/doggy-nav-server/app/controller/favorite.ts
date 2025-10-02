@@ -1,4 +1,4 @@
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import Controller from '../core/base_controller';
 
 export default class FavoriteController extends Controller {
@@ -122,7 +122,7 @@ export default class FavoriteController extends Controller {
       const pipeline: PipelineStage[] = [
         {
           $match: {
-            userId: new ctx.app.mongoose.Types.ObjectId(userInfo.userId),
+            userId: new Types.ObjectId(userInfo.userId),
           },
         },
         {
@@ -199,7 +199,7 @@ export default class FavoriteController extends Controller {
       const countPipeline = [
         {
           $match: {
-            userId: new ctx.app.mongoose.Types.ObjectId(userInfo.userId),
+            userId: new Types.ObjectId(userInfo.userId),
           },
         },
         {

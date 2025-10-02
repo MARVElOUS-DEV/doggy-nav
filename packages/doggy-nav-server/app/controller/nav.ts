@@ -1,4 +1,4 @@
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import { parseHTML } from '../../utils/reptileHelper';
 import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
@@ -88,7 +88,7 @@ export default class NavController extends Controller {
                   $expr: {
                     $and: [
                       { $eq: [ '$navId', '$$navId' ] },
-                      { $eq: [ '$userId', new ctx.app.mongoose.Types.ObjectId(userInfo._id) ] },
+                      { $eq: [ '$userId', new Types.ObjectId(userInfo._id) ] },
                     ],
                   },
                 },
@@ -316,7 +316,7 @@ export default class NavController extends Controller {
                   $expr: {
                     $and: [
                       { $eq: [ '$navId', '$$navId' ] },
-                      { $eq: [ '$userId', new ctx.app.mongoose.Types.ObjectId(userInfo._id) ] },
+                      { $eq: [ '$userId', new Types.ObjectId(userInfo._id) ] },
                     ],
                   },
                 },
