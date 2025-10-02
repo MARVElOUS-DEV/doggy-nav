@@ -15,7 +15,8 @@
     "build": "pnpm -r build",
     "web:build": "pnpm -F doggy-nav-main build",
     "admin:build": "pnpm -F doggy-nav-admin build",
-    "server:build": "pnpm -F doggy-nav-server build"
+    "server:build": "pnpm -F doggy-nav-server build",
+    "server:build:ci": "pnpm -F doggy-nav-server build:ci"
   },
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
