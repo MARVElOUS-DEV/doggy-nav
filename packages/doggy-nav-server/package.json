@@ -59,6 +59,7 @@
     "autod": "3.1.2",
     "autod-egg": "1.1.0",
     "egg-ci": "1.19.0",
+    "egg-ts-helper": "^3.1.1",
     "esbuild": "^0.25.10",
     "eslint": "^8.57.1",
     "eslint-config-egg": "^14.1.0",

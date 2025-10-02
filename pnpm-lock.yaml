@@ -257,6 +257,9 @@ importers:
       egg-ci:
         specifier: 1.19.0
         version: 1.19.0(chokidar@3.6.0)
+      egg-ts-helper:
+        specifier: ^3.1.1
+        version: 3.1.1(@types/node@7.0.12)
       esbuild:
         specifier: ^0.25.10
         version: 0.25.10
@@ -4880,6 +4883,11 @@ packages:
   egg-ts-helper@2.1.1:
     resolution: {integrity: sha512-/uA9aPi9ptAvT8NIASv20bJftTdGZb5L3wFX2q74IBNGF9hBZW4CX9b80driXNFYpL9z6BusZ1qkGZwzRWkykA==}
     engines: {node: '>= 14.21.3'}
+    hasBin: true
+
+  egg-ts-helper@3.1.1:
+    resolution: {integrity: sha512-ZzgsNFLs+b5Uca7lh2luYpixa47e+XoZapbH6RYG52kbJhmSd9qgIODBNMVrfasgGuuiBWV+qrs/RSpvISRKEw==}
+    engines: {node: '>= 18.19.0'}
     hasBin: true
 
   egg-utils@2.5.0:
@@ -16386,6 +16394,25 @@ snapshots:
 
   egg-ts-helper@2.1.1(@types/node@7.0.12):
     dependencies:
+      chalk: 4.1.2
+      chokidar: 3.6.0
+      commander: 2.20.3
+      dot-prop: 4.2.1
+      enquirer: 2.4.1
+      globby: 11.1.0
+      json5: 2.2.3
+      ts-node: 10.9.2(@types/node@7.0.12)(typescript@5.9.2)
+      tslib: 2.8.1
+      typescript: 5.9.2
+      yn: 3.1.1
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+
+  egg-ts-helper@3.1.1(@types/node@7.0.12):
+    dependencies:
+      '@eggjs/utils': 4.4.1
       chalk: 4.1.2
       chokidar: 3.6.0
       commander: 2.20.3
