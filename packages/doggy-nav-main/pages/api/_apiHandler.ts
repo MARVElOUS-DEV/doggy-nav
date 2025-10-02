@@ -77,7 +77,7 @@ export const createApiHandler = (config: ApiConfig) => {
       return res.status(response.status).json(response.data);
 
     } catch (error: any) {
-      console.error(`${config.endpoint} proxy error:`, error);
+      console.error(`${SERVER_URL}${config.endpoint} proxy error:`, error);
 
       if (error.response) {
         return res.status(error.response.status).json(error.response.data);
