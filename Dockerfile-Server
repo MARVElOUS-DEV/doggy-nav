@@ -44,6 +44,7 @@ RUN adduser --system --uid 1001 eggjs
 # Copy package.json and built application
 COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/packages/doggy-nav-server/package.json ./packages/doggy-nav-server/package.json
 COPY --from=builder /app/packages/doggy-nav-server/dist ./packages/doggy-nav-server/dist
 COPY --from=builder /app/packages/doggy-nav-server/dist/app.js ./packages/doggy-nav-server/app.js
@@ -51,7 +52,8 @@ COPY --from=builder /app/packages/doggy-nav-server/dist/config ./packages/doggy-
 COPY --from=builder /app/packages/doggy-nav-server/scripts ./packages/doggy-nav-server/scripts
 
 # Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile -F doggy-nav-server
+
 WORKDIR /app/packages/doggy-nav-server
 # Change ownership to non-root user
 RUN chown -R eggjs:eggjs /app/packages/doggy-nav-server
@@ -63,4 +65,4 @@ EXPOSE 3002
 ENV PORT=3002
 ENV EGG_SERVER_ENV=prod
 
-CMD ["npm", "run", "docker-start"]
+CMD ["pnpm", "run", "docker-start"]
