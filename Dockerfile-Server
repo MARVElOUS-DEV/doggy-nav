@@ -26,8 +26,6 @@ COPY packages/doggy-nav-server ./packages/doggy-nav-server
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Build the application
-WORKDIR /app/packages/doggy-nav-server
-COPY pnpm-lock.yaml ./
 ENV NODE_ENV=production
 
 # Install production dependencies and build
@@ -45,18 +43,18 @@ RUN addgroup --system --gid 1001 eggjs
 RUN adduser --system --uid 1001 eggjs
 
 # Copy package.json and built application
-COPY --from=builder /app/packages/doggy-nav-server/package.json ./
-COPY --from=builder /app/packages/doggy-nav-server/pnpm-lock.yaml ./
-COPY --from=builder /app/packages/doggy-nav-server/dist ./dist
-COPY --from=builder /app/packages/doggy-nav-server/dist/app.js ./
-COPY --from=builder /app/packages/doggy-nav-server/dist/config ./config
-COPY --from=builder /app/packages/doggy-nav-server/scripts ./scripts
+COPY --from=builder /app/packages/doggy-nav-server/package.json ./packages/doggy-nav-server/package.json
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/packages/doggy-nav-server/dist ./packages/doggy-nav-server/dist
+COPY --from=builder /app/packages/doggy-nav-server/dist/app.js ./packages/doggy-nav-server/app.js
+COPY --from=builder /app/packages/doggy-nav-server/dist/config ./packages/doggy-nav-server/config
+COPY --from=builder /app/packages/doggy-nav-server/scripts ./packages/doggy-nav-server/scripts
 
 # Install only production dependencies
 RUN pnpm install --prod --frozen-lockfile
-
+WORKDIR /app/packages/doggy-nav-server
 # Change ownership to non-root user
-RUN chown -R eggjs:eggjs /app
+RUN chown -R eggjs:eggjs /app/packages/doggy-nav-server
 
 USER eggjs
 
