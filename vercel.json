@@ -14,7 +14,7 @@
     }
   ],
   "env": {
-    "SERVER_URL": "@SERVER_URL",
+    "SERVER_URL": "SERVER_URL",
     "ANALYZE": "false"
   },
   "build": {

@@ -5,7 +5,7 @@
   "buildCommand": "next build",
   "installCommand": "pnpm install",
   "env": {
-    "SERVER_URL": "@SERVER_URL",
+    "SERVER_URL": "SERVER_URL",
     "ANALYZE": "false"
   },
   "build": {
