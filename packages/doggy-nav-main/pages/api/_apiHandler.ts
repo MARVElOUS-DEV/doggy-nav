@@ -9,6 +9,7 @@ interface ApiConfig {
   method: HttpMethod;
   endpoint: string;
   paramName?: string;
+  paramNames?: string[];
 }
 
 export const createApiHandler = (config: ApiConfig) => {
@@ -34,8 +35,23 @@ export const createApiHandler = (config: ApiConfig) => {
       }
 
       let response;
-      if (config.paramName) {
-        // Handle parameterized requests (GET with query params)
+      if (config.paramNames) {
+        // Handle multiple parameter requests (GET with multiple query params)
+        const params: Record<string, any> = {};
+        config.paramNames.forEach(paramName => {
+          if (req.query[paramName] !== undefined) {
+            params[paramName] = req.query[paramName];
+          }
+        });
+        response = await axios[config.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete'](
+          `${SERVER_URL}${config.endpoint}`,
+          {
+            headers,
+            params
+          }
+        );
+      } else if (config.paramName) {
+        // Handle single parameterized requests (GET with query params)
         const paramValue = req.query[config.paramName];
         response = await axios[config.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete'](
           `${SERVER_URL}${config.endpoint}`,

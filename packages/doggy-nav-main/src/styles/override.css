@@ -1,6 +1,45 @@
 .arco-menu-collapse {
   width: 70px;
 }
+
+/* Active styles for menu items */
+.arco-menu-item.arco-menu-selected {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border-left: 3px solid #3b82f6;
+  position: relative;
+}
+
+.arco-menu-item.arco-menu-selected .group span {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+
+/* Ensure active styles work with hover */
+.arco-menu-item.arco-menu-selected:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+}
+
+/* Collapsed menu item styling */
+.arco-menu-collapse .arco-menu-item,
+.arco-menu-collapse .arco-menu-submenu-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.arco-menu-collapse .arco-menu-item > div,
+.arco-menu-collapse .arco-menu-submenu-title > div {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.doggy-menu.arco-menu-pop-header {
+  padding: unset;
+}
+
 .recommend-sel-container.arco-select {
   .arco-select-view {
     border-radius: 0.75rem;

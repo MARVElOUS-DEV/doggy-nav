@@ -68,7 +68,7 @@ export default function SearchResultsPage() {
     return (
       <div className="main p-4 rounded-xl">
         <div className="text-center py-8">
-          <Title heading={4}>No search query provided</Title>
+          <Title heading={4}>🔍输入关键词开始搜索吧</Title>
           <p className="text-gray-500">Please enter a search term to see results.</p>
         </div>
       </div>

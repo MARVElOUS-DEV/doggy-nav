@@ -5,7 +5,7 @@ interface ReactIfProps {
   children: React.ReactNode;
 }
 
-const ReactIf: React.FC<ReactIfProps> = ({ condition, children }) => {
+const ReactIf: React.FC<ReactIfProps> = ({ condition, children }): JSX.Element | null => {
   if (condition) {
     return children as React.ReactElement;
   }

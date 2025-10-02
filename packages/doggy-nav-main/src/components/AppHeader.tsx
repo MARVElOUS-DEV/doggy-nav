@@ -8,6 +8,8 @@ import UserAvatar from './UserAvatar';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { IconPlusCircle, IconMenuFold, IconMenuUnfold } from '@arco-design/web-react/icon';
+import { isFeatureEnabled } from '@/config/featureFlags';
+import ReactIf from './ReactIf';
 
 interface AppHeaderProps {
   onHandleShowMenu: () => void;
@@ -77,10 +79,13 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
             <i className="iconfont icon-search"></i>
           </button>
         </Tooltip>
-
-        <div className="ml-1">
-          <LanguageSwitcher />
-        </div>
+        {/* Language Switcher */}
+        {/** @ts-ignore */}
+        <ReactIf condition={isFeatureEnabled('lang_switch')} >
+          <div className="ml-1">
+            <LanguageSwitcher />
+          </div>
+        </ReactIf>
         <div className="ml-1">
           <ThemeToggle />
         </div>

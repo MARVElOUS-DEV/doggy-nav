@@ -150,7 +150,7 @@
 
 /* Transition Utilities */
 .transition-all { transition: all 0.2s ease-in-out; }
-.transition-slow { transition: all 0.3s ease-in-out; }
+.transition-slow { transition: all 0.6s ease-in-out; }
 .transition-fast { transition: all 0.1s ease-in-out; }
 
 /* Layout Utilities */
@@ -217,17 +217,18 @@
   content: "";
   position: absolute;
   top: 100%;
-  left: -100%;
+  left: -200%;
   width: 200%;
   height: 200%;
   background: linear-gradient(
     45deg,
     transparent 0%,
-    transparent 45%,
-    rgba(255, 255, 255, 0.3) 48%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.3) 40%,
     rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0.3) 52%,
-    transparent 55%,
+    rgba(255, 255, 255, 0.3) 70%,
+    rgba(255, 255, 255, 0.1) 80%,
+    transparent 90%,
     transparent 100%
   );
   z-index: 2;
@@ -241,7 +242,7 @@
 
 .shiny:hover::before {
   top: -200%;
-  left: 200%;
+  left: 100%;
   transition: all 0.6s ease-out;
 }
 

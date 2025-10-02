@@ -90,7 +90,7 @@ export default function NavDetail() {
         <Col md={8} xs={24} className="item">
           <div className="shiny left rounded-xl shadow-lg p-6 relative border border-gray-100">
             <div className="img-wrap h-56 flex items-center justify-center bg-gray-50 rounded-lg">
-              <Link href="/">
+              <Link href={detail.href} target="_blank" rel="noopener noreferrer">
                 <Image src={detail.logo} alt={detail.name} width={120} height={120} className="object-cover rounded-lg shadow-md" />
               </Link>
             </div>
