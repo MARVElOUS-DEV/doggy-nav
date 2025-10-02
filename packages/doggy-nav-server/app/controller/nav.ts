@@ -1,3 +1,4 @@
+import { PipelineStage } from 'mongoose';
 import { parseHTML } from '../../utils/reptileHelper';
 import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
@@ -55,7 +56,79 @@ export default class NavController extends Controller {
       };
     }
 
-    await super.getList(findParam);
+    // If user is authenticated, include favorite status
+    if (isAuthenticated) {
+      await this.getListWithFavorites(findParam);
+    } else {
+      await super.getList(findParam);
+    }
+  }
+
+  // Helper method to get list with favorite status for authenticated users
+  private async getListWithFavorites(findParam: any) {
+    const { ctx } = this;
+    const userInfo = this.getUserInfo();
+    const query = this.getSanitizedQuery();
+
+    try {
+      let { pageSize = 10, pageNumber = 1 } = query;
+      pageSize = Math.min(Math.max(Number(pageSize) || 10, 1), 100);
+      pageNumber = Math.max(Number(pageNumber) || 1, 1);
+      const skipNumber = pageSize * pageNumber - pageSize;
+
+      const pipeline: PipelineStage[] = [
+        { $match: findParam },
+        {
+          $lookup: {
+            from: 'favorite',
+            let: { navId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: [ '$navId', '$$navId' ] },
+                      { $eq: [ '$userId', new ctx.app.mongoose.Types.ObjectId(userInfo._id) ] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: 'favoriteInfo',
+          },
+        },
+        {
+          $addFields: {
+            isFavorite: { $gt: [{ $size: '$favoriteInfo' }, 0 ] },
+          },
+        },
+        {
+          $project: {
+            favoriteInfo: 0, // Remove the favoriteInfo field from output
+          },
+        },
+        { $sort: { _id: -1 } },
+        { $skip: skipNumber },
+        { $limit: pageSize },
+      ];
+
+      const countPipeline = [{ $match: findParam }, { $count: 'total' }];
+
+      const [ data, countResult ] = await Promise.all([
+        ctx.model.Nav.aggregate(pipeline),
+        ctx.model.Nav.aggregate(countPipeline),
+      ]);
+
+      const total = countResult.length > 0 ? countResult[0].total : 0;
+
+      this.success({
+        data,
+        total,
+        pageNumber: Math.ceil(total / pageSize),
+      });
+    } catch (e: any) {
+      this.error(e.message);
+    }
   }
 
   async add() {
@@ -193,29 +266,106 @@ export default class NavController extends Controller {
         searchQuery.hide = { $eq: false };
       }
 
-      const [ navs, total ] = await Promise.all([
-        ctx.model.Nav.find(searchQuery).skip(skipNumber).limit(pageSize)
-          .sort({ _id: -1 }),
-        ctx.model.Nav.find(searchQuery).countDocuments(),
+      if (isAuthenticated) {
+        // Use aggregation pipeline to include favorite status for authenticated users
+        await this.getSearchWithFavorites(searchQuery, skipNumber, pageSize);
+      } else {
+        // Use simple query for non-authenticated users
+        const [ navs, total ] = await Promise.all([
+          ctx.model.Nav.find(searchQuery).skip(skipNumber).limit(pageSize)
+            .sort({ _id: -1 }),
+          ctx.model.Nav.find(searchQuery).countDocuments(),
+        ]);
+
+        const navsWithCategory = await Promise.all(navs.map(async nav => {
+          if (nav.categoryId) {
+            const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
+            const navObj = nav.toObject();
+            if (category) {
+              navObj.categoryName = category.name;
+            }
+            return navObj;
+          }
+          return nav.toObject();
+        }));
+
+        this.success({
+          data: navsWithCategory,
+          total,
+          pageNumber: Math.ceil(total / pageSize),
+        });
+      }
+    }
+  }
+
+  // Helper method for search with favorite status
+  private async getSearchWithFavorites(searchQuery: any, skipNumber: number, pageSize: number) {
+    const { ctx } = this;
+    const userInfo = this.getUserInfo();
+
+    try {
+      const pipeline: PipelineStage[] = [
+        { $match: searchQuery },
+        {
+          $lookup: {
+            from: 'favorite',
+            let: { navId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: [ '$navId', '$$navId' ] },
+                      { $eq: [ '$userId', new ctx.app.mongoose.Types.ObjectId(userInfo._id) ] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: 'favoriteInfo',
+          },
+        },
+        {
+          $lookup: {
+            from: 'category',
+            localField: 'categoryId',
+            foreignField: '_id',
+            as: 'category',
+          },
+        },
+        {
+          $addFields: {
+            isFavorite: { $gt: [{ $size: '$favoriteInfo' }, 0 ] },
+            categoryName: { $arrayElemAt: [ '$category.name', 0 ] },
+          },
+        },
+        {
+          $project: {
+            favoriteInfo: 0,
+            category: 0,
+          },
+        },
+        { $sort: { _id: -1 } },
+        { $skip: skipNumber },
+        { $limit: pageSize },
+      ];
+
+      const countPipeline = [{ $match: searchQuery }, { $count: 'total' }];
+
+      const [ data, countResult ] = await Promise.all([
+        ctx.model.Nav.aggregate(pipeline),
+        ctx.model.Nav.aggregate(countPipeline),
       ]);
 
-      const navsWithCategory = await Promise.all(navs.map(async nav => {
-        if (nav.categoryId) {
-          const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
-          const navObj = nav.toObject();
-          if (category) {
-            navObj.categoryName = category.name;
-          }
-          return navObj;
-        }
-        return nav.toObject();
-      }));
+      const total = countResult.length > 0 ? countResult[0].total : 0;
 
       this.success({
-        data: navsWithCategory,
+        data,
         total,
         pageNumber: Math.ceil(total / pageSize),
       });
+    } catch (error: any) {
+      this.error(error.message);
     }
   }
 

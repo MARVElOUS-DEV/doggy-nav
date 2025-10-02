@@ -55,6 +55,12 @@ export const routePermissions: RoutePermission[] = [
   { method: 'POST', path: '/api/url-checker/check', access: 'admin', description: 'Trigger URL check' },
   { method: 'POST', path: '/api/url-checker/check/:id', access: 'admin', description: 'Check specific URL' },
   { method: 'GET', path: '/api/url-checker/nav-status', access: 'public', description: 'Get navigation URL status' },
+  // Favorite routes - require authentication
+  { method: 'POST', path: '/api/favorites', access: 'authenticated', description: 'Add favorite nav item' },
+  { method: 'POST', path: '/api/favorites/remove', access: 'authenticated', description: 'Remove favorite nav item' },
+  { method: 'GET', path: '/api/favorites/list', access: 'authenticated', description: 'Get favorites list' },
+  { method: 'GET', path: '/api/favorites/check', access: 'authenticated', description: 'Get item check favorite status' },
+  { method: 'GET', path: '/api/favorites/count', access: 'authenticated', description: 'Get favorites count' },
 ];
 
 // Helper function to find route permission

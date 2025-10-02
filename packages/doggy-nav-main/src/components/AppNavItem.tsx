@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Tooltip, Grid } from '@arco-design/web-react';
+import { Tooltip, Grid, Button, Space } from '@arco-design/web-react';
 import { NavItem } from '@/types';
 import { useUrlStatus } from '@/utils/urlStatus';
 import { useIntersectionObserver } from '@/utils/useIntersectionObserver';
+import { IconRightCircle } from '@arco-design/web-react/icon';
+import { FavoriteButton, StarButton, ViewCounter } from './Buttons';
 
 const { Col } = Grid;
 
@@ -12,10 +14,12 @@ interface AppNavItemProps {
   data: NavItem;
   onHandleNavClick: (data: NavItem) => void;
   onHandleNavStar: (data: NavItem, callback: () => void) => void;
+  onHandleFavorite?: (data: NavItem, callback: (isFavorite: boolean) => void) => void;
 }
 
-export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: AppNavItemProps) {
+export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, onHandleFavorite }: AppNavItemProps) {
   const [isStar, setIsStar] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(data.isFavorite || false);
   const [logoSrc, setLogoSrc] = useState(data.logo);
   const [intersectionRef, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const urlStatus = useUrlStatus(data.href, isVisible);
@@ -42,32 +46,15 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
 
   const handleNavStar = () => {
     onHandleNavStar(data, () => {
-      // Update localStorage favorites
-      if (typeof window !== 'undefined') {
-        try {
-          const storedFavorites = localStorage.getItem('favorites');
-          let favorites: NavItem[] = [];
-
-          if (storedFavorites) {
-            favorites = JSON.parse(storedFavorites);
-          }
-
-          // Toggle favorite status
-          if (isStar) {
-            // Remove from favorites
-            favorites = favorites.filter(item => item.id !== data.id);
-          } else {
-            // Add to favorites
-            favorites = [...favorites, data];
-          }
-
-          localStorage.setItem('favorites', JSON.stringify(favorites));
-        } catch (err) {
-          console.error('Failed to update favorites:', err);
-        }
-      }
-
       setIsStar(!isStar);
+    });
+  };
+
+  const handleFavorite = () => {
+    if (!onHandleFavorite) return;
+
+    onHandleFavorite(data, (newFavoriteStatus) => {
+      setIsFavorite(newFavoriteStatus);
     });
   };
 
@@ -179,45 +166,34 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar }: 
         {/* Footer */}
         <div className="mt-auto border-t border-gray-100 px-6 py-4 bg-gray-50">
           <div className="flex items-center justify-between">
-            <div className="left flex items-center space-x-4">
-              <button
-                onClick={() => onHandleNavClick(data)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
-                title="链接直达"
-              >
-                <i className="iconfont icon-tiaozhuan mr-1"></i>
-                <span>直达</span>
-              </button>
-              <div className="text-xs text-gray-500">
-                {data.authorUrl && (
-                  <a
-                    href={data.authorUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-blue-600 transition-colors duration-200 flex items-center"
-                  >
-                    <span className="iconfont icon-zuozhe mr-1"></span>
-                    <span>作者</span>
-                  </a>
-                )}
-              </div>
-            </div>
-            <div className="right flex items-center space-x-4">
-              <button
-                onClick={handleNavStar}
-                className={`flex items-center space-x-1 text-sm transition-colors duration-200 ${
-                  isStar ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-                }`}
-                title="点赞"
-              >
-                <i className="iconfont icon-appreciatefill"></i>
-                <span>{data.star}</span>
-              </button>
-              <div className="flex items-center space-x-1 text-sm text-blue-500">
-                <i className="iconfont icon-attentionfill"></i>
-                <span>{data.view}</span>
-              </div>
-            </div>
+            <Button
+              type='primary'
+              onClick={() => onHandleNavClick(data)}
+              className="py-1 hover:translate-x-0.5 rounded-xl text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
+              title="链接直达"
+              icon={<IconRightCircle fontSize={16} />}
+            >
+              直达
+            </Button>
+            <Space size="mini" className="flex items-center space-x-4">
+              {/* Favorite Button - Only show when authenticated */}
+              <FavoriteButton
+                isFavorite={isFavorite}
+                onToggle={handleFavorite}
+                variant="icon-only"
+              />
+
+              {/* Star Button */}
+              <StarButton
+                isStarred={isStar}
+                starCount={data.star}
+                onToggle={handleNavStar}
+                variant="icon-only"
+              />
+
+              {/* View Count */}
+              <ViewCounter viewCount={data.view} />
+            </Space>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { Spin } from '@arco-design/web-react';
 import Affiche from '@/components/Affiche';
 import NavRankingList from '@/components/NavRankingList';
 import NavStatsChart from '@/components/NavStatsChart';
-import VerticalTimelineContainer from '@/components/timeline/VerticalTimelineContainer';
+import VerticalTimelineContainer from '@/components/Timeline/VerticalTimelineContainer';
 import api from '@/utils/api';
 import { createMockTimelineData } from '@/utils/timelineData';
 import { useAtom } from 'jotai';

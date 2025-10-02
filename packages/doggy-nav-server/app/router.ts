@@ -45,4 +45,11 @@ export default (app: Application) => {
   router.post('/api/url-checker/check', controller.urlChecker.triggerCheck);
   router.post('/api/url-checker/check/:id', controller.urlChecker.checkNavItem);
   router.get('/api/url-checker/nav-status', controller.urlChecker.getNavUrlStatus);
+
+  // Favorite routes - require authentication
+  router.post('/api/favorites', controller.favorite.add);
+  router.get('/api/favorites/remove', controller.favorite.remove);
+  router.get('/api/favorites/list', controller.favorite.list);
+  router.get('/api/favorites/check', controller.favorite.check);
+  router.get('/api/favorites/count', controller.favorite.count);
 };

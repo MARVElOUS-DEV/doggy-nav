@@ -29,6 +29,7 @@ export interface NavItem {
   list?: NavItem[];
   highlightedName?: React.ReactNode;
   highlightedDesc?: React.ReactNode;
+  isFavorite?: boolean; // Track if item is favorited by current user
 }
 
 export interface Tag {

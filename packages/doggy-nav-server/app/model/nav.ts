@@ -35,6 +35,10 @@ export default function(app: any) {
       type: Number,
       default: 0,
     },
+    isFavorite: {
+      type: Boolean,
+      default: false,
+    },
     // URL accessibility status
     urlStatus: {
       type: String,

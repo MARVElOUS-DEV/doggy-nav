@@ -1,5 +1,6 @@
 import { atom } from 'jotai';
 import { NavItem, Category, Tag, User } from '@/types';
+import api from '@/utils/api';
 
 
 export const categoriesAtom = atom<Category[]>([]);
@@ -9,6 +10,7 @@ export const navRankingAtom = atom<{ view: NavItem[]; star: NavItem[]; news: Nav
 export const showMenuTypeAtom = atom(true);
 export const mobileAtom = atom(false);
 export const manualCollapseAtom = atom<boolean | null>(null); // null = no manual action, true/false = manual action
+export const favoritesAtom = atom<NavItem[]>([]);
 
 // Authentication atoms
 export const userAtom = atom<User | null>(null);
@@ -58,10 +60,10 @@ export const initAuthFromStorageAtom = atom(
   null,
   (get, set) => {
     if (typeof window === 'undefined') return;
-    
+
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    
+
     if (savedToken && savedUser) {
       try {
         const user = JSON.parse(savedUser) as User;
@@ -73,6 +75,45 @@ export const initAuthFromStorageAtom = atom(
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
+    }
+  }
+);
+
+// Favorites actions atom - simplified for add/remove operations only
+export const favoritesActionsAtom = atom(
+  null,
+  (get, set, action:
+    | { type: 'ADD_FAVORITE'; navId: string }
+    | { type: 'REMOVE_FAVORITE'; navId: string }
+    | { type: 'LOAD_FAVORITES' } // Keep for favorites page initialization
+    | { type: 'SET_FAVORITES'; favorites: NavItem[] }
+  ) => {
+    switch (action.type) {
+      case 'ADD_FAVORITE':
+        // Just make the API call, don't manage favorites list here
+        return api.addFavorite(action.navId);
+
+      case 'REMOVE_FAVORITE':
+        // Just make the API call, don't manage favorites list here
+        return api.removeFavorite(action.navId);
+
+      case 'LOAD_FAVORITES':
+        // Only used for dedicated favorites page
+        if (get(isAuthenticatedAtom)) {
+          return api.getFavoritesList().then(response => {
+            set(favoritesAtom, response.data);
+          }).catch(error => {
+            console.error('Failed to load favorites:', error);
+            set(favoritesAtom, []);
+          });
+        } else {
+          set(favoritesAtom, []);
+        }
+        break;
+
+      case 'SET_FAVORITES':
+        set(favoritesAtom, action.favorites);
+        break;
     }
   }
 );

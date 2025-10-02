@@ -72,6 +72,22 @@ const api = {
 
   getCurrentUser: (): Promise<User> =>
     axios.get('/api/auth/me'),
+
+  // Favorite APIs - require authentication
+  addFavorite: (navId: string): Promise<void> =>
+    axios.post('/api/favorites', { navId }),
+
+  removeFavorite: (navId: string): Promise<void> =>
+    axios.get(`/api/favorites/remove?navId=${navId}`),
+
+  getFavoritesList: (): Promise<{data: NavItem[]}> =>
+    axios.get('/api/favorites/list'),
+
+  checkFavorite: (navId: string): Promise<{isFavorite: boolean}> =>
+    axios.get(`/api/favorites/check?navId=${navId}`),
+
+  getFavoritesCount: (): Promise<{count: number}> =>
+    axios.get('/api/favorites/count'),
 };
 
 export default api;
