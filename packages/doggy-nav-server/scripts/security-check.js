@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* eslint-disable no-restricted-modules */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 // scripts/security-check.js
 // Comprehensive security validation for production deployment
@@ -11,7 +13,7 @@ function validateEnvironment() {
 
   const requiredEnvVars = [
     'JWT_SECRET',
-    'MONGODB_URI'
+    'MONGODB_URI',
   ];
 
   let allValid = true;
@@ -37,12 +39,12 @@ function validateEnvironment() {
       'change-me',
       'your-secret',
       'default',
-      'a_strange_jwt_token'
+      'a_strange_jwt_token',
     ];
 
     const isWeak = weakSecrets.some(weak =>
       process.env.JWT_SECRET.toLowerCase().includes(weak) ||
-      process.env.JWT_SECRET === 'your-super-secure-jwt-secret-here-change-in-production'
+      process.env.JWT_SECRET === 'your-super-secure-jwt-secret-here-change-in-production',
     );
 
     if (isWeak) {
@@ -71,7 +73,7 @@ function checkFilePermissions() {
     '.env',
     '.env.local',
     'config/config.default.ts',
-    'scripts/validate-secrets.js'
+    'scripts/validate-secrets.js',
   ];
 
   let allValid = true;
@@ -83,6 +85,7 @@ function checkFilePermissions() {
         const stats = fs.statSync(filePath);
         // Check if file is readable by others (octal 004)
         const permissions = stats.mode;
+        // eslint-disable-next-line no-bitwise
         if (permissions & 0o004) {
           console.warn(`⚠️  Warning: ${file} is readable by others. Consider restricting permissions.`);
         } else {
@@ -134,9 +137,7 @@ function checkConfigSecurity() {
   console.log('\n🛡️  Checking security configuration...');
 
   try {
-    const config = require('../config/config.default.ts');
-
-    // This is a basic check - in a real implementation we'd parse the TS file
+    require('../config/config.default.ts');
     console.log('✅ Security configuration loaded successfully');
     return true;
   } catch (err) {

@@ -3,9 +3,6 @@
 // scripts/validate-secrets.js
 // Validate that critical environment variables are set properly
 
-const fs = require('fs');
-const path = require('path');
-
 function validateSecret(secret, name, minLength = 32) {
   if (!secret) {
     console.error(`❌ Missing required environment variable: ${name}`);
@@ -25,11 +22,11 @@ function validateSecret(secret, name, minLength = 32) {
     'change-me',
     'your-secret',
     'default',
-    'a_strange_jwt_token'
+    'a_strange_jwt_token',
   ];
 
   const isWeak = weakSecrets.some(weak =>
-    secret.toLowerCase().includes(weak) || secret === 'your-super-secure-jwt-secret-here-change-in-production'
+    secret.toLowerCase().includes(weak) || secret === 'your-super-secure-jwt-secret-here-change-in-production',
   );
 
   if (isWeak) {
@@ -59,7 +56,7 @@ function main() {
       allValid = false;
     }
 
-    if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('localhost')) {
+    if (!process.env.MONGO_URL || !process.env.MONGO_URL.includes('srv:')) {
       console.warn('⚠️  Warning: Using local MongoDB in production environment');
     }
   }

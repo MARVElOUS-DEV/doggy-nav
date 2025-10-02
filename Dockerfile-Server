@@ -11,8 +11,6 @@ WORKDIR /app
 # Copy package.json and lock files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/doggy-nav-server/package.json ./packages/doggy-nav-server/
-COPY packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
-COPY packages/doggy-nav-admin/package.json ./packages/doggy-nav-admin/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -64,8 +62,4 @@ EXPOSE 3002
 ENV PORT=3002
 ENV EGG_SERVER_ENV=prod
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:3002/api/health || exit 1
-
-CMD ["node", "scripts/validate-secrets.js", "&&", "npm", "run", "docker-start"]
+CMD ["cd", "packages/doggy-nav-server", "&&", "npm", "run", "docker-start"]
