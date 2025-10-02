@@ -46,13 +46,13 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/packages/doggy-nav-server/package.json ./packages/doggy-nav-server/package.json
-COPY --from=builder /app/packages/doggy-nav-server/dist ./packages/doggy-nav-server/dist
-COPY --from=builder /app/packages/doggy-nav-server/dist/app.js ./packages/doggy-nav-server/app.js
-COPY --from=builder /app/packages/doggy-nav-server/dist/config ./packages/doggy-nav-server/config
-COPY --from=builder /app/packages/doggy-nav-server/scripts ./packages/doggy-nav-server/scripts
 
 # Install only production dependencies
 RUN pnpm install --prod --frozen-lockfile -F doggy-nav-server
+
+# Copy the entire built application from dist to the package directory
+COPY --from=builder /app/packages/doggy-nav-server/dist/ ./packages/doggy-nav-server/
+COPY --from=builder /app/packages/doggy-nav-server/scripts ./packages/doggy-nav-server/scripts
 
 WORKDIR /app/packages/doggy-nav-server
 # Change ownership to non-root user
