@@ -30,6 +30,7 @@ WORKDIR /app/packages/doggy-nav-server
 ENV NODE_ENV=production
 
 # Install production dependencies and build
+RUN pnpm ets
 RUN pnpm build
 
 # Production image
