@@ -19,7 +19,7 @@
     "test": "npm run lint -- --fix && npm run test-local",
     "cov": "egg-bin cov",
     "ets": "ets",
-    "tsbuild": "tsc -p tsconfig.json",
+    "tsbuild": "tsc -p tsconfig.json --skipLibCheck",
     "bundle:bookmark": "esbuild dist/bookmarkHelper-standalone.ts --bundle --platform=node --outfile=dist/bookmarkHelper-bundle.js --format=cjs --external:mongodb --external:mongoose",
     "bundle:cli": "esbuild dist/bookmarkHelper-cli.ts --bundle --platform=node --outfile=dist/bookmarkHelper-cli-bundle.js --format=cjs",
     "init:categories": "ts-node utils/initCategories.ts",
