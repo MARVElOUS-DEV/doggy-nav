@@ -30,7 +30,7 @@ export const routePermissions: RoutePermission[] = [
 
   // Navigation routes
   { method: 'GET', path: '/api/nav/list', access: 'optional', description: 'List navigation items' },
-  { method: 'POST', path: '/api/nav', access: 'authenticated', description: 'Add navigation item' },
+  { method: 'POST', path: '/api/nav', access: 'optional', description: 'Add navigation item' },
   { method: 'GET', path: '/api/nav', access: 'optional', description: 'Get navigation item' },
   { method: 'PUT', path: '/api/nav/audit', access: 'admin', description: 'Audit navigation item' },
   { method: 'GET', path: '/api/nav/reptile', access: 'public', description: 'Get reptile navigation items' },

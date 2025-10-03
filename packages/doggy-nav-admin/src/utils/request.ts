@@ -3,6 +3,13 @@ import { TOKEN } from "@/constants";
 import { RequestConfig, request as umiRequest } from "@umijs/max";
 import { message, notification } from "antd";
 
+function defaultHeaders() {
+  const token = getPersistenceData(TOKEN)
+  return {
+    'Authorization': token
+  }
+}
+
 // const codeMessage = {
 //   200: '服务器成功返回请求的数据。',
 //   201: '新建或修改数据成功。',
@@ -57,13 +64,6 @@ function request(params: RequestOptions): any {
       reject(err)
     })
   })
-}
-
-function defaultHeaders() {
-  const token = getPersistenceData(TOKEN)
-  return {
-    'Authorization': token
-  }
 }
 
 export function requestConfigure(options= {}): RequestConfig {

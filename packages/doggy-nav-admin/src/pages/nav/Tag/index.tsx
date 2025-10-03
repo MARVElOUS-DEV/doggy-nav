@@ -56,8 +56,8 @@ export default function NavTagListPage() {
           search={false}
           request={onRequestData}
           renderOptions={(text, record, _, action)=> ([
-            <a onClick={()=> formProps.show({type: 'edit', data: record, action})}>编辑</a>,
-            <Popconfirm title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
+            <a key="edit" onClick={()=> formProps.show({type: 'edit', data: record, action})}>编辑</a>,
+            <Popconfirm key="delete" title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
               <a>删除</a>
             </Popconfirm>,
           ])}

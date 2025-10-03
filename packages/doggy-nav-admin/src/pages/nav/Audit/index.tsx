@@ -77,7 +77,7 @@ export default function NavAuditListPage() {
         id,
         status,
       },
-      msg: status == NavStatus.pass ? '通过成功' : '拒绝成功'
+      msg: status === NavStatus.pass ? '通过成功' : '拒绝成功'
     })
     action?.reload()
   }
@@ -86,7 +86,7 @@ export default function NavAuditListPage() {
     <TableCom
       columns={columns}
       requestParams={{url: API_NAV_LIST, method: 'GET'}}
-      renderOptions={(text, record, _, action) => record.status != NavStatus.reject ? [
+      renderOptions={(text, record, _, action) => record.status !== NavStatus.reject ? [
         <Popconfirm title={'确定通过吗？'} onConfirm={() => onActionClick(record._id, action, 0)} key="确定通过吗？">
           <a>通过</a>
         </Popconfirm>,

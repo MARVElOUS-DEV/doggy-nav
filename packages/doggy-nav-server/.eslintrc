@@ -1,8 +1,7 @@
 {
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "eslint-config-egg/typescript"
+    "plugin:@typescript-eslint/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": 2020,
@@ -13,10 +12,11 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "@typescript-eslint/ban-types": "warn",
     "no-restricted-imports": "off",
-    "node/prefer-promises/fs": "off",
-    "semi": ["error", "always"],
-    "indent": ["error", 2]
+    "indent": ["error", 2],
+    "@typescript-eslint/no-require-imports": "warn",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-useless-escape": "off"
   }
 }

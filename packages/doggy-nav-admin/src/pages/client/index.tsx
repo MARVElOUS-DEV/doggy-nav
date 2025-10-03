@@ -58,7 +58,7 @@ const ClientPage: React.FC = () => {
         },
         {
             manual: true,
-            onSuccess: (result) => {
+            onSuccess: () => {
                 message.success('Client Secret 已重新生成');
                 actionRef?.current?.reload?.();
             }

@@ -1,1 +1,1 @@
-module.exports = require('koa-json-error');
+export * from 'koa-json-error';

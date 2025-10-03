@@ -14,7 +14,7 @@ export default class UrlCheckerTimer extends Service {
    * Start the URL checker timer
    */
   async start() {
-    const { app, config, logger } = this;
+    const { config, logger } = this;
 
     if (!config.urlChecker.enabled) {
       logger.info('URL checker is disabled in configuration');

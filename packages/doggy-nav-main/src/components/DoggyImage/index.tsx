@@ -39,5 +39,5 @@ export const DynamicIcon = ({iconName, fontSize=14}) => {
         </React.Suspense>
       )
     }
-    return <Image style={{ fontSize: `${fontSize}px` }} height={fontSize} width={fontSize} src={iconName} />;
+    return <Image style={{ fontSize: `${fontSize}px` }} height={fontSize} width={fontSize} src={iconName} alt="" />;
 }

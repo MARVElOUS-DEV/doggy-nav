@@ -76,7 +76,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
       }
     },
     menuHeaderRender: (logo)=> logo,
-    headerRender: (props) => {
+    headerRender: () => {
       const pathname = history.location.pathname;
       const pageInfo = pageTitles[pathname] || {
         title: '页面',

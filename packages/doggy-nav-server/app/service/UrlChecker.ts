@@ -126,7 +126,7 @@ export default class UrlChecker extends Service {
    * @param concurrent - Number of concurrent checks (default: 5)
    */
   async checkMultipleNavUrls(navItems: any[], concurrent = 5) {
-    const { ctx } = this;
+    // const { ctx } = this; // Commented out as not used in this method
     const results: any[] = [];
 
     // Process in batches to avoid overwhelming the server

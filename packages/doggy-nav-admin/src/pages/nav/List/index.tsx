@@ -175,9 +175,10 @@ export default function NavListPage() {
             </Button>
           ],
         }}
-        renderOptions={(_, record, __, action) => record.status != 2 ? [
-          <a onClick={() => formProps.show({action, data: record, type: 'edit'})}>编辑</a>,
+        renderOptions={(_, record, __, action) => record.status !== 2 ? [
+          <a key="edit" onClick={() => formProps.show({action, data: record, type: 'edit'})}>编辑</a>,
           <Popconfirm
+            key="delete"
             title={'确定删除吗?'}
             onConfirm={async () => {
               await request({

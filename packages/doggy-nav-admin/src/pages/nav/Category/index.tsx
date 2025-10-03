@@ -18,9 +18,11 @@ function transformCategoryList(list: any) {
     if (Array.isArray(item.children)) {
       item.children.map(subItem => {
         listItem.children.push({ key: subItem._id, ...subItem })
+        return subItem;
       })
     }
     newList.push(listItem)
+    return item;
   })
   return newList
 }

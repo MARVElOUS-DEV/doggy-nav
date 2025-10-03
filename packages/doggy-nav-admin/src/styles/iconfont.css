@@ -23,10 +23,6 @@
   content: "\e604";
 }
 
-.icon-bd_jiaocheng::before {
-  content: "\e619";
-}
-
 .icon-ziyuan::before {
   content: "\e627";
 }
@@ -77,10 +73,6 @@
 
 .icon-attention::before {
   content: "\e73d";
-}
-
-.icon-my_light::before {
-  content: "\e7d5";
 }
 
 .icon-daohang1::before {

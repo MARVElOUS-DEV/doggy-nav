@@ -9,7 +9,7 @@ import IconPicker from "@/components/IconPicker";
 import "./style.less";
 
 export default function CategoryForm(props: {categoryList: any[], isEdit?: boolean, selectedData?: any, hide?: () => void, tableRef: any} ) {
-  const {show, hide,categoryList,isEdit, selectedData,tableRef, ...formProps} = useProForm({
+  const {...formProps} = useProForm({
     ...props,
     onInitialValues(values: any): object {
       return values

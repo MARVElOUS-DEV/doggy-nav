@@ -1,7 +1,8 @@
 import { PERSISTENCE_TYPE } from "@/constants";
 
 
-export function setPersistenceData(key, value, type = PERSISTENCE_TYPE) {
+export function setPersistenceData(key, inputValue, type = PERSISTENCE_TYPE) {
+  let value = inputValue;
   if (typeof value !== 'string') value = JSON.stringify(value);
   if (type === 'session') {
     sessionStorage.setItem(key, value);
