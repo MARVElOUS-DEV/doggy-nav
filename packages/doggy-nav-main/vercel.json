@@ -14,10 +14,10 @@
   },
   "functions": {
     "pages/api/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 100
     },
     "pages/api/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration": 100
     }
   }
 }
