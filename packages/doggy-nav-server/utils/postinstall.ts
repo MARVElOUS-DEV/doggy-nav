@@ -4,12 +4,6 @@ import userModel from '../app/model/user';
 import * as readline from 'readline';
 import mongoCfg from '../config/mongodb';
 
-const mongoUrl = mongoCfg.mongoUrl;
-const db = mongoose.connect(mongoUrl) as any;
-db.mongoose = mongoose;
-
-const userSchemaModel = userModel(db);
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -32,6 +26,11 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
 
 (async () => {
   try {
+    const mongoUrl = mongoCfg.mongoUrl;
+    const db = await mongoose.connect(mongoUrl) as any;
+    db.mongoose = mongoose;
+
+    const userSchemaModel = userModel(db);
     console.info('mongoUrl', mongoUrl);
 
     const username = await askQuestion('Enter username (default: admin)', false);

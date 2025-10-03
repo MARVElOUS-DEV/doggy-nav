@@ -1,6 +1,9 @@
 import Controller from '../core/base_controller';
 
 export default class ApplicationController extends Controller {
+  tableName(): string {
+    return 'Application';
+  }
   // Common authentication check
   private requireAuth() {
     if (!this.isAuthenticated()) {

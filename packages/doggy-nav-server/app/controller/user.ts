@@ -1,6 +1,9 @@
 import Controller from '../core/base_controller';
 
 export default class UserController extends Controller {
+  tableName(): string {
+    return 'User';
+  }
   public async register() {
     const { ctx } = this;
     try {

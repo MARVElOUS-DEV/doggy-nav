@@ -12,14 +12,10 @@ import { globalRootCategoryId, privateCategoryName } from '../constants';
 import mongoCfg from '../config/mongodb';
 import { getFaviconSrv, isAbsoluteUrl } from './reptileHelper';
 
-const mongoUrl = mongoCfg.mongoUrl;
-
-const db = mongoose.connect(mongoUrl) as any;
-db.mongoose = mongoose;
-// 引入数据模型模块
-const navData = navModel(db);
-const categorySchema = categoryModel(db);
 const map = new Map();
+let categorySchema;
+// 引入数据模型模块
+let navData;
 async function getBookmarkRoots(path) {
   return new Promise(resolve => {
     fs.readFile(path, { encoding: 'utf-8' }, (err, data) => {
@@ -122,6 +118,11 @@ async function transform(roots) {
 }
 
 const handle = async (...args) => {
+  const mongoUrl = mongoCfg.mongoUrl;
+  const db = await mongoose.connect(mongoUrl) as any;
+  db.mongoose = mongoose;
+  categorySchema = categoryModel(db);
+  navData = navModel(db);
   const arg2 = args[2];
   try {
     if (arg2 === 'help' || arg2 === '--help' || arg2 === '-h') {
