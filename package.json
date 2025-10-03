@@ -8,6 +8,9 @@
   "scripts": {
     "test": "pnpm -r test",
     "commit": "cz",
+    "commit:help": "echo 'Use: pnpm commit or pnpm run commit to start interactive conventional commit'",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix",
     "server:dev": "pnpm -F doggy-nav-server dev",
     "web:dev": "pnpm -F doggy-nav-main dev",
     "web:start": "pnpm -F doggy-nav-main -F doggy-nav-server start",
@@ -16,7 +19,8 @@
     "web:build": "pnpm -F doggy-nav-main build",
     "admin:build": "pnpm -F doggy-nav-admin build",
     "server:build": "pnpm -F doggy-nav-server build",
-    "server:build:ci": "pnpm -F doggy-nav-server build:ci"
+    "server:build:ci": "pnpm -F doggy-nav-server build:ci",
+    "prepare": "husky"
   },
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
@@ -31,12 +35,29 @@
   "homepage": "https://github.com/MARVElOUS-DEV/doggy-nav#readme",
   "devDependencies": {
     "cross-env": "^10.0.0",
-    "cz-conventional-changelog": "3.3.0"
+    "cz-conventional-changelog": "3.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^13.3.0",
+    "prettier": "^3.6.2"
   },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "lint-staged": {
+    "packages/doggy-nav-server/**/*.{ts,js}": [
+      "pnpm --filter doggy-nav-server run lint:fix"
+    ],
+    "packages/doggy-nav-main/**/*.{ts,tsx,js,jsx}": [
+      "pnpm --filter doggy-nav-main run lint:fix"
+    ],
+    "packages/doggy-nav-admin/**/*.{ts,tsx,js,jsx}": [
+      "pnpm --filter doggy-nav-admin run lint:fix"
+    ],
+    "**/*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=20.17.0"
