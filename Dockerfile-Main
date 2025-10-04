@@ -45,14 +45,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy the standalone output
-COPY --from=builder /app/packages/doggy-nav-main/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/packages/doggy-nav-main/dist ./dist
-COPY --from=builder /app/packages/doggy-nav-main/next.config.ts ./
-
 # Copy built application
-COPY --from=builder --chown=nextjs:nodejs /app/packages/doggy-nav-main/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/packages/doggy-nav-main/.next/static ./dist/static
+COPY --from=builder --chown=nextjs:nodejs /app/packages/doggy-nav-main/dist ./packages/doggy-nav-main/dist
+COPY --from=builder /app/packages/doggy-nav-main/public ./packages/doggy-nav-main/public
+COPY --from=builder /app/packages/doggy-nav-main/next.config.ts ./packages/doggy-nav-main/
+COPY --from=builder /app/packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/doggy-nav-main/node_modules ./packages/doggy-nav-main/node_modules
 
 USER nextjs
 
@@ -61,4 +60,5 @@ EXPOSE 3001
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+WORKDIR /app/packages/doggy-nav-main
+CMD ["pnpm", "start"]
