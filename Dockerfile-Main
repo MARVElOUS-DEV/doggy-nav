@@ -37,7 +37,7 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
-
+ENV CI=true
 RUN pnpm install --prod --frozen-lockfile
 
 # Production image, copy all the files and run Next.js
