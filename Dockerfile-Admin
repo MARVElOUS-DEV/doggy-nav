@@ -25,50 +25,24 @@ COPY --from=deps /app/packages/doggy-nav-admin/node_modules ./packages/doggy-nav
 
 # Copy source code
 COPY packages/doggy-nav-admin ./packages/doggy-nav-admin
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
 
 # Build the application
-WORKDIR /app/packages/doggy-nav-admin
 ENV NODE_ENV=production
-
-RUN pnpm build
+RUN pnpm -F doggy-nav-admin build
 
 # Production image with nginx
 FROM nginx:1.25-alpine AS runner
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nginx-app
-RUN adduser --system --uid 1001 nginx-app
-
 # Copy built application
 COPY --from=builder /app/packages/doggy-nav-admin/dist /usr/share/nginx/html
 
-# Copy nginx configuration
+# Copy nginx configuration template
 COPY deploy/nginx-admin.conf /etc/nginx/templates/default.conf.template
 
-# Setup proper permissions
-RUN chown -R nginx-app:nginx-app /usr/share/nginx/html && \
-    chmod -R 755 /usr/share/nginx/html
-
-# Configure nginx to run as non-root
-RUN touch /var/run/nginx.pid && \
-    chown -R nginx-app:nginx-app /var/run/nginx.pid /var/cache/nginx
-
-# Setup logging
-RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log
-
-# Switch to non-root user
-USER nginx-app
-
 EXPOSE 8080
-
-# Environment variable for server URL
 ENV DOGGY_SERVER=http://localhost:3002
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
-
-# Start nginx with environment variable substitution
-CMD ["/bin/sh", "-c", "envsubst '$$DOGGY_SERVER' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# The nginx image automatically processes templates in /etc/nginx/templates/
+# and substitutes environment variables at startup
+CMD ["nginx", "-g", "daemon off;"]

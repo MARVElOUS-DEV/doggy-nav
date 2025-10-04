@@ -3,7 +3,14 @@ import Image from 'next/image';
 import dynamic from "next/dynamic";
 import React from "react";
 
-export default function DoggyImage({logo="/default-web.png", name="logo", width=20, height=20}) {
+interface DoggyImageProps {
+  logo?: string;
+  name?: string;
+  width?: number;
+  height?: number;
+}
+
+export default function DoggyImage({logo="/default-web.png", name="logo", width=20, height=20}: DoggyImageProps) {
   const [logoSrc, setLogoSrc] = useState(logo);
   const handleLogoError = () => {
     setLogoSrc('/default-web.png');
@@ -20,7 +27,12 @@ export default function DoggyImage({logo="/default-web.png", name="logo", width=
   )
 }
 
-export const DynamicIcon = ({iconName, fontSize=14}) => {
+interface DynamicIconProps {
+  iconName?: string;
+  fontSize?: number;
+}
+
+export const DynamicIcon = ({iconName, fontSize=14}: DynamicIconProps): JSX.Element | null => {
     if (!iconName) return null;
     if (iconName.startsWith('type:emoji_')) {
       const emoji = iconName.replace('type:emoji_', '');

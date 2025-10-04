@@ -115,10 +115,10 @@ export default function UserAvatar({ size = 40, className = '' }: UserAvatarProp
         {user.avatar ? (
           <ArcoAvatar
             size={size}
-            src={user.avatar}
-            alt={user.username}
             className="ring-2 ring-white ring-opacity-50 shadow-md hover:shadow-lg transition-all duration-200"
-          />
+          >
+            <img src={user.avatar} alt={user.username} />
+          </ArcoAvatar>
         ) : (
           <div
             className={`${getAvatarColors(user.username)} rounded-full flex items-center justify-center text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 ring-2 ring-white ring-opacity-50`}

@@ -23,7 +23,7 @@ export const ReactIfElse: React.FC<ReactIfElseProps> = ({ condition, children, .
       if (React.isValidElement(child)) {
         return React.cloneElement(child, { ...p });
       }
-      return child as React.ReactElement;
+      return child as unknown as React.ReactElement;
     }
   ) || [];
 

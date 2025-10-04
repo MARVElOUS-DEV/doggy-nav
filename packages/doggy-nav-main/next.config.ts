@@ -10,11 +10,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   distDir: 'dist',
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.NODE_ENV==='production',
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if

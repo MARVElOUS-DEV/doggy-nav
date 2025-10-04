@@ -48,7 +48,8 @@ COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/packages/doggy-nav-server/package.json ./packages/doggy-nav-server/package.json
 
 # Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile -F doggy-nav-server
+ENV CI=true
+RUN pnpm -F doggy-nav-server install --prod --frozen-lockfile 
 
 # Copy the entire built application from dist to the package directory
 COPY --from=builder /app/packages/doggy-nav-server/dist/ ./packages/doggy-nav-server/

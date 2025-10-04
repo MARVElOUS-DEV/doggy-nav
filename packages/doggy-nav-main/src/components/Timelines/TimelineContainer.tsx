@@ -21,7 +21,7 @@ export default function TimelineContainer({
 }: TimelineContainerProps) {
   const [expandedYear, setExpandedYear] = useState<number | null>(selectedYear || null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const observer = useRef<IntersectionObserver>();
+  const observer = useRef<IntersectionObserver | null>(null);
 
   const handleYearToggle = useCallback((year: number) => {
     setExpandedYear(prev => prev === year ? null : year);
