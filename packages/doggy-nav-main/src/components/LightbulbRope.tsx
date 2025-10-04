@@ -11,7 +11,11 @@ const LightbulbRope = () => {
   const ropeRef = useRef<HTMLDivElement>(null);
   const startPosRef = useRef({ x: 0, y: 0 });
   const isNavigatingRef = useRef(false);
-  
+
+  // Constants
+  const BULB_WIDTH = 48; // 3rem (w-12 in Tailwind)
+  const BASE_ROPE_LENGTH = 100;
+
   // Set up event listeners
   useEffect(() => {
     if (isDragging) {
@@ -101,12 +105,18 @@ const LightbulbRope = () => {
 
   // Calculate bulb position based on mode
   const bulbX = isDragging ? dragOffset.x : 0;
-  const bulbY = isDragging ? dragOffset.y + 100 : 100;  // Add base length to drag offset
+  const bulbY = isDragging ? dragOffset.y + BASE_ROPE_LENGTH : BASE_ROPE_LENGTH;
+  const swayAngle = Math.atan2(Math.abs(bulbX), bulbY);
+  const ropeAngleDeg = (bulbX > 0? -1 : 1) * swayAngle * (180 / Math.PI);
 
-  // Calculate rope length (distance from origin to bulb)
-  const ropeLength = Math.sqrt(bulbX * bulbX + bulbY * bulbY);
+
+  // Calculate rope length using proper distance formula
+  const ropeLength = Math.sqrt(
+    Math.pow(Math.abs(dragOffset.x) + Math.sin(swayAngle) * (BASE_ROPE_LENGTH + BULB_WIDTH / 2), 2) +
+    Math.pow(dragOffset.y + Math.cos(swayAngle) * (BASE_ROPE_LENGTH + BULB_WIDTH / 2), 2)
+  );
+
   // Rope angle from vertical: positive X = clockwise rotation
-  const ropeAngle = Math.atan2(bulbX, bulbY) * (180 / Math.PI);
 
   return (
     <div className="fixed top-0 right-8 z-50 pointer-events-none">
@@ -118,7 +128,7 @@ const LightbulbRope = () => {
           className="absolute top-0 left-1/2 w-0.5 bg-gradient-to-b from-amber-200 to-amber-400"
           style={{
             height: `${ropeLength}px`,
-            transform: `translateX(-50%) rotate(${ropeAngle}deg)`,
+            transform: `translateX(-50%) rotate(${ropeAngleDeg}deg)`,
             transformOrigin: 'top center',
             transition: isDragging ? 'none' : 'all 0.3s ease-out'
           }}
@@ -134,6 +144,7 @@ const LightbulbRope = () => {
             isDragging ? 'scale-110' : 'hover:scale-105'
           } ${dragOffset.y > 100 ? 'animate-pulse' : ''}`}
           style={{
+            transformOrigin: 'top center',
             transform: `translate(calc(-50% + ${bulbX}px), ${bulbY}px)`,
             transition: isDragging ? 'none' : 'transform 0.3s ease-out, scale 0.2s ease-out'
           }}

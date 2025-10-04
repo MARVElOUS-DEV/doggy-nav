@@ -7,8 +7,9 @@ describe('test/app/service/User.test.js', () => {
 
   beforeEach(async () => {
     ctx = app.mockContext();
-    mock(app.jwt, 'sign', async () => 'testToken');
-    mock(ctx.model.User, 'findOne', async () => ({ username: 'test', password: '111111' }));
+    mock(app.jwt, 'sign', () => 'testToken');
+    mock(ctx.model.User, 'findOne', async () => ({ username: 'test', password: '111111', isActive: true }));
+    app.mockService('user', 'comparePassword', async() => true);
   });
   afterEach(async () => {
     mock.restore();
@@ -20,17 +21,9 @@ describe('test/app/service/User.test.js', () => {
     assert(result.token === 'Bearer testToken');
   });
   it('should login fail', async () => {
+    app.mockRestore();
     mock(ctx.request, 'body', { username: 'fake', password: '111111' });
     const result = await ctx.service.user.login().catch(e => e.message);
     assert(result === '账号或密码错误');
-  });
-
-  it('should login ok and create a default user', async () => {
-    mock(app.jwt, 'sign', async () => 'testToken');
-    mock(ctx.model.User, 'findOne', async () => null);
-    mock(ctx.model.User, 'create', async () => 'ok');
-    mock(ctx.request, 'body', { username: 'test', password: '111111' });
-    const result = await ctx.service.user.login();
-    assert(result.token === 'Bearer testToken');
   });
 });

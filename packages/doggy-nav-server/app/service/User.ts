@@ -98,7 +98,7 @@ export default class UserService extends Service {
 
     await ctx.model.User.findByIdAndUpdate(user._id, {
       lastLoginAt: new Date(),
-    });
+    }, { useFindAndModify: false });
 
     const token = app.jwt.sign({
       userId: user._id,
