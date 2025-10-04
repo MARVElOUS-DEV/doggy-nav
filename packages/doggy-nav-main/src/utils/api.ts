@@ -73,6 +73,9 @@ const api = {
   getCurrentUser: (): Promise<User> =>
     axios.get('/api/auth/me'),
 
+  updateProfile: (data: { username?: string; email?: string; avatar?: string }): Promise<User> =>
+    axios.put('/api/user/profile', data),
+
   // Favorite APIs - require authentication
   addFavorite: (navId: string): Promise<void> =>
     axios.post('/api/favorites', { navId }),

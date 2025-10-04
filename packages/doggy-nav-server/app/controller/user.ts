@@ -38,4 +38,18 @@ export default class UserController extends Controller {
     }
   }
 
+  public async updateProfile() {
+    const { ctx } = this;
+    try {
+      const userId = ctx.state.userinfo?.userId;
+      if (!userId) {
+        return this.error('用户未认证');
+      }
+      const res = await ctx.service.user.updateProfile(userId);
+      this.success(res);
+    } catch (e: any) {
+      this.error(e.message);
+    }
+  }
+
 }

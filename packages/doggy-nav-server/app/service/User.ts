@@ -115,6 +115,7 @@ export default class UserService extends Service {
         username: user.username,
         email: user.email,
         isAdmin: user.isAdmin,
+        avatar: user.avatar,
       },
     };
   }
@@ -131,5 +132,63 @@ export default class UserService extends Service {
     }
 
     return user;
+  }
+
+  async updateProfile(userId: string) {
+    const { ctx } = this;
+    const { username, email, avatar } = ctx.request.body;
+
+    const user = await ctx.model.User.findById(userId);
+
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    // Prepare update object
+    const updateData: any = {};
+
+    if (username && username !== user.username) {
+      if (username.trim().length < 3) {
+        throw new Error('用户名至少需要3个字符');
+      }
+
+      const existingUser = await ctx.model.User.findOne({ username: username.trim() });
+      if (existingUser) {
+        throw new Error('用户名已存在');
+      }
+
+      updateData.username = username.trim();
+    }
+
+    if (email && email !== user.email) {
+      if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+        throw new Error('请输入有效的邮箱地址');
+      }
+
+      const existingUser = await ctx.model.User.findOne({ email: email.toLowerCase().trim() });
+      if (existingUser) {
+        throw new Error('邮箱已存在');
+      }
+
+      updateData.email = email.toLowerCase().trim();
+    }
+
+    if (avatar !== undefined) {
+      updateData.avatar = avatar;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return user.toJSON();
+    }
+
+    const updatedUser = await ctx.model.User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, useFindAndModify: false }
+    )
+      .select('-password -resetPasswordToken')
+      .lean();
+
+    return updatedUser;
   }
 }

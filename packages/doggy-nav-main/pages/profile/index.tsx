@@ -3,15 +3,14 @@ import { useEffect, useState } from 'react';
 import { Form, Input, Button, Card, Message, Upload, Avatar } from '@arco-design/web-react';
 import { useAtom } from 'jotai';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import AuthGuard from '@/components/AuthGuard';
 import { authStateAtom, authActionsAtom } from '@/store/store';
-import { useTranslation } from 'react-i18next';
-import Image from 'next/image';
+import api from '@/utils/api';
 
 const FormItem = Form.Item;
 
 function ProfileContent() {
-  const { t } = useTranslation('translation');
   const [form] = Form.useForm();
   const [authState] = useAtom(authStateAtom);
   const [, dispatchAuth] = useAtom(authActionsAtom);
@@ -30,21 +29,21 @@ function ProfileContent() {
   const handleSubmit = async (values: { username: string; email: string }) => {
     setLoading(true);
     try {
-      // This would be an API call to update user profile
-      // For now, we'll just show success message
+      const updatedUser = await api.updateProfile(values);
+
       Message.success('Profile updated successfully!');
-      
-      // Update local user state
+
+      // Update local user state with the response data
       dispatchAuth({
         type: 'LOGIN',
         payload: {
-          user: { ...user, ...values },
+          user: updatedUser,
           token: authState.token!,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Profile update failed:', error);
-      Message.error('Failed to update profile');
+      // Error message is already shown by axios interceptor
     } finally {
       setLoading(false);
     }
@@ -53,23 +52,33 @@ function ProfileContent() {
   const handleAvatarUpload = async (file: File) => {
     setUploadLoading(true);
     try {
-      // This would be an API call to upload avatar
-      // For now, we'll just create a local URL
-      const avatarUrl = URL.createObjectURL(file);
-      
+      // Convert file to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const base64Avatar = await base64Promise;
+
+      // Upload to server
+      const updatedUser = await api.updateProfile({ avatar: base64Avatar });
+
+      // Update local user state with the response data
       dispatchAuth({
         type: 'LOGIN',
         payload: {
-          user: { ...user, avatar: avatarUrl },
+          user: updatedUser,
           token: authState.token!,
         },
       });
-      
+
       Message.success('Avatar updated successfully!');
-      return { url: avatarUrl };
-    } catch (error) {
+      return { url: base64Avatar };
+    } catch (error: any) {
       console.error('Avatar upload failed:', error);
-      Message.error('Failed to upload avatar');
+      // Error message is already shown by axios interceptor
       throw error;
     } finally {
       setUploadLoading(false);
@@ -113,7 +122,15 @@ function ProfileContent() {
             <div className="flex items-center mb-8 pb-6 border-b border-gray-200">
               <div className="mr-6">
                 {user.avatar ? (
-                  <Avatar size={80} className="shadow-lg"> <Image src={user.avatar} alt="Avatar" /></Avatar>
+                  <Avatar size={80} className="shadow-lg">
+                    <Image
+                      src={user.avatar}
+                      alt="Avatar"
+                      width={80}
+                      height={80}
+                      style={{ borderRadius: '50%' }}
+                    />
+                  </Avatar>
                 ) : (
                   <div
                     className={`${getAvatarColors(user.username)} rounded-full flex items-center justify-center text-white font-bold shadow-lg`}
