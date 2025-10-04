@@ -44,6 +44,8 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^5.2.0",
     "tailwindcss": "^4",
+    "types-react": "19.0.0-rc.1",
+    "types-react-dom": "19.0.0-rc.1",
     "typescript": "^5"
   }
 }
