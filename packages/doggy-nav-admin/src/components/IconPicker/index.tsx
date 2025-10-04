@@ -44,6 +44,8 @@ import {
 } from '@arco-design/web-react/icon';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 
+import './style.less';
+
 // Popular Arco Design icons for categories
 const arcoDesignIcons = [
   'IconHome',

@@ -1,1 +1,2 @@
-export * from 'koa-json-error';
+import koaJE from 'koa-json-error';
+export default koaJE;

@@ -39,11 +39,11 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
     const password = await askQuestion('Enter password (default: admin123)', true);
     const finalPassword = await bcrypt.hash(password.trim() || 'admin123', 12);
 
-    const res = await userSchemaModel.updateOne({
+    const {modifiedCount, upsertedCount, matchedCount} = await userSchemaModel.updateOne({
       username: { $eq: finalUsername },
-    }, { password: finalPassword, isAdmin: true, email: 'admin@doggy-nav.cn', isActive: true }, { create: true });
+    }, { password: finalPassword, isAdmin: true, email: 'admin@doggy-nav.cn', isActive: true }, { upsert: true });
 
-    if (res) {
+    if (modifiedCount || upsertedCount || matchedCount) {
       console.info(`create user ${finalUsername} with password ${finalPassword} success ✅`);
     }
   } catch (error) {

@@ -49,11 +49,11 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
     const password = await askQuestion('Enter password you want to reset to (default: admin123)', true);
     const finalPassword = await bcrypt.hash(password.trim() || 'admin123', 12);
 
-    const res = await userSchema.updateOne({
+    const {modifiedCount} = await userSchema.updateOne({
       username: { $eq: finalUsername },
     }, { password: finalPassword });
 
-    if (res) {
+    if (modifiedCount) {
       console.info(`create user ${finalUsername} with password ${finalPassword} success ✅`);
     }
   } catch (error) {

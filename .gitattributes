@@ -1,0 +1,4 @@
+*.key filter=git-crypt diff=git-crypt
+*.pem filter=git-crypt diff=git-crypt
+*.crt filter=git-crypt diff=git-crypt
+.gitattributes !filter !diff

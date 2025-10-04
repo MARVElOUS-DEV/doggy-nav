@@ -89,7 +89,7 @@ async function tryAuthenticate(ctx: any, app: any) {
       }
       return { authenticated: false, error: '无效的客户端密钥' };
     } catch (e) {
-      this.ctx.logger.error('Client secret authentication error:', e);
+      ctx.logger.error('Client secret authentication error:', e);
       return { authenticated: false, error: '客户端密钥验证失败' };
     }
   }
@@ -105,7 +105,7 @@ async function tryAuthenticate(ctx: any, app: any) {
       };
       return { authenticated: true };
     } catch (err) {
-      this.ctx.logger.error('JWT authentication error:', err);
+      ctx.logger.error('JWT authentication error:', err);
       return { authenticated: false, error: 'token失效或解析错误' };
     }
   }
