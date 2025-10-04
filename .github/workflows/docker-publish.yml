@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
 
     strategy:
       matrix:
@@ -26,7 +27,7 @@ jobs:
             image: doggy-nav-frontend
             context: .
           - dockerfile: Dockerfile-Server
-            image: doggy-nav-backend
+            image: doggy-nav-server
             context: .
           - dockerfile: Dockerfile-Admin
             image: doggy-nav-admin
@@ -69,15 +70,30 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Generate SBOM
+      - name: Wait for image availability
+        run: sleep 30
+
+      - name: Generate SBOM from registry
         uses: anchore/sbom-action@v0
         with:
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.image }}:${{ github.sha }}
+          image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: spdx-json
           output-file: sbom-${{ matrix.image }}.spdx.json
+        env:
+          SYFT_REGISTRY_AUTH_AUTHORITY: ${{ env.REGISTRY }}
+          SYFT_REGISTRY_AUTH_USERNAME: ${{ github.actor }}
+          SYFT_REGISTRY_AUTH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: sbom-${{ matrix.image }}
           path: sbom-${{ matrix.image }}.spdx.json
+
+      - name: Display build info
+        run: |
+          echo "=== images built: ==="
+          echo "Image: ${{ matrix.image }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "=== sbom json ==="
+          ls -la sbom-${{ matrix.image }}.spdx.json
