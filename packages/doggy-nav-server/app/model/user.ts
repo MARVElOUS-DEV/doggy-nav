@@ -52,6 +52,10 @@ export default function(app: any) {
       type: Date,
       default: null,
     },
+    avatar: {
+      type: String,
+      default: null,
+    },
   }, {
     collection: 'user',
     timestamps: true,

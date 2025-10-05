@@ -6,6 +6,7 @@ export default (app: Application) => {
   router.post('/api/register', controller.user.register);
   router.post('/api/login', controller.user.login);
   router.get('/api/user/profile', controller.user.profile);
+  router.put('/api/user/profile', controller.user.updateProfile);
 
   // Application routes
   router.post('/api/application', controller.application.create);

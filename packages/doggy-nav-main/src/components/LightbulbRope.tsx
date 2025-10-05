@@ -1,20 +1,42 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useAtomValue } from 'jotai';
 import { authStateAtom } from '@/store/store';
 
+ // Constants
+  const BULB_WIDTH = 48; // 3rem (w-12 in Tailwind)
+  const BASE_ROPE_LENGTH = 100;
+  const ROPE_Origin_Right = 32; // right-8
+  const ROPE_VIR_LEN = BASE_ROPE_LENGTH + BULB_WIDTH / 2; // 到球心的距离
 const LightbulbRope = () => {
   const router = useRouter();
   const authState = useAtomValue(authStateAtom);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const ropeRef = useRef<HTMLDivElement>(null);
   const startPosRef = useRef({ x: 0, y: 0 });
   const isNavigatingRef = useRef(false);
 
-  // Constants
-  const BULB_WIDTH = 48; // 3rem (w-12 in Tailwind)
-  const BASE_ROPE_LENGTH = 100;
+  const finalBulbQuadrant  = useMemo<undefined |'lt'| 'rt' | 'lb' | 'rb'>(() => {
+    if(dragOffset.x<0 && dragOffset.y <0) return 'lt';
+    if(dragOffset.x<0 && dragOffset.y >0) return 'lb';
+    if(dragOffset.x>0 && dragOffset.y>0) return 'rb';
+    if(dragOffset.x>0 && dragOffset.y < 0) return 'rt';
+    return 'lt';
+  }, [dragOffset.x, dragOffset.y]);
+   // Window resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => { 
+      isNavigatingRef.current = false;
+      window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   // Set up event listeners
   useEffect(() => {
@@ -33,14 +55,40 @@ const LightbulbRope = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, dragOffset]);
+  
+  const isCrossingLine = dragOffset.x + startPosRef.current.x > (windowWidth - ROPE_Origin_Right)
+  const initSwayAngle = useMemo( ()=> {
+    // 暂时只考虑起始状态球在垂直线的左侧
+      const x = windowWidth - ROPE_Origin_Right - startPosRef.current.x;
+      return Math.asin(x / ROPE_VIR_LEN)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowWidth, isDragging])
 
-  // Reset navigation flag when component unmounts
-  useEffect(() => {
-    return () => {
-      isNavigatingRef.current = false;
-    };
-  }, []);
-
+  const [swayAngle, ropeLength] = useMemo(()=> {
+    if(isDragging) {
+      let x, y
+      if (finalBulbQuadrant === 'lt') {
+        x = Math.sin(initSwayAngle) * ROPE_VIR_LEN + Math.abs(dragOffset.x);
+        y = Math.cos(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.y);
+      }
+      if (finalBulbQuadrant === 'lb') {
+        x = Math.sin(initSwayAngle) * ROPE_VIR_LEN + Math.abs(dragOffset.x);
+        y = Math.cos(initSwayAngle) * ROPE_VIR_LEN + Math.abs(dragOffset.y);
+      }
+      if (finalBulbQuadrant === 'rb') {
+        x = (isCrossingLine? -1 : 1) * Math.sin(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.x);
+        y = Math.cos(initSwayAngle) * ROPE_VIR_LEN + Math.abs(dragOffset.y);
+      }
+      if (finalBulbQuadrant === 'rt') {
+        x = (isCrossingLine? -1 : 1) * Math.sin(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.x);
+        y = Math.cos(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.y);
+      }
+      return [Math.atan2(x, y), Math.sqrt(Math.pow(x, 2)+ Math.pow(y, 2)) + BULB_WIDTH/2]
+    } else {
+      return [0, ROPE_VIR_LEN];
+    }
+  }, [finalBulbQuadrant, dragOffset.x, initSwayAngle, dragOffset.y, isDragging, isCrossingLine])
+  
   // Only show for authenticated users
   if (!authState.isAuthenticated) {
     return null;
@@ -102,19 +150,11 @@ const LightbulbRope = () => {
     }
   };
 
-
   // Calculate bulb position based on mode
   const bulbX = isDragging ? dragOffset.x : 0;
   const bulbY = isDragging ? dragOffset.y + BASE_ROPE_LENGTH : BASE_ROPE_LENGTH;
-  const swayAngle = Math.atan2(Math.abs(bulbX), bulbY);
-  const ropeAngleDeg = (bulbX > 0? -1 : 1) * swayAngle * (180 / Math.PI);
-
-
-  // Calculate rope length using proper distance formula
-  const ropeLength = Math.sqrt(
-    Math.pow(Math.abs(dragOffset.x) + Math.sin(swayAngle) * (BASE_ROPE_LENGTH + BULB_WIDTH / 2), 2) +
-    Math.pow(dragOffset.y + Math.cos(swayAngle) * (BASE_ROPE_LENGTH + BULB_WIDTH / 2), 2)
-  );
+  
+  const ropeAngleDeg = swayAngle * (180 / Math.PI);
 
   // Rope angle from vertical: positive X = clockwise rotation
 

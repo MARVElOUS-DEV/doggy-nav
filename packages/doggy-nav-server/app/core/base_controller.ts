@@ -1,4 +1,5 @@
 import { Controller } from 'egg';
+import { ValidationError } from './errors';
 
 export default class CommonController extends Controller {
 
@@ -111,61 +112,45 @@ export default class CommonController extends Controller {
   async add() {
     const body = this.getSanitizedBody();
     const tableName = this.tableName();
-    try {
-      const res = await this.ctx.model[tableName].create(body);
-      this.success(res);
-    } catch (e: any) {
-      this.error(e.message);
-    }
+    const res = await this.ctx.model[tableName].create(body);
+    this.success(res);
   }
 
   // 删除
   async remove() {
     const body = this.getSanitizedBody();
     const tableName = this.tableName();
-    try {
-      const id = body.id;
-      if (!id) {
-        throw new Error('ID is required');
-      }
-      const res = await this.ctx.model[tableName].deleteOne({ _id: id });
-      this.success(res);
-    } catch (e: any) {
-      this.error(e.message);
+    const id = body.id;
+    if (!id) {
+      throw new ValidationError('ID is required');
     }
+    const res = await this.ctx.model[tableName].deleteOne({ _id: id });
+    this.success(res);
   }
 
   // 更新
   async update() {
     const body = this.getSanitizedBody();
     const tableName = this.tableName();
-    try {
-      const id = body.id;
-      if (!id) {
-        throw new Error('ID is required');
-      }
-      delete body.id;
-      const res = await this.ctx.model[tableName].updateOne({ _id: id }, body);
-      this.success(res);
-    } catch (e: any) {
-      this.error(e.message);
+    const id = body.id;
+    if (!id) {
+      throw new ValidationError('ID is required');
     }
+    delete body.id;
+    const res = await this.ctx.model[tableName].updateOne({ _id: id }, body);
+    this.success(res);
   }
 
   // 查找一个
   async get() {
     const query = this.getSanitizedQuery();
     const tableName = this.tableName();
-    try {
-      const id = query.id;
-      if (!id) {
-        throw new Error('ID is required');
-      }
-      const res = await this.ctx.model[tableName].findOne({ _id: id });
-      this.success(res);
-    } catch (e: any) {
-      this.error(e.message);
+    const id = query.id;
+    if (!id) {
+      throw new ValidationError('ID is required');
     }
+    const res = await this.ctx.model[tableName].findOne({ _id: id });
+    this.success(res);
   }
 
   // 查找多个
@@ -173,66 +158,59 @@ export default class CommonController extends Controller {
     const query = this.getSanitizedQuery();
     const tableName = this.tableName();
 
-    try {
-      let { pageSize = 10, pageNumber = 1 } = query;
-      pageSize = Math.min(Math.max(Number(pageSize) || 10, 1), 100);
-      pageNumber = Math.max(Number(pageNumber) || 1, 1);
-      const skipNumber = pageSize * pageNumber - pageSize;
-      const table = this.ctx.model[tableName];
+    let { pageSize = 10, pageNumber = 1 } = query;
+    pageSize = Math.min(Math.max(Number(pageSize) || 10, 1), 100);
+    pageNumber = Math.max(Number(pageNumber) || 1, 1);
+    const skipNumber = pageSize * pageNumber - pageSize;
+    const table = this.ctx.model[tableName];
 
-      const [ data, total ] = await Promise.all([
-        otherCMD(table.find(findObj).skip(skipNumber).limit(pageSize)
-          .sort({ _id: -1 })),
-        table.find(findObj).countDocuments(),
-      ]);
+    const [ data, total ] = await Promise.all([
+      otherCMD(table.find(findObj).skip(skipNumber).limit(pageSize)
+        .sort({ _id: -1 })),
+      table.find(findObj).countDocuments(),
+    ]);
 
-      this.success({
-        data,
-        total,
-        pageNumber: Math.ceil(total / pageSize),
-      });
-    } catch (e: any) {
-      this.error(e.message);
-    }
+    this.success({
+      data,
+      total,
+      pageNumber: Math.ceil(total / pageSize),
+    });
   }
 
   // 查找随机数量列表
   async getRandomList(randomNumber = 10) {
     const tableName = this.tableName();
-    try {
-      const safeRandomNumber = Math.min(Math.max(Number(randomNumber) || 10, 1), 50);
+    const safeRandomNumber = Math.min(Math.max(Number(randomNumber) || 10, 1), 50);
 
-      // Add filtering based on authentication and hide field for Nav model
-      const pipeline: any[] = [];
+    // Add filtering based on authentication and hide field for Nav model
+    const pipeline: any[] = [];
 
-      if (tableName === 'Nav') {
-        const isAuthenticated = this.isAuthenticated();
-        const matchQuery: any = {};
+    if (tableName === 'Nav') {
+      const isAuthenticated = this.isAuthenticated();
+      const matchQuery: any = {};
 
-        // For non-authenticated users, only show non-hidden items
-        if (!isAuthenticated) {
-          matchQuery.hide = { $eq: false };
-        }
-
-        if (Object.keys(matchQuery).length > 0) {
-          pipeline.push({ $match: matchQuery });
-        }
+      // For non-authenticated users, only show approved and non-hidden items
+      if (!isAuthenticated) {
+        matchQuery.hide = { $eq: false };
+        matchQuery.status = 0; // NAV_STATUS.pass
       }
 
-      pipeline.push({ $sample: { size: safeRandomNumber } });
-
-      const res = await this.ctx.model[tableName].aggregate(pipeline);
-
-      // Convert aggregation results to Mongoose documents to apply schema transformations
-      const model = this.ctx.model[tableName];
-      const transformedRes = res.map(doc => {
-        const mongooseDoc = new model(doc);
-        return mongooseDoc.toJSON();
-      });
-
-      this.success(transformedRes);
-    } catch (e: any) {
-      this.error(e.message);
+      if (Object.keys(matchQuery).length > 0) {
+        pipeline.push({ $match: matchQuery });
+      }
     }
+
+    pipeline.push({ $sample: { size: safeRandomNumber } });
+
+    const res = await this.ctx.model[tableName].aggregate(pipeline);
+
+    // Convert aggregation results to Mongoose documents to apply schema transformations
+    const model = this.ctx.model[tableName];
+    const transformedRes = res.map(doc => {
+      const mongooseDoc = new model(doc);
+      return mongooseDoc.toJSON();
+    });
+
+    this.success(transformedRes);
   }
 }

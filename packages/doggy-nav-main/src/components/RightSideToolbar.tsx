@@ -16,8 +16,7 @@ export default function RightSideToolbar(props: any) {
   };
 
   const handleCustomerService = () => {
-    // Add customer service functionality here
-    console.log('Customer service clicked');
+    window.open('https://github.com/MARVElOUS-DEV/doggy-nav','_blank')
   };
 
   const handleMouseEnter = () => {
@@ -102,7 +101,7 @@ export default function RightSideToolbar(props: any) {
       </div>
 
       <div className="transition-all duration-300 hover:scale-110">
-        <Tooltip content={t('customer_service', 'Customer Service')} position="left">
+        <Tooltip content={t('feedback', '提交反馈')} position="left">
           <Button
             shape="circle"
             icon={<IconCustomerService />}

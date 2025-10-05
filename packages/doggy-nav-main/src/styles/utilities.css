@@ -273,3 +273,29 @@
     transparent 100%
   );
 }
+
+@keyframes hero-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.hero-gradient {
+  background: linear-gradient(
+    -45deg,
+    #2563eb,
+    #7c3aed,
+    #db2777,
+    #059669,
+    #0891b2,
+    #4f46e5
+  );
+  background-size: 400% 400%;
+  animation: hero-gradient-flow 12s ease infinite;
+}

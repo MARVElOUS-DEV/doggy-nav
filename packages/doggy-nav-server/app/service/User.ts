@@ -1,5 +1,6 @@
 import { Service } from 'egg';
 import * as bcrypt from 'bcrypt';
+import { ValidationError, AuthenticationError, ConflictError, NotFoundError } from '../core/errors';
 
 export default class UserService extends Service {
 
@@ -40,7 +41,7 @@ export default class UserService extends Service {
 
     const validationErrors = this.validateUserInput(username, email, password);
     if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join(', '));
+      throw new ValidationError(validationErrors.join(', '));
     }
 
     const existingUser = await ctx.model.User.findOne({
@@ -48,7 +49,7 @@ export default class UserService extends Service {
     });
 
     if (existingUser) {
-      throw new Error('用户名或邮箱已存在');
+      throw new ConflictError('用户名或邮箱已存在');
     }
 
     const hashedPassword = await this.hashPassword(password);
@@ -79,7 +80,7 @@ export default class UserService extends Service {
     const { username, password } = ctx.request.body;
 
     if (!username || !password) {
-      throw new Error('请输入用户名和密码');
+      throw new ValidationError('请输入用户名和密码');
     }
 
     const user = await ctx.model.User.findOne({
@@ -88,12 +89,12 @@ export default class UserService extends Service {
     });
 
     if (!user) {
-      throw new Error('账号或密码错误');
+      throw new AuthenticationError('账号或密码错误');
     }
 
     const isPasswordValid = await this.comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('账号或密码错误');
+      throw new AuthenticationError('账号或密码错误');
     }
 
     await ctx.model.User.findByIdAndUpdate(user._id, {
@@ -115,6 +116,7 @@ export default class UserService extends Service {
         username: user.username,
         email: user.email,
         isAdmin: user.isAdmin,
+        avatar: user.avatar,
       },
     };
   }
@@ -127,9 +129,54 @@ export default class UserService extends Service {
       .lean();
 
     if (!user) {
-      throw new Error('用户不存在');
+      throw new NotFoundError('用户不存在');
     }
 
     return user;
+  }
+
+  async updateProfile(userId: string) {
+    const { ctx } = this;
+    const { email, avatar } = ctx.request.body;
+
+    const user = await ctx.model.User.findById(userId);
+
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+
+    // Prepare update object
+    const updateData: any = {};
+
+    if (email && email !== user.email) {
+      if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+        throw new ValidationError('请输入有效的邮箱地址');
+      }
+
+      const existingUser = await ctx.model.User.findOne({ email: email.toLowerCase().trim() });
+      if (existingUser) {
+        throw new ConflictError('邮箱已存在');
+      }
+
+      updateData.email = email.toLowerCase().trim();
+    }
+
+    if (avatar !== undefined) {
+      updateData.avatar = avatar;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return user.toJSON();
+    }
+
+    const updatedUser = await ctx.model.User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, useFindAndModify: false }
+    )
+      .select('-password -resetPasswordToken')
+      .lean();
+
+    return updatedUser;
   }
 }

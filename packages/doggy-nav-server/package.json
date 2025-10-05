@@ -45,7 +45,6 @@
     "egg-ratelimiter": "^0.1.0",
     "egg-scripts": "^3.1.0",
     "egg-security": "^3.7.0",
-    "koa-json-error": "^3.1.2",
     "mongoose": "^8.18.1",
     "node-cron": "^4.2.1",
     "request": "^2.88.2",

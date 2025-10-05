@@ -13,6 +13,7 @@ export const routePermissions: RoutePermission[] = [
   { method: 'POST', path: '/api/register', access: 'public', description: 'User registration' },
   { method: 'POST', path: '/api/login', access: 'public', description: 'User login' },
   { method: 'GET', path: '/api/user/profile', access: 'authenticated', description: 'Get user profile' },
+  { method: 'PUT', path: '/api/user/profile', access: 'authenticated', description: 'Get user profile' },
 
   // Application routes
   { method: 'POST', path: '/api/application', access: 'admin', description: 'Create application' },
