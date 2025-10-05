@@ -80,7 +80,7 @@ export default function HomePage() {
     >
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Hero Section */}
-        <div className="mb-12">
+        <div className="mb-8">
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
             <div className="hero-gradient p-8 text-white relative">
               <div className="max-w-3xl mx-auto text-center relative z-10">
