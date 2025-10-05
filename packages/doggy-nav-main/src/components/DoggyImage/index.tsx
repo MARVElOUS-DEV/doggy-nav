@@ -8,12 +8,14 @@ interface DoggyImageProps {
   name?: string;
   width?: number;
   height?: number;
+  className?: string
+  fallbackSrc?: string
 }
 
-export default function DoggyImage({logo="/default-web.png", name="logo", width=20, height=20}: DoggyImageProps) {
+export default function DoggyImage({logo="/default-web.png", name="logo", width=20, height=20 ,className, fallbackSrc}: DoggyImageProps) {
   const [logoSrc, setLogoSrc] = useState(logo);
   const handleLogoError = () => {
-    setLogoSrc('/default-web.png');
+    setLogoSrc(fallbackSrc??'/default-web.png');
   };
   return (
     <Image
@@ -21,7 +23,7 @@ export default function DoggyImage({logo="/default-web.png", name="logo", width=
       alt={name}
       width={width}
       height={height}
-      className={`rounded-full mr-2 flex-shrink-0 w-[${width}px] h-[${height}px] object-cover`}
+      className={className??`rounded-full mr-2 flex-shrink-0 w-[${width}px] h-[${height}px] object-cover`}
       onError={handleLogoError}
     />
   )
