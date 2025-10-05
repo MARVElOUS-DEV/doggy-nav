@@ -44,7 +44,7 @@ export default function ThemeToggle() {
     <Tooltip content={theme === 'light' ? t('switch_to_dark_mode') : t('switch_to_light_mode')}>
       <button
         onClick={toggleTheme}
-        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        className="cursor-pointer p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
         aria-label={theme === 'light' ? t('switch_to_dark_mode') : t('switch_to_light_mode')}
       >
         {theme === 'light' ? (

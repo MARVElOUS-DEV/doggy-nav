@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip, Button, Dropdown, Menu } from '@arco-design/web-react';
-import AppSearch from './AppSearch';
+import Search from './Search';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import UserAvatar from './UserAvatar';
@@ -94,7 +94,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
       {/* Desktop Search Bar */}
       <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8 h-12">
         {showSearch ? (
-          <AppSearch onClose={() => setShowSearch(false)} />
+          <Search onClose={() => setShowSearch(false)} />
         ) : (
           <Button
             className="w-full h-12 text-gray-500 rounded-2xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all bg-white shadow-sm hover:shadow-md"
@@ -102,7 +102,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
           >
             <div className="flex items-center justify-center text-gray-400">
               <i className="iconfont icon-search mr-2 text-lg"></i>
-              <span>搜索网站...</span>
+            <span>搜索网站...</span>
             </div>
           </Button>
         )}
@@ -111,7 +111,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
       {/* Mobile Search Overlay */}
       {showSearch && (
         <div className="md:hidden fixed inset-0 bg-white z-50 p-4">
-          <AppSearch onClose={() => setShowSearch(false)} />
+          <Search onClose={() => setShowSearch(false)} />
         </div>
       )}
 
@@ -128,7 +128,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
 
         <Tooltip content="搜索网站">
           <button
-            className="text-2xl text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-50"
+            className="text-2xl cursor-pointer text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-50"
             onClick={() => setShowSearch(!showSearch)}
           >
             <i className="iconfont icon-search"></i>
