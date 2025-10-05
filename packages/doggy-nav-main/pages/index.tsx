@@ -82,16 +82,16 @@ export default function HomePage() {
         {/* Hero Section */}
         <div className="mb-12">
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-700 p-8 text-white">
-              <div className="max-w-3xl mx-auto text-center">
+            <div className="hero-gradient p-8 text-white relative">
+              <div className="max-w-3xl mx-auto text-center relative z-10">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">精选网站导航</h1>
                 <p className="text-xl opacity-90 mb-8">发现优质网站，探索数字世界</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
-                    href="/navcontents"
+                    href="/login"
                     className="bg-white text-blue-600 hover:bg-gray-100 font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
                   >
-                    浏览分类
+                    登陆探索
                   </Link>
                   <Link
                     href="/search"

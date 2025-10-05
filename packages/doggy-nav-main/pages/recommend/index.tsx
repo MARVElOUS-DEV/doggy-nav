@@ -63,7 +63,8 @@ export default function Recommend() {
         message: '请输入正确的url',
       },
     ],
-    tags: [{ required: true, message: '请输入标签' }, { max: 5, message: '最多选择5个标签' }],
+    tags: [{ max: 5, message: '最多选择5个标签' }],
+    categoryId: [{ required: true, message: '请选择网站的类别' }],
     name: [{ required: true, message: '请输入名称' }],
     desc: [{ required: true, message: '请输入描述' }],
     logo: [{ required: true, message: '请输入logo' }],
@@ -156,20 +157,11 @@ export default function Recommend() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <FormItem label="🏷️ 网站标签" field="tags" rules={rules.tags}>
-                  <Select
-                    mode="multiple"
-                    showSearch
-                    allowCreate
-                    placeholder="输入网站标签，最多5个"
-                    className="recommend-sel-container h-12 border-2 border-gray-200 focus:border-green-400 focus:ring-green-200 rounded-xl transition-all duration-300"
-                  >
-                      {tags.map((item) => (
-                        <Select.Option key={item.name} value={item.name}>
-                          {item.label}
-                        </Select.Option>
-                      ))}
-                    </Select>
+                <FormItem label="🖼️ 网站logo" field="logo" rules={rules.logo}>
+                  <Input
+                    placeholder="输入网站logo"
+                    className="h-12 border-2 border-gray-200 focus:border-pink-400 focus:ring-pink-200 rounded-xl transition-all duration-300"
+                  />
                 </FormItem>
               </motion.div>
 
@@ -192,11 +184,14 @@ export default function Recommend() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
               >
-                <FormItem label="🖼️ 网站logo" field="logo" rules={rules.logo}>
-                  <Input
-                    placeholder="输入网站logo"
-                    className="h-12 border-2 border-gray-200 focus:border-pink-400 focus:ring-pink-200 rounded-xl transition-all duration-300"
-                  />
+                <FormItem label="📂 网站分类" field="categoryId" rules={rules.categoryId}>
+                  <Select
+                    placeholder="请选择"
+                    showSearch
+                    className="recommend-sel-container h-12 border-2 border-gray-200 focus:border-indigo-400 focus:ring-indigo-200 rounded-xl transition-all duration-300 category-select"
+                  >
+                      {renderCategories(categories)}
+                    </Select>
                 </FormItem>
               </motion.div>
 
@@ -205,13 +200,19 @@ export default function Recommend() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
               >
-                <FormItem label="📂 网站分类" field="categoryId" className="pt-[1em]">
+                <FormItem label="🏷️ 网站标签" field="tags" rules={rules.tags} className="pt-[1em]">
                   <Select
-                    placeholder="请选择"
+                    mode="multiple"
                     showSearch
-                    className="recommend-sel-container h-12 border-2 border-gray-200 focus:border-indigo-400 focus:ring-indigo-200 rounded-xl transition-all duration-300 category-select"
+                    allowCreate
+                    placeholder="输入网站标签，最多5个"
+                    className="recommend-sel-container h-12 border-2 border-gray-200 focus:border-green-400 focus:ring-green-200 rounded-xl transition-all duration-300"
                   >
-                      {renderCategories(categories)}
+                      {tags.map((item) => (
+                        <Select.Option key={item.name} value={item.name}>
+                          {item.label}
+                        </Select.Option>
+                      ))}
                     </Select>
                 </FormItem>
               </motion.div>

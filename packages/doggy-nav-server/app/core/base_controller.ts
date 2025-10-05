@@ -189,9 +189,10 @@ export default class CommonController extends Controller {
       const isAuthenticated = this.isAuthenticated();
       const matchQuery: any = {};
 
-      // For non-authenticated users, only show non-hidden items
+      // For non-authenticated users, only show approved and non-hidden items
       if (!isAuthenticated) {
         matchQuery.hide = { $eq: false };
+        matchQuery.status = 0; // NAV_STATUS.pass
       }
 
       if (Object.keys(matchQuery).length > 0) {

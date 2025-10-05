@@ -20,20 +20,28 @@ export default class NavController extends Controller {
 
     let findParam: any = {};
 
+    const isAuthenticated = this.isAuthenticated();
+
     // Handle status filter
-    if (status !== undefined && status !== '') {
-      findParam.status = Number(status);
+    if (isAuthenticated) {
+      // Authenticated users can filter by status
+      if (status !== undefined && status !== '') {
+        findParam.status = Number(status);
+      } else {
+        // Default for authenticated users: show approved or legacy items without status
+        findParam = {
+          $or: [
+            { status: { $exists: false } },
+            { status: 0 },
+          ],
+        };
+      }
     } else {
-      findParam = {
-        $or: [
-          { status: { $exists: false } },
-          { status: 0 },
-        ],
-      };
+      // Non-authenticated users can only see approved items
+      findParam.status = NAV_STATUS.pass;
     }
 
     // Filter hide based on authentication state
-    const isAuthenticated = this.isAuthenticated();
     if (!isAuthenticated) {
       // For non-authenticated users, only show non-hidden items
       if (!hide) {
@@ -202,14 +210,18 @@ export default class NavController extends Controller {
 
       const navFindParam: any = {
         categoryId: { $in: categoryIds },
-        $or: [
-          { status: { $exists: false } },
-          { status: 0 },
-        ],
       };
 
-      // For non-authenticated users, also filter out hidden nav items
-      if (!isAuthenticated) {
+      // Filter by status and hide based on authentication
+      if (isAuthenticated) {
+        // Authenticated users see approved or legacy items without status
+        navFindParam.$or = [
+          { status: { $exists: false } },
+          { status: NAV_STATUS.pass },
+        ];
+      } else {
+        // Non-authenticated users only see approved items
+        navFindParam.status = NAV_STATUS.pass;
         navFindParam.hide = { $eq: false };
       }
 
@@ -236,7 +248,16 @@ export default class NavController extends Controller {
     const { id, keyword } = ctx.query;
 
     if (id) {
-      const nav = await ctx.model.Nav.findOne({ _id: id });
+      const isAuthenticated = this.isAuthenticated();
+      const navQuery: any = { _id: id };
+
+      // Non-authenticated users can only access approved items
+      if (!isAuthenticated) {
+        navQuery.status = NAV_STATUS.pass;
+        navQuery.hide = { $eq: false };
+      }
+
+      const nav = await ctx.model.Nav.findOne(navQuery);
       if (nav && nav.categoryId) {
         const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
         if (category) {
@@ -260,10 +281,11 @@ export default class NavController extends Controller {
         name: { $regex: reg },
       };
 
-      // For non-authenticated users, also filter out hidden nav items
+      // For non-authenticated users, filter by status and hide
       const isAuthenticated = this.isAuthenticated();
       if (!isAuthenticated) {
         searchQuery.hide = { $eq: false };
+        searchQuery.status = NAV_STATUS.pass; // Only show approved items
       }
 
       if (isAuthenticated) {
