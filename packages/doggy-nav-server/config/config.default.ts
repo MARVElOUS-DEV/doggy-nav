@@ -50,9 +50,6 @@ export default (appInfo: EggAppInfo) => {
   };
 
   config.middleware = [ 'error', 'auth' ];
-  config.error = {
-    postFormat: (_e, { stack, ...rest }) => (appInfo.env === 'prod' ? rest : { stack, ...rest }),
-  };
 
   config.jwt = {
     secret: JWT_SECRET,

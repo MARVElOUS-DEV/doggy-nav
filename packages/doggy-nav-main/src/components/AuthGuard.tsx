@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { authStateAtom, initAuthFromStorageAtom } from '@/store/store';
 
 interface AuthGuardProps {
@@ -14,22 +14,22 @@ export default function AuthGuard({
   fallback = null, 
   redirectTo = '/login' 
 }: AuthGuardProps) {
-  const router = useRouter();
-  const [authState] = useAtom(authStateAtom);
   const initAuth = useSetAtom(initAuthFromStorageAtom);
+  const router = useRouter();
+  const authState = useAtomValue(authStateAtom);
 
   useEffect(() => {
     initAuth();
   }, [initAuth]);
 
   useEffect(() => {
-    if (!authState.isAuthenticated && router.isReady) {
+    if (authState.initialized && !authState.isAuthenticated && router.isReady) {
       const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(router.asPath)}`;
       router.push(redirectUrl);
     }
-  }, [authState.isAuthenticated, router, redirectTo]);
+  }, [authState.initialized, authState.isAuthenticated, router, redirectTo]);
 
-  if (!authState.isAuthenticated) {
+  if (!authState.initialized || !authState.isAuthenticated) {
     return <>{fallback}</>;
   }
 

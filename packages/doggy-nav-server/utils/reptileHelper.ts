@@ -17,11 +17,11 @@ export function isAbsoluteUrl(url) {
 export async function parseHTML(url) {
   const { origin, hostname } = new URL(url);
   return new Promise(resolve => {
-    request(origin, { timeout: 6000, followAllRedirects: true }, (error, responseData, body) => {
-      if (!error && responseData.statusCode === 200) {
+    request(origin, { timeout: 6000, followAllRedirects: true }, (error, _responseData, body) => {
+      if (!error && body) {
         const $ = cheerio.load(body);
         const name = $('title').text();
-        const desc = $('meta[name="description"]').attr('content');
+        const desc = $('meta[name="description"]').attr('content')|| `试试 ${url} 吧`;
         let logo = '';
         let final = '';
         if ($('link[rel="icon"]').length) {

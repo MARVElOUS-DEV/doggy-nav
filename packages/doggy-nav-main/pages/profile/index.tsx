@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Form, Input, Button, Card, Message, Upload, Avatar } from '@arco-design/web-react';
-import { useAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import AuthGuard from '@/components/AuthGuard';
@@ -12,8 +12,8 @@ const FormItem = Form.Item;
 
 function ProfileContent() {
   const [form] = Form.useForm();
-  const [authState] = useAtom(authStateAtom);
-  const [, dispatchAuth] = useAtom(authActionsAtom);
+  const authState = useAtomValue(authStateAtom);
+  const dispatchAuth = useSetAtom(authActionsAtom);
   const [loading, setLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
 
@@ -166,6 +166,7 @@ function ProfileContent() {
               <FormItem
                 label={<span className="text-gray-700 font-medium">Username</span>}
                 field="username"
+                disabled
                 rules={[
                   { required: true, message: 'Please enter your username' },
                   { minLength: 3, message: 'Username must be at least 3 characters' }
@@ -181,6 +182,7 @@ function ProfileContent() {
               <FormItem
                 label={<span className="text-gray-700 font-medium">Email</span>}
                 field="email"
+                disabled={!!user.email}
                 rules={[
                   { type: 'email', message: 'Please enter a valid email address' }
                 ]}
@@ -192,7 +194,7 @@ function ProfileContent() {
                 />
               </FormItem>
 
-              <FormItem>
+              <FormItem hidden={!!user.email}>
                 <div className="flex gap-4">
                   <Button
                     type="primary"
@@ -204,7 +206,7 @@ function ProfileContent() {
                   </Button>
                   <Button
                     type="secondary" 
-                    onClick={() => form.resetFields()}
+                    onClick={() => form.resetFields(['email'])}
                     className="rounded-xl"
                   >
                     Reset

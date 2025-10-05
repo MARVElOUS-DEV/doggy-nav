@@ -31,8 +31,8 @@ async function getLogo(url) {
     return map.get(origin);
   }
   return new Promise(resolve => {
-    request(origin, { timeout: 6000, followAllRedirects: true }, (error, responseData, body) => {
-      if (!error && responseData.statusCode === 200) {
+    request(origin, { timeout: 6000, followAllRedirects: true }, (error, _responseData, body) => {
+      if (!error && body) {
         const $ = cheerio.load(body);
         let logo = '';
         let final = '';

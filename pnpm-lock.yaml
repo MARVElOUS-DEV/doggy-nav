@@ -230,9 +230,6 @@ importers:
       egg-security:
         specifier: ^3.7.0
         version: 3.7.0
-      koa-json-error:
-        specifier: ^3.1.2
-        version: 3.1.2
       mongoose:
         specifier: ^8.18.1
         version: 8.18.1
@@ -6574,10 +6571,6 @@ packages:
   koa-is-json@1.0.0:
     resolution: {integrity: sha512-+97CtHAlWDx0ndt0J8y3P12EWLwTLMXIfMnYDev3wOTwH/RpBGMlfn4bDXlMEg1u73K6XRE9BbUp+5ZAYoRYWw==}
 
-  koa-json-error@3.1.2:
-    resolution: {integrity: sha512-nqfNwD4W+hYaJijFl+6qNSQJHbTS4vp+gXTdXl5U8YK2PVNzCF0HnLZwyKHaMeBebhanAgmfheQv96wLDjLRxg==}
-    engines: {node: '>=6.0.0'}
-
   koa-jwt2@1.0.3:
     resolution: {integrity: sha512-ACW/sQ21vlkR/HBXnGvJfM2yDkKnv1GZe6/1nro+Mt4+bWhJq007esu2h9oZcj2+nce47PXcan2rXVaKmX295w==}
     engines: {node: '>= 8.0.0'}
@@ -6826,12 +6819,6 @@ packages:
 
   lodash-es@4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
-
-  lodash.compact@3.0.1:
-    resolution: {integrity: sha512-2ozeiPi+5eBXW1CLtzjk8XQFhQOEMwwfxblqeq6EGyTxZJ1bPATqilY0e6g2SLQpP4KuMeuioBhEnWz5Pr7ICQ==}
-
-  lodash.curry@4.1.1:
-    resolution: {integrity: sha512-/u14pXGviLaweY5JI0IUzgzF2J6Ne8INyzAZjImcryjgkZ+ebruBxy2/JaOOkTqScddcYtakjhSaeemV8lR0tA==}
 
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
@@ -18639,11 +18626,6 @@ snapshots:
 
   koa-is-json@1.0.0: {}
 
-  koa-json-error@3.1.2:
-    dependencies:
-      lodash.compact: 3.0.1
-      lodash.curry: 4.1.1
-
   koa-jwt2@1.0.3:
     dependencies:
       async: 1.5.2
@@ -18917,10 +18899,6 @@ snapshots:
       p-locate: 5.0.0
 
   lodash-es@4.17.21: {}
-
-  lodash.compact@3.0.1: {}
-
-  lodash.curry@4.1.1: {}
 
   lodash.debounce@4.0.8: {}
 
