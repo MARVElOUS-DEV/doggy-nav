@@ -14,5 +14,6 @@ typings/**/**
 dist/*
 feat.md
 CLAUDE*
+AGENTS*
 
 .vercel

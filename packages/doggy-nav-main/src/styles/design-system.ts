@@ -71,6 +71,99 @@ export const colors = {
   },
 };
 
+// Dark Mode Color Mappings
+export const darkColors = {
+  // Neutral Colors (inverted for dark mode)
+  neutral: {
+    50: '#171717',
+    100: '#262626',
+    200: '#404040',
+    300: '#525252',
+    400: '#737373',
+    500: '#a3a3a3',
+    600: '#d4d4d4',
+    700: '#e5e5e5',
+    800: '#f5f5f5',
+    900: '#fafafa',
+  },
+
+  // Dark Mode Glass Effects
+  glass: {
+    light: 'rgba(0, 0, 0, 0.2)',
+    medium: 'rgba(0, 0, 0, 0.3)',
+    dark: 'rgba(0, 0, 0, 0.4)',
+    border: 'rgba(255, 255, 255, 0.1)',
+  },
+
+  // Dark Mode Text Colors
+  text: {
+    primary: '#fafafa',
+    secondary: '#d4d4d4',
+    tertiary: '#a3a3a3',
+    disabled: '#525252',
+    inverse: '#171717',
+  },
+
+  // Dark Mode Background Colors
+  background: {
+    primary: '#0a0a0a',
+    secondary: '#171717',
+    tertiary: '#262626',
+    card: '#1a1a1a',
+    sidebar: '#111111',
+  },
+};
+
+// Theme-aware color tokens
+export const themeColors = {
+  light: {
+    background: '#ffffff',
+    foreground: '#171717',
+    card: '#ffffff',
+    cardForeground: '#171717',
+    popover: '#ffffff',
+    popoverForeground: '#171717',
+    primary: colors.primary[500],
+    primaryForeground: '#ffffff',
+    secondary: colors.secondary[500],
+    secondaryForeground: '#ffffff',
+    muted: colors.neutral[100],
+    mutedForeground: colors.neutral[500],
+    accent: colors.neutral[100],
+    accentForeground: colors.neutral[900],
+    destructive: colors.status.error,
+    destructiveForeground: '#ffffff',
+    border: colors.neutral[200],
+    input: colors.neutral[200],
+    ring: colors.primary[500],
+    sidebar: colors.neutral[50],
+    sidebarForeground: colors.neutral[700],
+  },
+  dark: {
+    background: darkColors.background.primary,
+    foreground: darkColors.text.primary,
+    card: darkColors.background.card,
+    cardForeground: darkColors.text.primary,
+    popover: darkColors.background.secondary,
+    popoverForeground: darkColors.text.primary,
+    primary: colors.primary[400],
+    primaryForeground: darkColors.background.primary,
+    secondary: colors.secondary[400],
+    secondaryForeground: darkColors.background.primary,
+    muted: darkColors.neutral[100],
+    mutedForeground: darkColors.neutral[400],
+    accent: darkColors.neutral[100],
+    accentForeground: darkColors.text.primary,
+    destructive: colors.status.error,
+    destructiveForeground: '#ffffff',
+    border: darkColors.neutral[200],
+    input: darkColors.neutral[200],
+    ring: colors.primary[400],
+    sidebar: darkColors.background.sidebar,
+    sidebarForeground: darkColors.text.secondary,
+  },
+};
+
 // Typography
 export const typography = {
   // Font families
@@ -201,5 +294,58 @@ export const utils = {
   flexColumn: 'flex flex-col',
   fullSize: 'w-full h-full',
   rounded: `rounded-${borders.radius.lg}`,
-  glassCard: `bg-${colors.glass.light} backdrop-filter backdrop-blur-lg backdrop-saturate-150 border border-${colors.glass.border}`,
+  glassCard: `bg-glass-light backdrop-blur-glass-lg backdrop-saturate-150 border border-glass-border`,
+  darkGlassCard: `dark:bg-black/20 dark:border-white/10`,
+};
+
+// Theme utility functions
+export const getThemeColor = (colorPath: string, theme: 'light' | 'dark' = 'light') => {
+  const colorMap = theme === 'dark' ? themeColors.dark : themeColors.light;
+  return colorMap[colorPath as keyof typeof colorMap] || colorPath;
+};
+
+// CSS variable helpers for dynamic theming
+export const cssVariables = {
+  light: {
+    '--color-background': themeColors.light.background,
+    '--color-foreground': themeColors.light.foreground,
+    '--color-card': themeColors.light.card,
+    '--color-card-foreground': themeColors.light.cardForeground,
+    '--color-primary': themeColors.light.primary,
+    '--color-primary-foreground': themeColors.light.primaryForeground,
+    '--color-secondary': themeColors.light.secondary,
+    '--color-secondary-foreground': themeColors.light.secondaryForeground,
+    '--color-muted': themeColors.light.muted,
+    '--color-muted-foreground': themeColors.light.mutedForeground,
+    '--color-accent': themeColors.light.accent,
+    '--color-accent-foreground': themeColors.light.accentForeground,
+    '--color-destructive': themeColors.light.destructive,
+    '--color-destructive-foreground': themeColors.light.destructiveForeground,
+    '--color-border': themeColors.light.border,
+    '--color-input': themeColors.light.input,
+    '--color-ring': themeColors.light.ring,
+    '--color-sidebar': themeColors.light.sidebar,
+    '--color-sidebar-foreground': themeColors.light.sidebarForeground,
+  },
+  dark: {
+    '--color-background': themeColors.dark.background,
+    '--color-foreground': themeColors.dark.foreground,
+    '--color-card': themeColors.dark.card,
+    '--color-card-foreground': themeColors.dark.cardForeground,
+    '--color-primary': themeColors.dark.primary,
+    '--color-primary-foreground': themeColors.dark.primaryForeground,
+    '--color-secondary': themeColors.dark.secondary,
+    '--color-secondary-foreground': themeColors.dark.secondaryForeground,
+    '--color-muted': themeColors.dark.muted,
+    '--color-muted-foreground': themeColors.dark.mutedForeground,
+    '--color-accent': themeColors.dark.accent,
+    '--color-accent-foreground': themeColors.dark.accentForeground,
+    '--color-destructive': themeColors.dark.destructive,
+    '--color-destructive-foreground': themeColors.dark.destructiveForeground,
+    '--color-border': themeColors.dark.border,
+    '--color-input': themeColors.dark.input,
+    '--color-ring': themeColors.dark.ring,
+    '--color-sidebar': themeColors.dark.sidebar,
+    '--color-sidebar-foreground': themeColors.dark.sidebarForeground,
+  },
 };

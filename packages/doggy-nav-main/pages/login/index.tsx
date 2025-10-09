@@ -46,7 +46,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
@@ -61,7 +61,7 @@ export default function LoginPage() {
         className="relative z-10"
       >
         {/* Glass card */}
-        <div className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150 rounded-2xl border border-white border-opacity-30 shadow-2xl p-8 w-full max-w-md">
+        <div className="bg-white dark:bg-gray-800 bg-opacity-20 dark:bg-opacity-80 backdrop-filter backdrop-blur-lg backdrop-saturate-150 rounded-2xl border border-white dark:border-gray-600 border-opacity-30 dark:border-opacity-50 shadow-2xl p-8 w-full max-w-md">
           {/* Logo and title */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -74,8 +74,8 @@ export default function LoginPage() {
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your Doggy Nav account</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Welcome Back</h1>
+            <p className="text-gray-600 dark:text-gray-300">Sign in to your Doggy Nav account</p>
           </motion.div>
 
           {/* Login form */}
@@ -91,7 +91,7 @@ export default function LoginPage() {
               requiredSymbol={false}
             >
               <FormItem
-                label={<span className="text-gray-700 font-medium">Username</span>}
+                label={<span className="text-gray-700 dark:text-gray-300 font-medium">Username</span>}
                 field="username"
                 rules={[
                   { required: true, message: 'Please enter your username' },
@@ -101,13 +101,13 @@ export default function LoginPage() {
                 <Input
                   placeholder="Enter your username"
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
-                  prefix={<i className="iconfont icon-user text-gray-400"></i>}
+                  className="bg-white dark:bg-gray-700 bg-opacity-50 dark:bg-opacity-80 border-white dark:border-gray-500 border-opacity-30 dark:border-opacity-50 backdrop-filter backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100"
+                  prefix={<i className="iconfont icon-user text-gray-400 dark:text-gray-300"></i>}
                 />
               </FormItem>
 
               <FormItem
-                label={<span className="text-gray-700 font-medium">Password</span>}
+                label={<span className="text-gray-700 dark:text-gray-300 font-medium">Password</span>}
                 field="password"
                 rules={[
                   { required: true, message: 'Please enter your password' },
@@ -117,8 +117,8 @@ export default function LoginPage() {
                 <Input.Password
                   placeholder="Enter your password"
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
-                  prefix={<i className="iconfont icon-lock text-gray-400"></i>}
+                  className="bg-white dark:bg-gray-700 bg-opacity-50 dark:bg-opacity-80 border-white dark:border-gray-500 border-opacity-30 dark:border-opacity-50 backdrop-filter backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100"
+                  prefix={<i className="iconfont icon-lock text-gray-400 dark:text-gray-300"></i>}
                 />
               </FormItem>
 
@@ -143,19 +143,19 @@ export default function LoginPage() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="text-center mt-6"
           >
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
               Don&apos;t have an account?{' '}
               <button
                 onClick={() => router.push('/register')}
-                className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200"
               >
                 Sign up
               </button>
             </p>
-            <div className="mt-4 pt-4 border-t border-white border-opacity-30">
+            <div className="mt-4 pt-4 border-t border-white dark:border-gray-600 border-opacity-30 dark:border-opacity-50">
               <button
                 onClick={() => router.push('/')}
-                className="text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors duration-200"
               >
                 ← Back to Home
               </button>

@@ -59,27 +59,54 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
   };
 
   const getStatusIndicator = () => {
-    const baseClasses = "absolute top-4 right-4 w-3 h-3 rounded-full z-10 border-2 border-white shadow-sm";
+    const baseClasses = "absolute top-4 right-4 w-3 h-3 rounded-full z-10";
+    const baseStyle = {
+      border: '2px solid var(--color-card)',
+    } as const;
 
     switch (urlStatus.status) {
       case 'checking':
         return (
           <Tooltip content="检查中...">
-            <div className={`${baseClasses} bg-yellow-400 animate-pulse`} />
+            <div
+              className={baseClasses}
+              style={{
+                ...baseStyle,
+                backgroundColor: 'color-mix(in srgb, var(--color-secondary) 55%, transparent)',
+                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-secondary) 15%, transparent)'
+              }}
+            />
           </Tooltip>
         );
       case 'accessible':
         return (
           <Tooltip content={`网站可访问 (${urlStatus.responseTime}ms)`}>
-            <div className={`${baseClasses} bg-green-500 shadow-green-200`}>
-              <div className="w-full h-full bg-green-500 rounded-full animate-ping opacity-75" />
+            <div
+              className={baseClasses}
+              style={{
+                ...baseStyle,
+                backgroundColor: 'color-mix(in srgb, var(--color-primary) 75%, transparent)',
+                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-primary) 18%, transparent)'
+              }}
+            >
+              <div
+                className="w-full h-full rounded-full animate-ping opacity-75"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 90%, transparent)' }}
+              />
             </div>
           </Tooltip>
         );
       case 'inaccessible':
         return (
           <Tooltip content="网站不可访问">
-            <div className={`${baseClasses} bg-red-500 shadow-red-200`} />
+            <div
+              className={baseClasses}
+              style={{
+                ...baseStyle,
+                backgroundColor: 'color-mix(in srgb, var(--color-destructive) 75%, transparent)',
+                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-destructive) 18%, transparent)'
+              }}
+            />
           </Tooltip>
         );
       default:
@@ -98,7 +125,10 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
     >
       <div
         ref={intersectionRef}
-        className="group relative h-full bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border border-gray-100 hover:border-blue-200 overflow-hidden"
+        className="group relative h-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border overflow-hidden bg-theme-card text-theme-foreground border-theme-border"
+        style={{
+          boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)',
+        }}
       >
         {/* Status Indicator */}
         {getStatusIndicator()}
@@ -121,13 +151,15 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
             </div>
             <div className="flex-1 min-w-0">
               <h3
-                className="title text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-200 truncate"
+                className="title text-lg font-bold transition-colors duration-200 truncate group-hover:text-theme-primary"
+                style={{ color: 'var(--color-foreground)' }}
                 title={((typeof data.highlightedName  === 'string')? data.highlightedName : data.name? data.name : undefined) }
               >
                 {data.highlightedName || data.name}
               </h3>
               <p
-                className="desc text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-200 line-clamp-2 max-h-[40px] overflow-hidden"
+                className="desc text-sm transition-colors duration-200 line-clamp-2 max-h-[40px] overflow-hidden group-hover:text-theme-foreground"
+                style={{ color: 'var(--color-muted-foreground)' }}
                 title={typeof (data.highlightedDesc)  === 'string' ? data.highlightedDesc: data.desc? data.desc: '这个网站什么描述也没有' }
               >
                 {data.highlightedDesc || data.desc || '这个网站什么描述也没有...'}
@@ -141,13 +173,23 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
               {data.tags.slice(0, 3).map((tag, index) => (
                 <span
                   key={index}
-                  className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
+                  className="text-xs px-2 py-1 rounded-full"
+                  style={{
+                    backgroundColor: 'color-mix(in srgb, var(--color-primary) 20%, transparent)',
+                    color: 'var(--color-primary)'
+                  }}
                 >
                   {tag}
                 </span>
               ))}
               {data.tags.length > 3 && (
-                <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                <span
+                  className="text-xs px-2 py-1 rounded-full"
+                  style={{
+                    backgroundColor: 'color-mix(in srgb, var(--color-muted) 85%, transparent)',
+                    color: 'var(--color-muted-foreground)'
+                  }}
+                >
                   +{data.tags.length - 3}
                 </span>
               )}
@@ -156,7 +198,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
 
           {/* Author Info */}
           {data.authorName && (
-            <div className="flex items-center text-xs text-gray-500 mb-4">
+            <div className="flex items-center text-xs text-theme-muted-foreground mb-4">
               <span className="mr-1">👤</span>
               <span>{data.authorName}</span>
             </div>
@@ -164,7 +206,13 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
         </Link>
 
         {/* Footer */}
-        <div className="mt-auto border-t border-gray-100 px-6 py-4 bg-gray-50">
+        <div
+          className="mt-auto border-t px-6 py-4"
+          style={{
+            borderColor: 'var(--color-border)',
+            backgroundColor: 'color-mix(in srgb, var(--color-muted) 80%, transparent)'
+          }}
+        >
           <div className="flex items-center justify-between">
             <Button
               type='primary'

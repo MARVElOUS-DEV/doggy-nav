@@ -63,7 +63,10 @@ export default function AppSearch({ onClose }: AppSearchProps) {
         value={searchValue}
         onChange={handleSearch}
         prefix={
-          <div className="text-blue-500">
+          <div
+            className="transition-colors"
+            style={{ color: 'var(--color-primary)' }}
+          >
             <IconSearch />
           </div>
         }
@@ -71,7 +74,8 @@ export default function AppSearch({ onClose }: AppSearchProps) {
           <div className="flex items-center">
             {searchValue && (
               <button
-                className="cursor-pointer text-gray-400 hover:text-gray-600 p-1"
+                className="cursor-pointer p-1 transition-opacity"
+                style={{ color: 'var(--color-muted-foreground)' }}
                 onClick={() => setSearchValue('')}
                 aria-label="清除搜索"
               >
@@ -79,15 +83,21 @@ export default function AppSearch({ onClose }: AppSearchProps) {
               </button>
             )}
             <button
-              className="cursor-pointer text-gray-400 hover:text-gray-600 p-1 ml-2"
+              className="cursor-pointer p-1 ml-2 transition-opacity"
               onClick={onClose}
               aria-label="关闭搜索"
+              style={{ color: 'var(--color-muted-foreground)' }}
             >
               <IconClose />
             </button>
           </div>
         }
-        className="w-full py-3 px-6 text-base rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all shadow-lg bg-white"
+        className="w-full py-3 px-6 text-base rounded-2xl transition-all shadow-lg"
+        style={{
+          backgroundColor: 'var(--color-card)',
+          borderColor: 'var(--color-border)',
+          color: 'var(--color-foreground)'
+        }}
         onPressEnter={handleSearchSubmit}
       />
     </div>

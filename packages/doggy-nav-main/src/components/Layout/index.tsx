@@ -4,7 +4,8 @@ import { I18nextProvider } from 'react-i18next';
 import AppNavMenus from '../AppNavMenus';
 import AppHeader from '../AppHeader';
 import i18n from '@/i18n';
-import { showMenuTypeAtom, initAuthFromStorageAtom, mobileAtom, manualCollapseAtom } from '@/store/store';
+import { ConfigProvider } from '@arco-design/web-react';
+import { showMenuTypeAtom, initAuthFromStorageAtom, mobileAtom, manualCollapseAtom, themeAtom } from '@/store/store';
 import RightSideToolbar from '../RightSideToolbar';
 import LightbulbRope from '../LightbulbRope';
 import router from 'next/router';
@@ -18,6 +19,7 @@ export default function RootLayout({
   const [, initAuth] = useAtom(initAuthFromStorageAtom);
   const [isMobile, setIsMobile] = useAtom(mobileAtom);
   const [manualCollapse, setManualCollapse] = useAtom(manualCollapseAtom);
+  const [theme] = useAtom(themeAtom);
   const [isPending, startTransition] = useTransition()
   
   const handleNavigation = (href) => {
@@ -86,36 +88,38 @@ export default function RootLayout({
 
   return (
     <I18nextProvider i18n={i18n}>
-      <div className="flex h-screen">
-        {/* Sidebar - positioned as flex item */}
-        <div
-          className="bg-gray-800 text-white transition-all duration-300 flex flex-col overflow-hidden"
-          style={{ width: showMenuType ? 220 : 70 }}
-        >
-          <AppNavMenus
-            showMenuType={showMenuType}
-            onShowMenus={toggleMenu}
-          />
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-30">
-            <AppHeader onHandleShowMenu={toggleMenu} showMenuType={showMenuType} />
+      <ConfigProvider componentConfig={{ Menu: { theme } }}>
+        <div className="flex h-screen">
+          {/* Sidebar - positioned as flex item */}
+          <div
+            className="bg-theme-sidebar text-theme-sidebar-foreground transition-all duration-300 flex flex-col overflow-hidden border-r border-theme-border"
+            style={{ width: showMenuType ? 220 : 70 }}
+          >
+            <AppNavMenus
+              showMenuType={showMenuType}
+              onShowMenus={toggleMenu}
+            />
           </div>
 
-          {/* Scrollable Content Area with Glass Effect */}
-          <div id="doggy-content-area" className="flex-1 overflow-y-auto bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150">
-            <div className="p-4">
-              {children}
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-30">
+              <AppHeader onHandleShowMenu={toggleMenu} showMenuType={showMenuType} />
+            </div>
+
+            {/* Scrollable Content Area with Glass Effect */}
+            <div id="doggy-content-area" className="flex-1 overflow-y-auto glass-light dark:glass-dark">
+              <div className="p-4">
+                {children}
+              </div>
             </div>
           </div>
-        </div>
 
-        <RightSideToolbar />
-        <LightbulbRope />
-      </div>
+          <RightSideToolbar />
+          <LightbulbRope />
+        </div>
+      </ConfigProvider>
     </I18nextProvider>
   );
 }

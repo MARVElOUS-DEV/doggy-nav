@@ -18,10 +18,10 @@ export default function LanguageSwitcher() {
     <Tooltip content={`Switch to ${nextLang}`}>
       <button
         onClick={toggleLanguage}
-        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center min-w-[40px]"
+        className="p-2 rounded-full hover:bg-theme-muted transition-colors flex items-center justify-center min-w-[40px]"
         aria-label={`Switch to ${nextLang}`}
       >
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <span className="text-sm font-medium text-theme-muted-foreground">
           {currentLang}
         </span>
       </button>

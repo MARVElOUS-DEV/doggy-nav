@@ -11,6 +11,7 @@ export const showMenuTypeAtom = atom(true);
 export const mobileAtom = atom(false);
 export const manualCollapseAtom = atom<boolean | null>(null); // null = no manual action, true/false = manual action
 export const favoritesAtom = atom<NavItem[]>([]);
+export const themeAtom = atom<'light' | 'dark'>('light');
 
 // Authentication atoms
 export const userAtom = atom<User | null>(null);

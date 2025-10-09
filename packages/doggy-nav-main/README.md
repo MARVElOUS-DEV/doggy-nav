@@ -18,6 +18,7 @@ The frontend application for Doggy Nav, built with Next.js 15 and modern React.
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js ≥ 20.17.0
 - pnpm ≥ 8.0.0
 
@@ -43,7 +44,7 @@ src/
 ├── components/          # Reusable UI components
 │   ├── Affiche/        # Announcement component
 │   ├── DoggyImage/     # Image handling component
-│   ├── NavStatsChart/  # Statistics visualization
+│   ├── StatsChart/     # Statistics visualization
 │   └── timeline/       # Timeline components
 ├── pages/              # Next.js pages
 │   ├── api/           # API proxy routes
@@ -74,6 +75,7 @@ NEXT_TELEMETRY_DISABLED=1
 ### Next.js Configuration
 
 Key features in `next.config.ts`:
+
 - **Standalone output** for Docker deployment
 - **Internationalization** (English, Chinese)
 - **Image optimization** with remote patterns
@@ -85,6 +87,7 @@ Key features in `next.config.ts`:
 ### Tailwind CSS 4.0
 
 Modern utility-first CSS framework with:
+
 - Custom design tokens
 - Responsive breakpoints
 - Dark mode support (planned)
@@ -93,6 +96,7 @@ Modern utility-first CSS framework with:
 ### Arco Design
 
 Enterprise-class UI library providing:
+
 - Comprehensive component library
 - Consistent design language
 - Accessibility features
@@ -101,10 +105,12 @@ Enterprise-class UI library providing:
 ## 🌐 Internationalization
 
 Supports multiple languages:
+
 - **English** (en)
 - **Chinese** (zh) - Default
 
 Configuration in `src/i18n/`:
+
 ```
 i18n/
 ├── locales/
@@ -143,6 +149,7 @@ export default async function handler(req, res) {
 ### HTTP Client
 
 Axios configuration in `utils/api.ts`:
+
 - Request/response interceptors
 - Error handling
 - Authentication token management
@@ -150,29 +157,34 @@ Axios configuration in `utils/api.ts`:
 ## 📱 Features
 
 ### 🏠 Homepage
+
 - Navigation item showcase
 - Statistics charts
 - Search functionality
 - Category filtering
 
 ### 👤 User Authentication
+
 - Login/Register forms
 - JWT token management
 - Protected routes
 - User profile management
 
 ### ⭐ Favorites System
+
 - Add/remove favorites
 - Personal bookmark collection
 - Quick access navigation
 
 ### 📊 Analytics Dashboard
+
 - View count statistics
 - Popular items ranking
 - User contribution metrics
 - Interactive charts with Recharts
 
 ### 🔍 Search & Filtering
+
 - Full-text search
 - Category filtering
 - Real-time results
@@ -181,6 +193,7 @@ Axios configuration in `utils/api.ts`:
 ## 🏗 Build & Deployment
 
 ### Development Build
+
 ```bash
 pnpm dev        # Start dev server
 pnpm build      # Production build

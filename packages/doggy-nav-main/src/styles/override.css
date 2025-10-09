@@ -1,23 +1,54 @@
+.arco-menu-light,
+.arco-menu-dark {
+  background-color: transparent;
+  color: var(--color-sidebar-foreground);
+  border-color: transparent;
+}
+
+.arco-menu-light .arco-menu-item,
+.arco-menu-light .arco-menu-submenu-title,
+.arco-menu-dark .arco-menu-item,
+.arco-menu-dark .arco-menu-submenu-title {
+  color: var(--color-sidebar-foreground);
+  background-color: transparent;
+}
+
+.arco-menu-light .arco-menu-item:hover,
+.arco-menu-light .arco-menu-submenu-title:hover,
+.arco-menu-dark .arco-menu-item:hover,
+.arco-menu-dark .arco-menu-submenu-title:hover {
+  color: var(--color-foreground);
+  background-color: var(--color-muted);
+}
+
 .arco-menu-collapse {
   width: 70px;
 }
 
 /* Active styles for menu items */
 .arco-menu-item.arco-menu-selected {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-  border-left: 3px solid #3b82f6;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 16%, transparent) 0%,
+    color-mix(in srgb, var(--color-secondary) 16%, transparent) 100%
+  );
+  border-left: 3px solid var(--color-primary);
   position: relative;
 }
 
 .arco-menu-item.arco-menu-selected .group span {
-  color: #1e40af;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
 
 /* Ensure active styles work with hover */
 .arco-menu-item.arco-menu-selected:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 24%, transparent) 0%,
+    color-mix(in srgb, var(--color-secondary) 24%, transparent) 100%
+  );
 }
 
 /* Collapsed menu item styling */

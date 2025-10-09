@@ -60,12 +60,12 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
   );
 
   return (
-    <header className="flex justify-between items-center bg-white shadow-lg p-4 w-full sticky top-0 z-50 bg-gradient-to-r from-white to-blue-50 min-h-[80px]">
+    <header className="flex justify-between items-center bg-theme-card shadow-lg p-4 w-full sticky top-0 z-50 bg-gradient-to-r from-white to-blue-50 dark:from-neutral-900 dark:to-neutral-800 min-h-[80px] border-b border-theme-border transition-colors duration-200">
       <div className="flex items-center">
         {/* Menu Toggle Button */}
         <Tooltip content={showMenuType ? t('collapse_menu', 'Collapse Menu') : t('expand_menu', 'Expand Menu')}>
           <Button
-            className="mr-2 md:mr-3 text-gray-600 hover:text-blue-600 p-2 rounded hover:bg-blue-100 transition-colors"
+            className="mr-2 md:mr-3 text-theme-muted-foreground hover:text-theme-primary p-2 rounded hover:bg-theme-muted transition-colors"
             onClick={onHandleShowMenu}
             icon={showMenuType ? <IconMenuFold /> : <IconMenuUnfold />}
             type="text"
@@ -79,14 +79,14 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
             alt="logo"
             width={150}
             height={40}
-            className="filter dark:filter-none hidden md:block"
+            className="dark:invert hidden md:block transition-all duration-200"
           />
           <Image
             src="/logo-nav-black.png"
             alt="logo"
             width={100}
             height={30}
-            className="filter dark:filter-none md:hidden"
+            className="dark:invert md:hidden transition-all duration-200"
           />
         </Link>
       </div>
@@ -97,10 +97,10 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
           <Search onClose={() => setShowSearch(false)} />
         ) : (
           <Button
-            className="w-full h-12 text-gray-500 rounded-2xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all bg-white shadow-sm hover:shadow-md"
+            className="w-full h-12 text-theme-muted-foreground rounded-2xl border-2 border-dashed border-theme-border hover:border-theme-primary transition-all bg-theme-card shadow-sm hover:shadow-md"
             onClick={() => setShowSearch(true)}
           >
-            <div className="flex items-center justify-center text-gray-400">
+            <div className="flex items-center justify-center text-theme-muted-foreground">
               <i className="iconfont icon-search mr-2 text-lg"></i>
             <span>搜索网站...</span>
             </div>
@@ -110,7 +110,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
 
       {/* Mobile Search Overlay */}
       {showSearch && (
-        <div className="md:hidden fixed inset-0 bg-white z-50 p-4">
+        <div className="md:hidden fixed inset-0 bg-theme-background z-50 p-4">
           <Search onClose={() => setShowSearch(false)} />
         </div>
       )}
@@ -120,7 +120,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
         <Tooltip content={t('recommend_site')}>
           <Link
             href="/recommend"
-            className="text-2xl text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-50"
+            className="text-2xl text-theme-muted-foreground hover:text-theme-primary transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-theme-muted"
           >
             <IconPlusCircle />
           </Link>
@@ -128,7 +128,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
 
         <Tooltip content="搜索网站">
           <button
-            className="text-2xl cursor-pointer text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-50"
+            className="text-2xl cursor-pointer text-theme-muted-foreground hover:text-theme-primary transition-colors duration-200 flex items-center justify-center w-10 h-10 rounded-full hover:bg-theme-muted"
             onClick={() => setShowSearch(!showSearch)}
           >
             <i className="iconfont icon-search"></i>
@@ -155,7 +155,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
       <div className="md:hidden flex items-center">
         <Dropdown droplist={mobileDropdownMenu} trigger="click" position="br">
           <Button
-            className="text-gray-600 hover:text-blue-600 p-2 rounded hover:bg-blue-100 transition-colors"
+            className="text-theme-muted-foreground hover:text-theme-primary p-2 rounded hover:bg-theme-muted transition-colors"
             icon={<IconMenu />}
             type="text"
             size="large"

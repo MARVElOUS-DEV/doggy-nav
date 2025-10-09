@@ -4,14 +4,14 @@ import MenuStack from './MenuStack';
 export default function AppNavMenus({ showMenuType }: { showMenuType: boolean, onShowMenus?: () => void }) {
   const isCollapse = !showMenuType;
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-gradient-to-b from-blue-50 to-indigo-50 text-gray-800">
+    <div className="h-full flex flex-col overflow-hidden bg-theme-sidebar text-theme-sidebar-foreground">
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-blue-200 flex items-center justify-center">
-        <Link href="/" className="flex items-center space-x-3 text-lg font-bold hover:text-blue-600 transition-colors">
-          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-2 rounded-lg shadow-sm">
+      <div className="p-4 border-b border-theme-border flex items-center justify-center">
+        <Link href="/" className="flex items-center space-x-3 text-lg font-bold hover:text-theme-primary transition-colors">
+          <div className="bg-theme-primary p-2 rounded-lg shadow-sm text-theme-primary-foreground">
             <span className="text-white font-bold">DN</span>
           </div>
-          {!isCollapse && <span className="text-xl text-gray-800 font-semibold">DoggyNav</span>}
+          {!isCollapse && <span className="text-xl text-theme-sidebar-foreground font-semibold">DoggyNav</span>}
         </Link>
       </div>
 
@@ -22,7 +22,7 @@ export default function AppNavMenus({ showMenuType }: { showMenuType: boolean, o
 
       {/* Sidebar Footer */}
       {!isCollapse && (
-        <div className="p-4 border-t border-blue-200 text-xs text-gray-500">
+        <div className="p-4 border-t border-theme-border text-xs text-theme-muted-foreground">
           <p className="text-center">© {new Date().getFullYear()} DoggyNav</p>
         </div>
       )}

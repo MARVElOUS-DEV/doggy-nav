@@ -23,18 +23,38 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Dark Mode Glassmorphism */
+.dark .glass-light {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-medium {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Color Utilities */
-.text-primary { color: #171717; }
-.text-secondary { color: #525252; }
+.text-primary { color: var(--color-foreground); }
+.text-secondary { color: var(--color-muted-foreground); }
 .text-tertiary { color: #737373; }
 .text-disabled { color: #a3a3a3; }
-.text-inverse { color: #ffffff; }
+.text-inverse { color: var(--color-background); }
 
-.bg-primary { background-color: #171717; }
-.bg-secondary { background-color: #525252; }
+.bg-primary { background-color: var(--color-foreground); }
+.bg-secondary { background-color: var(--color-muted); }
 .bg-tertiary { background-color: #737373; }
 .bg-disabled { background-color: #a3a3a3; }
-.bg-inverse { background-color: #ffffff; }
+.bg-inverse { background-color: var(--color-background); }
+
+/* Dark mode overrides for tertiary and disabled colors */
+.dark .text-tertiary { color: #a3a3a3; }
+.dark .text-disabled { color: #525252; }
 
 /* Primary Color Palette */
 .text-primary-50 { color: #f0f9ff; }
@@ -202,9 +222,18 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+.dark .hover-lift:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
 .hover-glass:hover {
   background: rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .hover-glass:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Diagonal Shiny Effect - On Hover Only */
@@ -298,4 +327,56 @@
   );
   background-size: 400% 400%;
   animation: hero-gradient-flow 12s ease infinite;
+}
+
+/* Theme-aware Background Utilities */
+.bg-theme-card {
+  background-color: var(--color-card);
+}
+
+.bg-theme-background {
+  background-color: var(--color-background);
+}
+
+.bg-theme-muted {
+  background-color: var(--color-muted);
+}
+
+.bg-theme-sidebar {
+  background-color: var(--color-sidebar);
+}
+
+/* Theme-aware Text Utilities */
+.text-theme-foreground {
+  color: var(--color-foreground);
+}
+
+.text-theme-muted {
+  color: var(--color-muted-foreground);
+}
+
+.text-theme-primary {
+  color: var(--color-primary);
+}
+
+.text-theme-sidebar {
+  color: var(--color-sidebar-foreground);
+}
+
+/* Theme-aware Border Utilities */
+.border-theme-border {
+  border-color: var(--color-border);
+}
+
+.border-theme-muted {
+  border-color: var(--color-muted);
+}
+
+/* Light/Dark specific backgrounds for complex pages */
+.bg-light-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark .bg-light-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
 }

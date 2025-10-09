@@ -22,16 +22,20 @@ export default function StarButton({
   showCount = true,
 }: StarButtonProps) {
 
+  const activeColor = 'var(--color-primary)';
+  const inactiveColor = 'var(--color-muted-foreground)';
+
   if (variant === 'icon-only') {
     return (
       <Tooltip content={"点赞"}>
         <button
           onClick={onToggle}
           disabled={disabled}
-          className={`flex items-center cursor-pointer space-x-1 text-sm transition-colors duration-200 ${
-            isStarred ? 'text-purple-500' : 'text-gray-500 hover:text-purple-500'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+          className={`flex items-center cursor-pointer space-x-1 text-sm transition-opacity duration-200 ${
+            disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+          } ${className}`}
           title={"点赞"}
+          style={{ color: isStarred ? activeColor : inactiveColor }}
         >
           <i className="iconfont icon-appreciatefill"></i>
           {showCount && <span>{starCount}</span>}
@@ -40,9 +44,7 @@ export default function StarButton({
     );
   }
 
-  const baseClassName = `${
-    isStarred ? 'text-purple-500' : 'text-gray-500 hover:text-purple-600'
-  } cursor-pointer space-x-1 py-1 rounded text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center`;
+  const baseClassName = `cursor-pointer space-x-1 py-1 rounded text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center`;
 
   return (
     <Tooltip content={"点赞"}>
@@ -52,6 +54,11 @@ export default function StarButton({
         size={size}
         className={`${baseClassName} ${className}`}
         title={"点赞"}
+        style={{
+          color: isStarred ? activeColor : inactiveColor,
+          backgroundColor: 'transparent',
+          borderColor: 'var(--color-border)'
+        }}
         icon={<i className="iconfont icon-appreciatefill"></i>}
       >
         {showCount && starCount}
