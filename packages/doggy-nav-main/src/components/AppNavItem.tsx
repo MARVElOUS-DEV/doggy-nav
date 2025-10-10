@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Tooltip, Grid, Button, Space } from '@arco-design/web-react';
 import { NavItem } from '@/types';
 import { useUrlStatus } from '@/utils/urlStatus';
-import { useIntersectionObserver } from '@/utils/useIntersectionObserver';
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconRightCircle } from '@arco-design/web-react/icon';
 import { FavoriteButton, StarButton, ViewCounter } from './Buttons';
 

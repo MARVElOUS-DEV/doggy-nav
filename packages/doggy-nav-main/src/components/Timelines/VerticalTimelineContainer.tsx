@@ -41,13 +41,13 @@ export default function VerticalTimelineContainer({
   }, [onItemSelect]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto" role="region" aria-label="垂直时间线">
+    <div className="w-full max-w-2xl mx-auto px-3 sm:px-0" role="region" aria-label="垂直时间线">
       {/* Header */}
       <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           {year} 年收录时间线
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
           共 {items.length} 个网站
         </p>
       </div>
@@ -60,7 +60,7 @@ export default function VerticalTimelineContainer({
           placeholder="搜索网站..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm sm:text-base"
           aria-label="搜索网站"
         />
       </div>
@@ -81,10 +81,10 @@ export default function VerticalTimelineContainer({
       {/* Vertical Timeline */}
       <div className="relative">
         {/* Timeline Line */}
-        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 via-amber-300 to-amber-400"></div>
+        <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 via-amber-300 to-amber-400"></div>
 
         {/* Timeline Items */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {sortedItems.length === 0 ? (
             <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -106,18 +106,18 @@ export default function VerticalTimelineContainer({
                   className="relative flex items-start group"
                 >
                   {/* Timeline Dot */}
-                  <div className="absolute left-6 w-4 h-4 bg-amber-500 rounded-full border-4 border-white dark:border-gray-900 shadow-lg z-10 group-hover:bg-amber-400 transition-colors"></div>
+                  <div className="absolute left-5 sm:left-6 w-3 h-3 sm:w-4 sm:h-4 bg-amber-500 rounded-full border-2 sm:border-4 border-white dark:border-gray-900 shadow-lg z-10 group-hover:bg-amber-400 transition-colors"></div>
 
                   {/* Timeline Content */}
-                  <div className="ml-16 flex-1">
+                  <div className="ml-12 sm:ml-16 flex-1 min-w-0">
                     <div className="flex items-center space-x-3 mb-1">
-                      <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      <div className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">
                         {month}月{day}日
                       </div>
                     </div>
 
                     <div
-                      className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 group-hover:shadow-md ${
+                      className={`flex items-center space-x-3 p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 group-hover:shadow-md ${
                         selectedItem?.id === item.id
                           ? 'bg-amber-50 dark:bg-gray-800 border-l-4 border-amber-400'
                           : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -126,7 +126,7 @@ export default function VerticalTimelineContainer({
                     >
                       {/* Website Icon */}
                       {item.logo && (
-                        <div className="flex-shrink-0 w-10 h-10 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
+                        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
                           <DoggyImage 
                             logo={item.logo}
                             name={item.title}
@@ -141,7 +141,7 @@ export default function VerticalTimelineContainer({
 
                       {/* Website Title */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                        <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">
                           {item.title}
                         </h3>
                       </div>
@@ -170,7 +170,7 @@ export default function VerticalTimelineContainer({
 
       {/* Footer */}
       {sortedItems.length > 0 && (
-        <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-6 sm:mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
           共显示 {filteredItems.length} 个网站
         </div>
       )}

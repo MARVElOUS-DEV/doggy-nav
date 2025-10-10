@@ -8,6 +8,7 @@ export const API_NAV_ADD = '/api/nav/add';
 export const API_NAV_REPTILE = '/api/nav/reptile';
 export const API_TAG_LIST = '/api/tag/list';
 export const API_NAV_RANDOM = '/api/nav/random';
+export const API_NAV_LIST = '/api/nav/list';
 
 const api = {
   // Get category list
@@ -34,6 +35,17 @@ const api = {
     keyword?: string;
   }): Promise<{data: NavItem[], total: number, pageNumber: number}> =>
     axios.get(API_NAV_SEARCH, { params }),
+
+  // Get full/paginated nav list (server /api/nav/list)
+  getNavAll: (params?: {
+    pageSize?: number;
+    pageNumber?: number;
+    status?: number;
+    categoryId?: string;
+    name?: string;
+    hide?: boolean;
+  }): Promise<{ data: NavItem[]; total: number; pageNumber: number }> =>
+    axios.get(API_NAV_LIST, { params }),
 
   // Get random nav items
   getRandomNav: (count?: number): Promise<NavItem[]> =>

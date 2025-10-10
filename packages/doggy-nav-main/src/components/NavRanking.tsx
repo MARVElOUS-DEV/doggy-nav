@@ -21,9 +21,9 @@ export default function NavRanking({ data, countType = 'createTimeDate' }: NavRa
   return (
     <Link
       href={`/nav/${data.id}`}
-      className="flex items-center text-theme-foreground mb-3 cursor-pointer min-h-[30px] transition-all duration-200 hover:bg-theme-muted rounded-lg p-2 -m-2 group"
+      className="flex items-center text-theme-foreground mb-3 cursor-pointer min-h-[30px] transition-all duration-200 hover:bg-theme-muted rounded-lg p-2 -m-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60 hover:ring-1 hover:ring-theme-primary/30 hover:shadow-sm hover:-translate-y-[1px]"
     >
-      <DoggyImage logo={data.logo} name={data.name} />
+      <DoggyImage logo={data.logo} name={data.name} className="rounded-md mr-2 flex-shrink-0 w-[20px] h-[20px] object-cover transition-transform duration-200 group-hover:scale-105" />
       <Tooltip content={data.name} position="top">
         <span className="flex-1 font-medium text-sm truncate group-hover:text-theme-primary transition-colors duration-200">{data.name}</span>
       </Tooltip>

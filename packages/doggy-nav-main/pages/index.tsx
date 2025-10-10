@@ -5,7 +5,8 @@ import NavRankingList from '@/components/NavRankingList';
 import StatsChart from '@/components/StatsChart';
 import VerticalTimelineContainer from '@/components/Timelines/VerticalTimelineContainer';
 import api from '@/utils/api';
-import { createMockTimelineData } from '@/utils/timelineData';
+import { createTimelineData } from '@/utils/timelineData';
+import { chromeMicroToISO } from '@/utils/time';
 import { useAtom } from 'jotai';
 import { navRankingAtom } from '@/store/store';
 import Link from 'next/link';
@@ -26,12 +27,16 @@ export default function HomePage() {
         const navRankingData = await api.getNavRanking();
         setNavRanking(navRankingData);
 
-        // Create mock timeline data
-        const timelineData = createMockTimelineData();
-        console.log('Generated current year data:', timelineData);
-        if (timelineData && timelineData.length > 0) {
-          setCurrentYearData(timelineData[0]); // 只取第一年（当前年）
-        }
+        // Fetch nav list and build timeline data
+        const list = await api.getNavAll({ pageSize: 500, pageNumber: 1 });
+        const normalized = (list?.data || []).map((n: any) => ({
+          ...n,
+          createTime: chromeMicroToISO((n as any).createTime) || (n as any).createTime,
+        }));
+        const timelineData = createTimelineData(normalized, true);
+        const currentYear = new Date().getFullYear();
+        const cy = timelineData.find(y => y.year === currentYear);
+        setCurrentYearData(cy || { year: currentYear, items: [], totalWebsites: 0, color: '', position: { x: 0, y: 0, z: 0, rotation: 0 }, featuredWebsites: [] });
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -132,14 +137,27 @@ export default function HomePage() {
         )}
 
         {/* Timeline Section */}
-        {!loading && currentYearData && (
+        {!loading && (
           <div className="bg-theme-background rounded-2xl shadow-lg p-8 my-8 border border-theme-border">
-            <VerticalTimelineContainer
-              year={currentYearData.year}
-              items={currentYearData.items}
-              onItemSelect={setSelectedItem}
-              selectedItem={selectedItem}
-            />
+            {currentYearData && currentYearData.items && currentYearData.items.length > 0 ? (
+              <VerticalTimelineContainer
+                year={currentYear}
+                items={currentYearData.items}
+                onItemSelect={setSelectedItem}
+                selectedItem={selectedItem}
+              />
+            ) : (
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-theme-foreground mb-2">今年还没有收录网站</h2>
+                <p className="text-theme-muted-foreground mb-6">欢迎提交你认为值得分享的网站，让更多人发现它。</p>
+                <Link
+                  href="/recommend"
+                  className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
+                >
+                  提交网站
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
