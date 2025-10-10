@@ -125,7 +125,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
     >
       <div
         ref={intersectionRef}
-        className="group relative h-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border overflow-hidden bg-theme-card text-theme-foreground border-theme-border"
+        className="group relative h-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border overflow-hidden bg-theme-background text-theme-foreground border-theme-border"
         style={{
           boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)',
         }}

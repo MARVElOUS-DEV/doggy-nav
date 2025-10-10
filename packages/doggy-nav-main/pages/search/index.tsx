@@ -73,9 +73,9 @@ export default function SearchResultsPage() {
 
   if (!query) {
     return (
-      <div className="main p-4 rounded-xl bg-theme-card text-theme-foreground border border-theme-border transition-colors">
+      <div className="main p-4 rounded-xl bg-theme-background text-theme-foreground border border-theme-border transition-colors">
         <div className="text-center py-8">
-          <Title heading={4}>🔍输入关键词开始搜索吧</Title>
+          <Title heading={4}>🔍 输入关键词开始搜索吧</Title>
           <p className="text-theme-muted-foreground">Please enter a search term to see results.</p>
         </div>
       </div>

@@ -13,7 +13,7 @@ const FallbackIcon = ({ name, fontSize = 16 }: { name: string; fontSize?: number
   const firstLetter = name.charAt(0).toUpperCase();
   return (
     <div
-      className="inline-flex items-center justify-center rounded bg-theme-muted text-theme-primary font-semibold"
+      className="inline-flex items-center justify-center rounded bg-primary-200 text-theme-primary font-semibold"
       style={{
         width: fontSize + 4,
         height: fontSize + 4,
@@ -81,10 +81,9 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
     <Menu
       collapse={collapse}
       mode={collapse ? "pop" : "vertical"}
-      className="border-0 bg-transparent text-theme-sidebar-foreground"
+      className="border-0 bg-transparent "
       selectedKeys={selectedCategory ? [selectedCategory] : [OVERVIEW.id]}
       tooltipProps={{ position: 'right' }}
-      // style={{ backgroundColor: 'transparent' }}
     >
       {categories
         .filter(category => category.showInMenu)
@@ -106,10 +105,10 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                     // Expanded mode: show full content
                     <div className="group flex items-center gap-3 w-full py-2.5">
                       {renderMenuIcon(category, 16)}
-                      <span className="text-theme-sidebar-foreground group-hover:text-theme-foreground transition-colors font-medium">
+                      <span className="group-hover:text-theme-foreground transition-colors font-medium">
                         {category.name}
                       </span>
-                      <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
+                      <div className="ml-auto w-2 h-2 rounded-full bg-theme-background opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
                     </div>
                   )
                 }
@@ -126,7 +125,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                         <span className="text-sm text-theme-muted-foreground group-hover:text-theme-foreground transition-colors font-medium">
                           {child.name}
                         </span>
-                        <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="ml-auto w-2 h-2 rounded-full bg-theme-background opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </Menu.Item>
                   ))}
@@ -150,7 +149,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                 // Expanded mode: show full content
                 <div className="group flex items-center gap-3 w-full py-2.5">
                   {renderMenuIcon(category, 16)}
-                  <span className="text-theme-sidebar-foreground group-hover:text-theme-foreground transition-colors font-medium">
+                  <span className="group-hover:text-theme-foreground transition-colors font-medium">
                     {category.name}
                   </span>
                   <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>

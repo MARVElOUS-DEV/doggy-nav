@@ -80,3 +80,35 @@
     height: 100%;
   }
 }
+
+/* Header action hover helpers (avoid relying on Tailwind variants for custom tokens) */
+.app-header-action {
+  color: var(--color-muted-foreground);
+  border-radius: 9999px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  background-color: var(--color-secondary);
+}
+
+.app-header-action:hover {
+  color: var(--color-primary);
+  background-color: var(--color-secondary-hover); /* make the Link action styles stick with Buttons */
+}
+
+/* Header search trigger button theme-aware styles */
+.header-search-btn.arco-btn {
+  background-color: var(--color-card);
+  border-width: 2px;
+  border-color: var(--color-border);
+  color: var(--color-muted-foreground);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.header-search-btn.arco-btn:hover,
+.header-search-btn.arco-btn:focus,
+.header-search-btn.arco-btn:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.dark .arco-typography {
+  color: var(--color-foreground);
+}

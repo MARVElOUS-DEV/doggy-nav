@@ -23,6 +23,17 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Dark Mode Glassmorphism */
 .dark .glass-light {
   background: rgba(0, 0, 0, 0.2);
@@ -328,13 +339,16 @@
   background-size: 400% 400%;
   animation: hero-gradient-flow 12s ease infinite;
 }
-
-/* Theme-aware Background Utilities */
-.bg-theme-card {
-  background-color: var(--color-card);
+.bg-theme-primary {
+  background-color: var(--color-primary);
 }
-
 .bg-theme-background {
+  @apply bg-gradient-to-br from-slate-50 to-blue-50;
+}
+.dark .bg-theme-background {
+  @apply from-gray-900 via-slate-900 to-gray-800;
+}
+.bg-content-background {
   background-color: var(--color-background);
 }
 
@@ -342,16 +356,12 @@
   background-color: var(--color-muted);
 }
 
-.bg-theme-sidebar {
-  background-color: var(--color-sidebar);
-}
-
 /* Theme-aware Text Utilities */
 .text-theme-foreground {
   color: var(--color-foreground);
 }
 
-.text-theme-muted {
+.text-theme-muted-foreground {
   color: var(--color-muted-foreground);
 }
 
@@ -372,11 +382,68 @@
   border-color: var(--color-muted);
 }
 
-/* Light/Dark specific backgrounds for complex pages */
-.bg-light-gradient {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+/* Custom Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dark .bg-light-gradient {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes fade-in-simple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sway {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  25% { transform: translateX(-8px) translateY(-2px) rotate(8deg); }
+  50% { transform: translateX(0) translateY(0) rotate(0deg); }
+  75% { transform: translateX(8px) translateY(-2px) rotate(-8deg); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animate-fade-in-simple {
+  animation: fade-in-simple 0.3s ease-out forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-sway {
+  animation: sway 4s ease-in-out infinite;
 }

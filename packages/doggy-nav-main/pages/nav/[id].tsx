@@ -88,7 +88,7 @@ export default function NavDetail() {
       {loading && <Spin />}
       <Row gutter={32} className="site-info mt-8">
         <Col md={8} xs={24} className="item">
-          <div className="shiny left rounded-xl shadow-lg p-6 relative border border-theme-border bg-theme-card transition-colors">
+          <div className="shiny left rounded-xl shadow-lg p-6 relative border border-theme-border bg-theme-background transition-colors">
             <div className="img-wrap h-56 flex items-center justify-center bg-theme-muted border border-theme-border rounded-lg transition-colors">
               <Link href={detail.href} target="_blank" rel="noopener noreferrer">
                 <Image src={detail.logo} alt={detail.name} width={120} height={120} className="object-cover rounded-lg shadow-md" />
@@ -175,7 +175,7 @@ export default function NavDetail() {
 
       <Row gutter={32} className="random-section mt-12">
         <Col span={24}>
-          <div className="app-card bg-theme-card text-theme-foreground rounded-xl shadow-lg border border-theme-border overflow-hidden transition-colors">
+          <div className="app-card bg-theme-background text-theme-foreground rounded-xl shadow-lg border border-theme-border overflow-hidden transition-colors">
             <div className="app-card-header flex justify-between items-center p-6 border-b border-theme-border">
               <h3 className="app-card-title m-0 text-xl font-bold">随机网址</h3>
               <div className="app-card-extra">
@@ -211,7 +211,7 @@ export default function NavDetail() {
 
       <Row gutter={32} className="site-detail mt-12 mb-12">
         <Col span={24}>
-          <div className="detail bg-theme-card text-theme-foreground rounded-xl shadow-lg p-8 border border-theme-border transition-colors">
+          <div className="detail bg-theme-background text-theme-foreground rounded-xl shadow-lg p-8 border border-theme-border transition-colors">
             <h2 className="text-2xl font-bold mb-4">详细信息</h2>
             <div className="detail text-theme-muted-foreground leading-relaxed whitespace-pre-wrap">
               {detail.desc}

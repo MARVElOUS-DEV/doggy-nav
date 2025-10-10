@@ -114,12 +114,18 @@ function ProfileContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <Card className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150 border border-white border-opacity-30 shadow-xl rounded-2xl">
+        <Card
+          className="profile-card shadow-xl rounded-2xl border border-theme-border transition-colors"
+          style={{
+            background: 'color-mix(in srgb, var(--color-card) 92%, transparent)',
+            backdropFilter: 'blur(16px) saturate(140%)'
+          }}
+        >
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Profile Settings</h1>
+            <h1 className="text-2xl font-bold text-theme-foreground mb-6 transition-colors">Profile Settings</h1>
             
             {/* Avatar Section */}
-            <div className="flex items-center mb-8 pb-6 border-b border-gray-200">
+            <div className="flex items-center mb-8 pb-6 border-b border-theme-border transition-colors">
               <div className="mr-6">
                 {user.avatar ? (
                   <Avatar size={80} className="shadow-lg">
@@ -141,7 +147,7 @@ function ProfileContent() {
                 )}
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">{user.username}</h3>
+                <h3 className="text-lg font-semibold text-theme-foreground mb-2 transition-colors">{user.username}</h3>
                 <Upload
                   accept="image/*"
                   showUploadList={false}
@@ -164,7 +170,7 @@ function ProfileContent() {
               requiredSymbol={false}
             >
               <FormItem
-                label={<span className="text-gray-700 font-medium">Username</span>}
+                label={<span className="text-theme-foreground font-medium transition-colors">Username</span>}
                 field="username"
                 disabled
                 rules={[
@@ -175,12 +181,12 @@ function ProfileContent() {
                 <Input
                   placeholder="Enter your username"
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  className="profile-input rounded-xl"
                 />
               </FormItem>
 
               <FormItem
-                label={<span className="text-gray-700 font-medium">Email</span>}
+                label={<span className="text-theme-foreground font-medium transition-colors">Email</span>}
                 field="email"
                 disabled={!!user.email}
                 rules={[
@@ -190,7 +196,7 @@ function ProfileContent() {
                 <Input
                   placeholder="Enter your email (optional)"
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  className="profile-input rounded-xl"
                 />
               </FormItem>
 
@@ -227,8 +233,14 @@ export default function ProfilePage() {
       fallback={
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
+            <div
+              className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--color-primary) 70%, transparent)',
+                borderTopColor: 'transparent'
+              }}
+            ></div>
+            <p className="text-theme-muted-foreground transition-colors">Loading...</p>
           </div>
         </div>
       }

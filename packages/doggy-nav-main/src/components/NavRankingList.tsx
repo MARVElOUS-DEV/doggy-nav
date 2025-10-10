@@ -15,9 +15,9 @@ export default function NavRankingList({ data }: NavRankingListProps) {
 
   return (
     <div className="nav-ranking-list grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div className="bg-theme-card p-6 rounded-2xl border border-theme-border">
+      <div className="bg-theme-background p-6 rounded-2xl border border-theme-border">
         <h3 className="text-xl font-bold text-theme-foreground mb-4 flex items-center">
-          <span className="w-2 h-2 bg-theme-primary rounded-full mr-2 animate-pulse"></span>
+          <span className="w-2 h-2 bg-theme-background rounded-full mr-2 animate-pulse"></span>
           最新收录
         </h3>
         <div className="space-y-3">
@@ -27,9 +27,9 @@ export default function NavRankingList({ data }: NavRankingListProps) {
         </div>
       </div>
 
-      <div className="bg-theme-card p-6 rounded-2xl border border-theme-border">
+      <div className="bg-theme-background p-6 rounded-2xl border border-theme-border">
         <h3 className="text-xl font-bold text-theme-foreground mb-4 flex items-center">
-          <span className="w-2 h-2 bg-theme-primary rounded-full mr-2 animate-pulse"></span>
+          <span className="w-2 h-2 bg-theme-background rounded-full mr-2 animate-pulse"></span>
           最受欢迎
         </h3>
         <div className="space-y-3">
@@ -39,9 +39,9 @@ export default function NavRankingList({ data }: NavRankingListProps) {
         </div>
       </div>
 
-      <div className="bg-theme-card p-6 rounded-2xl border border-theme-border">
+      <div className="bg-theme-background p-6 rounded-2xl border border-theme-border">
         <h3 className="text-xl font-bold text-theme-foreground mb-4 flex items-center">
-          <span className="w-2 h-2 bg-theme-primary rounded-full mr-2 animate-pulse"></span>
+          <span className="w-2 h-2 bg-theme-background rounded-full mr-2 animate-pulse"></span>
           高赞推荐
         </h3>
         <div className="space-y-3">

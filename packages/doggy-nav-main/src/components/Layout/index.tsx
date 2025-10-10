@@ -92,7 +92,7 @@ export default function RootLayout({
         <div className="flex h-screen">
           {/* Sidebar - positioned as flex item */}
           <div
-            className="bg-theme-sidebar text-theme-sidebar-foreground transition-all duration-300 flex flex-col overflow-hidden border-r border-theme-border"
+            className="bg-theme-background transition-all duration-300 flex flex-col overflow-hidden border-r border-theme-border"
             style={{ width: showMenuType ? 220 : 70 }}
           >
             <AppNavMenus
@@ -111,7 +111,9 @@ export default function RootLayout({
             {/* Scrollable Content Area with Glass Effect */}
             <div id="doggy-content-area" className="flex-1 overflow-y-auto glass-light dark:glass-dark">
               <div className="p-4">
-                {children}
+                <div className="min-h-screen bg-theme-background transition-colors">
+                  {children}
+                </div>
               </div>
             </div>
           </div>

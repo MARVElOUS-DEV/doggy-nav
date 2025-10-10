@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dropdown, Avatar as ArcoAvatar, Button } from '@arco-design/web-react';
+import { Dropdown, Avatar as ArcoAvatar, Button, Image, Menu } from '@arco-design/web-react';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
 import { authStateAtom, authActionsAtom } from '@/store/store';
@@ -9,9 +9,10 @@ import type { User } from '@/types';
 interface UserAvatarProps {
   size?: number;
   className?: string;
+  asMenuItems?: boolean;
 }
 
-export default function UserAvatar({ size = 40, className = '' }: UserAvatarProps) {
+export default function UserAvatar({ size = 40, className = '', asMenuItems = false }: UserAvatarProps) {
   const { t } = useTranslation('translation');
   const [authState] = useAtom(authStateAtom);
   const [, dispatchAuth] = useAtom(authActionsAtom);
@@ -33,7 +34,39 @@ export default function UserAvatar({ size = 40, className = '' }: UserAvatarProp
     router.push('/login');
   };
 
-  if (!authState.isAuthenticated || !authState.user) {
+  const isAuthed = authState.isAuthenticated && !!authState.user;
+  const user = authState.user as User | undefined;
+
+  // Build menu items for use in both dropdown and inline menu modes
+  const menuItems = isAuthed && user ? (
+    <>
+      <Menu.Item key="profile" onClick={handleProfile}>
+        <div className="flex items-center justify-between py-1">
+          <span className="mr-3 text-theme-foreground">Profile</span>
+          <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
+        </div>
+      </Menu.Item>
+      <Menu.Item key="logout" onClick={handleLogout}>
+        <div className="flex items-center justify-between py-1">
+          <span className="mr-3 text-theme-foreground">Sign Out</span>
+          <i className="iconfont icon-logout text-lg text-theme-muted-foreground"></i>
+        </div>
+      </Menu.Item>
+    </>
+  ) : (
+    <Menu.Item key="login" onClick={handleLogin}>
+      <div className="flex items-center justify-between py-1">
+        <span className="mr-3 text-theme-foreground">Sign In</span>
+        <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
+      </div>
+    </Menu.Item>
+  );
+
+  if (asMenuItems) {
+    return <>{menuItems}</>;
+  }
+
+  if (!isAuthed || !user) {
     return (
       <Button
         type="primary"
@@ -46,33 +79,18 @@ export default function UserAvatar({ size = 40, className = '' }: UserAvatarProp
     );
   }
 
-  const user = authState.user;
-
   const dropdownMenu = (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px]">
-      <div className="px-4 py-2 border-b border-gray-100">
-        <div className="font-medium text-gray-900">{user.username}</div>
-        {user.email && (
-          <div className="text-sm text-gray-500">{user.email}</div>
-        )}
-      </div>
-      <div className="py-2">
-        <button
-          onClick={handleProfile}
-          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center"
-        >
-          <i className="iconfont icon-user mr-2 text-gray-400"></i>
-          Profile
-        </button>
-        <button
-          onClick={handleLogout}
-          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center"
-        >
-          <i className="iconfont icon-logout mr-2 text-gray-400"></i>
-          Sign Out
-        </button>
-      </div>
-    </div>
+    <Menu style={{ minWidth: 180 }}>
+      <Menu.Item key="user" disabled>
+        <div className="flex flex-col">
+          <span className="font-medium text-theme-foreground">{user.username}</span>
+          {user.email && (
+            <span className="text-sm text-theme-muted-foreground">{user.email}</span>
+          )}
+        </div>
+      </Menu.Item>
+      {menuItems}
+    </Menu>
   );
 
   const getAvatarText = (user: User): string => {
@@ -115,9 +133,9 @@ export default function UserAvatar({ size = 40, className = '' }: UserAvatarProp
         {user.avatar ? (
           <ArcoAvatar
             size={size}
-            className="ring-2 ring-white ring-opacity-50 shadow-md hover:shadow-lg transition-all duration-200"
+            className="ring-2 ring-white ring-opacity-50 shadow-md"
           >
-            <img src={user.avatar} alt={user.username} />
+            <Image src={user.avatar} alt={user.username} preview={false} width={40} height={40} />
           </ArcoAvatar>
         ) : (
           <div

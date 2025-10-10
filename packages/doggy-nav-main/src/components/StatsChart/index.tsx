@@ -73,7 +73,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
   }, [data]);
 
   return (
-    <div className="bg-theme-card text-theme-foreground border border-theme-border rounded-2xl shadow-lg p-6 mb-8 transition-colors">
+    <div className="bg-theme-background text-theme-foreground border border-theme-border rounded-2xl shadow-lg p-6 mb-8 transition-colors">
       <h2 className="text-2xl font-bold mb-6">数据统计</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

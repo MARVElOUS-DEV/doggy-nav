@@ -18,6 +18,7 @@ export default function Affiche() {
   const [show, setShow] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Announcement data - can be fetched from API in the future
   const announcements: Announcement[] = [
@@ -49,47 +50,60 @@ export default function Affiche() {
   ];
 
   // Auto-rotate announcements
+  const clearTimers = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (resumeTimeoutRef.current) {
+      clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = null;
+    }
+  };
+
+  const startAutoRotate = () => {
+    if (announcements.length <= 1) return;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    intervalRef.current = setInterval(() => {
+      setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
+    }, 5000);
+  };
+
+  const scheduleAutoRotate = () => {
+    if (resumeTimeoutRef.current) {
+      clearTimeout(resumeTimeoutRef.current);
+    }
+    resumeTimeoutRef.current = setTimeout(() => {
+      startAutoRotate();
+    }, 10000);
+  };
+
   useEffect(() => {
     if (announcements.length <= 1) return;
 
-    intervalRef.current = setInterval(() => {
-      setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
-    }, 5000); // Change every 5 seconds
+    startAutoRotate();
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      clearTimers();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcements.length]);
 
   // Handle manual navigation
   const goToNext = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    clearTimers();
     setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
-    // Reset auto-rotate after manual interaction
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
-      }, 5000);
-    }, 10000); // Wait 10 seconds before resuming auto-rotate
+    scheduleAutoRotate();
   };
 
   const goToPrev = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    clearTimers();
     setCurrentIndex(prevIndex =>
       prevIndex === 0 ? announcements.length - 1 : prevIndex - 1
     );
-    // Reset auto-rotate after manual interaction
-    setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
-      }, 5000);
-    }, 10000); // Wait 10 seconds before resuming auto-rotate
+    scheduleAutoRotate();
   };
 
   if (!show || announcements.length === 0) {
@@ -99,22 +113,24 @@ export default function Affiche() {
   const currentAnnouncement = announcements[currentIndex];
 
   return (
-    <div className="bg-theme-card border border-theme-border rounded-lg p-3 text-sm relative overflow-hidden shadow-sm">
+    <div className="bg-theme-background border border-theme-border rounded-lg p-3 text-sm relative overflow-hidden shadow-sm">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between min-h-[40px] gap-2">
         <div className="flex items-center flex-1 w-full min-h-[24px]">
           <div className="flex items-center w-full">
             <span className="mr-2 text-theme-primary text-lg">📢</span>
-            <span className="mr-2 flex-1 text-wrap break-words">{currentAnnouncement.text}</span>
-            {currentAnnouncement.link && (
-              <Link
-                className="text-theme-primary hover:opacity-90 font-medium hover:underline whitespace-nowrap ml-1"
-                href={currentAnnouncement.link.href}
-                target={currentAnnouncement.link.target || '_self'}
-                rel={currentAnnouncement.link.target === '_blank' ? 'noopener noreferrer' : undefined}
-              >
-                {currentAnnouncement.link.text}
-              </Link>
-            )}
+            <div className="flex flex-wrap items-center flex-1 text-wrap break-words">
+              <span className="mr-1">{currentAnnouncement.text}</span>
+              {currentAnnouncement.link && (
+                <Link
+                  className="text-theme-primary hover:opacity-90 font-medium hover:underline whitespace-nowrap"
+                  href={currentAnnouncement.link.href}
+                  target={currentAnnouncement.link.target || '_self'}
+                  rel={currentAnnouncement.link.target === '_blank' ? 'noopener noreferrer' : undefined}
+                >
+                  {currentAnnouncement.link.text}
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -135,17 +151,12 @@ export default function Affiche() {
                     <button
                       key={index}
                       onClick={() => {
-                        if (intervalRef.current) clearInterval(intervalRef.current);
+                        clearTimers();
                         setCurrentIndex(index);
-                        // Resume auto-rotate after a delay
-                        setTimeout(() => {
-                          intervalRef.current = setInterval(() => {
-                            setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
-                          }, 5000);
-                        }, 10000);
+                        scheduleAutoRotate();
                       }}
                       className={`w-2 h-2 rounded-full ${
-                        index === currentIndex ? 'bg-theme-primary' : 'bg-theme-border'
+                        index === currentIndex ? 'bg-theme-primary' : ''
                       }`}
                       aria-label={`Go to announcement ${index + 1}`}
                     />
@@ -173,17 +184,12 @@ export default function Affiche() {
                       <button
                         key={index}
                         onClick={() => {
-                          if (intervalRef.current) clearInterval(intervalRef.current);
+                          clearTimers();
                           setCurrentIndex(index);
-                          // Resume auto-rotate after a delay
-                          setTimeout(() => {
-                            intervalRef.current = setInterval(() => {
-                              setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
-                            }, 5000);
-                          }, 10000);
+                          scheduleAutoRotate();
                         }}
                         className={`w-2 h-2 rounded-full ${
-                          index === currentIndex ? 'bg-theme-primary' : 'bg-theme-border'
+                          index === currentIndex ? 'bg-theme-primary' : ''
                         }`}
                         aria-label={`Go to announcement ${index + 1}`}
                       />

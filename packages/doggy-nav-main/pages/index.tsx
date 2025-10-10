@@ -81,7 +81,7 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="bg-theme-card rounded-3xl shadow-xl overflow-hidden border border-theme-border">
+          <div className="bg-theme-background rounded-3xl shadow-xl overflow-hidden border border-theme-border">
             <div className="hero-gradient p-8 text-white relative">
               <div className="max-w-3xl mx-auto text-center relative z-10">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">精选网站导航</h1>
@@ -89,13 +89,13 @@ export default function HomePage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
                     href="/login"
-                    className="bg-theme-card text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                    className="bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
                   >
                     登陆探索
                   </Link>
                   <Link
                     href="/search"
-                    className="bg-transparent border-2 border-theme-primary hover:bg-theme-primary hover:text-theme-primary-foreground font-semibold py-3 px-6 rounded-lg transition-all duration-300"
+                    className="bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary-foreground font-semibold py-3 px-6 rounded-lg transition-all duration-300"
                   >
                     搜索网站
                   </Link>
@@ -112,7 +112,7 @@ export default function HomePage() {
 
         {/* Top Rankings Section */}
         {!loading && (
-          <div className="bg-theme-card rounded-2xl shadow-lg p-8 border border-theme-border">
+          <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-theme-foreground mb-2">热门推荐</h2>
               <p className="text-theme-muted-foreground">基于访问量、点赞数和最新收录的热门网站</p>
@@ -133,7 +133,7 @@ export default function HomePage() {
 
         {/* Timeline Section */}
         {!loading && currentYearData && (
-          <div className="bg-theme-card rounded-2xl shadow-lg p-8 my-8 border border-theme-border">
+          <div className="bg-theme-background rounded-2xl shadow-lg p-8 my-8 border border-theme-border">
             <VerticalTimelineContainer
               year={currentYearData.year}
               items={currentYearData.items}
@@ -169,7 +169,7 @@ export default function HomePage() {
         {/* Footer CTA */}
         {!loading && (
           <div className="mt-12 text-center">
-            <div className="bg-theme-card rounded-2xl shadow-lg p-8 border border-theme-border">
+            <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
               <h3 className="text-2xl font-bold text-theme-foreground mb-4">找不到想要的网站？</h3>
               <p className="text-theme-muted-foreground mb-6 max-w-2xl mx-auto">
                 我们致力于为用户提供最优质的网站导航服务。如果您有推荐的网站或宝贵建议，欢迎提交！
