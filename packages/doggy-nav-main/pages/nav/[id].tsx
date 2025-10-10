@@ -84,28 +84,43 @@ export default function NavDetail() {
   }
 
   return (
-    <div className="container p-4 mx-auto max-w-7xl">
+    <div className="container p-4 mx-auto max-w-7xl text-theme-foreground transition-colors">
       {loading && <Spin />}
       <Row gutter={32} className="site-info mt-8">
         <Col md={8} xs={24} className="item">
-          <div className="shiny left rounded-xl shadow-lg p-6 relative border border-gray-100">
-            <div className="img-wrap h-56 flex items-center justify-center bg-gray-50 rounded-lg">
+          <div className="shiny left rounded-xl shadow-lg p-6 relative border border-theme-border bg-theme-background transition-colors">
+            <div className="img-wrap h-56 flex items-center justify-center bg-theme-muted border border-theme-border rounded-lg transition-colors">
               <Link href={detail.href} target="_blank" rel="noopener noreferrer">
                 <Image src={detail.logo} alt={detail.name} width={120} height={120} className="object-cover rounded-lg shadow-md" />
               </Link>
             </div>
             <div className="tool absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-4">
               <Tooltip content="访问数">
-                <div className="tool-item flex flex-col items-center justify-center w-14 h-14 bg-blue-50 rounded-full shadow-md text-blue-600 hover:bg-blue-100 transition-colors">
+                <div
+                  className="tool-item flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-md transition-colors"
+                  style={{
+                    backgroundColor: 'color-mix(in srgb, var(--color-primary) 18%, var(--color-card))',
+                    color: 'var(--color-primary)'
+                  }}
+                >
                   <i className="iconfont icon-attentionfill text-lg"></i>
                   <p className="m-0 text-xs font-medium">{detail.view}</p>
                 </div>
               </Tooltip>
               <Tooltip content="点赞数">
                 <div
-                  className={`tool-item flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-md cursor-pointer transition-colors ${
-                    isStar ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                  }`}
+                  className="tool-item flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-md cursor-pointer transition-colors"
+                  style={
+                    isStar
+                      ? {
+                          backgroundColor: 'color-mix(in srgb, var(--color-destructive) 20%, var(--color-card))',
+                          color: 'var(--color-destructive)'
+                        }
+                      : {
+                          backgroundColor: 'color-mix(in srgb, var(--color-muted) 80%, transparent)',
+                          color: 'var(--color-muted-foreground)'
+                        }
+                  }
                   onClick={handleNavStarFn}
                 >
                   <i className="iconfont icon-appreciatefill text-lg"></i>
@@ -117,23 +132,30 @@ export default function NavDetail() {
         </Col>
         <Col md={16} xs={24} className="item">
           <div className="content">
-            <h1 className="title text-4xl font-bold text-gray-800 mb-4">{detail.name}</h1>
-            <p className="desc text-lg text-gray-600 mb-6 leading-relaxed">{detail.desc}</p>
+            <h1 className="title text-4xl font-bold mb-4">{detail.name}</h1>
+            <p className="desc text-lg text-theme-muted-foreground mb-6 leading-relaxed">{detail.desc}</p>
             {(detail?.tags?.length??0) > 0 && (
               <div className="tags mb-6">
-                <span className="text-gray-700 font-medium mr-2">标签：</span>
+                <span className="text-theme-muted-foreground font-medium mr-2">标签：</span>
                 {detail?.tags?.map((tag: string, index: number) => (
-                  <span key={tag} className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full mr-2 mb-2">
+                  <span
+                    key={tag}
+                    className="inline-block text-sm px-3 py-1 rounded-full mr-2 mb-2"
+                    style={{
+                      backgroundColor: 'color-mix(in srgb, var(--color-primary) 20%, transparent)',
+                      color: 'var(--color-primary)'
+                    }}
+                  >
                     {tag}
                   </span>
                 ))}
               </div>
             )}
             {detail.authorName && (
-              <div className="author mb-6 flex items-center text-gray-700">
+              <div className="author mb-6 flex items-center text-theme-muted-foreground">
                 <span className="mr-2">👤</span>
                 <span className="mr-2">推荐人：</span>
-                <a href={detail.authorUrl} className="text-blue-600 hover:text-blue-800 transition-colors font-medium">
+                <a href={detail.authorUrl} className="text-theme-primary hover:opacity-80 transition-opacity font-medium">
                   {detail.authorName}
                 </a>
               </div>
@@ -153,12 +175,12 @@ export default function NavDetail() {
 
       <Row gutter={32} className="random-section mt-12">
         <Col span={24}>
-          <div className="app-card bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="app-card-header flex justify-between items-center p-6 border-b border-gray-100">
-              <h3 className="app-card-title m-0 text-xl font-bold text-gray-800">随机网址</h3>
+          <div className="app-card bg-theme-background text-theme-foreground rounded-xl shadow-lg border border-theme-border overflow-hidden transition-colors">
+            <div className="app-card-header flex justify-between items-center p-6 border-b border-theme-border">
+              <h3 className="app-card-title m-0 text-xl font-bold">随机网址</h3>
               <div className="app-card-extra">
                 <i
-                  className="iconfont icon-shuaxin cursor-pointer text-gray-500 hover:text-blue-600 transition-colors text-lg"
+                  className="iconfont icon-shuaxin cursor-pointer text-theme-muted-foreground hover:text-theme-primary transition-colors text-lg"
                   onClick={getRandomNavList}
                 ></i>
               </div>
@@ -167,7 +189,15 @@ export default function NavDetail() {
               <Row gutter={[16, 16]}>
                 {randomNavList.map((item) => (
                   <Col span={12} sm={8} md={6} key={item.id}>
-                    <Link href={`/nav/${item.id}`} className="nav-block flex items-center p-3 bg-gray-50 border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-800 transition-all duration-200 rounded-lg">
+                    <Link
+                      href={`/nav/${item.id}`}
+                      className="nav-block flex items-center p-3 border rounded-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5"
+                      style={{
+                        backgroundColor: 'color-mix(in srgb, var(--color-muted) 85%, transparent)',
+                        borderColor: 'var(--color-border)',
+                        color: 'var(--color-muted-foreground)'
+                      }}
+                    >
                       <Image src={item.logo} alt={item.name} className="nav-logo w-6 h-6 mr-3 rounded" width={24} height={24}/>
                       <h4 className="nav-name m-0 truncate text-sm font-medium">{item.name}</h4>
                     </Link>
@@ -181,9 +211,9 @@ export default function NavDetail() {
 
       <Row gutter={32} className="site-detail mt-12 mb-12">
         <Col span={24}>
-          <div className="detail bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">详细信息</h2>
-            <div className="detail text-gray-600 leading-relaxed whitespace-pre-wrap">
+          <div className="detail bg-theme-background text-theme-foreground rounded-xl shadow-lg p-8 border border-theme-border transition-colors">
+            <h2 className="text-2xl font-bold mb-4">详细信息</h2>
+            <div className="detail text-theme-muted-foreground leading-relaxed whitespace-pre-wrap">
               {detail.desc}
             </div>
           </div>

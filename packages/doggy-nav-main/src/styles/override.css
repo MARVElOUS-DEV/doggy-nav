@@ -1,23 +1,54 @@
+.arco-menu-light,
+.arco-menu-dark {
+  background-color: transparent;
+  color: var(--color-sidebar-foreground);
+  border-color: transparent;
+}
+
+.arco-menu-light .arco-menu-item,
+.arco-menu-light .arco-menu-submenu-title,
+.arco-menu-dark .arco-menu-item,
+.arco-menu-dark .arco-menu-submenu-title {
+  color: var(--color-sidebar-foreground);
+  background-color: transparent;
+}
+
+.arco-menu-light .arco-menu-item:hover,
+.arco-menu-light .arco-menu-submenu-title:hover,
+.arco-menu-dark .arco-menu-item:hover,
+.arco-menu-dark .arco-menu-submenu-title:hover {
+  color: var(--color-foreground);
+  background-color: var(--color-muted);
+}
+
 .arco-menu-collapse {
   width: 70px;
 }
 
 /* Active styles for menu items */
 .arco-menu-item.arco-menu-selected {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-  border-left: 3px solid #3b82f6;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 16%, transparent) 0%,
+    color-mix(in srgb, var(--color-secondary) 16%, transparent) 100%
+  );
+  border-left: 3px solid var(--color-primary);
   position: relative;
 }
 
 .arco-menu-item.arco-menu-selected .group span {
-  color: #1e40af;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
 
 /* Ensure active styles work with hover */
 .arco-menu-item.arco-menu-selected:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 24%, transparent) 0%,
+    color-mix(in srgb, var(--color-secondary) 24%, transparent) 100%
+  );
 }
 
 /* Collapsed menu item styling */
@@ -48,4 +79,36 @@
   .arco-input-tag-view {
     height: 100%;
   }
+}
+
+/* Header action hover helpers (avoid relying on Tailwind variants for custom tokens) */
+.app-header-action {
+  color: var(--color-muted-foreground);
+  border-radius: 9999px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  background-color: var(--color-secondary);
+}
+
+.app-header-action:hover {
+  color: var(--color-primary);
+  background-color: var(--color-secondary-hover); /* make the Link action styles stick with Buttons */
+}
+
+/* Header search trigger button theme-aware styles */
+.header-search-btn.arco-btn {
+  background-color: var(--color-card);
+  border-width: 2px;
+  border-color: var(--color-border);
+  color: var(--color-muted-foreground);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.header-search-btn.arco-btn:hover,
+.header-search-btn.arco-btn:focus,
+.header-search-btn.arco-btn:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.dark .arco-typography {
+  color: var(--color-foreground);
 }

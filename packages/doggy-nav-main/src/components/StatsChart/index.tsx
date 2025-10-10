@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { NavItem } from '@/types';
 
-interface NavStatsChartProps {
+interface StatsChartProps {
   data: {
     view: NavItem[];
     star: NavItem[];
@@ -21,9 +21,7 @@ interface NavStatsChartProps {
   };
 }
 
-const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'];
-
-function NavStatsChart({ data }: NavStatsChartProps): JSX.Element {
+function StatsChart({ data }: StatsChartProps): JSX.Element {
   // Prepare data for top viewed sites
   const topViewedData = useMemo(() => {
     return (data?.view || [])
@@ -75,96 +73,132 @@ function NavStatsChart({ data }: NavStatsChartProps): JSX.Element {
   }, [data]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">数据统计</h2>
+    <div className="bg-theme-background text-theme-foreground border border-theme-border rounded-2xl shadow-lg p-6 mb-8 transition-colors">
+      <h2 className="text-2xl font-bold mb-6">数据统计</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Top Viewed Sites Chart */}
-        <div className="p-4 bg-gray-50 rounded-xl">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">最受欢迎网站 (访问量)</h3>
+        <div className="p-4 bg-theme-muted border border-theme-border rounded-xl transition-colors">
+          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">最受欢迎网站 (访问量)</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={topViewedData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis
                   dataKey="name"
                   angle={-45}
                   textAnchor="end"
                   height={60}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
+                  tickLine={{ stroke: 'var(--color-border)' }}
                 />
-                <YAxis />
+                <YAxis
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
+                  tickLine={{ stroke: 'var(--color-border)' }}
+                />
                 <Tooltip
                   formatter={(value) => [value, '访问量']}
                   labelFormatter={(name) => `网站: ${name}`}
+                  contentStyle={{
+                    backgroundColor: 'var(--color-card)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-foreground)'
+                  }}
+                  labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
-                <Legend />
-                <Bar dataKey="view" name="访问量" fill="#3b82f6" />
+                <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
+                <Bar dataKey="view" name="访问量" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Top Starred Sites Chart */}
-        <div className="p-4 bg-gray-50 rounded-xl">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">最高赞网站 (点赞数)</h3>
+        <div className="p-4 bg-theme-muted border border-theme-border rounded-xl transition-colors">
+          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">最高赞网站 (点赞数)</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={topStarredData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis
                   dataKey="name"
                   angle={-45}
                   textAnchor="end"
                   height={60}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
+                  tickLine={{ stroke: 'var(--color-border)' }}
                 />
-                <YAxis />
+                <YAxis
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
+                  tickLine={{ stroke: 'var(--color-border)' }}
+                />
                 <Tooltip
                   formatter={(value) => [value, '点赞数']}
                   labelFormatter={(name) => `网站: ${name}`}
+                  contentStyle={{
+                    backgroundColor: 'var(--color-card)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-foreground)'
+                  }}
+                  labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
-                <Legend />
-                <Bar dataKey="star" name="点赞数" fill="#8b5cf6" />
+                <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
+                <Bar dataKey="star" name="点赞数" fill="var(--color-secondary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Author Contribution Chart */}
-        <div className="lg:col-span-2 p-4 bg-gray-50 rounded-xl">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">贡献者排名</h3>
+        <div className="lg:col-span-2 p-4 bg-theme-muted border border-theme-border rounded-xl transition-colors">
+          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">贡献者排名</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={authorStats}
                 margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis
                   dataKey="name"
                   angle={-45}
                   textAnchor="end"
                   height={60}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
+                  tickLine={{ stroke: 'var(--color-border)' }}
                 />
-                <YAxis />
+                <YAxis
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
+                  tickLine={{ stroke: 'var(--color-border)' }}
+                />
                 <Tooltip
                   formatter={(value, name) => {
                     if (name === 'total') return [value, '总贡献'];
                     if (name === 'count') return [value, '网站数量'];
                     return [value, name === 'view' ? '访问量' : '点赞数'];
                   }}
+                  contentStyle={{
+                    backgroundColor: 'var(--color-card)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-foreground)'
+                  }}
+                  labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
-                <Legend />
-                <Bar dataKey="total" name="总贡献" fill="#10b981" />
-                <Bar dataKey="count" name="网站数量" fill="#f59e0b" />
+                <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
+                <Bar dataKey="total" name="总贡献" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" name="网站数量" fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -174,4 +208,4 @@ function NavStatsChart({ data }: NavStatsChartProps): JSX.Element {
   );
 }
 
-export default NavStatsChart;
+export default StatsChart;

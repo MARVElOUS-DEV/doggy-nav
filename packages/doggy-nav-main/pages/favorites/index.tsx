@@ -1,92 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Spin, Empty, Button } from '@arco-design/web-react';
-import { IconLeft } from '@arco-design/web-react/icon';
 import AuthGuard from '@/components/AuthGuard';
 import { NavItem } from '@/types';
 import { useAtomValue } from 'jotai';
 import { authStateAtom } from '@/store/store';
+import DoggyImage from '@/components/DoggyImage';
 
-// iPad-style favorite item with enhanced glassmorphism
+// Mac-style app icon
 const FavoriteItem = ({ item, onRemove }: { item: NavItem; onRemove: (id: string) => void }) => {
   return (
-    <div className="group relative bg-white/20 backdrop-blur-xl rounded-3xl border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden animate-fade-in">
-      {/* Decorative gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
-
-      {/* Status indicator */}
-      <div className="absolute top-4 right-4 w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg shadow-green-200/50 animate-pulse"></div>
-
-      {/* Main content */}
-      <Link href={item.href} target="_blank" rel="noopener noreferrer" className="block p-6">
-        <div className="flex items-start space-x-4">
-          {item.logo ? (
-            <div className="flex-shrink-0 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20 rounded-2xl blur-md opacity-50"></div>
-              <img
-                src={item.logo}
-                alt={item.name}
-                className="relative w-14 h-14 rounded-2xl object-contain shadow-lg transition-all duration-300 group-hover:scale-105 border border-white/20"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/default-web.png';
-                }}
-              />
-            </div>
-          ) : (
-            <div className="flex-shrink-0 relative w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg border border-white/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
-              <span className="relative">{item.name?.charAt(0) || 'W'}</span>
-            </div>
-          )}
-
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300 truncate">
-              {item.name}
-            </h3>
-            <p className="text-sm text-gray-700 group-hover:text-gray-800 transition-colors duration-300 line-clamp-2 mt-2">
-              {item.desc || '这个网站什么描述也没有...'}
-            </p>
-
-            {item.tags && item.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {item.tags.slice(0, 2).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-white/40 backdrop-blur-sm text-gray-700 text-xs px-3 py-1.5 rounded-full border border-white/30 shadow-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+    <div
+      className="flex flex-col items-center group cursor-pointer transform transition-all duration-200 hover:scale-110"
+      onClick={() => {
+        window.open(item.href, '_blank', 'noopener,noreferrer');
+      }}
+    >
+      <div className="w-16 h-16 bg-white rounded-xl shadow-lg p-2 mb-2 flex items-center justify-center group-hover:shadow-xl transition-shadow duration-200">
+        {item.logo ? (
+          <DoggyImage
+            logo={item.logo}
+            name={item.name}
+            className="rounded-full flex-shrink-0 w-[48px] h-[48px] object-contain"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+            {item.name?.charAt(0) || 'W'}
           </div>
-        </div>
-      </Link>
-
-      {/* Stats and actions */}
-      <div className="border-t border-white/20 px-6 py-4 bg-white/10 backdrop-blur-sm flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center text-sm text-gray-600">
-            <i className="iconfont icon-attentionfill mr-1.5"></i>
-            <span className="font-medium">{item.view || 0}</span>
-          </div>
-          <div className="flex items-center text-sm text-red-500">
-            <i className="iconfont icon-appreciatefill mr-1.5"></i>
-            <span className="font-medium">{item.star || 0}</span>
-          </div>
-        </div>
-
-        <button
-          onClick={() => onRemove(item.id)}
-          className="text-gray-500 hover:text-red-500 transition-all duration-300 hover:scale-110"
-          title="取消收藏"
-        >
-          <i className="iconfont icon-close text-lg"></i>
-        </button>
+        )}
       </div>
+      <span className="text-sm text-center text-gray-700 font-medium max-w-full truncate">
+        {item.name}
+      </span>
+      <span className="text-xs text-center text-gray-500 mt-1 max-w-full truncate">
+        {item.category || 'Uncategorized'}
+      </span>
     </div>
   );
 };
@@ -97,6 +47,105 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<NavItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const mockFavorites = useMemo(() => [
+    {
+      id: '1',
+      name: 'GitHub',
+      href: 'https://github.com',
+      logo: 'https://github.githubassets.com/favicons/favicon.svg',
+      desc: 'Code repository platform',
+      category: 'Development',
+      isFavorite: true,
+      view: 1250,
+      star: 420,
+      tags: ['Development', 'Code'],
+    },
+    {
+      id: '2',
+      name: 'YouTube',
+      href: 'https://youtube.com',
+      logo: 'https://www.youtube.com/favicon.ico',
+      desc: 'Video sharing platform',
+      category: 'Media',
+      isFavorite: true,
+      view: 3200,
+      star: 890,
+      tags: ['Video', 'Entertainment'],
+    },
+    {
+      id: '3',
+      name: 'Twitter',
+      href: 'https://twitter.com',
+      logo: 'https://abs.twimg.com/responsive-web/client-web/icon-ios.b1fc7275.png',
+      desc: 'Social media platform',
+      category: 'Social',
+      isFavorite: true,
+      view: 2100,
+      star: 560,
+      tags: ['Social', 'News'],
+    },
+    {
+      id: '4',
+      name: 'Figma',
+      href: 'https://figma.com',
+      logo: 'https://static.figma.com/app/icon/1/favicon.ico',
+      desc: 'Design and prototyping tool',
+      category: 'Design',
+      isFavorite: true,
+      view: 980,
+      star: 320,
+      tags: ['Design', 'UI/UX'],
+    },
+    {
+      id: '5',
+      name: 'Google Drive',
+      href: 'https://drive.google.com',
+      logo: 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png',
+      desc: 'Cloud storage service',
+      category: 'Productivity',
+      isFavorite: true,
+      view: 1800,
+      star: 450,
+      tags: ['Productivity', 'Storage'],
+    },
+    {
+      id: '6',
+      name: 'Netflix',
+      href: 'https://netflix.com',
+      logo: 'https://www.netflix.com/favicon.ico',
+      desc: 'Streaming service',
+      category: 'Entertainment',
+      isFavorite: true,
+      view: 2700,
+      star: 780,
+      tags: ['Video', 'Entertainment'],
+    },
+    {
+      id: '7',
+      name: 'Slack',
+      href: 'https://slack.com',
+      logo: 'https://a.slack-edge.com/80588/img/icons/icon_128.png',
+      desc: 'Team communication platform',
+      category: 'Productivity',
+      isFavorite: true,
+      view: 1100,
+      star: 290,
+      tags: ['Communication', 'Team'],
+    },
+    {
+      id: '8',
+      name: 'LinkedIn',
+      href: 'https://linkedin.com',
+      logo: 'https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca',
+      desc: 'Professional networking',
+      category: 'Business',
+      isFavorite: true,
+      view: 1500,
+      star: 380,
+      tags: ['Networking', 'Business'],
+    },
+  ], []);
 
   // Add animation class to document for fade-in effects
   useEffect(() => {
@@ -117,17 +166,23 @@ export default function FavoritesPage() {
           if (storedFavorites) {
             const parsed = JSON.parse(storedFavorites);
             setFavorites(Array.isArray(parsed) ? parsed : []);
+          } else {
+            // Use mock data when no favorites exist in localStorage
+            setFavorites(mockFavorites);
           }
         } catch (err) {
           console.error('Failed to load favorites:', err);
-          setFavorites([]);
+          setFavorites(mockFavorites); // Fallback to mock data
         }
+      } else {
+        // When not authenticated, use mock data
+        setFavorites(mockFavorites);
       }
       setLoading(false);
     };
 
     loadFavorites();
-  }, [authState.isAuthenticated]);
+  }, [authState.isAuthenticated, mockFavorites]);
 
   const handleRemoveFavorite = (id: string) => {
     const updatedFavorites = favorites.filter(item => item.id !== id);
@@ -163,32 +218,8 @@ export default function FavoritesPage() {
           <meta name="description" content="我收藏的网站" />
         </Head>
 
-        {/* Custom header with iPad-style design */}
-        <header className="sticky top-0 z-30 bg-white/40 backdrop-blur-2xl border-b border-white/30 shadow-md">
-          <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                type="text"
-                icon={<IconLeft />}
-                onClick={handleGoBack}
-                className="text-gray-700 hover:text-blue-600 transition-all duration-300 hover:scale-110 rounded-full bg-white/50 backdrop-blur-sm border border-white/30 shadow-sm"
-              />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                我的收藏
-              </h1>
-            </div>
 
-            <div className="flex items-center space-x-3">
-              <div className="px-4 py-2 bg-white/50 backdrop-blur-sm rounded-full border border-white/30 shadow-sm">
-                <span className="text-sm font-medium text-gray-700">
-                  共 {favorites.length} 个收藏
-                </span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-7xl mx-auto px-6 py-10">
+        <main className="max-w-7xl mx-auto px-6 py-10 pb-32"> {/* Add pb-32 to account for footer */}
           {error && (
             <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl p-6 mb-8 text-red-700 shadow-lg animate-shake">
               {error}
@@ -220,7 +251,7 @@ export default function FavoritesPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-8">
               {favorites.map((item, index) => (
                 <div
                   key={item.id}
@@ -236,6 +267,40 @@ export default function FavoritesPage() {
             </div>
           )}
         </main>
+
+        {/* Mac-style Floating Menu Bar */}
+        <footer className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl p-3 flex items-center space-x-6 z-50">
+          <Link href="/" className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors">
+            <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
+              <span className="text-lg">🏠</span>
+            </div>
+            <span>Home</span>
+          </Link>
+          <Link href="/search" className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors">
+            <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
+              <span className="text-lg">🔍</span>
+            </div>
+            <span>Search</span>
+          </Link>
+          <Link href="/favorites" className="flex flex-col items-center text-xs text-blue-600 transition-colors">
+            <div className="w-10 h-10 bg-blue-500 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 transition-colors shadow-sm">
+              <span className="text-lg text-white">⭐</span>
+            </div>
+            <span>Favorites</span>
+          </Link>
+          <Link href="/timeline" className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors">
+            <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
+              <span className="text-lg">📊</span>
+            </div>
+            <span>Timeline</span>
+          </Link>
+          <Link href="/navcontents" className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors">
+            <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
+              <span className="text-lg">📚</span>
+            </div>
+            <span>Categories</span>
+          </Link>
+        </footer>
       </div>
     </AuthGuard>
   );

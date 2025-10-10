@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Spin } from '@arco-design/web-react';
 import Affiche from '@/components/Affiche';
 import NavRankingList from '@/components/NavRankingList';
-import NavStatsChart from '@/components/NavStatsChart';
+import StatsChart from '@/components/StatsChart';
 import VerticalTimelineContainer from '@/components/Timelines/VerticalTimelineContainer';
 import api from '@/utils/api';
 import { createMockTimelineData } from '@/utils/timelineData';
@@ -72,7 +72,7 @@ export default function HomePage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
+      className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800"
       onKeyDown={onKeyDown}
       tabIndex={-1}
       role="application"
@@ -81,7 +81,7 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div className="bg-theme-background rounded-3xl shadow-xl overflow-hidden border border-theme-border">
             <div className="hero-gradient p-8 text-white relative">
               <div className="max-w-3xl mx-auto text-center relative z-10">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">精选网站导航</h1>
@@ -89,13 +89,13 @@ export default function HomePage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
                     href="/login"
-                    className="bg-white text-blue-600 hover:bg-gray-100 font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                    className="bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
                   >
                     登陆探索
                   </Link>
                   <Link
                     href="/search"
-                    className="bg-transparent border-2 border-white hover:bg-white hover:text-blue-600 font-semibold py-3 px-6 rounded-lg transition-all duration-300"
+                    className="bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary-foreground font-semibold py-3 px-6 rounded-lg transition-all duration-300"
                   >
                     搜索网站
                   </Link>
@@ -112,10 +112,10 @@ export default function HomePage() {
 
         {/* Top Rankings Section */}
         {!loading && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">热门推荐</h2>
-              <p className="text-gray-600">基于访问量、点赞数和最新收录的热门网站</p>
+              <h2 className="text-2xl font-bold text-theme-foreground mb-2">热门推荐</h2>
+              <p className="text-theme-muted-foreground">基于访问量、点赞数和最新收录的热门网站</p>
             </div>
             <NavRankingList data={navRanking} />
           </div>
@@ -126,14 +126,14 @@ export default function HomePage() {
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
               <Spin size={40} />
-              <p className="mt-4 text-gray-600">正在加载精彩内容...</p>
+              <p className="mt-4 text-theme-muted-foreground">正在加载精彩内容...</p>
             </div>
           </div>
         )}
 
         {/* Timeline Section */}
         {!loading && currentYearData && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 my-8">
+          <div className="bg-theme-background rounded-2xl shadow-lg p-8 my-8 border border-theme-border">
             <VerticalTimelineContainer
               year={currentYearData.year}
               items={currentYearData.items}
@@ -145,7 +145,7 @@ export default function HomePage() {
 
         {/* Statistics Chart Section */}
         {!loading && navRanking && (
-          <NavStatsChart data={navRanking} />
+          <StatsChart data={navRanking} />
         )}
 
         {/* Stats Section */}
@@ -169,9 +169,9 @@ export default function HomePage() {
         {/* Footer CTA */}
         {!loading && (
           <div className="mt-12 text-center">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">找不到想要的网站？</h3>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+            <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
+              <h3 className="text-2xl font-bold text-theme-foreground mb-4">找不到想要的网站？</h3>
+              <p className="text-theme-muted-foreground mb-6 max-w-2xl mx-auto">
                 我们致力于为用户提供最优质的网站导航服务。如果您有推荐的网站或宝贵建议，欢迎提交！
               </p>
               <Link

@@ -21,15 +21,15 @@ export default function FavoriteButton({
   className = '',
 }: FavoriteButtonProps) {
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  const activeColor = 'var(--color-secondary)';
+  const inactiveColor = 'var(--color-muted-foreground)';
 
   // Don't render if user is not authenticated
   if (!isAuthenticated) {
     return null;
   }
 
-  const baseClassName = `${
-    isFavorite ? 'right:text-red-500' : 'right:text-gray-500 hover:right:text-red-600'
-  } cursor-pointer space-x-1 py-1 rounded text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center`;
+  const baseClassName = `cursor-pointer space-x-1 py-1 rounded text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center`;
 
   const tooltipContent = isFavorite ? "取消收藏" : "收藏";
 
@@ -39,10 +39,11 @@ export default function FavoriteButton({
         <button
           onClick={onToggle}
           disabled={disabled}
-          className={`flex cursor-pointer items-center text-sm transition-colors duration-200 ${
-            isFavorite ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+          className={`flex cursor-pointer items-center text-sm transition-opacity duration-200 ${
+            disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+          } ${className}`}
           title={tooltipContent}
+          style={{ color: isFavorite ? activeColor : inactiveColor }}
         >
           <IconHeartFill fontSize={16} />
         </button>
@@ -57,6 +58,11 @@ export default function FavoriteButton({
         disabled={disabled}
         size={size}
         className={`${baseClassName} ${className}`}
+        style={{
+          color: isFavorite ? activeColor : inactiveColor,
+          backgroundColor: 'transparent',
+          borderColor: 'var(--color-border)'
+        }}
         title={tooltipContent}
         icon={<IconHeartFill />}
       />

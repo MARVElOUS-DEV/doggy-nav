@@ -105,7 +105,7 @@ async function tryAuthenticate(ctx: any, app: any) {
       };
       return { authenticated: true };
     } catch (err) {
-      ctx.logger.error('JWT authentication error:', err);
+      ctx.logger.debug('JWT authentication error:', err);
       return { authenticated: false, error: 'token失效或解析错误' };
     }
   }

@@ -13,7 +13,7 @@ const FallbackIcon = ({ name, fontSize = 16 }: { name: string; fontSize?: number
   const firstLetter = name.charAt(0).toUpperCase();
   return (
     <div
-      className="inline-flex items-center justify-center rounded bg-blue-100 text-blue-600 font-semibold"
+      className="inline-flex items-center justify-center rounded bg-primary-200 text-theme-primary font-semibold"
       style={{
         width: fontSize + 4,
         height: fontSize + 4,
@@ -36,17 +36,17 @@ const renderMenuIcon = (category: Category, fontSize = 16) => {
 };
 
 
-export default function MenuStack({collapse}: {collapse: boolean}) {
+export default function MenuStack({ collapse }: { collapse: boolean }) {
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
-    const [categories, setCategories] = useAtom(categoriesAtom);
-    const setTags = useSetAtom(tagsAtom);
-    const [isAuthenticated] = useAtom(isAuthenticatedAtom);
-    useEffect(() => {
+  const [categories, setCategories] = useAtom(categoriesAtom);
+  const setTags = useSetAtom(tagsAtom);
+  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const categoriesData = await api.getCategoryList();
         if (Array.isArray(categoriesData)) {
-          categoriesData.unshift(...localCategories)
+          categoriesData.unshift(...localCategories);
           if (!selectedCategory) {
             setSelectedCategory(categoriesData[0].id);
           }
@@ -75,16 +75,15 @@ export default function MenuStack({collapse}: {collapse: boolean}) {
   }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
   const onHandleSubMenuClick = async (category: Category, id: string) => {
     setSelectedCategory(id);
-    router.push(category.href?? `/navcontents?category=${id}`);
+    router.push(category.href ?? `/navcontents?category=${id}`);
   };
   return (
     <Menu
       collapse={collapse}
       mode={collapse ? "pop" : "vertical"}
-      className="border-0 bg-transparent text-gray-700"
+      className="border-0 bg-transparent "
       selectedKeys={selectedCategory ? [selectedCategory] : [OVERVIEW.id]}
       tooltipProps={{ position: 'right' }}
-      // style={{ backgroundColor: 'transparent' }}
     >
       {categories
         .filter(category => category.showInMenu)
@@ -95,7 +94,7 @@ export default function MenuStack({collapse}: {collapse: boolean}) {
             return (
               <Menu.SubMenu
                 key={category.id}
-                className={"doggy-menu transition-all duration-200 hover:bg-blue-50 hover:shadow-sm"}
+                className={"doggy-menu transition-all duration-200 hover:bg-theme-muted hover:shadow-sm"}
                 title={
                   collapse ? (
                     // Collapsed mode: only show icon
@@ -106,10 +105,10 @@ export default function MenuStack({collapse}: {collapse: boolean}) {
                     // Expanded mode: show full content
                     <div className="group flex items-center gap-3 w-full py-2.5">
                       {renderMenuIcon(category, 16)}
-                      <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
+                      <span className="group-hover:text-theme-foreground transition-colors font-medium">
                         {category.name}
                       </span>
-                      <div className="ml-auto w-2 h-2 rounded-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
+                      <div className="ml-auto w-2 h-2 rounded-full bg-theme-background opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
                     </div>
                   )
                 }
@@ -121,12 +120,12 @@ export default function MenuStack({collapse}: {collapse: boolean}) {
                       key={child.id}
                       onClick={() => onHandleSubMenuClick(child, child.id)}
                     >
-                      <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 hover:bg-blue-50/50 rounded-xl">
+                      <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 hover:bg-theme-muted rounded-xl">
                         {renderMenuIcon(child, 16)}
-                        <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors font-medium">
+                        <span className="text-sm text-theme-muted-foreground group-hover:text-theme-foreground transition-colors font-medium">
                           {child.name}
                         </span>
-                        <div className="ml-auto w-2 h-2 rounded-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="ml-auto w-2 h-2 rounded-full bg-theme-background opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </Menu.Item>
                   ))}
@@ -138,7 +137,7 @@ export default function MenuStack({collapse}: {collapse: boolean}) {
             <Menu.Item
               key={category.id}
               onClick={() => onHandleSubMenuClick(category, category.id)}
-              className="transition-all duration-200 hover:bg-blue-50 hover:shadow-sm"
+              className="transition-all duration-200 hover:bg-theme-muted hover:shadow-sm"
               renderItemInTooltip={() => category.name}
             >
               {collapse ? (
@@ -150,10 +149,10 @@ export default function MenuStack({collapse}: {collapse: boolean}) {
                 // Expanded mode: show full content
                 <div className="group flex items-center gap-3 w-full py-2.5">
                   {renderMenuIcon(category, 16)}
-                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
+                  <span className="group-hover:text-theme-foreground transition-colors font-medium">
                     {category.name}
                   </span>
-                  <div className="ml-auto w-2 h-2 rounded-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
+                  <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
                 </div>
               )}
             </Menu.Item>

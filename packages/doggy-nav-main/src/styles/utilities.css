@@ -23,18 +23,49 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Dark Mode Glassmorphism */
+.dark .glass-light {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-medium {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Color Utilities */
-.text-primary { color: #171717; }
-.text-secondary { color: #525252; }
+.text-primary { color: var(--color-foreground); }
+.text-secondary { color: var(--color-muted-foreground); }
 .text-tertiary { color: #737373; }
 .text-disabled { color: #a3a3a3; }
-.text-inverse { color: #ffffff; }
+.text-inverse { color: var(--color-background); }
 
-.bg-primary { background-color: #171717; }
-.bg-secondary { background-color: #525252; }
+.bg-primary { background-color: var(--color-foreground); }
+.bg-secondary { background-color: var(--color-muted); }
 .bg-tertiary { background-color: #737373; }
 .bg-disabled { background-color: #a3a3a3; }
-.bg-inverse { background-color: #ffffff; }
+.bg-inverse { background-color: var(--color-background); }
+
+/* Dark mode overrides for tertiary and disabled colors */
+.dark .text-tertiary { color: #a3a3a3; }
+.dark .text-disabled { color: #525252; }
 
 /* Primary Color Palette */
 .text-primary-50 { color: #f0f9ff; }
@@ -202,9 +233,18 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+.dark .hover-lift:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
 .hover-glass:hover {
   background: rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .hover-glass:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Diagonal Shiny Effect - On Hover Only */
@@ -298,4 +338,112 @@
   );
   background-size: 400% 400%;
   animation: hero-gradient-flow 12s ease infinite;
+}
+.bg-theme-primary {
+  background-color: var(--color-primary);
+}
+.bg-theme-background {
+  @apply bg-gradient-to-br from-slate-50 to-blue-50;
+}
+.dark .bg-theme-background {
+  @apply from-gray-900 via-slate-900 to-gray-800;
+}
+.bg-content-background {
+  background-color: var(--color-background);
+}
+
+.bg-theme-muted {
+  background-color: var(--color-muted);
+}
+
+/* Theme-aware Text Utilities */
+.text-theme-foreground {
+  color: var(--color-foreground);
+}
+
+.text-theme-muted-foreground {
+  color: var(--color-muted-foreground);
+}
+
+.text-theme-primary {
+  color: var(--color-primary);
+}
+
+.text-theme-sidebar {
+  color: var(--color-sidebar-foreground);
+}
+
+/* Theme-aware Border Utilities */
+.border-theme-border {
+  border-color: var(--color-border);
+}
+
+.border-theme-muted {
+  border-color: var(--color-muted);
+}
+
+
+/* Custom Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes fade-in-simple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sway {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  25% { transform: translateX(-8px) translateY(-2px) rotate(8deg); }
+  50% { transform: translateX(0) translateY(0) rotate(0deg); }
+  75% { transform: translateX(8px) translateY(-2px) rotate(-8deg); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animate-fade-in-simple {
+  animation: fade-in-simple 0.3s ease-out forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-sway {
+  animation: sway 4s ease-in-out infinite;
 }

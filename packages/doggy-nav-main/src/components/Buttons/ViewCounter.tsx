@@ -16,7 +16,10 @@ export default function ViewCounter({
   };
 
   return (
-    <div className={`flex items-center space-x-1 ${sizeClasses[size]} text-blue-500 ${className}`}>
+    <div
+      className={`flex items-center space-x-1 ${sizeClasses[size]} ${className}`}
+      style={{ color: 'var(--color-primary)' }}
+    >
       <i className="iconfont icon-attentionfill"></i>
       <span>{viewCount}</span>
     </div>
