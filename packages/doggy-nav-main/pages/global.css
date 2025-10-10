@@ -71,11 +71,6 @@
   --secondary-color: var(--color-secondary);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  transition: background-color 0.3s, color 0.3s;
-}
 
 li {
   list-style: none;
@@ -103,7 +98,7 @@ body {
   color: var(--color-foreground);
   font-family: Helvetica Neue, Microsoft Yahei, system-ui, sans-serif;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #e3e2f6 0%, #d7d7cf 100%);
   background-attachment: fixed;
   position: relative;
   overflow-x: hidden;

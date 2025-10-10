@@ -79,14 +79,32 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false }: Ap
             alt="logo"
             width={150}
             height={40}
-            className="dark:invert hidden md:block transition-all duration-200"
+            priority
+            className="dark:hidden hidden md:block transition-all duration-200 h-12"
           />
           <Image
             src="/logo-nav-black.png"
             alt="logo"
             width={100}
             height={30}
-            className="dark:invert md:hidden transition-all duration-200"
+            priority
+            className="dark:hidden md:hidden transition-all duration-200"
+          />
+          <Image
+            src="/logo-nav-white.png"
+            alt="logo"
+            width={150}
+            height={40}
+            priority
+            className="hidden dark:md:block transition-all duration-200 h-12"
+          />
+          <Image
+            src="/logo-nav-white.png"
+            alt="logo"
+            width={100}
+            height={30}
+            priority
+            className="dark:block hidden md:hidden transition-all duration-200"
           />
         </Link>
       </div>
