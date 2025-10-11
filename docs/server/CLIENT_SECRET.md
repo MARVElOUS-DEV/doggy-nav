@@ -227,6 +227,21 @@ Notes:
 
 - The admin frontend runs in the browser; putting the secret there exposes it to users. If this is a concern for your deployment, prefer injecting `x-client-secret` via a trusted reverse proxy instead.
 
+### Automatic default secret creation (postinstall)
+
+When running the server utilities postinstall script, the system will:
+
+- Ensure an admin user exists (interactive prompt).
+- If no client applications exist yet, create a default application and print a generated client secret to the console (shown once).
+
+After the secret is printed:
+
+1. Add it to the web apps:
+   - Main (Next.js): `SERVER_CLIENT_SECRET=<printed-secret>`
+   - Admin (Umi): `UMI_APP_CLIENT_SECRET=<printed-secret>` (or inject via proxy)
+2. Set `REQUIRE_CLIENT_SECRET=true` on the server and restart.
+3. Verify requests include `x-client-secret` automatically.
+
 ### Enabling for Existing System
 
 When enabling client secret requirement for an existing system:
