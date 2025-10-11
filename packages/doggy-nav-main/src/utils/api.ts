@@ -93,7 +93,7 @@ const api = {
     axios.post('/api/favorites', { navId }),
 
   removeFavorite: (navId: string): Promise<void> =>
-    axios.get(`/api/favorites/remove?navId=${navId}`),
+    axios.post('/api/favorites/remove', undefined, { params: { navId } }),
 
   getFavoritesList: (): Promise<{data: NavItem[]}> =>
     axios.get('/api/favorites/list'),

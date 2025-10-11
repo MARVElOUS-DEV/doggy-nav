@@ -1,7 +1,7 @@
 import { createApiHandler } from '../../../lib/apiHandler';
 
 export default createApiHandler({
-  method: 'DELETE',
-  endpoint: '/api/favorites',
+  method: 'POST',
+  endpoint: '/api/favorites/remove',
   paramName: 'navId'
 });

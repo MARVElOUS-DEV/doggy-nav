@@ -1,11 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Grid, Tooltip, Spin } from '@arco-design/web-react';
+import { Grid, Tooltip, Spin, Message } from '@arco-design/web-react';
 import api from '@/utils/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { NavItem } from '@/types';
 import { useRouter } from 'next/router';
+import { IconHeartFill } from '@arco-design/web-react/icon';
+import { useAtom } from 'jotai';
+import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
 
 const { Row, Col } = Grid
 
@@ -31,6 +34,9 @@ export default function NavDetail() {
   })
   const [randomNavList, setRandomNavList] = useState<NavItem[]>([])
   const [isStar, setIsStar] = useState(false)
+  const [isFavorite, setIsFavorite] = useState<boolean>(false)
+  const [, favoritesActions] = useAtom(favoritesActionsAtom);
+  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +47,7 @@ export default function NavDetail() {
           api.getRandomNav(),
         ])
         setDetail(detail || { tags: [] })
+        setIsFavorite(!!detail?.isFavorite)
         setRandomNavList(randomNavList || [])
       } catch (error) {
         console.error('Failed to fetch data', error)
@@ -57,9 +64,31 @@ export default function NavDetail() {
         await api.updateNavStar(detail.id)
         setIsStar(true)
         setDetail({ ...detail, star: detail.star + 1 })
+        Message.success('点赞成功')
       } catch (error) {
         console.error('Star failed', error)
       }
+    }
+  }
+
+  const handleFavoriteFn = async () => {
+    if (!isAuthenticated) {
+      Message.warning('请先登录后再收藏')
+      return;
+    }
+    try {
+      if (isFavorite) {
+        await favoritesActions({ type: 'REMOVE_FAVORITE', navId: detail.id });
+        setIsFavorite(false);
+        Message.success('取消收藏成功');
+      } else {
+        await favoritesActions({ type: 'ADD_FAVORITE', navId: detail.id });
+        setIsFavorite(true);
+        Message.success('收藏成功');
+      }
+    } catch (error) {
+      console.error('Favorite failed', error)
+      Message.error('操作失败，请重试')
     }
   }
 
@@ -93,28 +122,35 @@ export default function NavDetail() {
       {loading && <Spin />}
       <Row gutter={32} className="site-info mt-8">
         <Col md={8} xs={24} className="item">
-          <div className="shiny left rounded-xl shadow-lg p-6 relative border border-theme-border bg-theme-background transition-colors">
-            <div className="img-wrap h-56 flex items-center justify-center bg-theme-muted border border-theme-border rounded-lg transition-colors">
+          <div className="shiny left rounded-xl shadow-lg p-4 relative border border-theme-border bg-theme-background transition-colors">
+            <div className="img-wrap h-40 md:h-44 flex items-center justify-center bg-theme-muted border border-theme-border rounded-lg transition-colors">
               <Link href={detail.href} target="_blank" rel="noopener noreferrer">
-                <Image src={detail.logo} alt={detail.name} width={120} height={120} className="object-cover rounded-lg shadow-md" />
+                <Image
+                  src={detail.logo}
+                  alt={detail.name}
+                  width={80}
+                  height={80}
+                  className="object-contain rounded-lg shadow-sm max-w-20 max-h-20 md:max-w-24 md:max-h-24"
+                />
               </Link>
             </div>
-            <div className="tool absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-4">
+            {/* Action buttons moved below image to prevent overlap and add spacing */}
+            <div className="tool mt-4 flex items-center justify-center gap-3 md:gap-4 px-2">
               <Tooltip content="访问数">
                 <div
-                  className="tool-item flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-md transition-colors"
+                  className="tool-item flex flex-col items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full shadow-md transition-colors"
                   style={{
                     backgroundColor: 'color-mix(in srgb, var(--color-primary) 18%, var(--color-card))',
                     color: 'var(--color-primary)'
                   }}
                 >
-                  <i className="iconfont icon-attentionfill text-lg"></i>
-                  <p className="m-0 text-xs font-medium">{detail.view}</p>
+                  <i className="iconfont icon-attentionfill text-base md:text-lg"></i>
+                  <p className="m-0 text-[10px] md:text-xs font-medium">{detail.view}</p>
                 </div>
               </Tooltip>
               <Tooltip content="点赞数">
                 <div
-                  className="tool-item flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-md cursor-pointer transition-colors"
+                  className="tool-item flex flex-col items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full shadow-md cursor-pointer transition-colors"
                   style={
                     isStar
                       ? {
@@ -128,10 +164,32 @@ export default function NavDetail() {
                   }
                   onClick={handleNavStarFn}
                 >
-                  <i className="iconfont icon-appreciatefill text-lg"></i>
-                  <p className="m-0 text-xs font-medium">{detail.star}</p>
+                  <i className="iconfont icon-appreciatefill text-base md:text-lg"></i>
+                  <p className="m-0 text-[10px] md:text-xs font-medium">{detail.star}</p>
                 </div>
               </Tooltip>
+              {isAuthenticated && (
+                <Tooltip content={isFavorite ? '取消收藏' : '收藏'}>
+                  <div
+                    className="tool-item flex flex-col items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full shadow-md cursor-pointer transition-colors"
+                  style={
+                    isFavorite
+                      ? {
+                          backgroundColor: 'var(--color-red-300)',
+                          color: 'var(--color-secondary-foreground)'
+                        }
+                      : {
+                          backgroundColor: 'color-mix(in srgb, var(--color-muted) 80%, transparent)',
+                          color: 'var(--color-muted-foreground)'
+                        }
+                  }
+                    onClick={handleFavoriteFn}
+                  >
+                    <IconHeartFill fontSize={14} />
+                    <p className="m-0 text-[10px] md:text-xs font-medium">{isFavorite ? '已收藏' : '收藏'}</p>
+                  </div>
+                </Tooltip>
+              )}
             </div>
           </div>
         </Col>

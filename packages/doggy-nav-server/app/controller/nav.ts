@@ -96,7 +96,7 @@ export default class NavController extends Controller {
                   $expr: {
                     $and: [
                       { $eq: [ '$navId', '$$navId' ] },
-                      { $eq: [ '$userId', new Types.ObjectId(userInfo._id) ] },
+                      { $eq: [ '$userId', new Types.ObjectId(userInfo.userId) ] },
                     ],
                   },
                 },
@@ -227,8 +227,24 @@ export default class NavController extends Controller {
 
       const navs = await model.Nav.find(navFindParam);
 
+      // Build favorites set for authenticated users
+      let favoriteSet: Set<string> | null = null;
+      if (isAuthenticated) {
+        const userInfo = this.getUserInfo();
+        const favorites = await model.Favorite.find({ userId: new Types.ObjectId(userInfo.userId) }).select('navId');
+        favoriteSet = new Set(favorites.map((f: any) => f.navId.toString()));
+      }
+
       categorys.map(category => {
-        const nowNavs = navs.filter(nav => nav.categoryId === category._id.toString());
+        const nowNavs = navs
+          .filter(nav => nav.categoryId === category._id.toString())
+          .map(nav => {
+            const obj: any = nav.toObject();
+            if (favoriteSet) {
+              obj.isFavorite = favoriteSet.has(nav._id.toString());
+            }
+            return obj;
+          });
         resData.push({
           _id: category._id,
           name: category.name,
@@ -261,11 +277,22 @@ export default class NavController extends Controller {
       if (nav && nav.categoryId) {
         const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
         if (category) {
-          const navObj = nav.toObject();
+          const navObj: any = nav.toObject();
           navObj.categoryName = category.name;
+          if (isAuthenticated) {
+            const userInfo = this.getUserInfo();
+            const fav = await ctx.model.Favorite.findOne({ userId: new Types.ObjectId(userInfo.userId), navId: nav._id });
+            navObj.isFavorite = !!fav;
+          }
           this.success(navObj);
         } else {
-          this.success(nav);
+          const navObj: any = nav.toObject();
+          if (isAuthenticated) {
+            const userInfo = this.getUserInfo();
+            const fav = await ctx.model.Favorite.findOne({ userId: new Types.ObjectId(userInfo.userId), navId: nav._id });
+            navObj.isFavorite = !!fav;
+          }
+          this.success(navObj);
         }
       } else {
         this.success(nav);
@@ -338,7 +365,7 @@ export default class NavController extends Controller {
                   $expr: {
                     $and: [
                       { $eq: [ '$navId', '$$navId' ] },
-                      { $eq: [ '$userId', new Types.ObjectId(userInfo._id) ] },
+                      { $eq: [ '$userId', new Types.ObjectId(userInfo.userId) ] },
                     ],
                   },
                 },

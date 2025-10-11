@@ -51,7 +51,7 @@ export default (app: Application) => {
 
   // Favorite routes - require authentication
   router.post('/api/favorites', controller.favorite.add);
-  router.get('/api/favorites/remove', controller.favorite.remove);
+  router.post('/api/favorites/remove', controller.favorite.remove);
   router.get('/api/favorites/list', controller.favorite.list);
   router.get('/api/favorites/check', controller.favorite.check);
   router.get('/api/favorites/count', controller.favorite.count);
