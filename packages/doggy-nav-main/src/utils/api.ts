@@ -64,13 +64,13 @@ const api = {
   }): Promise<NavItem> =>
     axios.post(API_NAV_REPTILE, data),
 
-  // Update nav view count
+  // Increment nav view count (server increments atomically)
   updateNavView: (id: string): Promise<void> =>
-    axios.patch(`${API_NAV}/${id}/view`),
+    axios.post(`/api/nav/${id}/view`),
 
-  // Update nav star count
+  // Increment nav star count (server increments atomically)
   updateNavStar: (id: string): Promise<void> =>
-    axios.patch(`${API_NAV}/${id}/star`),
+    axios.post(`/api/nav/${id}/star`),
 
   // Authentication APIs - using Next.js proxy routes
   login: (credentials: LoginFormValues): Promise<{token: string, user: User}> =>

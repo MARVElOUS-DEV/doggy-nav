@@ -63,7 +63,12 @@ export default function NavDetail() {
     }
   }
 
-  const handleNavClick = (detail: NavItem) => {
+  const handleNavClick = async (detail: NavItem) => {
+    try {
+      await api.updateNavView(detail.id)
+    } catch (e) {
+      // ignore
+    }
     window.open(detail.href, '_blank')
   }
 

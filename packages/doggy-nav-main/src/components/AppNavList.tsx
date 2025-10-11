@@ -3,6 +3,7 @@ import AppNavItem from './AppNavItem';
 import { NavItem } from '@/types';
 import { useAtom } from 'jotai';
 import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
+import api from '@/utils/api';
 
 const { Row } = Grid;
 
@@ -14,14 +15,18 @@ export default function AppNavList({ list }: AppNavListProps) {
   const [, favoritesActions] = useAtom(favoritesActionsAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
 
-  const handleNavClick = (item: NavItem) => {
+  const handleNavClick = async (item: NavItem) => {
+    try {
+      await api.updateNavView(item.id);
+    } catch {}
     window.open(item.href, '_blank');
   };
 
-  const handleNavStar = (item: NavItem, callback: () => void) => {
-    console.log('star', item);
-    // TODO: Implement star API call
-    callback();
+  const handleNavStar = async(item: NavItem, callback: () => void) => {
+    try {
+      await api.updateNavStar(item.id);
+      callback?.();
+    } catch {}
   };
 
   const handleFavorite = async (item: NavItem, callback: (isFavorite: boolean) => void) => {

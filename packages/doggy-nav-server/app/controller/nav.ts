@@ -410,4 +410,44 @@ export default class NavController extends Controller {
       news,
     });
   }
+
+  // Increment view count atomically
+  async incrementView() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+    if (!id) {
+      this.error('id is required');
+      return;
+    }
+    try {
+      const updated = await ctx.model.Nav.findByIdAndUpdate(id, { $inc: { view: 1 } }, { new: true });
+      if (!updated) {
+        this.error('Nav item not found');
+        return;
+      }
+      this.success({ id: updated._id, view: updated.view });
+    } catch (e: any) {
+      this.error(e.message || 'Failed to increment view');
+    }
+  }
+
+  // Increment star count atomically
+  async incrementStar() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+    if (!id) {
+      this.error('id is required');
+      return;
+    }
+    try {
+      const updated = await ctx.model.Nav.findByIdAndUpdate(id, { $inc: { star: 1 } }, { new: true });
+      if (!updated) {
+        this.error('Nav item not found');
+        return;
+      }
+      this.success({ id: updated._id, star: updated.star });
+    } catch (e: any) {
+      this.error(e.message || 'Failed to increment star');
+    }
+  }
 }

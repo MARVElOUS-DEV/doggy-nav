@@ -8,9 +8,10 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 interface ApiConfig {
   method: HttpMethod;
-  endpoint: string;
+  endpoint?: string; // optional if buildUrl provided
   paramName?: string;
   paramNames?: string[];
+  buildUrl?: (req: NextApiRequest) => string; // build path with dynamic segments
 }
 
 export const createApiHandler = (config: ApiConfig) => {
@@ -39,50 +40,34 @@ export const createApiHandler = (config: ApiConfig) => {
         headers['x-client-secret'] = SERVER_CLIENT_SECRET;
       }
 
-      let response;
+      const method = req.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete';
+      const targetPath = config.buildUrl ? config.buildUrl(req) : (config.endpoint || '');
+      const url = `${SERVER_URL}${targetPath}`;
+
+      // Collect query params if specified
+      let params: Record<string, any> | undefined;
       if (config.paramNames) {
-        // Handle multiple parameter requests (GET with multiple query params)
-        const params: Record<string, any> = {};
+        params = {};
         config.paramNames.forEach(paramName => {
           if (req.query[paramName] !== undefined) {
-            params[paramName] = req.query[paramName];
+            params![paramName] = req.query[paramName];
           }
         });
-        response = await axios[config.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete'](
-          `${SERVER_URL}${config.endpoint}`,
-          {
-            headers,
-            params
-          }
-        );
       } else if (config.paramName) {
-        // Handle single parameterized requests (GET with query params)
-        const paramValue = req.query[config.paramName];
-        response = await axios[config.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete'](
-          `${SERVER_URL}${config.endpoint}`,
-          {
-            headers,
-            params: { [config.paramName]: paramValue }
-          }
-        );
-      } else if (req.method === 'GET') {
-        // Handle simple GET requests
-        response = await axios.get(`${SERVER_URL}${config.endpoint}`, {
-          headers,
-        });
+        params = { [config.paramName]: req.query[config.paramName] } as Record<string, any>;
+      }
+
+      let response;
+      if (method === 'get') {
+        response = await axios.get(url, { headers, params });
       } else {
-        // Handle POST/PUT/DELETE with body
-        response = await axios[req.method.toLowerCase() as 'post' | 'put' | 'delete'](
-          `${SERVER_URL}${config.endpoint}`,
-          req.body,
-          { headers }
-        );
+        response = await axios[method](url, req.body, { headers, params });
       }
 
       return res.status(response.status).json(response.data);
 
     } catch (error: any) {
-      console.error(`${SERVER_URL}${config.endpoint} proxy error:`, error);
+      console.error(`${SERVER_URL}${config.endpoint || config.buildUrl?.(req as any) || ''} proxy error:`, error);
 
       if (error.response) {
         return res.status(error.response.status).json(error.response.data);
