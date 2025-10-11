@@ -61,7 +61,7 @@ export const createApiHandler = (config: ApiConfig) => {
       if (method === 'get') {
         response = await axios.get(url, { headers, params });
       } else {
-        response = await axios[method](url, req.body, { headers, params });
+        response = await axios[method](url, req.body?req.body: JSON.stringify({}), { headers, params });
       }
 
       return res.status(response.status).json(response.data);

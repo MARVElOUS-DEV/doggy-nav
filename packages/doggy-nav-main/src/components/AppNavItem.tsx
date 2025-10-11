@@ -21,6 +21,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
   const [isStar, setIsStar] = useState(false);
   const [isFavorite, setIsFavorite] = useState(data.isFavorite || false);
   const [logoSrc, setLogoSrc] = useState(data.logo);
+  const [viewCount, setViewCount] = useState<number>(data.view || 0);
   const [intersectionRef, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const urlStatus = useUrlStatus(data.href, isVisible);
 
@@ -213,34 +214,34 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
             backgroundColor: 'color-mix(in srgb, var(--color-muted) 80%, transparent)'
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button
               type='primary'
-              onClick={() => onHandleNavClick(data)}
-              className="py-1 hover:translate-x-0.5 rounded-xl text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
+              onClick={async () => {
+                try {
+                  await Promise.resolve(onHandleNavClick(data));
+                  setViewCount((v) => v + 1);
+                } catch {}
+              }}
+              className="w-full sm:w-auto py-1 hover:translate-x-0.5 rounded-xl text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center"
               title="链接直达"
               icon={<IconRightCircle fontSize={16} />}
             >
               直达
             </Button>
-            <Space size="mini" className="flex items-center space-x-4">
-              {/* Favorite Button - Only show when authenticated */}
+            <Space size="mini" className="flex w-full sm:w-auto items-center justify-end sm:justify-start space-x-4">
               <FavoriteButton
                 isFavorite={isFavorite}
                 onToggle={handleFavorite}
                 variant="icon-only"
               />
-
-              {/* Star Button */}
               <StarButton
                 isStarred={isStar}
                 starCount={data.star}
                 onToggle={handleNavStar}
                 variant="icon-only"
               />
-
-              {/* View Count */}
-              <ViewCounter viewCount={data.view} />
+              <ViewCounter viewCount={viewCount} />
             </Space>
           </div>
         </div>
