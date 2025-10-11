@@ -1,10 +1,10 @@
-import { useEffect, useTransition } from 'react';
+import { useEffect, useTransition, useState } from 'react';
 import { useAtom } from 'jotai';
 import { I18nextProvider } from 'react-i18next';
 import AppNavMenus from '../AppNavMenus';
 import AppHeader from '../AppHeader';
 import i18n from '@/i18n';
-import { ConfigProvider } from '@arco-design/web-react';
+import { ConfigProvider, Drawer } from '@arco-design/web-react';
 import { showMenuTypeAtom, initAuthFromStorageAtom, mobileAtom, manualCollapseAtom, themeAtom } from '@/store/store';
 import RightSideToolbar from '../RightSideToolbar';
 import LightbulbRope from '../LightbulbRope';
@@ -21,6 +21,7 @@ export default function RootLayout({
   const [manualCollapse, setManualCollapse] = useAtom(manualCollapseAtom);
   const [theme] = useAtom(themeAtom);
   const [isPending, startTransition] = useTransition()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const handleNavigation = (href) => {
     startTransition(() => {
@@ -58,6 +59,7 @@ export default function RootLayout({
       if (isMobileScreen) {
         setShowMenuType(false);
         setManualCollapse(null);
+        setMobileMenuOpen(false);
       } else if (manualCollapse === null) {
         setShowMenuType(true);
       } else {
@@ -75,6 +77,15 @@ export default function RootLayout({
     };
   }, [manualCollapse, setIsMobile, setShowMenuType, setManualCollapse]); // Include dependencies
 
+  // Close mobile drawer on route change
+  useEffect(() => {
+    const handleRoute = () => setMobileMenuOpen(false);
+    router.events?.on('routeChangeComplete', handleRoute);
+    return () => {
+      router.events?.off('routeChangeComplete', handleRoute);
+    };
+  }, []);
+
   const toggleMenu = () => {
     // Only allow manual toggle on desktop, not on mobile/tablet
     if (!isMobile) {
@@ -90,22 +101,28 @@ export default function RootLayout({
     <I18nextProvider i18n={i18n}>
       <ConfigProvider componentConfig={{ Menu: { theme } }}>
         <div className="flex h-screen">
-          {/* Sidebar - positioned as flex item */}
-          <div
-            className="bg-theme-background transition-all duration-300 flex flex-col overflow-hidden border-r border-theme-border"
-            style={{ width: showMenuType ? 220 : 70 }}
-          >
-            <AppNavMenus
-              showMenuType={showMenuType}
-              onShowMenus={toggleMenu}
-            />
-          </div>
+          {/* Sidebar (desktop only) */}
+          {!isMobile && (
+            <div
+              className="bg-theme-background transition-all duration-300 flex flex-col overflow-hidden border-r border-theme-border"
+              style={{ width: showMenuType ? 220 : 70 }}
+            >
+              <AppNavMenus
+                showMenuType={showMenuType}
+                onShowMenus={toggleMenu}
+              />
+            </div>
+          )}
 
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Sticky Header */}
             <div className="sticky top-0 z-30">
-              <AppHeader onHandleShowMenu={toggleMenu} showMenuType={showMenuType} />
+              <AppHeader
+                onHandleShowMenu={toggleMenu}
+                showMenuType={showMenuType}
+                onOpenMobileMenu={() => setMobileMenuOpen(true)}
+              />
             </div>
 
             {/* Scrollable Content Area with Glass Effect */}
@@ -120,6 +137,22 @@ export default function RootLayout({
 
           <RightSideToolbar />
           <LightbulbRope />
+
+          {/* Mobile Menu Drawer */}
+          {isMobile && (
+            <Drawer
+              visible={mobileMenuOpen}
+              unmountOnExit
+              closeIcon={null}
+              placement="left"
+              width="100%"
+              onCancel={() => setMobileMenuOpen(false)}
+            >
+              <div className="h-full">
+                <AppNavMenus showMenuType={true} />
+              </div>
+            </Drawer>
+          )}
         </div>
       </ConfigProvider>
     </I18nextProvider>
