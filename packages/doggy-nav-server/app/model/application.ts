@@ -31,14 +31,6 @@ export default function(app: any) {
       type: String,
       trim: true,
     }],
-    lastUsedAt: {
-      type: Date,
-      default: null,
-    },
-    usageCount: {
-      type: Number,
-      default: 0,
-    },
     createdAt: {
       type: Date,
       default: Date.now,

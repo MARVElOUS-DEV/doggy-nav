@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
+const SERVER_CLIENT_SECRET = process.env.SERVER_CLIENT_SECRET;
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -32,6 +33,10 @@ export const createApiHandler = (config: ApiConfig) => {
 
       if (req.headers.authorization) {
         headers.Authorization = req.headers.authorization;
+      }
+
+      if (SERVER_CLIENT_SECRET) {
+        headers['x-client-secret'] = SERVER_CLIENT_SECRET;
       }
 
       let response;

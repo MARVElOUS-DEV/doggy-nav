@@ -11,6 +11,7 @@
       "skipFiles": ["<node_internals>/**"],
       "localRoot": "${workspaceFolder}/packages/doggy-nav-server",
       "program": "${workspaceFolder}/packages/doggy-nav-server/node_modules/egg-bin/dist/bin/cli.js",
+      "envFile": "${workspaceFolder}/packages/doggy-nav-server/.env.local",
       "outFiles": ["${workspaceFolder}/**/*.js"],
       "args": ["dev", "--port=3002"],
       "console": "integratedTerminal"

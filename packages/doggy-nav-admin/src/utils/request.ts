@@ -5,9 +5,14 @@ import { message, notification } from "antd";
 
 function defaultHeaders() {
   const token = getPersistenceData(TOKEN)
-  return {
-    'Authorization': token
+  const headers: Record<string, string> = {
+    'Authorization': token as string,
   }
+  const clientSecret = process.env.UMI_APP_CLIENT_SECRET
+  if (clientSecret) {
+    headers['x-client-secret'] = clientSecret
+  }
+  return headers
 }
 
 // const codeMessage = {

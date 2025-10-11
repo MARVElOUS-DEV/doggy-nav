@@ -7,6 +7,72 @@ export default () => {
       url = url.split('?')[0];
     }
 
+    // FIRST: Check client secret if enabled (for ALL endpoints)
+    const clientSecretConfig = ctx.app.config.clientSecret;
+    const isClientSecretRequired = clientSecretConfig?.requireForAllAPIs;
+    const bypassRoutes = clientSecretConfig?.bypassRoutes || [];
+
+    // Check if this route is in bypass list
+    const isBypassRoute = bypassRoutes.some((route: string) => {
+      if (route === url) return true;
+      // Handle path parameters for bypass routes
+      const routeParts = route.split('/');
+      const urlParts = url.split('/');
+      if (routeParts.length !== urlParts.length) return false;
+      return routeParts.every((part: string, index: number) => {
+        return part.startsWith(':') || part === urlParts[index];
+      });
+    });
+
+    if (isClientSecretRequired && !isBypassRoute) {
+      // Require client secret for ALL APIs
+      const clientSecret = ctx.headers[clientSecretConfig?.headerName || 'x-client-secret'];
+
+      if (!clientSecret) {
+        ctx.status = 401;
+        ctx.body = {
+          code: 401,
+          msg: '请提供客户端密钥',
+          data: null,
+        };
+        return;
+      }
+
+      // Verify client secret
+      try {
+        const isValid = await ctx.service.clientSecret.verifyClientSecret(clientSecret);
+        if (!isValid) {
+          ctx.status = 401;
+          ctx.body = {
+            code: 401,
+            msg: '无效的客户端密钥',
+            data: null,
+          };
+          return;
+        }
+
+        // Store the application info in context for potential future use
+        const application = await ctx.service.clientSecret.getApplicationByClientSecret(clientSecret);
+        if (application) {
+          ctx.state.clientApplication = {
+            id: application._id,
+            name: application.name,
+            authType: 'client_secret',
+          };
+        }
+      } catch (e) {
+        ctx.logger.error('Client secret verification error:', e);
+        ctx.status = 500;
+        ctx.body = {
+          code: 500,
+          msg: '客户端密钥验证失败',
+          data: null,
+        };
+        return;
+      }
+    }
+
+    // SECOND: Check route permissions and user authentication
     // Get the route permission for this endpoint
     const permission = getRoutePermission(ctx.method, url);
 
@@ -21,7 +87,7 @@ export default () => {
       return;
     }
 
-    // If public access, allow without authentication
+    // If public access, allow without user authentication
     if (permission.access === 'public') {
       await next();
       return;
@@ -68,31 +134,6 @@ export default () => {
 // Helper function to attempt authentication
 async function tryAuthenticate(ctx: any, app: any) {
   let token = ctx.headers.authorization ? ctx.headers.authorization : '';
-  const clientSecret = ctx.headers['x-client-secret'];
-
-  // Try client secret authentication first
-  if (clientSecret) {
-    try {
-      const isValid = await ctx.service.clientSecret.verifyClientSecret(clientSecret);
-      if (isValid) {
-        const user = await ctx.service.clientSecret.getUserByClientSecret(clientSecret);
-        if (user) {
-          ctx.state.userinfo = {
-            userId: user._id,
-            username: user.username,
-            isAdmin: user.isAdmin,
-            authType: 'client_secret',
-          };
-          return { authenticated: true };
-        }
-        return { authenticated: false, error: '无效的客户端密钥' };
-      }
-      return { authenticated: false, error: '无效的客户端密钥' };
-    } catch (e) {
-      ctx.logger.error('Client secret authentication error:', e);
-      return { authenticated: false, error: '客户端密钥验证失败' };
-    }
-  }
 
   // Try JWT token authentication
   if (token) {

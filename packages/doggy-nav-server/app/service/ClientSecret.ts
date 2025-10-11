@@ -15,13 +15,6 @@ export default class ClientSecretService extends Service {
         clientSecret,
         isActive: true,
       });
-      if (application) {
-        // Update usage statistics
-        await ctx.model.Application.findByIdAndUpdate(application._id, {
-          lastUsedAt: new Date(),
-          $inc: { usageCount: 1 },
-        });
-      }
       return !!application;
     } catch (error: any) {
       this.logger.error('Error verifying client secret:', error);
@@ -29,7 +22,7 @@ export default class ClientSecretService extends Service {
     }
   }
 
-  async createApplication(userId: string, name: string, description?: string, allowedOrigins?: string[]): Promise<any> {
+  async createApplication(name: string, description?: string, allowedOrigins?: string[]): Promise<any> {
     const { ctx } = this;
     try {
       const clientSecret = this.generateClientSecret();
@@ -37,7 +30,6 @@ export default class ClientSecretService extends Service {
         name,
         description,
         clientSecret,
-        userId,
         allowedOrigins: allowedOrigins || [],
         isActive: true,
       });
@@ -113,5 +105,28 @@ export default class ClientSecretService extends Service {
     return typeof clientSecret === 'string' &&
     clientSecret.length === 64 &&
     /^[a-f0-9]+$/.test(clientSecret);
+  }
+
+  async getApplicationById(applicationId: string): Promise<any> {
+    const { ctx } = this;
+    try {
+      return await ctx.model.Application.findById(applicationId);
+    } catch (error: any) {
+      this.logger.error('Error getting application by ID:', error);
+      return null;
+    }
+  }
+
+  async getApplicationByClientSecret(clientSecret: string): Promise<any> {
+    const { ctx } = this;
+    try {
+      return await ctx.model.Application.findOne({
+        clientSecret,
+        isActive: true,
+      });
+    } catch (error: any) {
+      this.logger.error('Error getting application by client secret:', error);
+      return null;
+    }
   }
 }

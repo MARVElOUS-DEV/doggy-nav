@@ -36,3 +36,4 @@ screenshot
 build
 .pnpm/
 *debug.log
+*.local

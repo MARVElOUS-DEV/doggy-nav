@@ -24,9 +24,11 @@ Authorization: Bearer <your-jwt-token>
 ### 🔐 Authentication
 
 #### POST /api/login
+
 Login with username/email and password.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -35,6 +37,7 @@ Login with username/email and password.
 ```
 
 **Response:**
+
 ```json
 {
   "code": 1,
@@ -51,9 +54,11 @@ Login with username/email and password.
 ```
 
 #### POST /api/register
+
 Register a new user account.
 
 **Request:**
+
 ```json
 {
   "username": "john_doe",
@@ -63,6 +68,7 @@ Register a new user account.
 ```
 
 #### POST /api/logout
+
 Logout and invalidate token.
 
 **Headers:** `Authorization: Bearer <token>`
@@ -70,11 +76,13 @@ Logout and invalidate token.
 ### 👤 User Management
 
 #### GET /api/user/profile
+
 Get current user profile.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Response:**
+
 ```json
 {
   "code": 1,
@@ -89,11 +97,13 @@ Get current user profile.
 ```
 
 #### PUT /api/user/profile
+
 Update user profile.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request:**
+
 ```json
 {
   "username": "new_username",
@@ -104,9 +114,11 @@ Update user profile.
 ### 📚 Navigation Items
 
 #### GET /api/nav
+
 Get navigation items with optional filtering.
 
 **Query Parameters:**
+
 - `category` - Filter by category ID
 - `search` - Search in name and description
 - `page` - Page number (default: 1)
@@ -115,6 +127,7 @@ Get navigation items with optional filtering.
 - `order` - Sort order (asc, desc)
 
 **Response:**
+
 ```json
 {
   "code": 1,
@@ -142,11 +155,13 @@ Get navigation items with optional filtering.
 ```
 
 #### POST /api/nav
+
 Create a new navigation item.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request:**
+
 ```json
 {
   "name": "Google",
@@ -157,11 +172,13 @@ Create a new navigation item.
 ```
 
 #### PUT /api/nav/:id
+
 Update a navigation item.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request:**
+
 ```json
 {
   "name": "Updated Google",
@@ -172,14 +189,17 @@ Update a navigation item.
 ```
 
 #### DELETE /api/nav/:id
+
 Delete a navigation item.
 
 **Headers:** `Authorization: Bearer <token>`
 
 #### POST /api/nav/:id/view
+
 Increment view count for a navigation item.
 
 #### POST /api/nav/:id/star
+
 Toggle star status for a navigation item.
 
 **Headers:** `Authorization: Bearer <token>`
@@ -187,9 +207,11 @@ Toggle star status for a navigation item.
 ### 📁 Categories
 
 #### GET /api/categories
+
 Get all categories.
 
 **Response:**
+
 ```json
 {
   "code": 1,
@@ -208,11 +230,13 @@ Get all categories.
 ```
 
 #### POST /api/categories
+
 Create a new category (Admin only).
 
 **Headers:** `Authorization: Bearer <admin-token>`
 
 **Request:**
+
 ```json
 {
   "name": "New Category",
@@ -225,11 +249,13 @@ Create a new category (Admin only).
 ### ⭐ Favorites
 
 #### GET /api/favorites
+
 Get user's favorite navigation items.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Response:**
+
 ```json
 {
   "code": 1,
@@ -250,11 +276,13 @@ Get user's favorite navigation items.
 ```
 
 #### POST /api/favorites
+
 Add navigation item to favorites.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request:**
+
 ```json
 {
   "navItemId": "nav_id"
@@ -262,6 +290,7 @@ Add navigation item to favorites.
 ```
 
 #### DELETE /api/favorites/:id
+
 Remove item from favorites.
 
 **Headers:** `Authorization: Bearer <token>`
@@ -269,13 +298,16 @@ Remove item from favorites.
 ### 📊 Statistics
 
 #### GET /api/stats/ranking
+
 Get navigation item rankings.
 
 **Query Parameters:**
+
 - `type` - Ranking type (view, star, news)
 - `limit` - Number of items (default: 10)
 
 **Response:**
+
 ```json
 {
   "code": 1,
@@ -296,9 +328,11 @@ Get navigation item rankings.
 ```
 
 #### GET /api/stats/overview
+
 Get general statistics overview.
 
 **Response:**
+
 ```json
 {
   "code": 1,
@@ -347,6 +381,7 @@ API requests are rate-limited to prevent abuse:
 - **Admin**: 500 requests per minute
 
 Rate limit headers are included in responses:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -556,6 +591,7 @@ pnpm test -- --grep "API"
 ## Changelog
 
 ### v1.0.0
+
 - Initial API release
 - User authentication and management
 - Navigation item CRUD operations
