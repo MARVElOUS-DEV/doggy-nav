@@ -12,6 +12,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { NavItem } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 interface StatsChartProps {
   data: {
@@ -22,6 +23,7 @@ interface StatsChartProps {
 }
 
 function StatsChart({ data }: StatsChartProps): JSX.Element {
+  const { t } = useTranslation();
   // Prepare data for top viewed sites
   const topViewedData = useMemo(() => {
     return (data?.view || [])
@@ -74,12 +76,12 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
 
   return (
     <div className="bg-theme-background text-theme-foreground border border-theme-border rounded-2xl shadow-lg p-6 mb-8 transition-colors">
-      <h2 className="text-2xl font-bold mb-6">数据统计</h2>
+      <h2 className="text-2xl font-bold mb-6">{t('data_statistics')}</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Top Viewed Sites Chart */}
         <div className="p-4 bg-theme-muted border border-theme-border rounded-xl transition-colors">
-          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">最受欢迎网站 (访问量)</h3>
+          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">{t('most_popular_websites_views')}</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -102,8 +104,8 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   tickLine={{ stroke: 'var(--color-border)' }}
                 />
                 <Tooltip
-                  formatter={(value) => [value, '访问量']}
-                  labelFormatter={(name) => `网站: ${name}`}
+                  formatter={(value) => [value, t('views')]}
+                  labelFormatter={(name) => `${t('website_label')}${name}`}
                   contentStyle={{
                     backgroundColor: 'var(--color-card)',
                     borderColor: 'var(--color-border)',
@@ -112,7 +114,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
                 <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
-                <Bar dataKey="view" name="访问量" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="view" name={t('views')} fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -120,7 +122,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
 
         {/* Top Starred Sites Chart */}
         <div className="p-4 bg-theme-muted border border-theme-border rounded-xl transition-colors">
-          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">最高赞网站 (点赞数)</h3>
+          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">{t('highest_rated_websites_stars')}</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -143,8 +145,8 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   tickLine={{ stroke: 'var(--color-border)' }}
                 />
                 <Tooltip
-                  formatter={(value) => [value, '点赞数']}
-                  labelFormatter={(name) => `网站: ${name}`}
+                  formatter={(value) => [value, t('stars')]}
+                  labelFormatter={(name) => `${t('website_label')}${name}`}
                   contentStyle={{
                     backgroundColor: 'var(--color-card)',
                     borderColor: 'var(--color-border)',
@@ -153,7 +155,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
                 <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
-                <Bar dataKey="star" name="点赞数" fill="var(--color-secondary)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="star" name={t('stars')} fill="var(--color-secondary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -161,7 +163,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
 
         {/* Author Contribution Chart */}
         <div className="lg:col-span-2 p-4 bg-theme-muted border border-theme-border rounded-xl transition-colors">
-          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">贡献者排名</h3>
+          <h3 className="text-lg font-semibold text-theme-muted-foreground mb-4 text-center">{t('contributor_ranking')}</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -185,9 +187,9 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                 />
                 <Tooltip
                   formatter={(value, name) => {
-                    if (name === 'total') return [value, '总贡献'];
-                    if (name === 'count') return [value, '网站数量'];
-                    return [value, name === 'view' ? '访问量' : '点赞数'];
+                    if (name === 'total') return [value, t('total_contribution')];
+                    if (name === 'count') return [value, t('website_count')];
+                    return [value, name === 'view' ? t('view_count') : t('star_count')];
                   }}
                   contentStyle={{
                     backgroundColor: 'var(--color-card)',
@@ -197,8 +199,8 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
                 <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
-                <Bar dataKey="total" name="总贡献" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="count" name="网站数量" fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="total" name={t('total_contribution')} fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" name={t('website_count')} fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

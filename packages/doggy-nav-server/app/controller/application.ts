@@ -13,22 +13,19 @@ export default class ApplicationController extends Controller {
     return true;
   }
 
-  // Check if user can access application (owns it or is admin)
+  // Check if application exists (admin access required for all operations)
   private async checkApplicationAccess(applicationId: string) {
     const userInfo = this.getUserInfo();
+
+    if (!userInfo.isAdmin) {
+      this.error('权限不足，需要管理员权限');
+      return { hasAccess: false, application: null };
+    }
 
     const application = await this.ctx.model.Application.findById(applicationId);
     if (!application) {
       this.error('应用不存在');
       return { hasAccess: false, application: null };
-    }
-
-    const isOwner = application.userId.toString() === userInfo.userId;
-    const hasAccess = userInfo.isAdmin || isOwner;
-
-    if (!hasAccess) {
-      this.error('权限不足');
-      return { hasAccess: false, application };
     }
 
     return { hasAccess: true, application };
@@ -40,6 +37,10 @@ export default class ApplicationController extends Controller {
       if (!this.requireAuth()) return;
 
       const userInfo = this.getUserInfo();
+      if (!userInfo.isAdmin) {
+        return this.error('权限不足，需要管理员权限');
+      }
+
       const { name, description, allowedOrigins } = ctx.request.body;
 
       if (!name) {
@@ -47,7 +48,6 @@ export default class ApplicationController extends Controller {
       }
 
       const application = await ctx.service.clientSecret.createApplication(
-        userInfo.userId,
         name,
         description,
         allowedOrigins,
@@ -64,13 +64,12 @@ export default class ApplicationController extends Controller {
       if (!this.requireAuth()) return;
 
       const userInfo = this.getUserInfo();
-      let result: any = null;
-
-      if (userInfo.isAdmin) {
-        // Admin can see all applications
-        const { page = 1, limit = 10 } = ctx.query;
-        result = await ctx.service.clientSecret.getAllApplications(Number(page), Number(limit));
+      if (!userInfo.isAdmin) {
+        return this.error('权限不足，需要管理员权限');
       }
+
+      const { page = 1, limit = 10 } = ctx.query;
+      const result = await ctx.service.clientSecret.getAllApplications(Number(page), Number(limit));
 
       this.success(result);
     } catch (e: any) {

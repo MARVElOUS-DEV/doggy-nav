@@ -31,6 +31,8 @@ export default (app: Application) => {
   router.put('/api/nav', controller.nav.edit);
   router.get('/api/nav/find', controller.nav.info);
   router.get('/api/nav/ranking', controller.nav.ranking);
+  router.post('/api/nav/:id/view', controller.nav.incrementView);
+  router.post('/api/nav/:id/star', controller.nav.incrementStar);
 
   router.post('/api/tag', controller.tag.add);
   router.delete('/api/tag', controller.tag.remove);
@@ -49,7 +51,7 @@ export default (app: Application) => {
 
   // Favorite routes - require authentication
   router.post('/api/favorites', controller.favorite.add);
-  router.get('/api/favorites/remove', controller.favorite.remove);
+  router.post('/api/favorites/remove', controller.favorite.remove);
   router.get('/api/favorites/list', controller.favorite.list);
   router.get('/api/favorites/check', controller.favorite.check);
   router.get('/api/favorites/count', controller.favorite.count);

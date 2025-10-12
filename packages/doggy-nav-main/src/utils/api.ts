@@ -8,6 +8,7 @@ export const API_NAV_ADD = '/api/nav/add';
 export const API_NAV_REPTILE = '/api/nav/reptile';
 export const API_TAG_LIST = '/api/tag/list';
 export const API_NAV_RANDOM = '/api/nav/random';
+export const API_NAV_LIST = '/api/nav/list';
 
 const api = {
   // Get category list
@@ -35,6 +36,17 @@ const api = {
   }): Promise<{data: NavItem[], total: number, pageNumber: number}> =>
     axios.get(API_NAV_SEARCH, { params }),
 
+  // Get full/paginated nav list (server /api/nav/list)
+  getNavAll: (params?: {
+    pageSize?: number;
+    pageNumber?: number;
+    status?: number;
+    categoryId?: string;
+    name?: string;
+    hide?: boolean;
+  }): Promise<{ data: NavItem[]; total: number; pageNumber: number }> =>
+    axios.get(API_NAV_LIST, { params }),
+
   // Get random nav items
   getRandomNav: (count?: number): Promise<NavItem[]> =>
     axios.get(API_NAV_RANDOM, { params: { count } }),
@@ -52,13 +64,13 @@ const api = {
   }): Promise<NavItem> =>
     axios.post(API_NAV_REPTILE, data),
 
-  // Update nav view count
+  // Increment nav view count (server increments atomically)
   updateNavView: (id: string): Promise<void> =>
-    axios.patch(`${API_NAV}/${id}/view`),
+    axios.post(`/api/nav/${id}/view`),
 
-  // Update nav star count
+  // Increment nav star count (server increments atomically)
   updateNavStar: (id: string): Promise<void> =>
-    axios.patch(`${API_NAV}/${id}/star`),
+    axios.post(`/api/nav/${id}/star`),
 
   // Authentication APIs - using Next.js proxy routes
   login: (credentials: LoginFormValues): Promise<{token: string, user: User}> =>
@@ -81,7 +93,7 @@ const api = {
     axios.post('/api/favorites', { navId }),
 
   removeFavorite: (navId: string): Promise<void> =>
-    axios.get(`/api/favorites/remove?navId=${navId}`),
+    axios.post('/api/favorites/remove', undefined, { params: { navId } }),
 
   getFavoritesList: (): Promise<{data: NavItem[]}> =>
     axios.get('/api/favorites/list'),

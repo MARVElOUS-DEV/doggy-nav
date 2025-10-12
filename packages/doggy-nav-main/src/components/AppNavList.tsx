@@ -3,6 +3,8 @@ import AppNavItem from './AppNavItem';
 import { NavItem } from '@/types';
 import { useAtom } from 'jotai';
 import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
+import api from '@/utils/api';
+import { useTranslation } from 'react-i18next';
 
 const { Row } = Grid;
 
@@ -11,22 +13,27 @@ interface AppNavListProps {
 }
 
 export default function AppNavList({ list }: AppNavListProps) {
+  const { t } = useTranslation();
   const [, favoritesActions] = useAtom(favoritesActionsAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
 
-  const handleNavClick = (item: NavItem) => {
+  const handleNavClick = async (item: NavItem) => {
+    try {
+      await api.updateNavView(item.id);
+    } catch {}
     window.open(item.href, '_blank');
   };
 
-  const handleNavStar = (item: NavItem, callback: () => void) => {
-    console.log('star', item);
-    // TODO: Implement star API call
-    callback();
+  const handleNavStar = async(item: NavItem, callback: () => void) => {
+    try {
+      await api.updateNavStar(item.id);
+      callback?.();
+    } catch {}
   };
 
   const handleFavorite = async (item: NavItem, callback: (isFavorite: boolean) => void) => {
     if (!isAuthenticated) {
-      Message.warning('请先登录后再收藏');
+      Message.warning(t('please_login_to_favorite'));
       return;
     }
 
@@ -35,16 +42,16 @@ export default function AppNavList({ list }: AppNavListProps) {
 
       if (currentFavoriteStatus) {
         await favoritesActions({ type: 'REMOVE_FAVORITE', navId: item.id });
-        Message.success('取消收藏成功');
+        Message.success(t('unfavorite_success'));
         callback(false);
       } else {
         await favoritesActions({ type: 'ADD_FAVORITE', navId: item.id });
-        Message.success('收藏成功');
+        Message.success(t('favorite_success'));
         callback(true);
       }
     } catch (error) {
       console.error('Favorite operation failed:', error);
-      Message.error('操作失败，请重试');
+      Message.error(t('operation_failed'));
     }
   };
 

@@ -1,5 +1,5 @@
-const fabric = require('@umijs/fabric');
+const prettier = require('@umijs/max/prettier');
 
 module.exports = {
-  ...fabric.prettier,
+  ...prettier,
 };

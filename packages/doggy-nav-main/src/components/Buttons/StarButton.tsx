@@ -1,4 +1,5 @@
 import { Tooltip, Button } from '@arco-design/web-react';
+import { useTranslation } from 'react-i18next';
 
 interface StarButtonProps {
   isStarred: boolean;
@@ -21,20 +22,21 @@ export default function StarButton({
   className = '',
   showCount = true,
 }: StarButtonProps) {
+  const { t } = useTranslation();
 
   const activeColor = 'var(--color-primary)';
   const inactiveColor = 'var(--color-muted-foreground)';
 
   if (variant === 'icon-only') {
     return (
-      <Tooltip content={"点赞"}>
+      <Tooltip content={t('like')}>
         <button
           onClick={onToggle}
           disabled={disabled}
           className={`flex items-center cursor-pointer space-x-1 text-sm transition-opacity duration-200 ${
             disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
           } ${className}`}
-          title={"点赞"}
+          title={t('like')}
           style={{ color: isStarred ? activeColor : inactiveColor }}
         >
           <i className="iconfont icon-appreciatefill"></i>
@@ -47,13 +49,13 @@ export default function StarButton({
   const baseClassName = `cursor-pointer space-x-1 py-1 rounded text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center`;
 
   return (
-    <Tooltip content={"点赞"}>
+    <Tooltip content={t('like')}>
       <Button
         onClick={onToggle}
         disabled={disabled}
         size={size}
         className={`${baseClassName} ${className}`}
-        title={"点赞"}
+        title={t('like')}
         style={{
           color: isStarred ? activeColor : inactiveColor,
           backgroundColor: 'transparent',

@@ -19,7 +19,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (values: RegisterFormValues) => {
     if (values.password !== values.confirmPassword) {
-      Message.error('Passwords do not match');
+      Message.error(t('password_mismatch'));
       return;
     }
 
@@ -27,14 +27,14 @@ export default function RegisterPage() {
     try {
       const { user: {username} } = await api.register(values);
       if(username){
-        Message.success('Registration successful! You may login now.');
+        Message.success(t('registration_successful'));
         router.push('/login');
       }
     } catch (error: unknown) {
       if (typeof error === 'object' && error !== null && 'message' in error) {
-        Message.error((error as { message?: string }).message || 'Registration failed');
+        Message.error((error as { message?: string }).message || t('registration_failed'));
       } else {
-        Message.error('Registration failed');
+        Message.error(t('registration_failed'));
       }
     } finally {
       setLoading(false);
@@ -70,8 +70,8 @@ export default function RegisterPage() {
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Join Doggy Nav</h1>
-            <p className="text-gray-600">Create your account to get started</p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('join_doggy_nav')}</h1>
+            <p className="text-gray-600">{t('create_account')}</p>
           </motion.div>
 
           {/* Register form */}
@@ -87,16 +87,16 @@ export default function RegisterPage() {
               requiredSymbol={false}
             >
               <FormItem
-                label={<span className="text-gray-700 font-medium">Username</span>}
+                label={<span className="text-gray-700 font-medium">{t('username')}</span>}
                 field="username"
                 rules={[
-                  { required: true, message: 'Please enter your username' },
-                  { minLength: 3, message: 'Username must be at least 3 characters' },
-                  { maxLength: 20, message: 'Username must be at most 20 characters' }
+                  { required: true, message: t('username_required') },
+                  { minLength: 3, message: t('username_min_length') },
+                  { maxLength: 20, message: t('username_max_length') }
                 ]}
               >
                 <Input
-                  placeholder="Enter your username"
+                  placeholder={t('enter_username')}
                   size="large"
                   className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
                   prefix={<i className="iconfont icon-user text-gray-400"></i>}
@@ -104,15 +104,15 @@ export default function RegisterPage() {
               </FormItem>
 
               <FormItem
-                label={<span className="text-gray-700 font-medium">Email</span>}
+                label={<span className="text-gray-700 font-medium">{t('email')}</span>}
                 field="email"
                 rules={[
-                  { required: true, message: 'Please enter your email' },
-                  { type: 'email', message: 'Please enter a valid email address' }
+                  { required: true, message: t('email_required') },
+                  { type: 'email', message: t('email_invalid') }
                 ]}
               >
                 <Input
-                  placeholder="Enter your email"
+                  placeholder={t('enter_email')}
                   size="large"
                   className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
                   prefix={<i className="iconfont icon-email text-gray-400"></i>}
@@ -120,15 +120,15 @@ export default function RegisterPage() {
               </FormItem>
 
               <FormItem
-                label={<span className="text-gray-700 font-medium">Password</span>}
+                label={<span className="text-gray-700 font-medium">{t('password')}</span>}
                 field="password"
                 rules={[
-                  { required: true, message: 'Please enter your password' },
-                  { minLength: 6, message: 'Password must be at least 6 characters' }
+                  { required: true, message: t('password_required') },
+                  { minLength: 6, message: t('password_min_length') }
                 ]}
               >
                 <Input.Password
-                  placeholder="Enter your password"
+                  placeholder={t('enter_password')}
                   size="large"
                   className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
                   prefix={<i className="iconfont icon-lock text-gray-400"></i>}
@@ -136,15 +136,15 @@ export default function RegisterPage() {
               </FormItem>
 
               <FormItem
-                label={<span className="text-gray-700 font-medium">Confirm Password</span>}
+                label={<span className="text-gray-700 font-medium">{t('confirm_password')}</span>}
                 field="confirmPassword"
                 rules={[
-                  { required: true, message: 'Please confirm your password' },
+                  { required: true, message: t('confirm_password_required') },
                   {
                     validator: (value, callback) => {
                       const password = form.getFieldValue('password');
                       if (value && value !== password) {
-                        callback('Passwords do not match');
+                        callback(t('password_mismatch'));
                       } else {
                         callback();
                       }
@@ -153,7 +153,7 @@ export default function RegisterPage() {
                 ]}
               >
                 <Input.Password
-                  placeholder="Confirm your password"
+                  placeholder={t('enter_confirm_password')}
                   size="large"
                   className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
                   prefix={<i className="iconfont icon-lock text-gray-400"></i>}
@@ -168,7 +168,7 @@ export default function RegisterPage() {
                   size="large"
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-xl font-medium text-white shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? t('creating_account') : t('create_account_button')}
                 </Button>
               </FormItem>
             </Form>
@@ -182,12 +182,12 @@ export default function RegisterPage() {
             className="text-center mt-6"
           >
             <p className="text-gray-600 text-sm">
-              Already have an account?{' '}
+              {t('already_have_account')}{' '}
               <button
                 onClick={() => router.push('/login')}
                 className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
               >
-                Sign in
+                {t('sign_in_link')}
               </button>
             </p>
             <div className="mt-4 pt-4 border-t border-white border-opacity-30">
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                 onClick={() => router.push('/')}
                 className="text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200"
               >
-                ← Back to Home
+                {t('back_to_home')}
               </button>
             </div>
           </motion.div>

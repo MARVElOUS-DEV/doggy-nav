@@ -29,16 +29,16 @@ export default function LoginPage() {
         },
       })
 
-      Message.success('Login successful!');
-      
+      Message.success(t('login_successful'));
+
       // Redirect to home or previous page
       const redirectTo = (router.query.redirect as string) || '/';
       router.push(redirectTo);
     } catch (error: unknown) {
       if (typeof error === 'object' && error !== null && 'message' in error) {
-        Message.error((error as { message?: string }).message || 'Login failed');
+        Message.error((error as { message?: string }).message || t('login_failed'));
       } else {
-        Message.error('Login failed');
+        Message.error(t('login_failed'));
       }
     } finally {
       setLoading(false);
@@ -74,8 +74,8 @@ export default function LoginPage() {
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Welcome Back</h1>
-            <p className="text-gray-600 dark:text-gray-300">Sign in to your Doggy Nav account</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">{t('welcome_back')}</h1>
+            <p className="text-gray-600 dark:text-gray-300">{t('sign_in_to_account')}</p>
           </motion.div>
 
           {/* Login form */}
@@ -91,15 +91,15 @@ export default function LoginPage() {
               requiredSymbol={false}
             >
               <FormItem
-                label={<span className="text-gray-700 dark:text-gray-300 font-medium">Username</span>}
+                label={<span className="text-gray-700 dark:text-gray-300 font-medium">{t('username')}</span>}
                 field="username"
                 rules={[
-                  { required: true, message: 'Please enter your username' },
-                  { minLength: 3, message: 'Username must be at least 3 characters' }
+                  { required: true, message: t('username_required') },
+                  { minLength: 3, message: t('username_min_length') }
                 ]}
               >
                 <Input
-                  placeholder="Enter your username"
+                  placeholder={t('enter_username')}
                   size="large"
                   className="bg-white dark:bg-gray-700 bg-opacity-50 dark:bg-opacity-80 border-white dark:border-gray-500 border-opacity-30 dark:border-opacity-50 backdrop-filter backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100"
                   prefix={<i className="iconfont icon-user text-gray-400 dark:text-gray-300"></i>}
@@ -107,15 +107,15 @@ export default function LoginPage() {
               </FormItem>
 
               <FormItem
-                label={<span className="text-gray-700 dark:text-gray-300 font-medium">Password</span>}
+                label={<span className="text-gray-700 dark:text-gray-300 font-medium">{t('password')}</span>}
                 field="password"
                 rules={[
-                  { required: true, message: 'Please enter your password' },
-                  { minLength: 6, message: 'Password must be at least 6 characters' }
+                  { required: true, message: t('password_required') },
+                  { minLength: 6, message: t('password_min_length') }
                 ]}
               >
                 <Input.Password
-                  placeholder="Enter your password"
+                  placeholder={t('enter_password')}
                   size="large"
                   className="bg-white dark:bg-gray-700 bg-opacity-50 dark:bg-opacity-80 border-white dark:border-gray-500 border-opacity-30 dark:border-opacity-50 backdrop-filter backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100"
                   prefix={<i className="iconfont icon-lock text-gray-400 dark:text-gray-300"></i>}
@@ -130,7 +130,7 @@ export default function LoginPage() {
                   size="large"
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-xl font-medium text-white shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  {loading ? 'Signing In...' : 'Sign In'}
+                  {loading ? t('signing_in') : t('sign_in_button')}
                 </Button>
               </FormItem>
             </Form>
@@ -144,12 +144,12 @@ export default function LoginPage() {
             className="text-center mt-6"
           >
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Don&apos;t have an account?{' '}
+              {t('no_account')}{' '}
               <button
                 onClick={() => router.push('/register')}
                 className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200"
               >
-                Sign up
+                {t('sign_up')}
               </button>
             </p>
             <div className="mt-4 pt-4 border-t border-white dark:border-gray-600 border-opacity-30 dark:border-opacity-50">
@@ -157,7 +157,7 @@ export default function LoginPage() {
                 onClick={() => router.push('/')}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors duration-200"
               >
-                ← Back to Home
+                {t('back_to_home')}
               </button>
             </div>
           </motion.div>

@@ -100,7 +100,7 @@ export function createTimelineData(websites: NavItem[], useRecentYears = true): 
 }
 
 // 创建模拟的TimelineItem数据 - 按月分组的时间线数据
-export function createMockTimelineData(): TimelineYear[] {
+export function createMockTimelineData(t?: (key: string) => string): TimelineYear[] {
   const currentYear = new Date().getFullYear();
   const months = Array.from({ length: 12 }, (_, i) => i + 1); // 1-12月
 
@@ -125,19 +125,26 @@ export function createMockTimelineData(): TimelineYear[] {
     ];
 
     const descriptions = [
-      '这是一个非常优秀的开发工具，大大提升了开发效率',
-      '专业的在线协作平台，团队成员可以实时协作',
-      '强大的代码编辑器，支持多种编程语言和插件',
-      '现代化的框架，让前端开发变得更加简单高效',
-      '云服务平台，提供了稳定可靠的基础设施',
-      '设计师的必备工具，提供了丰富的设计资源和灵感',
-      '项目管理工具，让团队协作变得更加井然有序',
-      '文档平台，提供了详尽的开发文档和教程',
-      '在线代码仓库，支持版本控制和团队协作',
-      '前端框架，让构建用户界面变得更加简单'
+      t ? t('excellent_dev_tool') : '这是一个非常优秀的开发工具，大大提升了开发效率',
+      t ? t('professional_collaboration_platform') : '专业的在线协作平台，团队成员可以实时协作',
+      t ? t('powerful_code_editor') : '强大的代码编辑器，支持多种编程语言和插件',
+      t ? t('modern_framework') : '现代化的框架，让前端开发变得更加简单高效',
+      t ? t('cloud_service_platform') : '云服务平台，提供了稳定可靠的基础设施',
+      t ? t('essential_design_tool') : '设计师的必备工具，提供了丰富的设计资源和灵感',
+      t ? t('project_management_tool') : '项目管理工具，让团队协作变得更加井然有序',
+      t ? t('documentation_platform') : '文档平台，提供了详尽的开发文档和教程',
+      t ? t('online_code_repo') : '在线代码仓库，支持版本控制和团队协作',
+      t ? t('frontend_framework') : '前端框架，让构建用户界面变得更加简单'
     ];
 
-    const categories = ['开发工具', '设计平台', '云服务', '框架库', '项目管理', '前端开发'];
+    const categories = [
+      t ? t('development_tool') : '开发工具',
+      t ? t('design_platform') : '设计平台',
+      t ? t('cloud_service') : '云服务',
+      t ? t('framework_library') : '框架库',
+      t ? t('project_management') : '项目管理',
+      t ? t('frontend_development') : '前端开发'
+    ];
     const statusTypes: ('active' | 'inactive' | 'pending')[] = ['active', 'active', 'active', 'active', 'inactive', 'pending'];
 
     const websiteName = websiteNames[Math.floor(Math.random() * websiteNames.length)];

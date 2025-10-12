@@ -14,6 +14,7 @@ import { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api'
 import { useAtom } from 'jotai'
 import { RecommendFormValues } from '@/types'
 import { categoriesAtom, tagsAtom } from '@/store/store'
+import { useTranslation } from 'react-i18next'
 
 const FormItem = Form.Item
 
@@ -23,12 +24,13 @@ export default function Recommend() {
   const [categories] = useAtom(categoriesAtom)
   const [tags] = useAtom(tagsAtom)
   const [form] = Form.useForm()
+  const { t } = useTranslation('translation')
 
   const addNav = async (values: RecommendFormValues) => {
     setLoading(true)
     try {
       await axios.post(API_NAV_ADD, values)
-      Message.success('感谢您的支持，请等待后台审核通过！')
+      Message.success(t('thank_you_support'))
       form.resetFields()
     } catch (error) {
       Message.error(`${error}`)
@@ -49,36 +51,36 @@ export default function Recommend() {
         desc
       })
     } catch (e) {
-      Message.error('请求超时')
+      Message.error(t('request_timeout'))
     }
     setFormLoading(false)
   }
 
   const rules = {
     href: [
-      { required: true, message: '请输入url' },
+      { required: true, message: t('enter_url') },
       {
         pattern:
           /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.,@?^=%&:/~\+#]*[\w\-@?^=%&/~\+#])?/,
-        message: '请输入正确的url',
+        message: t('enter_correct_url'),
       },
     ],
-    tags: [{ max: 5, message: '最多选择5个标签' }],
-    categoryId: [{ required: true, message: '请选择网站的类别' }],
-    name: [{ required: true, message: '请输入名称' }],
-    desc: [{ required: true, message: '请输入描述' }],
-    logo: [{ required: true, message: '请输入logo' }],
+    tags: [{ max: 5, message: t('max_5_tags') }],
+    categoryId: [{ required: true, message: t('select_category') }],
+    name: [{ required: true, message: t('enter_name') }],
+    desc: [{ required: true, message: t('enter_description') }],
+    logo: [{ required: true, message: t('enter_logo') }],
     authorUrl: [
       {
         pattern:
           /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.,@?^=%&:/~\+#]*[\w\-@?^=%&/~\+#])?/,
-        message: '请输入正确的url',
+        message: t('enter_correct_url'),
       },
     ],
     authorName: [
       {
         pattern: /^[\u4e00-\u9fa5]{2,6}$/,
-        message: '作者名称在2个字到6个字以内',
+        message: t('author_name_2_6_chars'),
       },
     ],
   }
@@ -99,9 +101,9 @@ export default function Recommend() {
             className="text-center mb-8"
           >
             <h1 className="my-0 text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-              推荐网站
+              {t('recommend_website')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">分享优质网站，共建更好的互联网生态</p>
+            <p className="text-gray-600 dark:text-gray-300 text-lg">{t('share_quality_websites')}</p>
           </motion.div>
 
           <motion.div
@@ -131,9 +133,9 @@ export default function Recommend() {
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="md:col-span-2"
                 >
-                  <FormItem label="🔗 网站链接" field="href" rules={rules.href}>
+                  <FormItem label={t('website_link')} field="href" rules={rules.href}>
                     <Input
-                      placeholder="http://www.baidu.com/"
+                      placeholder={t('enter_website_url')}
                       onBlur={getNavInfo}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-purple-200 dark:focus:ring-purple-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
@@ -145,9 +147,9 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <FormItem label="📝 网站名称" field="name" rules={rules.name}>
+                  <FormItem label={t('website_name')} field="name" rules={rules.name}>
                     <Input
-                      placeholder="输入网站名称"
+                      placeholder={t('enter_website_name')}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-blue-200 dark:focus:ring-blue-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </FormItem>
@@ -158,9 +160,9 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  <FormItem label="🖼️ 网站logo" field="logo" rules={rules.logo}>
+                  <FormItem label={t('website_logo')} field="logo" rules={rules.logo}>
                     <Input
-                      placeholder="输入网站logo"
+                      placeholder={t('enter_website_logo')}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-pink-400 dark:focus:border-pink-500 focus:ring-pink-200 dark:focus:ring-pink-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </FormItem>
@@ -172,9 +174,9 @@ export default function Recommend() {
                   transition={{ duration: 0.5, delay: 0.4 }}
                   className="md:col-span-2"
                 >
-                  <FormItem label="📄 网站描述" field="desc" rules={rules.desc}>
+                  <FormItem label={t('website_description')} field="desc" rules={rules.desc}>
                     <Input
-                      placeholder="一句话网站描述，15个字以内"
+                      placeholder={t('enter_website_description')}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-orange-400 dark:focus:border-orange-500 focus:ring-orange-200 dark:focus:ring-orange-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </FormItem>
@@ -185,9 +187,9 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
                 >
-                  <FormItem label="📂 网站分类" field="categoryId" rules={rules.categoryId}>
+                  <FormItem label={t('website_category')} field="categoryId" rules={rules.categoryId}>
                     <Select
-                      placeholder="请选择"
+                      placeholder={t('select')}
                       showSearch
                       className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-indigo-200 dark:focus:ring-indigo-800 rounded-xl transition-all duration-300 category-select bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
@@ -201,12 +203,12 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
                 >
-                  <FormItem label="🏷️ 网站标签" field="tags" rules={rules.tags} className="pt-[1em]">
+                  <FormItem label={t('website_tags')} field="tags" rules={rules.tags} className="pt-[1em]">
                     <Select
                       mode="multiple"
                       showSearch
                       allowCreate
-                      placeholder="输入网站标签，最多5个"
+                      placeholder={t('enter_website_tags')}
                       className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-200 dark:focus:ring-green-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
                         {tags.map((item) => (
@@ -223,9 +225,9 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.7 }}
                 >
-                  <FormItem label="👤 推荐人名称" field="authorName" rules={rules.authorName}>
+                  <FormItem label={t('recommender_name')} field="authorName" rules={rules.authorName}>
                     <Input
-                      placeholder="填写你推广的名称"
+                      placeholder={t('enter_recommender_name')}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-purple-200 dark:focus:ring-purple-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </FormItem>
@@ -236,9 +238,9 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.8 }}
                 >
-                  <FormItem label="🔗 推荐人网站" field="authorUrl" rules={rules.authorUrl}>
+                  <FormItem label={t('recommender_website')} field="authorUrl" rules={rules.authorUrl}>
                     <Input
-                      placeholder="填写你要推广的链接"
+                      placeholder={t('enter_recommender_url')}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-blue-200 dark:focus:ring-blue-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </FormItem>
@@ -250,9 +252,9 @@ export default function Recommend() {
                   transition={{ duration: 0.5, delay: 0.9 }}
                   className="md:col-span-2"
                 >
-                  <FormItem label="📝 网站详情" field="detail">
+                  <FormItem label={t('website_details')} field="detail">
                     <Input.TextArea
-                      placeholder="输入网站详情"
+                      placeholder={t('enter_website_details')}
                       className="h-24 border-2 border-gray-200 dark:border-gray-600 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-200 dark:focus:ring-green-800 rounded-xl transition-all duration-300 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </FormItem>
@@ -273,7 +275,7 @@ export default function Recommend() {
                       loading={loading}
                       className="h-14 px-8 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      {loading ? '提交中...' : '提交推荐'}
+                      {loading ? t('submitting') : t('submit_recommendation')}
                     </Button>
                   </motion.div>
                 </FormItem>
@@ -287,7 +289,7 @@ export default function Recommend() {
             transition={{ duration: 0.5, delay: 1.2 }}
             className="mt-8 text-center text-gray-500 dark:text-gray-400 text-sm"
           >
-            <p>感谢您的贡献，让我们一起打造更好的网络导航！</p>
+            <p>{t('thank_you_contribution')}</p>
           </motion.div>
         </motion.div>
       </div>

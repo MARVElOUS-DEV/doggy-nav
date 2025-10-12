@@ -2,9 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@arco-design/web-react';
+import { useTranslation } from 'react-i18next';
 
 export default function NotFound() {
   const router = useRouter();
+  const { t } = useTranslation('translation');
 
   return (
     <div className='absolute top-1/2 left-1/2 mb-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center'>
@@ -12,22 +14,21 @@ export default function NotFound() {
         404
       </span>
       <h2 className='font-heading my-2 text-2xl font-bold'>
-        Something&apos;s missing
+        {t('something_missing')}
       </h2>
       <p>
-        Sorry, the page you are looking for doesn&apos;t exist or has been
-        moved.
+        {t('page_not_found')}
       </p>
       <div className='mt-8 flex justify-center gap-2'>
         <Button onClick={() => router.back()} type='primary' size='large'>
-          Go back
+          {t('go_back')}
         </Button>
         <Button
           onClick={() => router.push('/dashboard')}
           type='outline'
           size='large'
         >
-          Back to Home
+          {t('back_to_home_button')}
         </Button>
       </div>
     </div>

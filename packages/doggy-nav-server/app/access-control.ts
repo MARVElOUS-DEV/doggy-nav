@@ -40,6 +40,8 @@ export const routePermissions: RoutePermission[] = [
   { method: 'PUT', path: '/api/nav', access: 'authenticated', description: 'Update navigation item' },
   { method: 'GET', path: '/api/nav/find', access: 'optional', description: 'Find navigation item' },
   { method: 'GET', path: '/api/nav/ranking', access: 'optional', description: 'Get navigation rankings' },
+  { method: 'POST', path: '/api/nav/:id/view', access: 'public', description: 'Increment navigation view count' },
+  { method: 'POST', path: '/api/nav/:id/star', access: 'public', description: 'Increment navigation star count' },
 
   // Tag routes
   { method: 'POST', path: '/api/tag', access: 'admin', description: 'Create tag' },

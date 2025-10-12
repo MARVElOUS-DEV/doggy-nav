@@ -2,6 +2,7 @@ import { Tooltip, Button } from '@arco-design/web-react';
 import { IconHeartFill } from '@arco-design/web-react/icon';
 import { useAtom } from 'jotai';
 import { isAuthenticatedAtom } from '@/store/store';
+import { useTranslation } from 'react-i18next';
 
 interface FavoriteButtonProps {
   isFavorite: boolean;
@@ -20,6 +21,7 @@ export default function FavoriteButton({
   variant = 'button',
   className = '',
 }: FavoriteButtonProps) {
+  const { t } = useTranslation();
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
   const activeColor = 'var(--color-secondary)';
   const inactiveColor = 'var(--color-muted-foreground)';
@@ -31,7 +33,7 @@ export default function FavoriteButton({
 
   const baseClassName = `cursor-pointer space-x-1 py-1 rounded text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center`;
 
-  const tooltipContent = isFavorite ? "取消收藏" : "收藏";
+  const tooltipContent = isFavorite ? t('unfavorite') : t('favorite');
 
   if (variant === 'icon-only') {
     return (

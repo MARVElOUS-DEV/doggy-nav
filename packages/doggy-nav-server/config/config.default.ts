@@ -91,6 +91,23 @@ export default (appInfo: EggAppInfo) => {
     autoStart: true,
   };
 
+  // Client Secret Configuration
+  config.clientSecret = {
+    // Enable/disable client secret requirement for ALL APIs
+    // When enabled, ALL API endpoints must include a valid client secret
+    // When disabled, APIs work without client secret (legacy behavior)
+    requireForAllAPIs: process.env.REQUIRE_CLIENT_SECRET === 'true' || false,
+    // Header name for client secret (default: x-client-secret)
+    headerName: 'x-client-secret',
+    // Allow specific routes to bypass client secret requirement even when enabled
+    // These are essential routes that should remain accessible for initial setup
+    bypassRoutes: [
+      '/api/register',
+      '/api/login',
+      '/api/application/verify-client-secret',
+    ],
+  };
+
   return {
     ...config,
   };

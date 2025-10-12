@@ -5,15 +5,18 @@ import NavRankingList from '@/components/NavRankingList';
 import StatsChart from '@/components/StatsChart';
 import VerticalTimelineContainer from '@/components/Timelines/VerticalTimelineContainer';
 import api from '@/utils/api';
-import { createMockTimelineData } from '@/utils/timelineData';
+import { createTimelineData } from '@/utils/timelineData';
+import { chromeMicroToISO } from '@/utils/time';
 import { useAtom } from 'jotai';
 import { navRankingAtom } from '@/store/store';
 import Link from 'next/link';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
+import { useTranslation } from 'react-i18next';
 
 export default function HomePage() {
   const [navRanking, setNavRanking] = useAtom(navRankingAtom);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation('translation');
   const [currentYearData, setCurrentYearData] = useState<any>(null);
   const currentYear = new Date().getFullYear();
   const [selectedItem, setSelectedItem] = useState<TimelineItemType | undefined>();
@@ -26,12 +29,16 @@ export default function HomePage() {
         const navRankingData = await api.getNavRanking();
         setNavRanking(navRankingData);
 
-        // Create mock timeline data
-        const timelineData = createMockTimelineData();
-        console.log('Generated current year data:', timelineData);
-        if (timelineData && timelineData.length > 0) {
-          setCurrentYearData(timelineData[0]); // 只取第一年（当前年）
-        }
+        // Fetch nav list and build timeline data
+        const list = await api.getNavAll({ pageSize: 500, pageNumber: 1 });
+        const normalized = (list?.data || []).map((n: any) => ({
+          ...n,
+          createTime: chromeMicroToISO((n as any).createTime) || (n as any).createTime,
+        }));
+        const timelineData = createTimelineData(normalized, true);
+        const currentYear = new Date().getFullYear();
+        const cy = timelineData.find(y => y.year === currentYear);
+        setCurrentYearData(cy || { year: currentYear, items: [], totalWebsites: 0, color: '', position: { x: 0, y: 0, z: 0, rotation: 0 }, featuredWebsites: [] });
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -84,20 +91,20 @@ export default function HomePage() {
           <div className="bg-theme-background rounded-3xl shadow-xl overflow-hidden border border-theme-border">
             <div className="hero-gradient p-8 text-white relative">
               <div className="max-w-3xl mx-auto text-center relative z-10">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">精选网站导航</h1>
-                <p className="text-xl opacity-90 mb-8">发现优质网站，探索数字世界</p>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('curated_website_navigation')}</h1>
+                <p className="text-xl opacity-90 mb-8">{t('discover_quality_websites')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
                     href="/login"
                     className="bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
                   >
-                    登陆探索
+                    {t('login_explore')}
                   </Link>
                   <Link
                     href="/search"
                     className="bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary-foreground font-semibold py-3 px-6 rounded-lg transition-all duration-300"
                   >
-                    搜索网站
+                    {t('search_websites')}
                   </Link>
                 </div>
               </div>
@@ -114,8 +121,8 @@ export default function HomePage() {
         {!loading && (
           <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-theme-foreground mb-2">热门推荐</h2>
-              <p className="text-theme-muted-foreground">基于访问量、点赞数和最新收录的热门网站</p>
+              <h2 className="text-2xl font-bold text-theme-foreground mb-2">{t('popular_recommendations')}</h2>
+              <p className="text-theme-muted-foreground">{t('based_on_views_likes_new_additions')}</p>
             </div>
             <NavRankingList data={navRanking} />
           </div>
@@ -126,20 +133,33 @@ export default function HomePage() {
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
               <Spin size={40} />
-              <p className="mt-4 text-theme-muted-foreground">正在加载精彩内容...</p>
+              <p className="mt-4 text-theme-muted-foreground">{t('loading_content')}</p>
             </div>
           </div>
         )}
 
         {/* Timeline Section */}
-        {!loading && currentYearData && (
+        {!loading && (
           <div className="bg-theme-background rounded-2xl shadow-lg p-8 my-8 border border-theme-border">
-            <VerticalTimelineContainer
-              year={currentYearData.year}
-              items={currentYearData.items}
-              onItemSelect={setSelectedItem}
-              selectedItem={selectedItem}
-            />
+            {currentYearData && currentYearData.items && currentYearData.items.length > 0 ? (
+              <VerticalTimelineContainer
+                year={currentYear}
+                items={currentYearData.items}
+                onItemSelect={setSelectedItem}
+                selectedItem={selectedItem}
+              />
+            ) : (
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-theme-foreground mb-2">{t('no_websites_collected_this_year')}</h2>
+                <p className="text-theme-muted-foreground mb-6">{t('submit_worthwhile_sites')}</p>
+                <Link
+                  href="/recommend"
+                  className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
+                >
+                  {t('submit_website')}
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -153,15 +173,15 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
               <div className="text-3xl font-bold">{navRanking?.view?.length || 0}</div>
-              <div className="text-blue-100">热门网站</div>
+              <div className="text-blue-100">{t('popular_websites')}</div>
             </div>
             <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
               <div className="text-3xl font-bold">{navRanking?.star?.length || 0}</div>
-              <div className="text-purple-100">高赞网站</div>
+              <div className="text-purple-100">{t('highly_rated_websites')}</div>
             </div>
             <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
               <div className="text-3xl font-bold">{navRanking?.news?.length || 0}</div>
-              <div className="text-green-100">最新收录</div>
+              <div className="text-green-100">{t('latest_added')}</div>
             </div>
           </div>
         )}
@@ -170,15 +190,15 @@ export default function HomePage() {
         {!loading && (
           <div className="mt-12 text-center">
             <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
-              <h3 className="text-2xl font-bold text-theme-foreground mb-4">找不到想要的网站？</h3>
+              <h3 className="text-2xl font-bold text-theme-foreground mb-4">{t('cant_find_website')}</h3>
               <p className="text-theme-muted-foreground mb-6 max-w-2xl mx-auto">
-                我们致力于为用户提供最优质的网站导航服务。如果您有推荐的网站或宝贵建议，欢迎提交！
+                {t('best_navigation_service')}
               </p>
               <Link
                 href="/recommend"
                 className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
               >
-                提交网站
+                {t('submit_website')}
               </Link>
             </div>
           </div>

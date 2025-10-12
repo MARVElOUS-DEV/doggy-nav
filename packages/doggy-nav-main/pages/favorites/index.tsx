@@ -8,9 +8,11 @@ import { NavItem } from '@/types';
 import { useAtomValue } from 'jotai';
 import { authStateAtom } from '@/store/store';
 import DoggyImage from '@/components/DoggyImage';
+import { useTranslation } from 'react-i18next';
 
 // Mac-style app icon
 const FavoriteItem = ({ item, onRemove }: { item: NavItem; onRemove: (id: string) => void }) => {
+  const { t } = useTranslation('translation');
   return (
     <div
       className="flex flex-col items-center group cursor-pointer transform transition-all duration-200 hover:scale-110"
@@ -35,7 +37,7 @@ const FavoriteItem = ({ item, onRemove }: { item: NavItem; onRemove: (id: string
         {item.name}
       </span>
       <span className="text-xs text-center text-gray-500 mt-1 max-w-full truncate">
-        {item.category || 'Uncategorized'}
+        {item.category || t('uncategorized')}
       </span>
     </div>
   );
@@ -47,6 +49,7 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<NavItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation('translation');
 
   const mockFavorites = useMemo(() => [
     {
@@ -214,8 +217,8 @@ export default function FavoritesPage() {
     <AuthGuard redirectTo="/login">
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100">
         <Head>
-          <title>我的收藏 - DoggyNav</title>
-          <meta name="description" content="我收藏的网站" />
+          <title>{t('my_favorites')} - DoggyNav</title>
+          <meta name="description" content={t('my_favorite_websites')} />
         </Head>
 
 
@@ -232,13 +235,13 @@ export default function FavoritesPage() {
                 <div className="absolute -inset-4 bg-gradient-to-r from-blue-400/20 to-purple-500/20 rounded-full blur-lg opacity-70"></div>
                 <Empty
                   description={
-                    <span className="text-gray-600 font-medium">暂无收藏的网站</span>
+                    <span className="text-gray-600 font-medium">{t('no_favorite_websites')}</span>
                   }
                   className="relative"
                 />
               </div>
               <p className="text-gray-700 mb-8 text-center max-w-md text-lg">
-                您还没有收藏任何网站。浏览网站时点击 ❤️ 按钮可以添加到收藏夹。
+                {t('no_favorite_websites_tip')}
               </p>
               <Link href="/navcontents">
                 <Button
@@ -246,7 +249,7 @@ export default function FavoritesPage() {
                   size="large"
                   className="px-8 py-5 text-lg rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
-                  去浏览网站
+                  {t('go_browse_websites')}
                 </Button>
               </Link>
             </div>
@@ -274,31 +277,31 @@ export default function FavoritesPage() {
             <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
               <span className="text-lg">🏠</span>
             </div>
-            <span>Home</span>
+            <span>{t('home')}</span>
           </Link>
           <Link href="/search" className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors">
             <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
               <span className="text-lg">🔍</span>
             </div>
-            <span>Search</span>
+            <span>{t('search')}</span>
           </Link>
           <Link href="/favorites" className="flex flex-col items-center text-xs text-blue-600 transition-colors">
             <div className="w-10 h-10 bg-blue-500 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 transition-colors shadow-sm">
               <span className="text-lg text-white">⭐</span>
             </div>
-            <span>Favorites</span>
+            <span>{t('favorites')}</span>
           </Link>
           <Link href="/timeline" className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors">
             <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
               <span className="text-lg">📊</span>
             </div>
-            <span>Timeline</span>
+            <span>{t('timeline')}</span>
           </Link>
           <Link href="/navcontents" className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors">
             <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
               <span className="text-lg">📚</span>
             </div>
-            <span>Categories</span>
+            <span>{t('categories')}</span>
           </Link>
         </footer>
       </div>

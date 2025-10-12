@@ -3,6 +3,8 @@ import * as bcrypt from 'bcrypt';
 import userModel from '../app/model/user';
 import * as readline from 'readline';
 import mongoCfg from '../config/mongodb';
+import applicationModel from '../app/model/application';
+import * as crypto from 'crypto';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -31,6 +33,7 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
     db.mongoose = mongoose;
 
     const userSchemaModel = userModel(db);
+    const applicationSchemaModel = applicationModel(db);
     console.info('mongoUrl', mongoUrl);
 
     const username = await askQuestion('Enter username (default: admin)', false);
@@ -45,6 +48,33 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
 
     if (modifiedCount || upsertedCount || matchedCount) {
       console.info(`create user ${finalUsername} with password ${finalPassword} success ✅`);
+    }
+
+    // Ensure a default client application exists with a generated client secret
+    const applicationsCount = await applicationSchemaModel.countDocuments();
+    if (applicationsCount === 0) {
+      const clientSecret = crypto.randomBytes(32).toString('hex');
+      const defaultAppName = process.env.DEFAULT_CLIENT_APP_NAME || 'default-app';
+      const appDoc = await applicationSchemaModel.create({
+        name: defaultAppName,
+        description: 'Auto-created by postinstall script',
+        clientSecret,
+        allowedOrigins: [],
+        isActive: true,
+      });
+      console.info('✅ Default client application created:', {
+        id: appDoc._id?.toString?.() || appDoc._id,
+        name: appDoc.name,
+      });
+      console.info('🔑 Client Secret (store securely, shown once):', clientSecret);
+      console.info('➡️  Next steps:');
+      console.info('   - Main (Next.js): set SERVER_CLIENT_SECRET to this value (requests go via Next.js API routes).');
+      console.info('   - Admin: DO NOT expose in browser env.');
+      console.info('       • Dev: configure Umi dev proxy to inject header x-client-secret from DOGGY_SERVER_CLIENT_SECRET.');
+      console.info('       • Prod: set DOGGY_SERVER_CLIENT_SECRET in nginx (proxy_set_header x-client-secret).');
+      console.info('   - Finally set REQUIRE_CLIENT_SECRET=true on the server and restart.');
+    } else {
+      console.info('ℹ️  Client applications already exist, skipping default client creation.');
     }
   } catch (error) {
     console.error('Error creating user:', error);

@@ -28,7 +28,8 @@ instance.interceptors.request.use(
     // Add auth token if available
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token && config.headers) {
-      (config.headers as any).Authorization = token;
+      const hasBearer = token.startsWith('Bearer ');
+      (config.headers as any).Authorization = hasBearer ? token : `Bearer ${token}`;
     }
 
     // Add request timestamp for debugging
