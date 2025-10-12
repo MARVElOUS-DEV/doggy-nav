@@ -216,7 +216,9 @@ These bypass routes are essential for initial system setup and client secret man
 2. Configure web apps to send the secret header automatically
 
 - Main (Next.js): set env `SERVER_URL` and `SERVER_CLIENT_SECRET` in your hosting environment. The app forwards requests through Next.js API routes and automatically adds header `x-client-secret: $SERVER_CLIENT_SECRET` when calling the server.
-- Admin (Umi): set env `UMI_APP_CLIENT_SECRET` so browser requests include header `x-client-secret: $UMI_APP_CLIENT_SECRET`.
+- Admin (Umi): DO NOT expose the secret in the browser. Inject the header at a trusted proxy:
+  - Development: configure Umi dev proxy to forward `/api` to the server and inject header `x-client-secret` from `DOGGY_SERVER_CLIENT_SECRET`.
+  - Production: configure nginx to proxy `/api` and inject header `x-client-secret` from the env `DOGGY_SERVER_CLIENT_SECRET`.
 
 3. Enable client secret requirement
 
@@ -225,7 +227,7 @@ These bypass routes are essential for initial system setup and client secret man
 
 Notes:
 
-- The admin frontend runs in the browser; putting the secret there exposes it to users. If this is a concern for your deployment, prefer injecting `x-client-secret` via a trusted reverse proxy instead.
+- The admin frontend runs in the browser; never expose the secret there. Always inject `x-client-secret` via the Umi dev proxy (dev) or nginx (prod).
 
 ### Automatic default secret creation (postinstall)
 
@@ -238,7 +240,7 @@ After the secret is printed:
 
 1. Add it to the web apps:
    - Main (Next.js): `SERVER_CLIENT_SECRET=<printed-secret>`
-   - Admin (Umi): `UMI_APP_CLIENT_SECRET=<printed-secret>` (or inject via proxy)
+   - Admin (Umi): set `DOGGY_SERVER_CLIENT_SECRET=<printed-secret>` in the Umi dev environment (proxy injects), and set `DOGGY_SERVER_CLIENT_SECRET` in nginx for production.
 2. Set `REQUIRE_CLIENT_SECRET=true` on the server and restart.
 3. Verify requests include `x-client-secret` automatically.
 

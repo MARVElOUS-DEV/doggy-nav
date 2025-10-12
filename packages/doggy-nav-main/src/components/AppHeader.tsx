@@ -28,7 +28,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
       <Menu.Item key="search" onClick={() => setShowSearch(!showSearch)}>
         <div className="flex items-center py-1">
           <i className="iconfont icon-search text-lg mr-3"></i>
-          <span>{t('search', '搜索')}</span>
+          <span>{t('search')}</span>
         </div>
       </Menu.Item>
       <Menu.Item key="recommend" onClick={() => router.push('/recommend')}>
@@ -40,14 +40,14 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
       {isFeatureEnabled('lang_switch') && (
         <Menu.Item key="language">
           <div className="flex items-center justify-between py-1">
-            <span className="mr-3">{t('language', '语言')}</span>
+            <span className="mr-3">{t('language')}</span>
             <LanguageSwitcher />
           </div>
         </Menu.Item>
       )}
       <Menu.Item key="theme">
         <div className="flex items-center justify-between py-1">
-          <span className="mr-3">{t('theme', '主题')}</span>
+          <span className="mr-3">{t('theme')}</span>
           <ThemeToggle />
         </div>
       </Menu.Item>
@@ -60,7 +60,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
       <div className="flex items-center">
         {/* Menu Toggle Button (desktop only) */}
         <div className="hidden lg:block">
-          <Tooltip content={showMenuType ? t('collapse_menu', 'Collapse Menu') : t('expand_menu', 'Expand Menu')}>
+          <Tooltip content={showMenuType ? t('collapse_menu') : t('expand_menu')}>
             <Button
               className="app-header-action mr-2 md:mr-3 p-2"
               onClick={onHandleShowMenu}
@@ -73,7 +73,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
 
         {/* Mobile: Open full menu drawer on the left */}
         <div className="lg:hidden">
-          <Tooltip content={t('expand_menu', 'Expand Menu')}>
+          <Tooltip content={t('expand_menu')}>
             <Button
               className="app-header-action mr-2 p-2"
               onClick={() => onOpenMobileMenu?.()}
@@ -131,7 +131,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
           >
             <div className="flex items-center justify-center">
               <i className="iconfont icon-search mr-2 text-lg"></i>
-            <span>搜索网站...</span>
+            <span>{t('search_placeholder')}</span>
             </div>
           </Button>
         )}
@@ -155,7 +155,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
           </Link>
         </Tooltip>
 
-        <Tooltip content="搜索网站">
+        <Tooltip content={t('search_tooltip')}>
           <Button
             className="app-header-action text-2xl cursor-pointer !flex items-center justify-center w-10 h-10"
             onClick={() => setShowSearch(!showSearch)}

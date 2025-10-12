@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, ArrowUp, ArrowDown, Calendar } from 'lucide-react';
 import { TimelineYear } from '@/types/timeline';
+import { useTranslation } from 'react-i18next';
 
 interface TimelineControlsProps {
   years: TimelineYear[];
@@ -16,6 +17,7 @@ export default function TimelineControls({
   onYearToggle,
   onItemScroll,
 }: TimelineControlsProps) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [sortBy, setSortBy] = React.useState<'date' | 'title'>('date');
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
@@ -49,11 +51,11 @@ export default function TimelineControls({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search websites..."
+              placeholder={t('search_placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-              aria-label="Search websites"
+              aria-label={t('search_tooltip')}
             />
           </div>
 
@@ -62,16 +64,16 @@ export default function TimelineControls({
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'date' | 'title')}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500"
-              aria-label="Sort by"
+              aria-label={t('sort_by')}
             >
-              <option value="date">Sort by Date</option>
-              <option value="title">Sort by Title</option>
+              <option value="date">{t('sort_by_date')}</option>
+              <option value="title">{t('sort_by_title')}</option>
             </select>
 
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              aria-label={`Sort ${sortOrder === 'asc' ? 'ascending' : 'descending'}`}
+              aria-label={t(sortOrder === 'asc' ? 'sort_ascending' : 'sort_descending')}
             >
               {sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
             </button>
@@ -82,7 +84,7 @@ export default function TimelineControls({
       <div className="flex flex-wrap gap-2">
         <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
           <Calendar className="w-4 h-4" />
-          <span>Quick Jump:</span>
+          <span>{t('quick_jump')}:</span>
         </div>
         {filteredYears.map((year) => (
           <motion.button
@@ -104,7 +106,7 @@ export default function TimelineControls({
 
       {filteredYears.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400">No websites found matching your search.</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('no_websites_found')}</p>
         </div>
       )}
     </div>

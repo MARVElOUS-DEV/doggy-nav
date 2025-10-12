@@ -2,13 +2,15 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useAtomValue } from 'jotai';
 import { authStateAtom } from '@/store/store';
+import { useTranslation } from 'react-i18next';
 
  // Constants
   const BULB_WIDTH = 48; // 3rem (w-12 in Tailwind)
   const BASE_ROPE_LENGTH = 100;
   const ROPE_Origin_Right = 32; // right-8
-  const ROPE_VIR_LEN = BASE_ROPE_LENGTH + BULB_WIDTH / 2; // 到球心的距离
+  const ROPE_VIR_LEN = BASE_ROPE_LENGTH + BULB_WIDTH / 2; // Distance to bulb center
 const LightbulbRope = () => {
+  const { t } = useTranslation();
   const router = useRouter();
   const authState = useAtomValue(authStateAtom);
   const [isDragging, setIsDragging] = useState(false);
@@ -58,7 +60,7 @@ const LightbulbRope = () => {
   
   const isCrossingLine = dragOffset.x + startPosRef.current.x > (windowWidth - ROPE_Origin_Right)
   const initSwayAngle = useMemo( ()=> {
-    // 暂时只考虑起始状态球在垂直线的左侧
+    // Only consider the initial state where the bulb is to the left of the vertical line
       const x = windowWidth - ROPE_Origin_Right - startPosRef.current.x;
       return Math.asin(x / ROPE_VIR_LEN)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,7 +219,7 @@ const LightbulbRope = () => {
             transition: 'all 0.1s ease-out'
           }}
         >
-          {dragOffset.y > 100 ? '松开前往收藏页面' : '继续下拉前往收藏页面'}
+          {dragOffset.y > 100 ? t('release_to_go_to_favorites') : t('pull_down_to_go_to_favorites')}
         </div>
       )}
     </div>

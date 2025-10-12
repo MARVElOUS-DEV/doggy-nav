@@ -4,10 +4,12 @@ import api from '@/utils/api';
 import { useApi } from '@/hooks/useApi';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function NavContentsPage() {
   const router = useRouter();
   const { category } = router.query;
+  const { t } = useTranslation('translation');
   const { loading, data = [], execute: findNavByCategoryAction } = useApi(api.findNavByCategory);
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export default function NavContentsPage() {
         <div className="flex justify-center items-center py-20">
           <div className="text-center">
             <Spin size={40} />
-            <p className="mt-4 text-theme-muted-foreground">正在加载精彩内容...</p>
+            <p className="mt-4 text-theme-muted-foreground">{t('loading_content')}</p>
           </div>
         </div>
       )}
@@ -69,7 +71,7 @@ export default function NavContentsPage() {
                           color: 'var(--color-primary)'
                         }}
                       >
-                        {item.list.length} 项
+                        {item.list.length} {t('items_count')}
                       </span>
                     )}
                   </div>
@@ -83,8 +85,8 @@ export default function NavContentsPage() {
                       <Empty
                         description={
                           <div className="text-theme-muted-foreground">
-                            <p className="text-lg mb-2">暂无内容</p>
-                            <p className="text-sm">此分类下暂时没有网站资源</p>
+                            <p className="text-lg mb-2">{t('no_content')}</p>
+                            <p className="text-sm">{t('no_resources_in_category')}</p>
                           </div>
                         }
                       />
@@ -99,8 +101,8 @@ export default function NavContentsPage() {
                 description={
                   <div className="text-theme-muted-foreground">
                     <p className="text-2xl mb-4">📭</p>
-                    <p className="text-lg mb-2">暂无导航内容</p>
-                    <p className="text-sm">该分类下暂时没有任何网站资源</p>
+                    <p className="text-lg mb-2">{t('no_navigation_content')}</p>
+                    <p className="text-sm">{t('no_resources_any_category')}</p>
                   </div>
                 }
               />
@@ -114,14 +116,14 @@ export default function NavContentsPage() {
         <div className="mt-16 text-center">
           <div className="bg-theme-background border border-theme-border rounded-xl shadow-md p-6 transition-colors">
             <p className="text-theme-muted-foreground">
-              已为您展示{' '}
+              {t('showing')}{' '}
               <span
                 className="font-bold"
                 style={{ color: 'var(--color-primary)' }}
               >
                 {data.reduce((acc, item) => acc + (item.list?.length || 0), 0)}
               </span>{' '}
-              个网站资源
+              {t('website_resources')}
             </p>
           </div>
         </div>

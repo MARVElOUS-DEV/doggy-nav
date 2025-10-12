@@ -1,11 +1,38 @@
-import React from 'react';
-import { HeartTwoTone, SmileTwoTone, TrophyOutlined, RocketOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { HeartTwoTone, TagsOutlined, TrophyOutlined, RocketOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { Typography, Row, Col, Statistic, Space } from 'antd';
 import EnhancedCard from '@/components/EnhancedCard';
+import request from '@/utils/request';
+import { API_CATEGORY_LIST, API_TAG_list } from '@/services/api';
 
 const { Title, Paragraph } = Typography;
 
 export default (): React.ReactNode => {
+  const [categoryCount, setCategoryCount] = useState<number>(0);
+  const [tagCount, setTagCount] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchCounts() {
+      try {
+        const [catRes, tagRes] = await Promise.all([
+          request({ url: API_CATEGORY_LIST, method: 'GET' }),
+          request({ url: API_TAG_list, method: 'GET' })
+        ]);
+        if (!mounted) return;
+        // category list returns nested tree; count all nodes including children
+        const cats = catRes?.data || [];
+        const countCats = (arr: any[]): number => arr.reduce((acc: number, item: any) => acc + 1 + (Array.isArray(item.children) ? countCats(item.children) : 0), 0);
+        setCategoryCount(countCats(cats));
+        setTagCount(Number(tagRes?.data?.total || 0));
+      } catch (e) {
+        // ignore errors for dashboard
+      }
+    }
+    fetchCounts();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <>
       <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
@@ -22,9 +49,9 @@ export default (): React.ReactNode => {
         <Col xs={24} sm={12} md={6}>
           <EnhancedCard gradient="secondary" elevation="medium" style={{ height: '100%' }}>
             <Statistic
-              title="已审核"
-              value={89}
-              prefix={<CheckCircleOutlined />}
+              title="分类数量"
+              value={categoryCount}
+              prefix={<AppstoreOutlined />}
               valueStyle={{ color: 'white', fontSize: '24px' }}
             />
           </EnhancedCard>
@@ -42,9 +69,9 @@ export default (): React.ReactNode => {
         <Col xs={24} sm={12} md={6}>
           <EnhancedCard gradient="primary" elevation="medium" style={{ height: '100%' }}>
             <Statistic
-              title="今日访问"
-              value={1245}
-              prefix={<SmileTwoTone twoToneColor="#fff" />}
+              title="标签数量"
+              value={tagCount}
+              prefix={<TagsOutlined />}
               valueStyle={{ color: 'white', fontSize: '24px' }}
             />
           </EnhancedCard>
@@ -54,7 +81,7 @@ export default (): React.ReactNode => {
       <EnhancedCard gradient="primary" elevation="medium">
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
           <Title level={2} style={{ color: 'white', marginBottom: 16 }}>
-            <SmileTwoTone /> 欢迎使用狗狗导航管理系统 <HeartTwoTone twoToneColor="#ff6b6b" />
+            欢迎使用狗狗导航管理系统 <HeartTwoTone twoToneColor="#ff6b6b" />
           </Title>
           <Paragraph style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px', marginBottom: 24 }}>
             一个现代化、功能强大的导航网站管理平台
@@ -65,7 +92,7 @@ export default (): React.ReactNode => {
               <div>高效管理</div>
             </div>
             <div style={{ color: 'white', display: 'inline-block', padding: '0 16px' }}>
-              <CheckCircleOutlined style={{ fontSize: '24px', marginBottom: 8, display: 'block' }} />
+              <TrophyOutlined style={{ fontSize: '24px', marginBottom: 8, display: 'block' }} />
               <div>便捷审核</div>
             </div>
             <div style={{ color: 'white', display: 'inline-block', padding: '0 16px' }}>

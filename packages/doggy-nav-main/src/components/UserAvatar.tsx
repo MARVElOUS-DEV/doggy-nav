@@ -42,13 +42,13 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
     <>
       <Menu.Item key="profile" onClick={handleProfile}>
         <div className="flex items-center justify-between py-1">
-          <span className="mr-3 text-theme-foreground">Profile</span>
+          <span className="mr-3 text-theme-foreground">{t('profile')}</span>
           <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
         </div>
       </Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>
         <div className="flex items-center justify-between py-1">
-          <span className="mr-3 text-theme-foreground">Sign Out</span>
+          <span className="mr-3 text-theme-foreground">{t('sign_out')}</span>
           <i className="iconfont icon-logout text-lg text-theme-muted-foreground"></i>
         </div>
       </Menu.Item>
@@ -56,7 +56,7 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
   ) : (
     <Menu.Item key="login" onClick={handleLogin}>
       <div className="flex items-center justify-between py-1">
-        <span className="mr-3 text-theme-foreground">Sign In</span>
+        <span className="mr-3 text-theme-foreground">{t('sign_in')}</span>
         <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
       </div>
     </Menu.Item>
@@ -74,7 +74,7 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
         onClick={handleLogin}
         className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-full"
       >
-        Sign In
+        {t('sign_in')}
       </Button>
     );
   }

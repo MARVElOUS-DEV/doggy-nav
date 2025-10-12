@@ -9,12 +9,14 @@ import { useRouter } from 'next/router';
 import { IconHeartFill } from '@arco-design/web-react/icon';
 import { useAtom } from 'jotai';
 import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
+import { useTranslation } from 'react-i18next';
 
 const { Row, Col } = Grid
 
 export default function NavDetail() {
   const router = useRouter();
   const { id } = router.query;
+  const { t } = useTranslation('translation');
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<NavItem>({
     id: '',
@@ -64,7 +66,7 @@ export default function NavDetail() {
         await api.updateNavStar(detail.id)
         setIsStar(true)
         setDetail({ ...detail, star: detail.star + 1 })
-        Message.success('点赞成功')
+        Message.success(t('like_success'))
       } catch (error) {
         console.error('Star failed', error)
       }
@@ -73,22 +75,22 @@ export default function NavDetail() {
 
   const handleFavoriteFn = async () => {
     if (!isAuthenticated) {
-      Message.warning('请先登录后再收藏')
+      Message.warning(t('please_login_to_favorite'))
       return;
     }
     try {
       if (isFavorite) {
         await favoritesActions({ type: 'REMOVE_FAVORITE', navId: detail.id });
         setIsFavorite(false);
-        Message.success('取消收藏成功');
+        Message.success(t('unfavorite_success'));
       } else {
         await favoritesActions({ type: 'ADD_FAVORITE', navId: detail.id });
         setIsFavorite(true);
-        Message.success('收藏成功');
+        Message.success(t('favorite_success'));
       }
     } catch (error) {
       console.error('Favorite failed', error)
-      Message.error('操作失败，请重试')
+      Message.error(t('operation_failed'))
     }
   }
 
@@ -136,7 +138,7 @@ export default function NavDetail() {
             </div>
             {/* Action buttons moved below image to prevent overlap and add spacing */}
             <div className="tool mt-4 flex items-center justify-center gap-3 md:gap-4 px-2">
-              <Tooltip content="访问数">
+              <Tooltip content={t('views')}>
                 <div
                   className="tool-item flex flex-col items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full shadow-md transition-colors"
                   style={{
@@ -148,7 +150,7 @@ export default function NavDetail() {
                   <p className="m-0 text-[10px] md:text-xs font-medium">{detail.view}</p>
                 </div>
               </Tooltip>
-              <Tooltip content="点赞数">
+              <Tooltip content={t('likes')}>
                 <div
                   className="tool-item flex flex-col items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full shadow-md cursor-pointer transition-colors"
                   style={
@@ -169,7 +171,7 @@ export default function NavDetail() {
                 </div>
               </Tooltip>
               {isAuthenticated && (
-                <Tooltip content={isFavorite ? '取消收藏' : '收藏'}>
+                <Tooltip content={isFavorite ? t('unfavorite') : t('favorite')}>
                   <div
                     className="tool-item flex flex-col items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full shadow-md cursor-pointer transition-colors"
                   style={
@@ -186,7 +188,7 @@ export default function NavDetail() {
                     onClick={handleFavoriteFn}
                   >
                     <IconHeartFill fontSize={14} />
-                    <p className="m-0 text-[10px] md:text-xs font-medium">{isFavorite ? '已收藏' : '收藏'}</p>
+                    <p className="m-0 text-[10px] md:text-xs font-medium">{isFavorite ? t('favorited') : t('favorite')}</p>
                   </div>
                 </Tooltip>
               )}
@@ -199,7 +201,7 @@ export default function NavDetail() {
             <p className="desc text-lg text-theme-muted-foreground mb-6 leading-relaxed">{detail.desc}</p>
             {(detail?.tags?.length??0) > 0 && (
               <div className="tags mb-6">
-                <span className="text-theme-muted-foreground font-medium mr-2">标签：</span>
+                <span className="text-theme-muted-foreground font-medium mr-2">{t('tags_label')}</span>
                 {detail?.tags?.map((tag: string, index: number) => (
                   <span
                     key={tag}
@@ -217,7 +219,7 @@ export default function NavDetail() {
             {detail.authorName && (
               <div className="author mb-6 flex items-center text-theme-muted-foreground">
                 <span className="mr-2">👤</span>
-                <span className="mr-2">推荐人：</span>
+                <span className="mr-2">{t('recommended_by_label')}</span>
                 <a href={detail.authorUrl} className="text-theme-primary hover:opacity-80 transition-opacity font-medium">
                   {detail.authorName}
                 </a>
@@ -228,7 +230,7 @@ export default function NavDetail() {
                 onClick={() => handleNavClick(detail)}
                 className="btn-link btn-group-item bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg flex items-center cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
-                链接直达
+                {t('go_direct')}
                 <i className="iconfont icon-Icons_ToolBar_ArrowRight ml-2 text-sm"></i>
               </div>
             </div>
@@ -240,7 +242,7 @@ export default function NavDetail() {
         <Col span={24}>
           <div className="app-card bg-theme-background text-theme-foreground rounded-xl shadow-lg border border-theme-border overflow-hidden transition-colors">
             <div className="app-card-header flex justify-between items-center p-6 border-b border-theme-border">
-              <h3 className="app-card-title m-0 text-xl font-bold">随机网址</h3>
+              <h3 className="app-card-title m-0 text-xl font-bold">{t('random_websites')}</h3>
               <div className="app-card-extra">
                 <i
                   className="iconfont icon-shuaxin cursor-pointer text-theme-muted-foreground hover:text-theme-primary transition-colors text-lg"
@@ -275,7 +277,7 @@ export default function NavDetail() {
       <Row gutter={32} className="site-detail mt-12 mb-12">
         <Col span={24}>
           <div className="detail bg-theme-background text-theme-foreground rounded-xl shadow-lg p-8 border border-theme-border transition-colors">
-            <h2 className="text-2xl font-bold mb-4">详细信息</h2>
+            <h2 className="text-2xl font-bold mb-4">{t('detailed_info')}</h2>
             <div className="detail text-theme-muted-foreground leading-relaxed whitespace-pre-wrap">
               {detail.desc}
             </div>

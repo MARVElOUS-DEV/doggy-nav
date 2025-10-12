@@ -5,6 +5,7 @@ import api from '@/utils/api';
 import { useApi } from '@/hooks/useApi';
 import { useRouter } from 'next/router';
 import { NavItem } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 const { Title } = Typography;
 
@@ -35,6 +36,7 @@ const highlightText = (text: string, query: string) => {
 export default function SearchResultsPage() {
   const router = useRouter();
   const { q: query } = router.query;
+  const { t } = useTranslation('translation');
   const { loading, data, execute: searchNavAction } = useApi<{ data: NavItem[] }, [{ keyword: string }]>(api.getNavList);
   useEffect(() => {
     if (query) {
@@ -50,7 +52,7 @@ export default function SearchResultsPage() {
     const groups: { [key: string]: { name: string; list: NavItem[] } } = {};
 
     list.forEach(item => {
-      const categoryName = item.categoryName || 'Uncategorized';
+      const categoryName = item.categoryName || t('uncategorized');
       const categoryId = item.categoryId || 'uncategorized';
 
       if (!groups[categoryId]) {
@@ -75,8 +77,8 @@ export default function SearchResultsPage() {
     return (
       <div className="main p-4 rounded-xl bg-theme-background text-theme-foreground border border-theme-border transition-colors">
         <div className="text-center py-8">
-          <Title heading={4}>🔍 输入关键词开始搜索吧</Title>
-          <p className="text-theme-muted-foreground">Please enter a search term to see results.</p>
+          <Title heading={4}>{t('input_keyword_to_search')}</Title>
+          <p className="text-theme-muted-foreground">{t('please_enter_search_term_to_see_results')}</p>
         </div>
       </div>
     );
@@ -88,10 +90,10 @@ export default function SearchResultsPage() {
       <div className="website-wrapper">
         <div className="mb-6">
           <Title heading={3} style={{ color: 'var(--color-foreground)' }}>
-            {`Search Results for ${query.toString().length > 20 ? query.toString().slice(0, 20) + '...' : query}`}
+            {`${t('search_results_for')} ${query.toString().length > 20 ? query.toString().slice(0, 20) + '...' : query}`}
           </Title>
           <p className="text-theme-muted-foreground">
-            Found {data?.data.length || 0} results
+            {t('found_results', { count: data?.data.length || 0 })}
           </p>
         </div>
 
@@ -114,8 +116,8 @@ export default function SearchResultsPage() {
         ) : (
           !loading && (
             <div className="text-center py-8">
-              <Title heading={4}>No results found</Title>
-              <p className="text-theme-muted-foreground">Try different search terms.</p>
+              <Title heading={4}>{t('no_results_found')}</Title>
+              <p className="text-theme-muted-foreground">{t('try_different_search_terms')}</p>
             </div>
           )
         )}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { IconCloseCircle } from '@arco-design/web-react/icon';
 import { Link as ArcoLink } from '@arco-design/web-react';
+import { useTranslation } from 'react-i18next';
 
 // Define the announcement type
 type Announcement = {
@@ -15,6 +16,7 @@ type Announcement = {
 };
 
 export default function Affiche() {
+  const { t } = useTranslation();
   const [show, setShow] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -24,27 +26,27 @@ export default function Affiche() {
   const announcements: Announcement[] = [
     {
       id: 'suggest',
-      text: '如果您有建议，请',
+      text: t('if_you_have_suggestions'),
       link: {
         href: 'https://github.com/MARVElOUS-DEV/doggy-nav',
-        text: '前往提交',
+        text: t('go_to_submit'),
         target: '_blank'
       },
     },
     {
       id: 'issue',
-      text: '支持提交网站带个人信息了，欢迎大家提交网站',
+      text: t('support_submitting_sites_with_personal_info'),
       link: {
         href: '/recommend',
-        text: '去提交'
+        text: t('go_to_submit_sites')
       },
     },
     {
       id: 'new-feature',
-      text: '新功能上线：现在可以收藏喜欢的网站了！',
+      text: t('new_feature_favorite_sites'),
       link: {
         href: '/login',
-        text: '立即体验'
+        text: t('try_it_now')
       },
     }
   ];

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, Calendar, ExternalLink } from 'lucide-react';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
 import DoggyImage from '../DoggyImage';
+import { useTranslation } from 'react-i18next';
 
 interface VerticalTimelineContainerProps {
   year: number;
@@ -18,6 +19,7 @@ export default function VerticalTimelineContainer({
   selectedItem,
 }: VerticalTimelineContainerProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useTranslation('translation');
 
   // Filter items based on search term
   const filteredItems = items.filter(item => {
@@ -41,14 +43,14 @@ export default function VerticalTimelineContainer({
   }, [onItemSelect]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-3 sm:px-0" role="region" aria-label="垂直时间线">
+    <div className="w-full max-w-2xl mx-auto px-3 sm:px-0" role="region" aria-label={t('vertical_timeline')}>
       {/* Header */}
       <div className="mb-6 text-center">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          {year} 年收录时间线
+          {year} {t('year_collection_timeline')}
         </h2>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-          共 {items.length} 个网站
+          {t('total_websites', { count: items.length })}
         </p>
       </div>
 
@@ -57,11 +59,11 @@ export default function VerticalTimelineContainer({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="搜索网站..."
+          placeholder={t('search_websites_placeholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm sm:text-base"
-          aria-label="搜索网站"
+          aria-label={t('search_websites_label')}
         />
       </div>
 
@@ -70,10 +72,10 @@ export default function VerticalTimelineContainer({
         <div className="flex items-center justify-center space-x-4 text-sm">
           <div className="flex items-center space-x-1">
             <Calendar className="w-4 h-4" />
-            <span>总数: {items.length}</span>
+            <span>{t('total_count', { count: items.length })}</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span>显示: {filteredItems.length}</span>
+            <span>{t('display_count', { count: filteredItems.length })}</span>
           </div>
         </div>
       </div>
@@ -88,8 +90,8 @@ export default function VerticalTimelineContainer({
           {sortedItems.length === 0 ? (
             <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-lg">没有找到匹配的网站</p>
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">请尝试其他搜索关键词</p>
+              <p className="text-gray-500 dark:text-gray-400 text-lg">{t('no_matching_websites')}</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">{t('try_other_keywords')}</p>
             </div>
           ) : (
             sortedItems.map((item, index) => {
@@ -112,7 +114,7 @@ export default function VerticalTimelineContainer({
                   <div className="ml-12 sm:ml-16 flex-1 min-w-0">
                     <div className="flex items-center space-x-3 mb-1">
                       <div className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">
-                        {month}月{day}日
+                        {t('month_day_format', { month, day })}
                       </div>
                     </div>
 
@@ -154,7 +156,7 @@ export default function VerticalTimelineContainer({
                           rel="noopener noreferrer"
                           className="text-gray-400 hover:text-amber-500 transition-colors flex-shrink-0"
                           onClick={(e) => e.stopPropagation()}
-                          aria-label={`访问 ${item.title}`}
+                          aria-label={`${t('visit_website')} ${item.title}`}
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -171,7 +173,7 @@ export default function VerticalTimelineContainer({
       {/* Footer */}
       {sortedItems.length > 0 && (
         <div className="mt-6 sm:mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-          共显示 {filteredItems.length} 个网站
+          {t('showing_websites_total', { count: filteredItems.length })}
         </div>
       )}
     </div>

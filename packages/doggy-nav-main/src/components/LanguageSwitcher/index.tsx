@@ -11,15 +11,15 @@ export default function LanguageSwitcher() {
     router.push(router.pathname, router.asPath, { locale: newLocale });
   };
 
-  const currentLang = router.locale === 'zh' ? 'CN' : 'EN';
-  const nextLang = router.locale === 'zh' ? 'English' : '中文';
+  const currentLang = router.locale === 'zh' ? t('chinese_short') : t('english_short');
+  const nextLang = router.locale === 'zh' ? t('english') : t('chinese');
 
   return (
-    <Tooltip content={`Switch to ${nextLang}`}>
+    <Tooltip content={`${t('language_switch_to')} ${nextLang}`}>
       <button
         onClick={toggleLanguage}
         className="p-2 rounded-full hover:bg-theme-muted transition-colors flex items-center justify-center min-w-[40px]"
-        aria-label={`Switch to ${nextLang}`}
+        aria-label={`${t('language_switch_to')} ${nextLang}`}
       >
         <span className="text-sm font-medium text-theme-muted-foreground">
           {currentLang}

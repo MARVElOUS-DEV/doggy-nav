@@ -7,10 +7,12 @@ import Image from 'next/image';
 import AuthGuard from '@/components/AuthGuard';
 import { authStateAtom, authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
+import { useTranslation } from 'react-i18next';
 
 const FormItem = Form.Item;
 
 function ProfileContent() {
+  const { t } = useTranslation('translation');
   const [form] = Form.useForm();
   const authState = useAtomValue(authStateAtom);
   const dispatchAuth = useSetAtom(authActionsAtom);
@@ -31,7 +33,7 @@ function ProfileContent() {
     try {
       const updatedUser = await api.updateProfile(values);
 
-      Message.success('Profile updated successfully!');
+      Message.success(t('profile_updated_success'));
 
       // Update local user state with the response data
       dispatchAuth({
@@ -43,7 +45,7 @@ function ProfileContent() {
       });
     } catch (error: any) {
       console.error('Profile update failed:', error);
-      // Error message is already shown by axios interceptor
+      Message.error(t('profile_update_failed'));
     } finally {
       setLoading(false);
     }
@@ -74,11 +76,11 @@ function ProfileContent() {
         },
       });
 
-      Message.success('Avatar updated successfully!');
+      Message.success(t('avatar_updated_success'));
       return { url: base64Avatar };
     } catch (error: any) {
       console.error('Avatar upload failed:', error);
-      // Error message is already shown by axios interceptor
+      Message.error(t('avatar_upload_failed'));
       throw error;
     } finally {
       setUploadLoading(false);
@@ -94,7 +96,7 @@ function ProfileContent() {
       a = ((a << 5) - a) + b.charCodeAt(0);
       return a & a;
     }, 0);
-    
+
     const colors = [
       'bg-gradient-to-r from-blue-500 to-blue-600',
       'bg-gradient-to-r from-purple-500 to-purple-600',
@@ -103,7 +105,7 @@ function ProfileContent() {
       'bg-gradient-to-r from-pink-500 to-pink-600',
       'bg-gradient-to-r from-indigo-500 to-indigo-600',
     ];
-    
+
     return colors[Math.abs(hash) % colors.length];
   };
 
@@ -122,8 +124,8 @@ function ProfileContent() {
           }}
         >
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-theme-foreground mb-6 transition-colors">Profile Settings</h1>
-            
+            <h1 className="text-2xl font-bold text-theme-foreground mb-6 transition-colors">{t('profile_settings')}</h1>
+
             {/* Avatar Section */}
             <div className="flex items-center mb-8 pb-6 border-b border-theme-border transition-colors">
               <div className="mr-6">
@@ -156,7 +158,7 @@ function ProfileContent() {
                   }}
                 >
                   <Button type="secondary" size="small" loading={uploadLoading}>
-                    Change Avatar
+                    {t('change_avatar')}
                   </Button>
                 </Upload>
               </div>
@@ -170,31 +172,31 @@ function ProfileContent() {
               requiredSymbol={false}
             >
               <FormItem
-                label={<span className="text-theme-foreground font-medium transition-colors">Username</span>}
+                label={<span className="text-theme-foreground font-medium transition-colors">{t('username')}</span>}
                 field="username"
                 disabled
                 rules={[
-                  { required: true, message: 'Please enter your username' },
-                  { minLength: 3, message: 'Username must be at least 3 characters' }
+                  { required: true, message: t('username_required') },
+                  { minLength: 3, message: t('username_min_length') }
                 ]}
               >
                 <Input
-                  placeholder="Enter your username"
+                  placeholder={t('enter_username')}
                   size="large"
                   className="profile-input rounded-xl"
                 />
               </FormItem>
 
               <FormItem
-                label={<span className="text-theme-foreground font-medium transition-colors">Email</span>}
+                label={<span className="text-theme-foreground font-medium transition-colors">{t('email')}</span>}
                 field="email"
                 disabled={!!user.email}
                 rules={[
-                  { type: 'email', message: 'Please enter a valid email address' }
+                  { type: 'email', message: t('email_invalid') }
                 ]}
               >
                 <Input
-                  placeholder="Enter your email (optional)"
+                  placeholder={t('enter_email_optional')}
                   size="large"
                   className="profile-input rounded-xl"
                 />
@@ -208,14 +210,14 @@ function ProfileContent() {
                     loading={loading}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-xl font-medium"
                   >
-                    {loading ? 'Updating...' : 'Update Profile'}
+                    {loading ? t('updating') : t('update_profile')}
                   </Button>
                   <Button
-                    type="secondary" 
+                    type="secondary"
                     onClick={() => form.resetFields(['email'])}
                     className="rounded-xl"
                   >
-                    Reset
+                    {t('reset')}
                   </Button>
                 </div>
               </FormItem>
@@ -228,6 +230,8 @@ function ProfileContent() {
 }
 
 export default function ProfilePage() {
+  const { t } = useTranslation('translation');
+
   return (
     <AuthGuard
       fallback={
@@ -240,7 +244,7 @@ export default function ProfilePage() {
                 borderTopColor: 'transparent'
               }}
             ></div>
-            <p className="text-theme-muted-foreground transition-colors">Loading...</p>
+            <p className="text-theme-muted-foreground transition-colors">{t('loading')}</p>
           </div>
         </div>
       }

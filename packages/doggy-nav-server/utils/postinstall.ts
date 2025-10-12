@@ -67,7 +67,12 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
         name: appDoc.name,
       });
       console.info('🔑 Client Secret (store securely, shown once):', clientSecret);
-      console.info('➡️  Next steps: add this secret to main (SERVER_CLIENT_SECRET) and admin (UMI_APP_CLIENT_SECRET) envs, then set REQUIRE_CLIENT_SECRET=true on the server.');
+      console.info('➡️  Next steps:');
+      console.info('   - Main (Next.js): set SERVER_CLIENT_SECRET to this value (requests go via Next.js API routes).');
+      console.info('   - Admin: DO NOT expose in browser env.');
+      console.info('       • Dev: configure Umi dev proxy to inject header x-client-secret from DOGGY_SERVER_CLIENT_SECRET.');
+      console.info('       • Prod: set DOGGY_SERVER_CLIENT_SECRET in nginx (proxy_set_header x-client-secret).');
+      console.info('   - Finally set REQUIRE_CLIENT_SECRET=true on the server and restart.');
     } else {
       console.info('ℹ️  Client applications already exist, skipping default client creation.');
     }

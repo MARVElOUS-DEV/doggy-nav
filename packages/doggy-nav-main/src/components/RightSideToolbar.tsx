@@ -101,7 +101,7 @@ export default function RightSideToolbar(props: any) {
       </div>
 
       <div className="transition-all duration-300 hover:scale-110">
-        <Tooltip content={t('feedback', '提交反馈')} position="left">
+        <Tooltip content={t('feedback')} position="left">
           <Button
             shape="circle"
             icon={<IconCustomerService />}

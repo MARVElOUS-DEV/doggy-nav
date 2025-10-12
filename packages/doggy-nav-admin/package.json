@@ -4,8 +4,8 @@
   "private": true,
   "description": "An admin panel for doggy-nav",
   "scripts": {
-    "dev": "max dev",
     "build": "max build",
+    "dev": "max dev",
     "lint": "max lint",
     "lint:fix": "max lint --fix",
     "prettier": "prettier -c --write 'src/**/*'"
@@ -17,8 +17,10 @@
     "@ant-design/pro-layout": "^7.21.1",
     "@ant-design/pro-table": "^3.16.4",
     "@arco-design/web-react": "^2.66.5",
+    "@monaco-editor/react": "^4.7.0",
     "@umijs/max": "^4.5.0",
     "antd": "^5.21.0",
+    "monaco-editor": "^0.54.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router": "^5.3.4"

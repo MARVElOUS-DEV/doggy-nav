@@ -4,9 +4,10 @@ import TimelineContainer from '@/components/Timelines/TimelineContainer';
 import { TimelineYear, TimelineItem } from '@/types/timeline';
 import { NavItem } from '@/types';
 import { createMockTimelineData } from '@/utils/timelineData';
+import { useTranslation } from 'react-i18next';
 
 // Create mock NavItem data for testing
-const createMockNavItems = (): NavItem[] => {
+const createMockNavItems = (t: (key: string) => string): NavItem[] => {
   const mockItems: NavItem[] = [];
   const currentYear = new Date().getFullYear();
 
@@ -28,20 +29,21 @@ const createMockNavItems = (): NavItem[] => {
     ];
 
     const descriptions = [
-      '这是一个非常优秀的开发工具，大大提升了开发效率',
-      '专业的在线协作平台，团队成员可以实时协作',
-      '强大的代码编辑器，支持多种编程语言和插件',
-      '现代化的框架，让前端开发变得更加简单高效',
-      '云服务平台，提供了稳定可靠的基础设施',
-      '设计师的必备工具，提供了丰富的设计资源和灵感',
-      '项目管理工具，让团队协作变得更加井然有序',
-      '文档平台，提供了详尽的开发文档和教程',
-      '在线代码仓库，支持版本控制和团队协作',
-      '前端框架，让构建用户界面变得更加简单'
+      'An excellent development tool that greatly improves development efficiency',
+      'Professional online collaboration platform where team members can collaborate in real-time',
+      'Powerful code editor that supports multiple programming languages and plugins',
+      'Modern framework that makes front-end development simpler and more efficient',
+      'Cloud service platform that provides stable and reliable infrastructure',
+      'Essential designer tool that provides rich design resources and inspiration',
+      'Project management tool that makes team collaboration more organized',
+      'Documentation platform that provides detailed development documentation and tutorials',
+      'Online code repository that supports version control and team collaboration',
+      'Frontend framework that makes building user interfaces simpler'
     ];
 
     const categories = [
-      '开发工具', '设计平台', '云服务', '框架库', '项目管理', '前端开发', '后端开发', '数据库'
+      'Development Tools', 'Design Platform', 'Cloud Services', 'Frameworks & Libraries',
+      'Project Management', 'Frontend Development', 'Backend Development', 'Databases'
     ];
 
     const websiteName = websiteNames[Math.floor(Math.random() * websiteNames.length)];
@@ -76,13 +78,14 @@ const TimelinePage: React.FC = () => {
   const [years, setYears] = useState<TimelineYear[]>([]);
   const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation('translation');
 
   useEffect(() => {
     // Load mock data
-    const mockNavItems = createMockNavItems();
+    const mockNavItems = createMockNavItems(t);
 
     // Create timeline data from mock items
-    const timelineData = createMockTimelineData();
+    const timelineData = createMockTimelineData(t);
 
     // Add a few more years with mock data to show the full timeline
     const currentYear = new Date().getFullYear();
@@ -103,10 +106,10 @@ const TimelinePage: React.FC = () => {
         ];
 
         const descriptions = [
-          '这是一个非常优秀的开发工具，大大提升了开发效率',
-          '专业的在线协作平台，团队成员可以实时协作',
-          '强大的代码编辑器，支持多种编程语言和插件',
-          '现代化的框架，让前端开发变得更加简单高效'
+          'An excellent development tool that greatly improves development efficiency',
+          'Professional online collaboration platform where team members can collaborate in real-time',
+          'Powerful code editor that supports multiple programming languages and plugins',
+          'Modern framework that makes front-end development simpler and more efficient'
         ];
 
         const websiteName = websiteNames[Math.floor(Math.random() * websiteNames.length)];
@@ -140,7 +143,7 @@ const TimelinePage: React.FC = () => {
     setYears(allYears);
 
     setLoading(false);
-  }, []);
+  }, [t]);
 
   const handleItemClick = (item: TimelineItem) => {
     setSelectedItem(item);
@@ -158,7 +161,7 @@ const TimelinePage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading timeline...</p>
+          <p className="mt-4 text-gray-600">{t('loading_timeline')}</p>
         </div>
       </div>
     );
@@ -167,8 +170,8 @@ const TimelinePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Head>
-        <title>网站时间轴 - Doggy Nav</title>
-        <meta name="description" content="查看网站添加时间轴，了解网站收录历史" />
+        <title>{t('website_timeline')} - Doggy Nav</title>
+        <meta name="description" content={t('view_website_collection_history')} />
       </Head>
 
       {/* Main Content */}
@@ -182,7 +185,7 @@ const TimelinePage: React.FC = () => {
           />
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500">暂无时间轴数据</p>
+            <p className="text-gray-500">{t('no_timeline_data')}</p>
           </div>
         )}
       </main>
@@ -210,7 +213,7 @@ const TimelinePage: React.FC = () => {
               rel="noopener noreferrer"
               className="text-blue-500 hover:text-blue-700 text-sm underline"
             >
-              访问网站
+              {t('visit_website')}
             </a>
           </div>
         </div>

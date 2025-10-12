@@ -3,12 +3,14 @@ import { Input } from '@arco-design/web-react';
 import { IconSearch, IconClose } from '@arco-design/web-react/icon';
 import { useRouter } from 'next/router';
 import { RefInputType } from '@arco-design/web-react/es/Input/interface';
+import { useTranslation } from 'react-i18next';
 
 interface AppSearchProps {
   onClose?: () => void;
 }
 
 export default function AppSearch({ onClose }: AppSearchProps) {
+  const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState('');
   const inputRef = useRef<RefInputType>(null);
   const router = useRouter();
@@ -59,7 +61,7 @@ export default function AppSearch({ onClose }: AppSearchProps) {
     <div className="relative w-full max-w-2xl">
       <Input
         ref={inputRef}
-        placeholder="搜索网站..."
+        placeholder={t('search_placeholder')}
         value={searchValue}
         onChange={handleSearch}
         prefix={
@@ -77,7 +79,7 @@ export default function AppSearch({ onClose }: AppSearchProps) {
                 className="cursor-pointer p-1 transition-opacity"
                 style={{ color: 'var(--color-muted-foreground)' }}
                 onClick={() => setSearchValue('')}
-                aria-label="清除搜索"
+                aria-label={t('clear_search')}
               >
                 <IconClose />
               </button>
@@ -85,7 +87,7 @@ export default function AppSearch({ onClose }: AppSearchProps) {
             <button
               className="cursor-pointer p-1 ml-2 transition-opacity"
               onClick={onClose}
-              aria-label="关闭搜索"
+              aria-label={t('close_search')}
               style={{ color: 'var(--color-muted-foreground)' }}
             >
               <IconClose />

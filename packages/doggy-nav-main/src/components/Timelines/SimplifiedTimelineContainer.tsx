@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, Filter, ArrowUp, ArrowDown, Calendar, ExternalLink } from 'lucide-react';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
 import TimelineItem from './TimelineItem';
+import { useTranslation } from 'react-i18next';
 
 interface SimplifiedTimelineContainerProps {
   year: number;
@@ -17,6 +18,7 @@ export default function SimplifiedTimelineContainer({
   onItemSelect,
   selectedItem,
 }: SimplifiedTimelineContainerProps) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [sortBy, setSortBy] = React.useState<'date' | 'title'>('date');
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
@@ -51,14 +53,14 @@ export default function SimplifiedTimelineContainer({
   }, [onItemSelect]);
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto" role="region" aria-label="当前年份数据时间线">
+    <div className="relative w-full max-w-4xl mx-auto" role="region" aria-label={t('current_year_data_timeline')}>
       {/* Header */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          {year} 年收录网站
+          {year} {t('yearly_website_collection')}
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          共收录 {items.length} 个网站，展示最新的优质内容和工具
+          {t('total_websites_collected', { count: items.length })}
         </p>
       </div>
 
@@ -69,11 +71,11 @@ export default function SimplifiedTimelineContainer({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="搜索网站..."
+              placeholder={t('search_placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-              aria-label="搜索网站"
+              aria-label={t('search_tooltip')}
             />
           </div>
 
@@ -82,16 +84,16 @@ export default function SimplifiedTimelineContainer({
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'date' | 'title')}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500"
-              aria-label="排序方式"
+              aria-label={t('sort_by')}
             >
-              <option value="date">按时间排序</option>
-              <option value="title">按标题排序</option>
+              <option value="date">{t('sort_by_date')}</option>
+              <option value="title">{t('sort_by_title')}</option>
             </select>
 
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              aria-label={`排序顺序：${sortOrder === 'asc' ? '升序' : '降序'}`}
+              aria-label={t(sortOrder === 'asc' ? 'sort_ascending' : 'sort_descending')}
             >
               {sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
             </button>
@@ -103,17 +105,17 @@ export default function SimplifiedTimelineContainer({
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl p-6 mb-6 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-xl font-semibold mb-1">{year} 年度统计</h3>
-            <p className="text-amber-100">为您精心筛选的优质网站资源</p>
+            <h3 className="text-xl font-semibold mb-1">{year} {t('annual_statistics')}</h3>
+            <p className="text-amber-100">{t('curated_website_resources')}</p>
           </div>
           <div className="mt-4 sm:mt-0">
             <div className="flex items-center space-x-6 text-sm">
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4" />
-                <span>收录: <strong>{items.length}</strong></span>
+                <span>{t('collected')}: <strong>{items.length}</strong></span>
               </div>
               <div className="flex items-center space-x-2">
-                <span>显示: <strong>{filteredItems.length}</strong></span>
+                <span>{t('displayed')}: <strong>{filteredItems.length}</strong></span>
               </div>
             </div>
           </div>
@@ -125,8 +127,8 @@ export default function SimplifiedTimelineContainer({
         {filteredItems.length === 0 ? (
           <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 text-lg">没有找到匹配的网站</p>
-            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">请尝试其他搜索关键词</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('no_websites_found')}</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">{t('try_different_keywords')}</p>
           </div>
         ) : (
           sortedItems.map((item, index) => (
@@ -151,7 +153,7 @@ export default function SimplifiedTimelineContainer({
       {filteredItems.length > 0 && (
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            共显示 {filteredItems.length} 个网站，最后更新时间：{new Date().toLocaleDateString('zh-CN')}
+            {t('displaying_websites_count', { count: filteredItems.length, date: new Date().toLocaleDateString() })}
           </div>
         </div>
       )}

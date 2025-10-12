@@ -7,6 +7,7 @@ import { useUrlStatus } from '@/utils/urlStatus';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconRightCircle } from '@arco-design/web-react/icon';
 import { FavoriteButton, StarButton, ViewCounter } from './Buttons';
+import { useTranslation } from 'react-i18next';
 
 const { Col } = Grid;
 
@@ -18,6 +19,7 @@ interface AppNavItemProps {
 }
 
 export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, onHandleFavorite }: AppNavItemProps) {
+  const { t } = useTranslation();
   const [isStar, setIsStar] = useState(false);
   const [isFavorite, setIsFavorite] = useState(data.isFavorite || false);
   const [logoSrc, setLogoSrc] = useState(data.logo);
@@ -68,7 +70,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
     switch (urlStatus.status) {
       case 'checking':
         return (
-          <Tooltip content="检查中...">
+          <Tooltip content={t('status_checking')}>
             <div
               className={baseClasses}
               style={{
@@ -81,7 +83,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
         );
       case 'accessible':
         return (
-          <Tooltip content={`网站可访问 (${urlStatus.responseTime}ms)`}>
+          <Tooltip content={`${t('status_accessible')} (${urlStatus.responseTime}ms)`}>
             <div
               className={baseClasses}
               style={{
@@ -99,7 +101,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
         );
       case 'inaccessible':
         return (
-          <Tooltip content="网站不可访问">
+          <Tooltip content={t('status_inaccessible')}>
             <div
               className={baseClasses}
               style={{
@@ -126,7 +128,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
     >
       <div
         ref={intersectionRef}
-        className="group relative h-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border overflow-hidden bg-theme-background text-theme-foreground border-theme-border"
+        className="group relative h-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border overflow-hidden bg-theme-background text-theme-foreground border-theme-border flex flex-col"
         style={{
           boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)',
         }}
@@ -137,7 +139,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
         {/* Main Content */}
         <Link
           href={`/nav/${data.id}`}
-          className="p-6 h-full flex flex-col min-h-[120px]"
+          className="p-6 flex flex-col"
         >
           <div className="flex items-center space-x-4 mb-4">
             <div className="logo-container flex-shrink-0">
@@ -161,9 +163,9 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
               <p
                 className="desc text-sm transition-colors duration-200 line-clamp-2 max-h-[40px] overflow-hidden group-hover:text-theme-foreground"
                 style={{ color: 'var(--color-muted-foreground)' }}
-                title={typeof (data.highlightedDesc)  === 'string' ? data.highlightedDesc: data.desc? data.desc: '这个网站什么描述也没有' }
+                title={typeof (data.highlightedDesc)  === 'string' ? data.highlightedDesc: data.desc? data.desc: t('no_description') }
               >
-                {data.highlightedDesc || data.desc || '这个网站什么描述也没有...'}
+                {data.highlightedDesc || data.desc || t('no_description')}
               </p>
             </div>
           </div>
@@ -214,7 +216,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
             backgroundColor: 'color-mix(in srgb, var(--color-muted) 80%, transparent)'
           }}
         >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between lg:flex-col lg:gap-3 xl:flex-row xl:items-center xl:justify-between">
             <Button
               type='primary'
               onClick={async () => {
@@ -223,13 +225,13 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
                   setViewCount((v) => v + 1);
                 } catch {}
               }}
-              className="w-full sm:w-auto py-1 hover:translate-x-0.5 rounded-xl text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center"
-              title="链接直达"
+              className="w-full md:w-auto lg:w-full xl:w-auto py-1 hover:translate-x-0.5 rounded-xl text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center"
+              title={t('direct_link_tooltip')}
               icon={<IconRightCircle fontSize={16} />}
             >
-              直达
+              {t('go_direct')}
             </Button>
-            <Space size="mini" className="flex w-full sm:w-auto items-center justify-end sm:justify-start space-x-4">
+            <Space size="mini" className="flex w-full md:w-auto lg:w-full xl:w-auto items-center justify-end md:justify-start lg:justify-center xl:justify-start space-x-4">
               <FavoriteButton
                 isFavorite={isFavorite}
                 onToggle={handleFavorite}
