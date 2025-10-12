@@ -1,20 +1,33 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import HttpBackend from 'i18next-http-backend';
+// Preload translation resources to ensure SSR and CSR render identical content
+// Avoid HTTP fetching during SSR which can lead to hydration mismatches
+// Import JSON statically so server has translations at render time
+import zh from '../public/locales/zh/translation.json';
+import en from '../public/locales/en/translation.json';
 
-i18n
-  .use(HttpBackend)
-  .use(initReactI18next)
-  .init({
-    lng: 'zh', // default language
-    fallbackLng: 'zh',
-    debug: process.env.NODE_ENV === 'development',
-    interpolation: {
-      escapeValue: false,
-    },
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
-    },
-  });
+const resources = {
+  zh: { translation: zh },
+  en: { translation: en },
+} as const;
+
+if (!i18n.isInitialized) {
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: 'zh',
+      fallbackLng: 'zh',
+      debug: process.env.NODE_ENV === 'development',
+      interpolation: {
+        escapeValue: false,
+      },
+      // Ensure sync init under Node to avoid rendering keys on the server
+      initImmediate: false,
+      react: {
+        useSuspense: false,
+      },
+    });
+}
 
 export default i18n;
