@@ -3,11 +3,22 @@ import DoggyImage from '@/components/DoggyImage';
 import { NavItem } from '@/types';
 import { useTranslation } from 'react-i18next';
 
-export default function FolderTile({ items, name }: { items: NavItem[]; name?: string }) {
+export default function FolderTile({ items, name, onClick }: { items: NavItem[]; name?: string; onClick?: () => void }) {
   const { t } = useTranslation('translation');
   const preview = items.slice(0, 4);
   return (
-    <div className="flex flex-col items-center select-none">
+    <div
+      className="flex flex-col items-center select-none cursor-pointer hover:scale-105 transition-transform duration-150"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick && onClick();
+        }
+      }}
+    >
       <div className="w-16 h-16 bg-white rounded-2xl shadow-lg p-1.5 mb-2 grid grid-cols-2 grid-rows-2 gap-1">
         {preview.map((it) => (
           <div key={it.id} className="w-full h-full rounded-md bg-white overflow-hidden flex items-center justify-center">

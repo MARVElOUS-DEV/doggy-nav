@@ -53,6 +53,11 @@ export default (app: Application) => {
   router.post('/api/favorites', controller.favorite.add);
   router.post('/api/favorites/remove', controller.favorite.remove);
   router.get('/api/favorites/list', controller.favorite.list);
+  router.get('/api/favorites/structured', controller.favorite.structured);
+  router.post('/api/favorites/folders', controller.favorite.createFolder);
+  router.put('/api/favorites/folders/:id', controller.favorite.updateFolder);
+  router.delete('/api/favorites/folders/:id', controller.favorite.deleteFolder);
+  router.put('/api/favorites/placements', controller.favorite.placements);
   router.get('/api/favorites/check', controller.favorite.check);
   router.get('/api/favorites/count', controller.favorite.count);
 };

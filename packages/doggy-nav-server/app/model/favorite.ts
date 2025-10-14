@@ -15,6 +15,17 @@ export default function(app: any) {
       required: true,
       index: true,
     },
+    parentFolderId: {
+      type: Schema.Types.ObjectId,
+      ref: 'FavoriteFolder',
+      default: null,
+      index: true,
+    },
+    order: {
+      type: Number,
+      default: () => Date.now(),
+      index: true,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -40,6 +51,9 @@ export default function(app: any) {
         if (ret.navId) {
           ret.navId = ret.navId.toString();
         }
+        if (ret.parentFolderId) {
+          ret.parentFolderId = ret.parentFolderId.toString();
+        }
         // Remove __v field
         delete ret.__v;
         return ret;
@@ -59,6 +73,9 @@ export default function(app: any) {
         if (ret.navId) {
           ret.navId = ret.navId.toString();
         }
+        if (ret.parentFolderId) {
+          ret.parentFolderId = ret.parentFolderId.toString();
+        }
         // Remove __v field
         delete ret.__v;
         return ret;
@@ -71,6 +88,8 @@ export default function(app: any) {
 
   // Add index for efficient queries by user
   FavoriteSchema.index({ userId: 1, createdAt: -1 });
+  FavoriteSchema.index({ userId: 1, parentFolderId: 1 });
+  FavoriteSchema.index({ userId: 1, order: 1 });
 
   return mongoose.model('Favorite', FavoriteSchema);
 }

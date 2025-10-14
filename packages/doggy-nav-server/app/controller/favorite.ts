@@ -59,6 +59,210 @@ export default class FavoriteController extends Controller {
   }
 
   /**
+   * Get user's favorites in structured form: union of root items and folders (with items)
+   */
+  async structured() {
+    const { ctx } = this;
+
+    if (!this.isAuthenticated()) {
+      this.error('请先登录');
+      return;
+    }
+
+    const userInfo = this.getUserInfo();
+
+    try {
+      // Root-level favorites (no folder)
+      const rootPipeline: PipelineStage[] = [
+        { $match: { userId: new Types.ObjectId(userInfo.userId), parentFolderId: null } },
+        { $lookup: { from: 'nav', localField: 'navId', foreignField: '_id', as: 'navItem' } },
+        { $unwind: '$navItem' },
+        { $lookup: { from: 'category', localField: 'navItem.categoryId', foreignField: '_id', as: 'category', pipeline: [ { $project: { name: 1 } } ] } },
+        { $addFields: { 'navItem.categoryName': { $ifNull: [ { $arrayElemAt: [ '$category.name', 0 ] }, null ] } } },
+        { $project: { _id: 1, userId: 1, navId: 1, order: 1, parentFolderId: 1, navItem: { _id: '$navItem._id', name: '$navItem.name', href: '$navItem.href', desc: '$navItem.desc', logo: '$navItem.logo', authorName: '$navItem.authorName', authorUrl: '$navItem.authorUrl', categoryId: '$navItem.categoryId', categoryName: '$navItem.categoryName', tags: '$navItem.tags', view: '$navItem.view', star: '$navItem.star', status: '$navItem.status', hide: '$navItem.hide', createTime: '$navItem.createTime', auditTime: '$navItem.auditTime' } } },
+        { $sort: { order: 1, createdAt: -1 } },
+      ];
+
+      const folders = await ctx.model.FavoriteFolder.find({ userId: userInfo.userId }).sort({ order: 1, createdAt: -1 }).lean();
+
+      const rootFavorites = await ctx.model.Favorite.aggregate(rootPipeline);
+
+      // Fetch items per folder
+      const folderIds = folders.map((f: any) => f._id);
+      let folderItemsById: Record<string, any[]> = {};
+      if (folderIds.length > 0) {
+        const folderItems = await ctx.model.Favorite.aggregate([
+          { $match: { userId: new Types.ObjectId(userInfo.userId), parentFolderId: { $in: folderIds.map((id: any) => new Types.ObjectId(id)) } } },
+          { $lookup: { from: 'nav', localField: 'navId', foreignField: '_id', as: 'navItem' } },
+          { $unwind: '$navItem' },
+          { $lookup: { from: 'category', localField: 'navItem.categoryId', foreignField: '_id', as: 'category', pipeline: [ { $project: { name: 1 } } ] } },
+          { $addFields: { 'navItem.categoryName': { $ifNull: [ { $arrayElemAt: [ '$category.name', 0 ] }, null ] } } },
+          { $project: { _id: 1, userId: 1, navId: 1, parentFolderId: 1, order: 1, navItem: { _id: '$navItem._id', name: '$navItem.name', href: '$navItem.href', desc: '$navItem.desc', logo: '$navItem.logo', authorName: '$navItem.authorName', authorUrl: '$navItem.authorUrl', categoryId: '$navItem.categoryId', categoryName: '$navItem.categoryName', tags: '$navItem.tags', view: '$navItem.view', star: '$navItem.star', status: '$navItem.status', hide: '$navItem.hide', createTime: '$navItem.createTime', auditTime: '$navItem.auditTime' } } },
+          { $sort: { order: 1, createdAt: -1 } },
+        ]);
+
+        folderItemsById = folderItems.reduce((acc: any, cur: any) => {
+          const key = String(cur.parentFolderId);
+          if (!acc[key]) acc[key] = [];
+          acc[key].push({ ...cur.navItem, isFavorite: true });
+          return acc;
+        }, {});
+      }
+
+      const foldersUnion = folders.map((f: any) => ({
+        type: 'folder',
+        order: f.order ?? 0,
+        folder: {
+          id: String(f._id),
+          name: f.name,
+          order: f.order ?? 0,
+          coverNavId: f.coverNavId ? String(f.coverNavId) : null,
+        },
+        items: folderItemsById[String(f._id)] || [],
+      }));
+
+      const rootUnion = rootFavorites.map((fav: any) => ({
+        type: 'nav',
+        order: fav.order ?? 0,
+        nav: { ...fav.navItem, isFavorite: true },
+      }));
+
+      const union = [...foldersUnion, ...rootUnion].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      this.success({ data: union });
+    } catch (error: any) {
+      console.error('Get structured favorites error:', error);
+      this.error(error.message || '获取收藏结构失败');
+    }
+  }
+
+  /**
+   * Create a folder and optionally move items into it
+   */
+  async createFolder() {
+    const { ctx } = this;
+    if (!this.isAuthenticated()) {
+      this.error('请先登录');
+      return;
+    }
+    const userInfo = this.getUserInfo();
+    const { name, navIds = [], order } = this.getSanitizedBody();
+    if (!name) {
+      this.error('name is required');
+      return;
+    }
+    try {
+      const folderDoc = await ctx.model.FavoriteFolder.create({ userId: userInfo.userId, name, order: order ?? Date.now() });
+      if (navIds.length > 0) {
+        await ctx.model.Favorite.updateMany(
+          { userId: userInfo.userId, navId: { $in: navIds } },
+          { $set: { parentFolderId: folderDoc._id } },
+        );
+      }
+      this.success(folderDoc.toJSON ? folderDoc.toJSON() : folderDoc);
+    } catch (error: any) {
+      console.error('Create favorite folder error:', error);
+      this.error(error.message || '创建文件夹失败');
+    }
+  }
+
+  /**
+   * Update folder (rename, membership, order)
+   */
+  async updateFolder() {
+    const { ctx } = this;
+    if (!this.isAuthenticated()) {
+      this.error('请先登录');
+      return;
+    }
+    const userInfo = this.getUserInfo();
+    const { id } = ctx.params;
+    const { name, addNavIds = [], removeNavIds = [], order } = this.getSanitizedBody();
+    if (!id) {
+      this.error('id is required');
+      return;
+    }
+    try {
+      const update: any = {};
+      if (typeof name === 'string') update.name = name;
+      if (typeof order === 'number') update.order = order;
+      if (Object.keys(update).length > 0) {
+        await ctx.model.FavoriteFolder.updateOne({ _id: id, userId: userInfo.userId }, update);
+      }
+      if (addNavIds.length > 0) {
+        await ctx.model.Favorite.updateMany({ userId: userInfo.userId, navId: { $in: addNavIds } }, { $set: { parentFolderId: id } });
+      }
+      if (removeNavIds.length > 0) {
+        await ctx.model.Favorite.updateMany({ userId: userInfo.userId, navId: { $in: removeNavIds } }, { $set: { parentFolderId: null } });
+      }
+      this.success({ id, ...update });
+    } catch (error: any) {
+      console.error('Update favorite folder error:', error);
+      this.error(error.message || '更新文件夹失败');
+    }
+  }
+
+  /**
+   * Delete folder; move items to root
+   */
+  async deleteFolder() {
+    const { ctx } = this;
+    if (!this.isAuthenticated()) {
+      this.error('请先登录');
+      return;
+    }
+    const userInfo = this.getUserInfo();
+    const { id } = ctx.params;
+    if (!id) {
+      this.error('id is required');
+      return;
+    }
+    try {
+      await ctx.model.Favorite.updateMany({ userId: userInfo.userId, parentFolderId: id }, { $set: { parentFolderId: null } });
+      await ctx.model.FavoriteFolder.deleteOne({ _id: id, userId: userInfo.userId });
+      this.success({ id });
+    } catch (error: any) {
+      console.error('Delete favorite folder error:', error);
+      this.error(error.message || '删除文件夹失败');
+    }
+  }
+
+  /**
+   * Bulk placements: reorder/move items and folders
+   */
+  async placements() {
+    const { ctx } = this;
+    if (!this.isAuthenticated()) {
+      this.error('请先登录');
+      return;
+    }
+    const userInfo = this.getUserInfo();
+    const { root = [], folders = [], moves = [] } = this.getSanitizedBody();
+
+    try {
+      // Reorder root navs
+      for (const r of root) {
+        if (!r.navId) continue;
+        await ctx.model.Favorite.updateOne({ userId: userInfo.userId, navId: r.navId }, { $set: { order: r.order, parentFolderId: null } });
+      }
+      // Reorder folders
+      for (const f of folders) {
+        if (!f.folderId) continue;
+        await ctx.model.FavoriteFolder.updateOne({ _id: f.folderId, userId: userInfo.userId }, { $set: { order: f.order } });
+      }
+      // Moves (into folders/out of folders)
+      for (const m of moves) {
+        if (!m.navId) continue;
+        await ctx.model.Favorite.updateOne({ userId: userInfo.userId, navId: m.navId }, { $set: { order: m.order, parentFolderId: m.parentFolderId || null } });
+      }
+      this.success({ ok: true });
+    } catch (error: any) {
+      console.error('Update placements error:', error);
+      this.error(error.message || '更新排序失败');
+    }
+  }
+
+  /**
    * Remove a nav item from user's favorites
    */
   async remove() {

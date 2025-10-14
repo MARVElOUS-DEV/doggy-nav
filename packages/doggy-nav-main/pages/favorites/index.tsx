@@ -8,15 +8,18 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { authStateAtom, favoritesAtom, favoritesActionsAtom, initAuthFromStorageAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
 import { DragEndEvent } from '@dnd-kit/core';
+import api from '@/utils/api';
 import FavoritesLayout from '@/features/favorites/components/FavoritesLayout';
 import FavoriteItem from '@/features/favorites/components/FavoriteItem';
 import FolderTile from '@/features/favorites/components/FolderTile';
 import DraggableCard from '@/features/favorites/dnd/DraggableCard';
 import DroppableCard from '@/features/favorites/dnd/DroppableCard';
+import FolderOverlay from '@/features/favorites/components/FolderOverlay';
 
 
 // Local union type for grid entries without changing global store types
 const getNavId = (item: NavItem) => String((item as any).id ?? (item as any)._id ?? item.href ?? item.name ?? 'nav-item');
+const getNavObjectId = (item: NavItem): string | null => ((item as any).id as string) || ((item as any)._id as string) || null;
 
 type GridEntry =
   | { kind: 'item'; item: NavItem }
@@ -32,29 +35,34 @@ export default function FavoritesPage() {
   const { t } = useTranslation('translation');
 
   const [grid, setGrid] = useState<GridEntry[]>([]);
+  const [openFolder, setOpenFolder] = useState<{ id: string; name?: string; items: NavItem[] } | null>(null);
 
-  // Keep a local grid that can have folders, derived from favorites
+  // Load structured favorites (folders + items)
+  const loadStructured = async (): Promise<GridEntry[]> => {
+    try {
+      const res = await api.getFavoritesStructured();
+      const entries = (res?.data || []).map((row: any) => {
+        if (row.type === 'folder') {
+          return { kind: 'folder', id: String(row.folder.id), name: row.folder.name, items: row.items } as GridEntry;
+        }
+        return { kind: 'item', item: row.nav } as GridEntry;
+      });
+      setGrid(entries);
+      return entries;
+    } catch (e) {
+      console.error('Failed to load structured favorites:', e);
+      return [];
+    }
+  };
+
+  // Refresh structured data when favorites load or auth changes
   useEffect(() => {
-    setGrid((prev) => {
-      // Preserve existing folders; only add new standalone items from favorites that are not already grouped
-      const existingItemIds = new Set<string>(
-        prev.flatMap((e) => (e.kind === 'item' ? [getNavId(e.item)] : e.items.map((i) => getNavId(i))))
-      );
-      const newItems: GridEntry[] = favorites
-        .filter((f) => !existingItemIds.has(getNavId(f)))
-        .map((f) => ({ kind: 'item', item: f }));
-      // Prune items no longer present in favorites
-      const validIds = new Set(favorites.map((f) => getNavId(f)));
-      const pruned = prev
-        .map((e) =>
-          e.kind === 'item'
-            ? e
-            : { ...e, items: e.items.filter((it) => validIds.has(getNavId(it))) }
-        )
-        .filter((e) => (e.kind === 'item' ? validIds.has(getNavId(e.item)) : e.items.length > 0));
-      return [...pruned, ...newItems];
-    });
-  }, [favorites]);
+    if (authState.initialized && authState.isAuthenticated) {
+      loadStructured();
+    } else {
+      setGrid([]);
+    }
+  }, [authState.initialized, authState.isAuthenticated, favorites]);
 
   // Ensure auth is initialized here and add animation class for fade-in effects
   useEffect(() => {
@@ -98,63 +106,48 @@ export default function FavoritesPage() {
 
   const idOf = (e: GridEntry) => (e.kind === 'item' ? getNavId(e.item) : String(e.id));
 
-  const onDragEnd = (event: DragEndEvent) => {
+  const onDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
     const sourceId = String(active.id);
     const targetId = String(over.id);
 
-    setGrid((entries) => {
-      let sourceEntry: NavItem | null = null;
+    const sourceEntry = grid.find((e) => (e.kind === 'item' && getNavId(e.item) === sourceId) || (e.kind === 'folder' && e.id === sourceId));
+    const targetEntry = grid.find((e) => (e.kind === 'item' && getNavId(e.item) === targetId) || (e.kind === 'folder' && e.id === targetId));
 
-      // Remove source from its current location (top-level or inside a folder)
-      const withoutSource: GridEntry[] = entries
-        .map((e) => {
-          if (e.kind === 'item' && getNavId(e.item) === sourceId) {
-            sourceEntry = e.item;
-            return null;
-          }
-          if (e.kind === 'folder') {
-            const inside = e.items.find((it) => getNavId(it) === sourceId);
-            if (inside) {
-              sourceEntry = inside;
-              return { ...e, items: e.items.filter((it) => getNavId(it) !== sourceId) };
-            }
-          }
-          return e;
-        })
-        .filter(Boolean) as GridEntry[];
+    // Only allow moving items (not folders) in current implementation
+    if (!sourceEntry || sourceEntry.kind !== 'item' || !targetEntry) return;
 
-      if (!sourceEntry) return entries;
-
-      const targetIndex = withoutSource.findIndex((e) => idOf(e) === targetId);
-      if (targetIndex === -1) return withoutSource;
-      const target = withoutSource[targetIndex];
-
-      if (target.kind === 'folder') {
-        const updated = [...withoutSource];
-        const folder = updated[targetIndex] as Extract<GridEntry, { kind: 'folder' }>;
-        if (!folder.items.find((it) => getNavId(it) === getNavId(sourceEntry!))) {
-          folder.items = [...folder.items, sourceEntry!];
-        }
-        return updated;
+    try {
+      const sourceNavId = getNavObjectId(sourceEntry.item);
+      if (!sourceNavId) return;
+      if (targetEntry.kind === 'folder') {
+        await api.updateFavoriteFolder(targetEntry.id, { addNavIds: [sourceNavId] });
+      } else if (targetEntry.kind === 'item') {
+        const targetNavId = getNavObjectId(targetEntry.item);
+        if (!targetNavId) return;
+        await api.createFavoriteFolder({ name: t('folder'), navIds: [targetNavId, sourceNavId] });
       }
+      await loadStructured();
+    } catch (err) {
+      console.error('Drag operation failed:', err);
+    }
+  };
 
-      // target is an item: create a new folder combining both
-      const targetItem = target.item;
-      if (getNavId(sourceEntry) === getNavId(targetItem)) return entries;
-
-      const updated = withoutSource.filter((_, idx) => idx !== targetIndex);
-      const newFolder: GridEntry = {
-        kind: 'folder',
-        id: `folder-${Date.now()}-${getNavId(targetItem)}`,
-        name: undefined,
-        items: [targetItem, sourceEntry],
-      };
-      updated.splice(targetIndex, 0, newFolder);
-      return updated;
-    });
+  const handleRemoveFavorite = async (navId: string) => {
+    try {
+      await api.removeFavorite(navId);
+      await favoritesActions({ type: 'LOAD_FAVORITES' });
+      const entries = await loadStructured();
+      if (openFolder) {
+        const folder = entries.find((e) => e.kind === 'folder' && e.id === openFolder.id) as Extract<GridEntry, { kind: 'folder' }> | undefined;
+        if (folder) setOpenFolder({ id: folder.id, name: folder.name, items: folder.items });
+        else setOpenFolder(null);
+      }
+    } catch (e) {
+      console.error('Remove favorite failed:', e);
+    }
   };
 
   if (loading) {
@@ -218,9 +211,11 @@ export default function FavoritesPage() {
                       >
                         <DraggableCard id={key}>
                           {entry.kind === 'item' ? (
-                            <FavoriteItem item={entry.item} />
+                            <FavoriteItem item={entry.item} onRemove={handleRemoveFavorite} />
                           ) : (
-                            <FolderTile items={entry.items} />
+                            <FolderTile items={entry.items} name={entry.name}
+                              onClick={() => setOpenFolder({ id: entry.id, name: entry.name, items: entry.items })}
+                            />
                           )}
                         </DraggableCard>
                       </div>
@@ -266,6 +261,14 @@ export default function FavoritesPage() {
           </Link>
         </footer>
       </div>
+      {openFolder && (
+        <FolderOverlay
+          name={openFolder.name}
+          items={openFolder.items}
+          onRemove={handleRemoveFavorite}
+          onClose={() => setOpenFolder(null)}
+        />
+      )}
     </AuthGuard>
   );
 }
