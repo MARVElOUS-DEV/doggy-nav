@@ -62,6 +62,11 @@ export const routePermissions: RoutePermission[] = [
   { method: 'POST', path: '/api/favorites', access: 'authenticated', description: 'Add favorite nav item' },
   { method: 'POST', path: '/api/favorites/remove', access: 'authenticated', description: 'Remove favorite nav item' },
   { method: 'GET', path: '/api/favorites/list', access: 'authenticated', description: 'Get favorites list' },
+  { method: 'GET', path: '/api/favorites/structured', access: 'authenticated', description: 'Get structured favorites (folders + items)' },
+  { method: 'POST', path: '/api/favorites/folders', access: 'authenticated', description: 'Create favorite folder' },
+  { method: 'PUT', path: '/api/favorites/folders/:id', access: 'authenticated', description: 'Update favorite folder' },
+  { method: 'DELETE', path: '/api/favorites/folders/:id', access: 'authenticated', description: 'Delete favorite folder' },
+  { method: 'PUT', path: '/api/favorites/placements', access: 'authenticated', description: 'Bulk reorder/move favorites and folders' },
   { method: 'GET', path: '/api/favorites/check', access: 'authenticated', description: 'Get item check favorite status' },
   { method: 'GET', path: '/api/favorites/count', access: 'authenticated', description: 'Get favorites count' },
 ];

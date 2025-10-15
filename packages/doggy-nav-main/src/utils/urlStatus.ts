@@ -115,14 +115,17 @@ export const checkUrlAccessibility = async (url: string): Promise<UrlStatusInfo>
       method: 'HEAD',
       signal: controller.signal,
       headers: {
-        'User-Agent': 'DoggyNav-StatusChecker/1.0',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
       },
     });
 
     clearTimeout(timeoutId);
 
+    // Treat 401/403 as accessible because the server is reachable but requires auth
+    const isAuthProtected = response.status === 401 || response.status === 403;
+
     const result: UrlStatusInfo = {
-      status: response.ok ? 'accessible' : 'inaccessible',
+      status: response.ok || isAuthProtected ? 'accessible' : 'inaccessible',
       responseTime: Date.now() - startTime,
       timestamp: Date.now(),
       checked: true,

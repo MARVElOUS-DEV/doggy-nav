@@ -1,208 +1,153 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { Spin, Empty, Button } from '@arco-design/web-react';
 import AuthGuard from '@/components/AuthGuard';
 import { NavItem } from '@/types';
-import { useAtomValue } from 'jotai';
-import { authStateAtom } from '@/store/store';
-import DoggyImage from '@/components/DoggyImage';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { authStateAtom, favoritesAtom, favoritesActionsAtom, initAuthFromStorageAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
+import { DragEndEvent } from '@dnd-kit/core';
+import api from '@/utils/api';
+import FavoritesLayout from '@/features/favorites/components/FavoritesLayout';
+import FavoriteItem from '@/features/favorites/components/FavoriteItem';
+import FolderTile from '@/features/favorites/components/FolderTile';
+import DraggableCard from '@/features/favorites/dnd/DraggableCard';
+import DroppableCard from '@/features/favorites/dnd/DroppableCard';
+import FolderOverlay from '@/features/favorites/components/FolderOverlay';
 
-// Mac-style app icon
-const FavoriteItem = ({ item, onRemove }: { item: NavItem; onRemove: (id: string) => void }) => {
-  const { t } = useTranslation('translation');
-  return (
-    <div
-      className="flex flex-col items-center group cursor-pointer transform transition-all duration-200 hover:scale-110"
-      onClick={() => {
-        window.open(item.href, '_blank', 'noopener,noreferrer');
-      }}
-    >
-      <div className="w-16 h-16 bg-white rounded-xl shadow-lg p-2 mb-2 flex items-center justify-center group-hover:shadow-xl transition-shadow duration-200">
-        {item.logo ? (
-          <DoggyImage
-            logo={item.logo}
-            name={item.name}
-            className="rounded-full flex-shrink-0 w-[48px] h-[48px] object-contain"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-            {item.name?.charAt(0) || 'W'}
-          </div>
-        )}
-      </div>
-      <span className="text-sm text-center text-gray-700 font-medium max-w-full truncate">
-        {item.name}
-      </span>
-      <span className="text-xs text-center text-gray-500 mt-1 max-w-full truncate">
-        {item.category || t('uncategorized')}
-      </span>
-    </div>
-  );
-};
+
+// Local union type for grid entries without changing global store types
+const getNavId = (item: NavItem) => String((item as any).id ?? (item as any)._id ?? item.href ?? item.name ?? 'nav-item');
+const getNavObjectId = (item: NavItem): string | null => ((item as any).id as string) || ((item as any)._id as string) || null;
+
+type GridEntry =
+  | { kind: 'item'; item: NavItem }
+  | { kind: 'folder'; id: string; name?: string; items: NavItem[] };
 
 export default function FavoritesPage() {
-  const router = useRouter();
   const authState = useAtomValue(authStateAtom);
-  const [favorites, setFavorites] = useState<NavItem[]>([]);
+  const [favorites, setFavorites] = useAtom(favoritesAtom);
+  const favoritesActions = useSetAtom(favoritesActionsAtom);
+  const initAuth = useSetAtom(initAuthFromStorageAtom);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation('translation');
 
-  const mockFavorites = useMemo(() => [
-    {
-      id: '1',
-      name: 'GitHub',
-      href: 'https://github.com',
-      logo: 'https://github.githubassets.com/favicons/favicon.svg',
-      desc: 'Code repository platform',
-      category: 'Development',
-      isFavorite: true,
-      view: 1250,
-      star: 420,
-      tags: ['Development', 'Code'],
-    },
-    {
-      id: '2',
-      name: 'YouTube',
-      href: 'https://youtube.com',
-      logo: 'https://www.youtube.com/favicon.ico',
-      desc: 'Video sharing platform',
-      category: 'Media',
-      isFavorite: true,
-      view: 3200,
-      star: 890,
-      tags: ['Video', 'Entertainment'],
-    },
-    {
-      id: '3',
-      name: 'Twitter',
-      href: 'https://twitter.com',
-      logo: 'https://abs.twimg.com/responsive-web/client-web/icon-ios.b1fc7275.png',
-      desc: 'Social media platform',
-      category: 'Social',
-      isFavorite: true,
-      view: 2100,
-      star: 560,
-      tags: ['Social', 'News'],
-    },
-    {
-      id: '4',
-      name: 'Figma',
-      href: 'https://figma.com',
-      logo: 'https://static.figma.com/app/icon/1/favicon.ico',
-      desc: 'Design and prototyping tool',
-      category: 'Design',
-      isFavorite: true,
-      view: 980,
-      star: 320,
-      tags: ['Design', 'UI/UX'],
-    },
-    {
-      id: '5',
-      name: 'Google Drive',
-      href: 'https://drive.google.com',
-      logo: 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png',
-      desc: 'Cloud storage service',
-      category: 'Productivity',
-      isFavorite: true,
-      view: 1800,
-      star: 450,
-      tags: ['Productivity', 'Storage'],
-    },
-    {
-      id: '6',
-      name: 'Netflix',
-      href: 'https://netflix.com',
-      logo: 'https://www.netflix.com/favicon.ico',
-      desc: 'Streaming service',
-      category: 'Entertainment',
-      isFavorite: true,
-      view: 2700,
-      star: 780,
-      tags: ['Video', 'Entertainment'],
-    },
-    {
-      id: '7',
-      name: 'Slack',
-      href: 'https://slack.com',
-      logo: 'https://a.slack-edge.com/80588/img/icons/icon_128.png',
-      desc: 'Team communication platform',
-      category: 'Productivity',
-      isFavorite: true,
-      view: 1100,
-      star: 290,
-      tags: ['Communication', 'Team'],
-    },
-    {
-      id: '8',
-      name: 'LinkedIn',
-      href: 'https://linkedin.com',
-      logo: 'https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca',
-      desc: 'Professional networking',
-      category: 'Business',
-      isFavorite: true,
-      view: 1500,
-      star: 380,
-      tags: ['Networking', 'Business'],
-    },
-  ], []);
+  const [grid, setGrid] = useState<GridEntry[]>([]);
+  const [openFolder, setOpenFolder] = useState<{ id: string; name?: string; items: NavItem[] } | null>(null);
 
-  // Add animation class to document for fade-in effects
+  // Load structured favorites (folders + items)
+  const loadStructured = async (): Promise<GridEntry[]> => {
+    try {
+      const res = await api.getFavoritesStructured();
+      const entries = (res?.data || []).map((row: any) => {
+        if (row.type === 'folder') {
+          return { kind: 'folder', id: String(row.folder.id), name: row.folder.name, items: row.items } as GridEntry;
+        }
+        return { kind: 'item', item: row.nav } as GridEntry;
+      });
+      setGrid(entries);
+      return entries;
+    } catch (e) {
+      console.error('Failed to load structured favorites:', e);
+      return [];
+    }
+  };
+
+  // Refresh structured data when favorites load or auth changes
   useEffect(() => {
+    if (authState.initialized && authState.isAuthenticated) {
+      loadStructured();
+    } else {
+      setGrid([]);
+    }
+  }, [authState.initialized, authState.isAuthenticated, favorites]);
+
+  // Ensure auth is initialized here and add animation class for fade-in effects
+  useEffect(() => {
+    initAuth();
     if (typeof document !== 'undefined') {
       document.body.classList.add('animate-fade-in');
     }
     return () => {
       document && document.body.classList.remove('animate-fade-in');
     };
-  }, []);
+  }, [initAuth]);
 
-  // Get favorites from localStorage on mount
+  // Load favorites via store action when auth is initialized
   useEffect(() => {
-    const loadFavorites = () => {
-      if (typeof window !== 'undefined' && authState.isAuthenticated) {
-        try {
-          const storedFavorites = localStorage.getItem('favorites');
-          if (storedFavorites) {
-            const parsed = JSON.parse(storedFavorites);
-            setFavorites(Array.isArray(parsed) ? parsed : []);
-          } else {
-            // Use mock data when no favorites exist in localStorage
-            setFavorites(mockFavorites);
-          }
-        } catch (err) {
-          console.error('Failed to load favorites:', err);
-          setFavorites(mockFavorites); // Fallback to mock data
-        }
-      } else {
-        // When not authenticated, use mock data
-        setFavorites(mockFavorites);
+    let canceled = false;
+    const run = async () => {
+      if (!authState.initialized) return;
+      if (!authState.isAuthenticated) {
+        setFavorites([]);
+        setError(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    };
-
-    loadFavorites();
-  }, [authState.isAuthenticated, mockFavorites]);
-
-  const handleRemoveFavorite = (id: string) => {
-    const updatedFavorites = favorites.filter(item => item.id !== id);
-    setFavorites(updatedFavorites);
-
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
+      setLoading(true);
+      setError(null);
       try {
-        localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+        await favoritesActions({ type: 'LOAD_FAVORITES' });
       } catch (err) {
-        console.error('Failed to save favorites:', err);
+        const message = err instanceof Error ? err.message : t('operation_failed');
+        if (!canceled) setError(message);
+        setFavorites([]);
+      } finally {
+        if (!canceled) setLoading(false);
       }
+    };
+    run();
+    return () => {
+      canceled = true;
+    };
+  }, [authState.initialized, authState.isAuthenticated, favoritesActions, setFavorites, t]);
+
+  const idOf = (e: GridEntry) => (e.kind === 'item' ? getNavId(e.item) : String(e.id));
+
+  const onDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const sourceId = String(active.id);
+    const targetId = String(over.id);
+
+    const sourceEntry = grid.find((e) => (e.kind === 'item' && getNavId(e.item) === sourceId) || (e.kind === 'folder' && e.id === sourceId));
+    const targetEntry = grid.find((e) => (e.kind === 'item' && getNavId(e.item) === targetId) || (e.kind === 'folder' && e.id === targetId));
+
+    // Only allow moving items (not folders) in current implementation
+    if (!sourceEntry || sourceEntry.kind !== 'item' || !targetEntry) return;
+
+    try {
+      const sourceNavId = getNavObjectId(sourceEntry.item);
+      if (!sourceNavId) return;
+      if (targetEntry.kind === 'folder') {
+        await api.updateFavoriteFolder(targetEntry.id, { addNavIds: [sourceNavId] });
+      } else if (targetEntry.kind === 'item') {
+        const targetNavId = getNavObjectId(targetEntry.item);
+        if (!targetNavId) return;
+        await api.createFavoriteFolder({ name: t('folder'), navIds: [targetNavId, sourceNavId] });
+      }
+      await loadStructured();
+    } catch (err) {
+      console.error('Drag operation failed:', err);
     }
   };
 
-  const handleGoBack = () => {
-    router.back();
+  const handleRemoveFavorite = async (navId: string) => {
+    try {
+      await api.removeFavorite(navId);
+      await favoritesActions({ type: 'LOAD_FAVORITES' });
+      const entries = await loadStructured();
+      if (openFolder) {
+        const folder = entries.find((e) => e.kind === 'folder' && e.id === openFolder.id) as Extract<GridEntry, { kind: 'folder' }> | undefined;
+        if (folder) setOpenFolder({ id: folder.id, name: folder.name, items: folder.items });
+        else setOpenFolder(null);
+      }
+    } catch (e) {
+      console.error('Remove favorite failed:', e);
+    }
   };
 
   if (loading) {
@@ -254,20 +199,31 @@ export default function FavoritesPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-8">
-              {favorites.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <FavoriteItem
-                    item={item}
-                    onRemove={handleRemoveFavorite}
-                  />
-                </div>
-              ))}
-            </div>
+            <FavoritesLayout onDragEnd={onDragEnd}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-8">
+                {grid.map((entry, index) => {
+                  const key = entry.kind === 'item' ? getNavId(entry.item) : String(entry.id);
+                  return (
+                    <DroppableCard key={key} id={key}>
+                      <div
+                        className="animate-fade-in-up"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <DraggableCard id={key}>
+                          {entry.kind === 'item' ? (
+                            <FavoriteItem item={entry.item} onRemove={handleRemoveFavorite} />
+                          ) : (
+                            <FolderTile items={entry.items} name={entry.name}
+                              onClick={() => setOpenFolder({ id: entry.id, name: entry.name, items: entry.items })}
+                            />
+                          )}
+                        </DraggableCard>
+                      </div>
+                    </DroppableCard>
+                  );
+                })}
+              </div>
+            </FavoritesLayout>
           )}
         </main>
 
@@ -305,6 +261,14 @@ export default function FavoritesPage() {
           </Link>
         </footer>
       </div>
+      {openFolder && (
+        <FolderOverlay
+          name={openFolder.name}
+          items={openFolder.items}
+          onRemove={handleRemoveFavorite}
+          onClose={() => setOpenFolder(null)}
+        />
+      )}
     </AuthGuard>
   );
 }

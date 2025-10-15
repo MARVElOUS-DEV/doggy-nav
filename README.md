@@ -7,7 +7,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 [![CI/CD](https://github.com/MARVElOUS-DEV/doggy-nav/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/MARVElOUS-DEV/doggy-nav/actions)
 
-*A modern, self-hosted navigation and bookmark management system*
+_A modern, self-hosted navigation and bookmark management system_
 
 [🚀 Features](#-features) • [📦 Quick Start](#-quick-start) • [🔧 Development](#-development) • [🐳 Docker](#-docker-deployment) • [📖 Documentation](#-documentation)
 
@@ -29,6 +29,7 @@ Doggy Nav is a comprehensive navigation and bookmark management system designed 
 ## ✨ Features
 
 ### 🌟 Core Features
+
 - **📚 Smart Organization** - Categories, tags, and search functionality
 - **👥 Multi-User Support** - User authentication and permissions
 - **⭐ Favorites System** - Quick access to frequently used bookmarks
@@ -37,6 +38,7 @@ Doggy Nav is a comprehensive navigation and bookmark management system designed 
 - **📱 Responsive Design** - Works on desktop, tablet, and mobile
 
 ### 🛠 Technical Features
+
 - **🚀 High Performance** - Built with Next.js and modern frameworks
 - **🔒 Security First** - JWT authentication, input validation
 - **🐳 Docker Ready** - Easy deployment with Docker containers
@@ -98,6 +100,7 @@ echo "Admin Panel: http://localhost:8080"
 ### 🛠 Development Setup
 
 #### Prerequisites
+
 - **Node.js** ≥ 20.17.0
 - **pnpm** ≥ 8.0.0
 - **MongoDB** ≥ 7.0
@@ -125,6 +128,7 @@ pnpm admin:dev     # Admin Panel (Terminal 3)
 ```
 
 #### 🚀 Development URLs
+
 - **Frontend**: http://localhost:3001
 - **Backend API**: http://localhost:3002
 - **Admin Panel**: http://localhost:3000 (UmiJS default)
@@ -156,12 +160,12 @@ pnpm admin:dev     # Admin Panel (Terminal 3)
 
 ### 📋 Docker Services
 
-| Service | Image | Port | Description |
-|---------|-------|------|-------------|
-| Frontend | `doggy-nav-frontend` | 3001 | Next.js web application |
-| Backend | `doggy-nav-backend` | 3002 | Egg.js API server |
-| Admin | `doggy-nav-admin` | 8080 | UmiJS admin panel |
-| Database | `mongo:7.0` | 27017 | MongoDB database |
+| Service  | Image                | Port  | Description             |
+| -------- | -------------------- | ----- | ----------------------- |
+| Frontend | `doggy-nav-frontend` | 3001  | Next.js web application |
+| Backend  | `doggy-nav-backend`  | 3002  | Egg.js API server       |
+| Admin    | `doggy-nav-admin`    | 8080  | UmiJS admin panel       |
+| Database | `mongo:7.0`          | 27017 | MongoDB database        |
 
 ## 🔧 Development
 
@@ -206,6 +210,7 @@ use doggy_nav
 ### 🔐 Environment Configuration
 
 #### Backend (.env.local)
+
 ```bash
 # Server Configuration
 PORT=3002
@@ -223,6 +228,7 @@ RATE_LIMIT_MAX_REQUESTS=100
 ```
 
 #### Frontend (.env.local)
+
 ```bash
 # Build Configuration
 ANALYZE=false
@@ -234,6 +240,7 @@ SERVER_URL=http://localhost:3002
 ### ☁️ Cloud Platforms
 
 #### Vercel (Frontend Only)
+
 ```bash
 # Deploy frontend to Vercel
 cd packages/doggy-nav-main
@@ -244,6 +251,7 @@ vercel --prod
 ```
 
 #### Railway/DigitalOcean (Full Stack)
+
 ```bash
 # 1. Deploy backend first
 # 2. Deploy frontend with backend URL
@@ -252,6 +260,7 @@ vercel --prod
 ```
 
 #### Docker Platforms
+
 ```bash
 # Deploy to any Docker-compatible platform
 docker-compose up -d
@@ -263,12 +272,15 @@ docker-compose up -d
 ## 📖 Documentation
 
 ### 📚 Additional Docs
+
+- [🧭 Repository Guidelines](AGENTS.md) - Monorepo structure, workflow, and contributor expectations
 - [🐳 Docker Guide](DOCKER.md) - Comprehensive Docker deployment
 - [🚀 Deployment Guide](DEPLOYMENT.md) - Cloud deployment instructions
 - [🔄 CI/CD Guide](CI-CD.md) - Continuous integration setup
 - [🛠 API Documentation](docs/API.md) - Backend API reference
 
 ### 🏗 Development Guides
+
 - [Frontend Development](packages/doggy-nav-main/README.md)
 - [Backend Development](packages/doggy-nav-server/README.md)
 - [Admin Panel Development](packages/doggy-nav-admin/README.md)
@@ -279,24 +291,31 @@ We welcome contributions! Please follow these steps:
 
 ### 🔄 Development Workflow
 
+0. **Review the repo guide**  
+   Skim through [AGENTS.md](AGENTS.md) to understand coding standards, testing expectations, and commit conventions.
+
 1. **Fork & Clone**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/doggy-nav.git
    cd doggy-nav
    ```
 
 2. **Create Feature Branch**
+
    ```bash
    git checkout -b feature/amazing-feature
    ```
 
 3. **Install & Setup**
+
    ```bash
    pnpm install
    cp packages/doggy-nav-server/.env.example packages/doggy-nav-server/.env.local
    ```
 
 4. **Develop & Test**
+
    ```bash
    pnpm server:dev  # Start backend
    pnpm web:dev     # Start frontend
@@ -304,6 +323,7 @@ We welcome contributions! Please follow these steps:
    ```
 
 5. **Commit & Push**
+
    ```bash
    pnpm commit      # Use conventional commits
    git push origin feature/amazing-feature
@@ -321,6 +341,7 @@ We welcome contributions! Please follow these steps:
 ### 🐛 Bug Reports
 
 Found a bug? Please create an issue with:
+
 - **Environment details** (OS, Node.js version, etc.)
 - **Steps to reproduce**
 - **Expected vs actual behavior**
@@ -329,6 +350,7 @@ Found a bug? Please create an issue with:
 ## 🛡 Security
 
 ### 🔒 Security Features
+
 - **JWT Authentication** - Secure token-based auth
 - **Rate Limiting** - API request throttling
 - **Input Validation** - SQL injection prevention
@@ -336,6 +358,7 @@ Found a bug? Please create an issue with:
 - **Environment Variables** - Secret management
 
 ### 📝 Security Policy
+
 - Report security vulnerabilities privately via email
 - Security updates are prioritized and released quickly
 - We follow responsible disclosure practices
@@ -343,6 +366,7 @@ Found a bug? Please create an issue with:
 ## 📊 Performance
 
 ### ⚡ Optimization Features
+
 - **Next.js SSG/SSR** - Fast page loads
 - **MongoDB Indexing** - Optimized database queries
 - **Docker Multi-stage** - Minimal container sizes
@@ -350,6 +374,7 @@ Found a bug? Please create an issue with:
 - **Caching Strategies** - Redis support for sessions
 
 ### 📈 Monitoring
+
 - Health check endpoints
 - Performance metrics
 - Error tracking and logging
@@ -358,6 +383,7 @@ Found a bug? Please create an issue with:
 ## 🌍 Roadmap
 
 ### 🎯 Upcoming Features
+
 - [ ] **Browser Extension** - Quick bookmark addition
 - [ ] **API Rate Limiting** - Advanced request throttling
 - [ ] **SSO Integration** - LDAP/OAuth support
@@ -366,6 +392,7 @@ Found a bug? Please create an issue with:
 - [ ] **Plugin System** - Extensible architecture
 
 ### 🔄 Recent Updates
+
 - [x] **Docker Optimization** - Multi-stage builds
 - [x] **CI/CD Pipeline** - Automated testing & deployment
 - [x] **Modern UI** - Updated design system
@@ -378,11 +405,13 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🙏 Acknowledgments
 
 ### 💝 Special Thanks
+
 - **Contributors** - All the amazing developers who helped build this
 - **Open Source Community** - For the incredible tools and libraries
 - **Beta Testers** - For valuable feedback and bug reports
 
 ### 🛠 Built With
+
 - [Next.js](https://nextjs.org/) - React framework
 - [Egg.js](https://eggjs.org/) - Node.js backend framework
 - [UmiJS](https://umijs.org/) - React application framework
@@ -394,7 +423,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 [![Github Sponsors](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/bin456789)
 
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com 'Powered by DartNode - Free VPS for Open Source')
 
 ---
 
@@ -404,6 +433,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 Made with ❤️ by [Marvelous](https://github.com/MARVElOUS-DEV)
 
-*If you find this project helpful, please consider giving it a ⭐!*
+_If you find this project helpful, please consider giving it a ⭐!_
 
 </div>

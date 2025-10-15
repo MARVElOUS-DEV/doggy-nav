@@ -45,7 +45,7 @@ export default (appInfo: EggAppInfo) => {
   config.mongoose = {
     client: {
       url: mongoConfig.mongoUrl,
-      options: { useNewUrlParser: true, useUnifiedTopology: true } as ConnectOptions,
+      options: { useNewUrlParser: true, useUnifiedTopology: true } as unknown as ConnectOptions,
     },
   };
 

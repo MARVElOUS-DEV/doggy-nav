@@ -98,6 +98,23 @@ const api = {
   getFavoritesList: (): Promise<{data: NavItem[]}> =>
     axios.get('/api/favorites/list'),
 
+  // Favorites structured (folders + root items)
+  getFavoritesStructured: (): Promise<{ data: Array<any> }> =>
+    axios.get('/api/favorites/structured'),
+
+  // Favorite folders CRUD
+  createFavoriteFolder: (payload: { name: string; navIds?: string[]; order?: number }) =>
+    axios.post('/api/favorites/folders', payload),
+
+  updateFavoriteFolder: (id: string, payload: { name?: string; addNavIds?: string[]; removeNavIds?: string[]; order?: number }) =>
+    axios.put(`/api/favorites/folders/${id}`, payload),
+
+  deleteFavoriteFolder: (id: string) =>
+    axios.delete(`/api/favorites/folders/${id}`),
+
+  updateFavoritesPlacements: (payload: { root?: Array<{ navId: string; order: number }>; folders?: Array<{ folderId: string; order: number }>; moves?: Array<{ navId: string; parentFolderId?: string | null; order: number }> }) =>
+    axios.put('/api/favorites/placements', payload),
+
   checkFavorite: (navId: string): Promise<{isFavorite: boolean}> =>
     axios.get(`/api/favorites/check?navId=${navId}`),
 

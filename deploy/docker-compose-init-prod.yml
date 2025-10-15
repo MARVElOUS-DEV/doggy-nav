@@ -11,14 +11,14 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
       MONGO_INITDB_DATABASE: doggy_nav
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongodb_data:/data/db
       - ./deploy/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - doggy-nav-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -39,18 +39,12 @@ services:
       RATE_LIMIT_WINDOW_MS: 60000
       RATE_LIMIT_MAX_REQUESTS: 100
     ports:
-      - "3002:3002"
+      - '3002:3002'
     depends_on:
       mongodb:
         condition: service_healthy
     networks:
       - doggy-nav-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
 
   # Frontend (Next.js)
   frontend:
@@ -64,14 +58,11 @@ services:
       PORT: 3001
       SERVER_URL: http://server:3002
     ports:
-      - "3001:3001"
-    depends_on:
-      server:
-        condition: service_healthy
+      - '3001:3001'
     networks:
       - doggy-nav-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001"]
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3001']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -87,14 +78,14 @@ services:
     environment:
       DOGGY_SERVER: http://server:3002
     ports:
-      - "8080:8080"
+      - '8080:8080'
     depends_on:
       server:
         condition: service_healthy
     networks:
       - doggy-nav-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:8080']
       interval: 30s
       timeout: 10s
       retries: 3

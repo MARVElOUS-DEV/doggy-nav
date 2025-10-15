@@ -10,6 +10,16 @@ on:
 jobs:
   update-dependencies:
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")' || exit 1"
+          --health-interval 20s
+          --health-timeout 5s
+          --health-retries 3
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,6 +46,9 @@ jobs:
           pnpm install
 
       - name: Run tests
+        env:
+          EGG_SERVER_ENV: unittest
+          MONGO_URL: mongodb://127.0.0.1:27017/navigation_test
         run: |
           pnpm --filter doggy-nav-server test-local || true
           pnpm build
