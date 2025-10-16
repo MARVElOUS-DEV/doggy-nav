@@ -54,7 +54,7 @@ export default class UserService extends Service {
   }
 
   private async createUserFromProvider(params: {
-    provider: 'github' | 'google';
+    provider: 'github' | 'google' | 'linuxdo';
     providerId: string;
     username?: string | null;
     displayName?: string | null;
@@ -91,7 +91,7 @@ export default class UserService extends Service {
   }
 
   async findOrCreateFromProvider(params: {
-    provider: 'github' | 'google';
+    provider: 'github' | 'google' | 'linuxdo';
     providerId: string;
     username?: string | null;
     displayName?: string | null;

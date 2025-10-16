@@ -97,6 +97,15 @@ export default (appInfo: EggAppInfo) => {
       callbackURL: process.env.GOOGLE_CALLBACK_URL || '',
       scope: [ 'openid', 'profile', 'email' ],
     },
+    linuxdo: {
+      clientID: process.env.LINUXDO_CLIENT_ID || '',
+      clientSecret: process.env.LINUXDO_CLIENT_SECRET || '',
+      callbackURL: process.env.LINUXDO_CALLBACK_URL || '',
+      authorizationURL: process.env.LINUXDO_AUTHORIZATION_URL || '',
+      tokenURL: process.env.LINUXDO_TOKEN_URL || '',
+      userProfileURL: process.env.LINUXDO_PROFILE_URL || '',
+      scope: process.env.LINUXDO_SCOPE ? process.env.LINUXDO_SCOPE.split(',').map(item => item.trim()).filter(Boolean) : undefined,
+    },
   };
 
   // Route access control is now handled by the access-control.js configuration

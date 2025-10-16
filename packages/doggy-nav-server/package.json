@@ -53,6 +53,7 @@
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
+    "passport-oauth2": "^1.8.0",
     "request": "^2.88.2",
     "tslib": "^2.8.1"
   },

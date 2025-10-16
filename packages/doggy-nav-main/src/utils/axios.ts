@@ -80,7 +80,8 @@ instance.interceptors.response.use(
         case 401:
           errorMessage = 'Unauthorized - Please login';
           if (typeof window !== 'undefined') {
-            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+            const isLoginPage = window.location.pathname.includes('/login')
+            !isLoginPage && (window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`);
           }
           break;
         case 403:

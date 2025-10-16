@@ -1,9 +1,10 @@
 import { Application } from 'egg';
 import GitHubStrategy from 'passport-github2';
 import GoogleStrategy from 'passport-google-oauth20';
+import LinuxDoStrategy from '../strategy/linuxdo';
 import { ConflictError } from '../core/errors';
 
-type ProviderName = 'github' | 'google';
+type ProviderName = 'github' | 'google' | 'linuxdo';
 
 export type ProviderSpec = {
   name: ProviderName;
@@ -52,6 +53,26 @@ export function listProviders(app: Application): ProviderSpec[] {
         emails: (profile.emails || []).map((e: any) => ({ value: e?.value, verified: e?.verified })),
         avatar: profile.photos?.[0]?.value,
         raw: profile,
+      }),
+    },
+    {
+      name: 'linuxdo',
+      Strategy: LinuxDoStrategy,
+      config: oauthConfig?.linuxdo,
+      enabled: !!(oauthConfig?.linuxdo?.clientID &&
+        oauthConfig?.linuxdo?.clientSecret &&
+        oauthConfig?.linuxdo?.callbackURL &&
+        oauthConfig?.linuxdo?.authorizationURL &&
+        oauthConfig?.linuxdo?.tokenURL &&
+        oauthConfig?.linuxdo?.userProfileURL),
+      mapProfile: (profile) => ({
+        provider: 'linuxdo',
+        providerId: profile.id,
+        username: profile.username ?? profile.displayName ?? 'linuxdo',
+        displayName: profile.displayName ?? profile.username ?? 'LinuxDo User',
+        emails: (profile.emails || []).map((e: any) => ({ value: e?.value, verified: e?.verified })),
+        avatar: profile.photos?.[0]?.value,
+        raw: profile._json ?? profile,
       }),
     },
   ];

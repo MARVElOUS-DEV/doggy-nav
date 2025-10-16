@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Form, Input, Button, Message } from '@arco-design/web-react';
 import { useSetAtom } from 'jotai';
 import { motion } from 'framer-motion';
 import { authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
-import type { LoginFormValues } from '@/types';
+import type { LoginFormValues, OAuthProvider } from '@/types';
 import { useTranslation } from 'react-i18next';
 
 const FormItem = Form.Item;
@@ -14,7 +14,7 @@ export default function LoginPage() {
   const { t } = useTranslation('translation');
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [providers, setProviders] = useState<Array<'github' | 'google'>>([]);
+  const [providers, setProviders] = useState<OAuthProvider[]>([]);
   const dispatchAuth = useSetAtom(authActionsAtom);
   const router = useRouter();
 
@@ -45,7 +45,13 @@ export default function LoginPage() {
     }
   };
 
-  const handleOAuthLogin = (provider: 'github' | 'google') => {
+  const providerMeta = useMemo<Record<OAuthProvider, { icon: string; label: string }>>(() => ({
+    github: { icon: 'icon-github', label: t('sign_in_with_github', { defaultValue: 'Sign in with GitHub' }) },
+    google: { icon: 'icon-google', label: t('sign_in_with_google', { defaultValue: 'Sign in with Google' }) },
+    linuxdo: { icon: 'icon-user', label: t('sign_in_with_linuxdo', { defaultValue: 'Sign in with LinuxDo' }) },
+  }), [t]);
+
+  const handleOAuthLogin = (provider: OAuthProvider) => {
     window.location.href = `/api/auth/${provider}`;
   };
 
@@ -54,16 +60,18 @@ export default function LoginPage() {
     api.getAuthProviders()
       .then(res => {
         if (!mounted) return;
-        setProviders(Array.isArray(res?.providers) ? (res.providers as Array<'github' | 'google'>) : []);
+        if (Array.isArray(res?.providers)) {
+          const normalized = (res.providers as unknown[]).filter((provider): provider is OAuthProvider =>
+            typeof provider === 'string' && provider in providerMeta
+          );
+          setProviders(normalized);
+        } else {
+          setProviders([]);
+        }
       })
       .catch(() => setProviders([]));
     return () => { mounted = false; };
-  }, []);
-
-  const providerMeta: Record<'github' | 'google', { icon: string; label: string }> = {
-    github: { icon: 'icon-github', label: t('sign_in_with_github', { defaultValue: 'Sign in with GitHub' }) },
-    google: { icon: 'icon-google', label: t('sign_in_with_google', { defaultValue: 'Sign in with Google' }) },
-  };
+  }, [providerMeta]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-4">

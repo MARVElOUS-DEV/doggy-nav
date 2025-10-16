@@ -188,7 +188,7 @@ export default function FavoritesPage() {
               <p className="text-gray-700 mb-8 text-center max-w-md text-lg">
                 {t('no_favorite_websites_tip')}
               </p>
-              <Link href="/navcontents">
+              <Link href="/">
                 <Button
                   type="primary"
                   size="large"

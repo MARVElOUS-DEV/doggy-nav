@@ -11,7 +11,7 @@ export default function(app: any) {
     },
     provider: {
       type: String,
-      enum: [ 'github', 'google' ],
+      enum: [ 'github', 'google', 'linuxdo' ],
       required: true,
     },
     providerUserId: {

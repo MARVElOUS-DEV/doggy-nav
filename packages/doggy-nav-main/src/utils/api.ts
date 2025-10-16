@@ -1,5 +1,5 @@
 import axios from './axios';
-import type { Category, NavItem, Tag, User, LoginFormValues, RegisterFormValues } from '@/types';
+import type { Category, NavItem, Tag, User, LoginFormValues, RegisterFormValues, OAuthProvider } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
@@ -122,7 +122,7 @@ const api = {
     axios.get('/api/favorites/count'),
 
   // OAuth providers
-  getAuthProviders: (): Promise<{ providers: Array<'github' | 'google'> }> =>
+  getAuthProviders: (): Promise<{ providers: Array<OAuthProvider> }> =>
     axios.get('/api/auth/providers'),
 };
 

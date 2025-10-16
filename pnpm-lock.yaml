@@ -272,6 +272,9 @@ importers:
       passport-google-oauth20:
         specifier: ^2.0.0
         version: 2.0.0
+      passport-oauth2:
+        specifier: ^1.8.0
+        version: 1.8.0
       request:
         specifier: ^2.88.2
         version: 2.88.2
