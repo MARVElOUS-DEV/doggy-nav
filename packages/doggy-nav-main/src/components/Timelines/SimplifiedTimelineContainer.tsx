@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, ArrowUp, ArrowDown, Calendar, ExternalLink } from 'lucide-react';
+import { Search, ArrowUp, ArrowDown, Calendar } from 'lucide-react';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
 import TimelineItem from './TimelineItem';
 import { useTranslation } from 'react-i18next';

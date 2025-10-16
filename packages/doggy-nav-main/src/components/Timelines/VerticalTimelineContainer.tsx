@@ -4,6 +4,7 @@ import { Search, Calendar, ExternalLink } from 'lucide-react';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
 import DoggyImage from '../DoggyImage';
 import { useTranslation } from 'react-i18next';
+import api from '@/utils/api';
 
 interface VerticalTimelineContainerProps {
   year: number;
@@ -38,7 +39,7 @@ export default function VerticalTimelineContainer({
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  const handleItemClick = useCallback((item: TimelineItemType) => {
+  const handleItemClick = useCallback(async (item: TimelineItemType) => {
     onItemSelect?.(item);
   }, [onItemSelect]);
 
@@ -155,7 +156,15 @@ export default function VerticalTimelineContainer({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-gray-400 hover:text-amber-500 transition-colors flex-shrink-0"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              const id = item.id;
+                              if (id) {
+                                await api.updateNavView(String(id));
+                              }
+                            } catch {}
+                          }}
                           aria-label={`${t('visit_website')} ${item.title}`}
                         >
                           <ExternalLink className="w-4 h-4" />

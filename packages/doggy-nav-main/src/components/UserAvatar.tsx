@@ -88,12 +88,7 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
   const dropdownMenu = (
     <Menu style={{ minWidth: 180 }}>
       <Menu.Item key="user" disabled>
-        <div className="flex flex-col">
-          <span className="font-medium text-theme-foreground">{user.username}</span>
-          {user.email && (
-            <span className="text-sm text-theme-muted-foreground">{user.email}</span>
-          )}
-        </div>
+        <span className="font-medium text-theme-foreground">{user.username}</span>
       </Menu.Item>
       {menuItems}
     </Menu>
@@ -141,7 +136,7 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
             size={size}
             className="ring-2 ring-white ring-opacity-50 shadow-md"
           >
-            <Image src={user.avatar} alt={user.username} preview={false} width={40} height={40} />
+            <Image className="rounded-full" src={user.avatar} alt={user.username} preview={false} width={40} height={40} />
           </ArcoAvatar>
         ) : (
           <div

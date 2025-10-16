@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import api from '@/utils/api';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
 
 interface TimelineItemProps {
@@ -105,7 +106,15 @@ export default function TimelineItem({
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-amber-500 transition-colors"
-              onClick={(e) => e.stopPropagation()}
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  const id = item.id;
+                  if (id) {
+                    await api.updateNavView(String(id));
+                  }
+                } catch {}
+              }}
               aria-label="Open website in new tab"
             >
               <ExternalLink className="w-4 h-4" />

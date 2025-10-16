@@ -20,6 +20,9 @@ export default function HomePage() {
   const [currentYearData, setCurrentYearData] = useState<any>(null);
   const currentYear = new Date().getFullYear();
   const [selectedItem, setSelectedItem] = useState<TimelineItemType | undefined>();
+  const [totalNavCount, setTotalNavCount] = useState(0);
+  const [totalCategoryCount, setTotalCategoryCount] = useState(0);
+  const [totalViews, setTotalViews] = useState(0);
 
   // Initial data fetch - nav ranking and timeline data
   useEffect(() => {
@@ -39,6 +42,15 @@ export default function HomePage() {
         const currentYear = new Date().getFullYear();
         const cy = timelineData.find(y => y.year === currentYear);
         setCurrentYearData(cy || { year: currentYear, items: [], totalWebsites: 0, color: '', position: { x: 0, y: 0, z: 0, rotation: 0 }, featuredWebsites: [] });
+
+        // Fetch statistics for cards
+        setTotalNavCount(list?.total || 0);
+        
+        const categories = await api.getCategoryList();
+        setTotalCategoryCount(categories?.length || 0);
+        
+        const totalViewsSum = normalized.reduce((sum: number, nav: any) => sum + (nav.view || 0), 0);
+        setTotalViews(totalViewsSum);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -172,16 +184,16 @@ export default function HomePage() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
-              <div className="text-3xl font-bold">{navRanking?.view?.length || 0}</div>
-              <div className="text-blue-100">{t('popular_websites')}</div>
+              <div className="text-3xl font-bold">{totalNavCount.toLocaleString()}</div>
+              <div className="text-blue-100">{t('total_nav_count')}</div>
             </div>
             <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-              <div className="text-3xl font-bold">{navRanking?.star?.length || 0}</div>
-              <div className="text-purple-100">{t('highly_rated_websites')}</div>
+              <div className="text-3xl font-bold">{totalCategoryCount}</div>
+              <div className="text-purple-100">{t('total_category_count')}</div>
             </div>
             <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
-              <div className="text-3xl font-bold">{navRanking?.news?.length || 0}</div>
-              <div className="text-green-100">{t('latest_added')}</div>
+              <div className="text-3xl font-bold">{totalViews.toLocaleString()}</div>
+              <div className="text-green-100">{t('total_views')}</div>
             </div>
           </div>
         )}
