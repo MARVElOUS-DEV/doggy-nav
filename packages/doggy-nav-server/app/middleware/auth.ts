@@ -8,9 +8,9 @@ export default () => {
     }
 
     // FIRST: Check client secret if enabled (for ALL endpoints)
-    const clientSecretConfig = ctx.app.config.clientSecret;
-    const isClientSecretRequired = clientSecretConfig?.requireForAllAPIs;
-    const bypassRoutes = clientSecretConfig?.bypassRoutes || [];
+    const clientSecretConfig = ctx?.app?.config?.clientSecret || {};
+    const isClientSecretRequired = Boolean(clientSecretConfig.requireForAllAPIs);
+    const bypassRoutes: string[] = Array.isArray(clientSecretConfig.bypassRoutes) ? clientSecretConfig.bypassRoutes : [];
 
     // Check if this route is in bypass list
     const isBypassRoute = bypassRoutes.some((route: string) => {
@@ -26,7 +26,7 @@ export default () => {
 
     if (isClientSecretRequired && !isBypassRoute) {
       // Require client secret for ALL APIs
-      const clientSecret = ctx.headers[clientSecretConfig?.headerName || 'x-client-secret'];
+      const clientSecret = ctx.headers[(clientSecretConfig as any).headerName || 'x-client-secret'];
 
       if (!clientSecret) {
         ctx.status = 401;
@@ -97,13 +97,13 @@ export default () => {
     // but still try to authenticate if credentials are provided
     if (permission.access === 'optional') {
       // Try to authenticate but don't require it
-      await tryAuthenticate(ctx, ctx.app);
+      await tryAuthenticate(ctx);
       await next();
       return;
     }
 
     // For authenticated and admin access, try to authenticate
-    const authResult = await tryAuthenticate(ctx, ctx.app);
+    const authResult = await tryAuthenticate(ctx);
 
     // Check if user has required access level
     if (hasAccess(permission, ctx.state.userinfo)) {
@@ -132,14 +132,30 @@ export default () => {
 };
 
 // Helper function to attempt authentication
-async function tryAuthenticate(ctx: any, app: any) {
-  let token = ctx.headers.authorization ? ctx.headers.authorization : '';
+async function tryAuthenticate(ctx: any) {
+  const bearer = ctx.headers.authorization ? ctx.headers.authorization : '';
+  let token: string | null = null;
 
-  // Try JWT token authentication
+  if (bearer && bearer.startsWith('Bearer ')) {
+    token = bearer.substring(7);
+  }
+
+  if (!token) {
+    const cookieToken = ctx.cookies.get('access_token');
+    if (cookieToken) {
+      token = cookieToken.startsWith('Bearer ') ? cookieToken.substring(7) : cookieToken;
+    }
+  }
+
   if (token) {
-    token = token.substring(7); // Remove 'Bearer ' prefix
     try {
-      const decode = await app.jwt.verify(token, app.config.jwt.secret);
+      const jwt = ctx?.app?.jwt;
+      const secret = ctx?.app?.config?.jwt?.secret;
+      if (!jwt || !secret) {
+        ctx.logger.warn('JWT verification skipped: plugin or secret missing');
+        return { authenticated: false, error: 'JWT not available' };
+      }
+      const decode = await jwt.verify(token, secret);
       ctx.state.userinfo = {
         ...decode,
         authType: 'jwt',
@@ -151,6 +167,5 @@ async function tryAuthenticate(ctx: any, app: any) {
     }
   }
 
-  // No authentication credentials provided
   return { authenticated: false, error: '未提供认证信息' };
 }

@@ -5,7 +5,8 @@ import AppNavMenus from '../AppNavMenus';
 import AppHeader from '../AppHeader';
 import i18n from '@/i18n';
 import { ConfigProvider, Drawer } from '@arco-design/web-react';
-import { showMenuTypeAtom, initAuthFromStorageAtom, mobileAtom, manualCollapseAtom, themeAtom } from '@/store/store';
+import { showMenuTypeAtom, initAuthFromServerAtom, mobileAtom, manualCollapseAtom, themeAtom } from '@/store/store';
+import { useSetAtom } from 'jotai';
 import RightSideToolbar from '../RightSideToolbar';
 import LightbulbRope from '../LightbulbRope';
 import router from 'next/router';
@@ -16,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [showMenuType, setShowMenuType] = useAtom(showMenuTypeAtom);
-  const [, initAuth] = useAtom(initAuthFromStorageAtom);
+  const initAuth = useSetAtom(initAuthFromServerAtom);
   const [isMobile, setIsMobile] = useAtom(mobileAtom);
   const [manualCollapse, setManualCollapse] = useAtom(manualCollapseAtom);
   const [theme] = useAtom(themeAtom);
@@ -28,7 +29,7 @@ export default function RootLayout({
       router.push(href)
     })
   }
-  // Initialize auth state from localStorage
+  // Initialize auth state from server session
   useEffect(() => {
     initAuth();
   }, [initAuth]);

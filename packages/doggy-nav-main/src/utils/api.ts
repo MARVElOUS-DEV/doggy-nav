@@ -73,7 +73,7 @@ const api = {
     axios.post(`/api/nav/${id}/star`),
 
   // Authentication APIs - using Next.js proxy routes
-  login: (credentials: LoginFormValues): Promise<{token: string, user: User}> =>
+  login: (credentials: LoginFormValues): Promise<{ user: User; token?: string }> =>
     axios.post('/api/auth/login', credentials),
 
   register: (userData: RegisterFormValues): Promise<{ user: User }> =>
@@ -82,7 +82,7 @@ const api = {
   logout: (): Promise<void> =>
     axios.post('/api/auth/logout'),
 
-  getCurrentUser: (): Promise<User> =>
+  getCurrentUser: (): Promise<{ authenticated: boolean; user: User | null }> =>
     axios.get('/api/auth/me'),
 
   updateProfile: (data: { username?: string; email?: string; avatar?: string }): Promise<User> =>
@@ -120,6 +120,10 @@ const api = {
 
   getFavoritesCount: (): Promise<{count: number}> =>
     axios.get('/api/favorites/count'),
+
+  // OAuth providers
+  getAuthProviders: (): Promise<{ providers: Array<'github' | 'google'> }> =>
+    axios.get('/api/auth/providers'),
 };
 
 export default api;

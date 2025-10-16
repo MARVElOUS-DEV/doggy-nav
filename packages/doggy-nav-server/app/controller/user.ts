@@ -1,5 +1,6 @@
 import Controller from '../core/base_controller';
 import { AuthenticationError } from '../core/errors';
+import { setAuthCookies } from '../utils/authCookie';
 
 export default class UserController extends Controller {
   tableName(): string {
@@ -15,7 +16,11 @@ export default class UserController extends Controller {
   public async login() {
     const { ctx } = this;
     const res = await ctx.service.user.login();
-    this.success(res);
+    setAuthCookies(ctx, res.tokens);
+    this.success({
+      token: res.token,
+      user: res.user,
+    });
   }
 
   public async profile() {

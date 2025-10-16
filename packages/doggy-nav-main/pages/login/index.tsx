@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Form, Input, Button, Message } from '@arco-design/web-react';
-import { useAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import { motion } from 'framer-motion';
 import { authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
@@ -14,18 +14,18 @@ export default function LoginPage() {
   const { t } = useTranslation('translation');
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [, dispatchAuth] = useAtom(authActionsAtom);
+  const [providers, setProviders] = useState<Array<'github' | 'google'>>([]);
+  const dispatchAuth = useSetAtom(authActionsAtom);
   const router = useRouter();
 
   const handleSubmit = async (values: LoginFormValues) => {
     setLoading(true);
     try {
-      const { user,token } = await api.login(values);
+      const { user } = await api.login(values);
       dispatchAuth({
         type: 'LOGIN',
         payload: {
-          user: { ...user, id: user.id??"admin" },
-          token,
+          user: { ...user, id: user.id ?? 'admin' },
         },
       })
 
@@ -43,6 +43,26 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOAuthLogin = (provider: 'github' | 'google') => {
+    window.location.href = `/api/auth/${provider}`;
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    api.getAuthProviders()
+      .then(res => {
+        if (!mounted) return;
+        setProviders(Array.isArray(res?.providers) ? (res.providers as Array<'github' | 'google'>) : []);
+      })
+      .catch(() => setProviders([]));
+    return () => { mounted = false; };
+  }, []);
+
+  const providerMeta: Record<'github' | 'google', { icon: string; label: string }> = {
+    github: { icon: 'icon-github', label: t('sign_in_with_github', { defaultValue: 'Sign in with GitHub' }) },
+    google: { icon: 'icon-google', label: t('sign_in_with_google', { defaultValue: 'Sign in with Google' }) },
   };
 
   return (
@@ -134,6 +154,23 @@ export default function LoginPage() {
                 </Button>
               </FormItem>
             </Form>
+            {providers.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {providers.map((p) => (
+                  <Button
+                    key={p}
+                    type="secondary"
+                    long
+                    size="large"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl border-theme-border text-theme-foreground"
+                    onClick={() => handleOAuthLogin(p)}
+                  >
+                    <i className={`iconfont ${providerMeta[p].icon} text-lg`}></i>
+                    {providerMeta[p].label}
+                  </Button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Footer */}

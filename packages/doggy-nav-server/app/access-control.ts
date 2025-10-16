@@ -12,6 +12,11 @@ export const routePermissions: RoutePermission[] = [
   // User authentication routes
   { method: 'POST', path: '/api/register', access: 'public', description: 'User registration' },
   { method: 'POST', path: '/api/login', access: 'public', description: 'User login' },
+  { method: 'GET', path: '/api/auth/me', access: 'optional', description: 'Get current authenticated user' },
+  { method: 'POST', path: '/api/auth/logout', access: 'public', description: 'Logout (clear auth cookies)' },
+  { method: 'GET', path: '/api/auth/providers', access: 'public', description: 'List enabled OAuth providers' },
+  { method: 'GET', path: '/api/auth/:provider', access: 'public', description: 'Start OAuth with provider' },
+  { method: 'GET', path: '/api/auth/:provider/callback', access: 'public', description: 'OAuth callback for provider' },
   { method: 'GET', path: '/api/user/profile', access: 'authenticated', description: 'Get user profile' },
   { method: 'PUT', path: '/api/user/profile', access: 'authenticated', description: 'Get user profile' },
 
