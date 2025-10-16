@@ -7,7 +7,7 @@ type ProviderName = 'github' | 'google';
 
 export type ProviderSpec = {
   name: ProviderName;
-  Strategy: any;
+  Strategy: OAuthStrategyCtor<any>;
   enabled: boolean;
   config: any;
   mapProfile: (profile: any) => {
@@ -22,7 +22,7 @@ export type ProviderSpec = {
 };
 
 export function listProviders(app: Application): ProviderSpec[] {
-  const oauthConfig = (app.config as any).oauth as any;
+  const oauthConfig = app.config.oauth;
   return [
     {
       name: 'github',
@@ -66,8 +66,7 @@ export function isProviderEnabled(app: Application, provider: string): provider 
 }
 
 export function registerOAuthStrategies(app: Application) {
-  const { logger } = app;
-  const passport = (app as any).passport;
+  const { logger, passport } = app;
   if (!passport) {
     logger.warn('[oauth] Missing oauth configuration or passport, skipping strategy registration');
     return;

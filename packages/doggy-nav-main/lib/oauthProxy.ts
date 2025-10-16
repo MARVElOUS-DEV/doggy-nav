@@ -22,6 +22,7 @@ export function createOAuthInitHandler(provider: string) {
         maxRedirects: 0,
         validateStatus: () => true,
         withCredentials: true,
+        timeout: 15000,
       });
 
       const setCookie = response.headers['set-cookie'];
@@ -58,6 +59,7 @@ export function createOAuthCallbackHandler(provider: string) {
         maxRedirects: 0,
         validateStatus: () => true,
         withCredentials: true,
+        timeout: 15000,
       });
 
       const setCookie = response.headers['set-cookie'];

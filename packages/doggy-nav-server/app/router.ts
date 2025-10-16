@@ -1,29 +1,17 @@
 import { Application } from 'egg';
-import { isProviderEnabled } from './utils/oauth';
+import createOAuthCallback from './middleware/oauthCallback';
 
 export default (app: Application) => {
   const { controller, router } = app;
-  const passport = (app as any).passport;
+  const oauthCallback = createOAuthCallback();
   
   router.post('/api/auth/logout', controller.auth.logout);
   router.get('/api/auth/providers', controller.auth.providers);
   router.get('/api/auth/me', controller.auth.me);
-
+  // OAuth callback route (dynamic provider)
+  router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);
   // OAuth init route (dynamic provider)
   router.get('/api/auth/:provider', controller.auth.oauthInit);
-
-  // OAuth callback route (dynamic provider)
-  router.get('/api/auth/:provider/callback', async (ctx, next) => {
-    const provider = ctx.params.provider;
-    if (!passport || !isProviderEnabled(app, provider)) {
-      ctx.status = 404;
-      ctx.body = { code: 404, msg: 'Provider not found', data: null };
-      return;
-    }
-    const failureRedirect = `/login?err=oauth_${provider}`;
-    const middleware = passport.authenticate(provider, { session: false, failureRedirect });
-    return middleware(ctx, next);
-  }, controller.auth.issueTokenAndRedirect);
 
   router.post('/api/register', controller.user.register);
   router.post('/api/login', controller.user.login);

@@ -62,7 +62,11 @@ export default class AuthController extends Controller {
     await this.issueCookiesForUser(user);
     clearStateCookie(ctx);
     const redirectTo = app.config.oauth?.baseUrl || '/';
-    ctx.redirect(redirectTo);
+    if (redirectTo.startsWith('/')) {
+      ctx.redirect(redirectTo);
+    } else {
+      ctx.unsafeRedirect(redirectTo);
+    }
   }
 
   async me() {

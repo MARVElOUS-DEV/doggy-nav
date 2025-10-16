@@ -14,6 +14,8 @@ export default (appInfo: EggAppInfo) => {
 
   config.keys = appInfo.name + '_' + Math.random().toString(36).substr(2, 8);
 
+  const allowedOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',') : [ 'http://localhost:3000' ];
+
   config.security = {
     csrf: {
       enable: false,
@@ -37,11 +39,14 @@ export default (appInfo: EggAppInfo) => {
     xssProtection: {
       value: '1; mode=block',
     },
-    domainWhiteList: CORS_ORIGIN ? CORS_ORIGIN.split(',') : [ 'http://localhost:3000' ],
+    domainWhiteList: allowedOrigins,
   };
 
   config.cors = {
-    origin: CORS_ORIGIN ? CORS_ORIGIN.split(',') : [ 'http://localhost:3000' ],
+    origin: (ctx: any) => {
+      const requestOrigin = ctx.get('origin');
+      return allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
+    },
     credentials: true,
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS',
   };
@@ -64,9 +69,9 @@ export default (appInfo: EggAppInfo) => {
 
   config.jwt = {
     secret: JWT_SECRET,
+    accessExpiresIn : JWT_ACCESS_EXPIRES_IN,
+    refreshExpiresIn : JWT_REFRESH_EXPIRES_IN
   };
-  (config.jwt as any).accessExpiresIn = JWT_ACCESS_EXPIRES_IN;
-  (config.jwt as any).refreshExpiresIn = JWT_REFRESH_EXPIRES_IN;
 
   const cookieConfig: any = {
     httpOnly: true,
