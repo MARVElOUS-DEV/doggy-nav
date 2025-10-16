@@ -3,6 +3,7 @@ import { Dropdown, Avatar as ArcoAvatar, Button, Image, Menu } from '@arco-desig
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
 import { authStateAtom, authActionsAtom } from '@/store/store';
+import api from '@/utils/api';
 import { useTranslation } from 'react-i18next';
 import type { User } from '@/types';
 
@@ -19,10 +20,15 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (error) {
+      console.error('Failed to logout', error);
+    }
     dispatchAuth({ type: 'LOGOUT' });
     setDropdownVisible(false);
-    window.location.href = '/';// force reload to reset state
+    window.location.href = '/';
   };
 
   const handleProfile = () => {
@@ -82,12 +88,7 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
   const dropdownMenu = (
     <Menu style={{ minWidth: 180 }}>
       <Menu.Item key="user" disabled>
-        <div className="flex flex-col">
-          <span className="font-medium text-theme-foreground">{user.username}</span>
-          {user.email && (
-            <span className="text-sm text-theme-muted-foreground">{user.email}</span>
-          )}
-        </div>
+        <span className="font-medium text-theme-foreground">{user.username}</span>
       </Menu.Item>
       {menuItems}
     </Menu>
@@ -135,7 +136,7 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
             size={size}
             className="ring-2 ring-white ring-opacity-50 shadow-md"
           >
-            <Image src={user.avatar} alt={user.username} preview={false} width={40} height={40} />
+            <Image className="rounded-full" src={user.avatar} alt={user.username} preview={false} width={40} height={40} />
           </ArcoAvatar>
         ) : (
           <div

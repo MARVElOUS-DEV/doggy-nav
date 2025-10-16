@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { authStateAtom, initAuthFromStorageAtom } from '@/store/store';
+import { authStateAtom, initAuthFromServerAtom } from '@/store/store';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export default function AuthGuard({
   fallback = null, 
   redirectTo = '/login' 
 }: AuthGuardProps) {
-  const initAuth = useSetAtom(initAuthFromStorageAtom);
+  const initAuth = useSetAtom(initAuthFromServerAtom);
   const router = useRouter();
   const authState = useAtomValue(authStateAtom);
 

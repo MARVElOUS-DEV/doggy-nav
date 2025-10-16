@@ -3,6 +3,7 @@ import { NavItem } from '@/types';
 import { useTranslation } from 'react-i18next';
 import * as React from 'react';
 import { X } from 'lucide-react';
+import api from '@/utils/api';
 
 export default function FavoriteItem({ item, onRemove }: { item: NavItem; onRemove?: (navId: string) => void }) {
   const { t } = useTranslation('translation');
@@ -46,13 +47,19 @@ export default function FavoriteItem({ item, onRemove }: { item: NavItem; onRemo
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      onClick={(e) => {
+      onClick={async (e) => {
         if (jiggle) {
           // In jiggle mode, do not navigate
           e.preventDefault();
           e.stopPropagation();
           return;
         }
+        try {
+          const id = (item as any).id || (item as any)._id;
+          if (id) {
+            await api.updateNavView(String(id));
+          }
+        } catch {}
         window.open(item.href, '_blank', 'noopener,noreferrer');
       }}
     >

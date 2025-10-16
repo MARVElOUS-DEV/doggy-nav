@@ -40,7 +40,6 @@ function ProfileContent() {
         type: 'LOGIN',
         payload: {
           user: updatedUser,
-          token: authState.token!,
         },
       });
     } catch (error: any) {
@@ -72,7 +71,6 @@ function ProfileContent() {
         type: 'LOGIN',
         payload: {
           user: updatedUser,
-          token: authState.token!,
         },
       });
 

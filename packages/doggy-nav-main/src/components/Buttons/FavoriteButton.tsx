@@ -23,7 +23,7 @@ export default function FavoriteButton({
 }: FavoriteButtonProps) {
   const { t } = useTranslation();
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
-  const activeColor = 'var(--color-secondary)';
+  const activeColor = 'var(--color-red-500)';
   const inactiveColor = 'var(--color-muted-foreground)';
 
   // Don't render if user is not authenticated
@@ -41,11 +41,16 @@ export default function FavoriteButton({
         <button
           onClick={onToggle}
           disabled={disabled}
-          className={`flex cursor-pointer items-center text-sm transition-opacity duration-200 ${
+          className={`flex cursor-pointer items-center text-sm transition-opacity duration-200 bg-transparent p-1 rounded-full ${
             disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
           } ${className}`}
           title={tooltipContent}
-          style={{ color: isFavorite ? activeColor : inactiveColor }}
+          style={{
+            color: isFavorite ? activeColor : inactiveColor,
+            backgroundColor: isFavorite
+              ? `color-mix(in srgb, ${activeColor} 15%, transparent)`
+              : 'transparent',
+          }}
         >
           <IconHeartFill fontSize={16} />
         </button>

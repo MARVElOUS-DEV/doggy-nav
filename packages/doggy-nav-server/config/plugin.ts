@@ -11,6 +11,14 @@ const plugin: EggPlugin = {
     enable: true,
     package: 'egg-jwt',
   },
+  passport: {
+    enable: true,
+    package: 'egg-passport',
+  },
+  cors: {
+    enable: true,
+    package: 'egg-cors',
+  },
   // Temporarily disable rate limiter due to configuration issues
   // ratelimiter: {
   //   enable: true,

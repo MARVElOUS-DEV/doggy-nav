@@ -7,8 +7,14 @@ export default (appInfo: EggAppInfo) => {
 
   // Use environment variables for critical secrets
   const JWT_SECRET = process.env.JWT_SECRET || 'a_strange_jwt_token_when_you_see_it';
+  const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
+  const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+  const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+  const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
   config.keys = appInfo.name + '_' + Math.random().toString(36).substr(2, 8);
+
+  const allowedOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',') : [ 'http://localhost:3000' ];
 
   config.security = {
     csrf: {
@@ -33,6 +39,16 @@ export default (appInfo: EggAppInfo) => {
     xssProtection: {
       value: '1; mode=block',
     },
+    domainWhiteList: allowedOrigins,
+  };
+
+  config.cors = {
+    origin: (ctx: any) => {
+      const requestOrigin = ctx.get('origin');
+      return allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
+    },
+    credentials: true,
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS',
   };
 
   config.cluster = {
@@ -53,6 +69,43 @@ export default (appInfo: EggAppInfo) => {
 
   config.jwt = {
     secret: JWT_SECRET,
+    accessExpiresIn : JWT_ACCESS_EXPIRES_IN,
+    refreshExpiresIn : JWT_REFRESH_EXPIRES_IN
+  };
+
+  const cookieConfig: any = {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  };
+  if (COOKIE_DOMAIN) {
+    cookieConfig.domain = COOKIE_DOMAIN;
+  }
+  config.cookies = cookieConfig;
+
+  config.oauth = {
+    baseUrl: process.env.PUBLIC_BASE_URL || '',
+    github: {
+      clientID: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+      callbackURL: process.env.GITHUB_CALLBACK_URL || '',
+      scope: [ 'read:user', 'user:email' ],
+    },
+    google: {
+      clientID: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || '',
+      scope: [ 'openid', 'profile', 'email' ],
+    },
+    linuxdo: {
+      clientID: process.env.LINUXDO_CLIENT_ID || '',
+      clientSecret: process.env.LINUXDO_CLIENT_SECRET || '',
+      callbackURL: process.env.LINUXDO_CALLBACK_URL || '',
+      authorizationURL: process.env.LINUXDO_AUTHORIZATION_URL || '',
+      tokenURL: process.env.LINUXDO_TOKEN_URL || '',
+      userProfileURL: process.env.LINUXDO_PROFILE_URL || '',
+      scope: process.env.LINUXDO_SCOPE ? process.env.LINUXDO_SCOPE.split(',').map(item => item.trim()).filter(Boolean) : undefined,
+    },
   };
 
   // Route access control is now handled by the access-control.js configuration
@@ -105,6 +158,11 @@ export default (appInfo: EggAppInfo) => {
       '/api/register',
       '/api/login',
       '/api/application/verify-client-secret',
+      '/api/auth/:provider',
+      '/api/auth/:provider/callback',
+      '/api/auth/providers',
+      '/api/auth/me',
+      '/api/auth/logout',
     ],
   };
 

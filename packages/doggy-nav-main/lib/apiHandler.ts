@@ -36,6 +36,10 @@ export const createApiHandler = (config: ApiConfig) => {
         headers.Authorization = req.headers.authorization;
       }
 
+      if (req.headers.cookie) {
+        headers.Cookie = req.headers.cookie;
+      }
+
       if (SERVER_CLIENT_SECRET) {
         headers['x-client-secret'] = SERVER_CLIENT_SECRET;
       }
@@ -58,10 +62,23 @@ export const createApiHandler = (config: ApiConfig) => {
       }
 
       let response;
+      const axiosConfig = { headers, params, withCredentials: true };
+
       if (method === 'get') {
-        response = await axios.get(url, { headers, params });
+        response = await axios.get(url, axiosConfig);
       } else {
-        response = await axios[method](url, req.body?req.body: JSON.stringify({}), { headers, params });
+        const body = req.body ? req.body : {};
+        response = await axios[method](url, body, axiosConfig);
+      }
+
+      const setCookie = response.headers?.['set-cookie'];
+      if (setCookie) {
+        res.setHeader('set-cookie', setCookie);
+      }
+
+      if (response.status === 204) {
+        res.status(204).end();
+        return;
       }
 
       return res.status(response.status).json(response.data);
@@ -70,6 +87,10 @@ export const createApiHandler = (config: ApiConfig) => {
       console.error(`${SERVER_URL}${config.endpoint || config.buildUrl?.(req as any) || ''} proxy error:`, error);
 
       if (error.response) {
+        const setCookie = error.response.headers?.['set-cookie'];
+        if (setCookie) {
+          res.setHeader('set-cookie', setCookie);
+        }
         return res.status(error.response.status).json(error.response.data);
       }
 

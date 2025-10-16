@@ -51,7 +51,7 @@ export interface RecommendFormValues {
   authorUrl?: string;
   detail?: string;
 }
-
+export type OAuthProvider = 'github' | 'google' | 'linuxdo';
 export interface User {
   id: string;
   username: string;

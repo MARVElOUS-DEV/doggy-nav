@@ -1,8 +1,85 @@
 import { Service } from 'egg';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { ValidationError, AuthenticationError, ConflictError, NotFoundError } from '../core/errors';
 
 export default class UserService extends Service {
+
+  private buildJwtPayload(user: any) {
+    return {
+      userId: user._id?.toString() ?? user.id,
+      username: user.username,
+      isAdmin: user.isAdmin,
+    };
+  }
+
+  async generateTokens(user: any) {
+    const { app } = this;
+    const payload = this.buildJwtPayload(user);
+    const jwtConfig = app.config.jwt as any;
+    const accessToken = app.jwt.sign(payload, app.config.jwt.secret, {
+      expiresIn: jwtConfig?.accessExpiresIn || '15m',
+    });
+
+    const refreshToken = app.jwt.sign({ sub: payload.userId, typ: 'refresh' }, app.config.jwt.secret, {
+      expiresIn: jwtConfig?.refreshExpiresIn || '7d',
+    });
+
+    return { accessToken, refreshToken, payload };
+  }
+
+  private async ensureUniqueUsername(base: string) {
+    const { ctx } = this;
+    const normalized = base.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30) || 'user';
+    let candidate = normalized;
+    let suffix = 1;
+
+    while (await ctx.model.User.findOne({ username: candidate })) {
+      candidate = `${normalized}_${suffix}`;
+      suffix += 1;
+    }
+
+    return candidate;
+  }
+
+  private extractPrimaryEmail(emails: Array<{ value?: string; verified?: boolean }> = []) {
+    const verified = emails.find(email => email.verified && email.value);
+    if (verified?.value) return verified.value.toLowerCase();
+    const first = emails.find(email => email.value);
+    return first?.value ? first.value.toLowerCase() : null;
+  }
+
+  private generateFallbackEmail(provider: string, providerId: string) {
+    return `${provider}_${providerId}@oauth.local`; // placeholder
+  }
+
+  private async createUserFromProvider(params: {
+    provider: 'github' | 'google' | 'linuxdo';
+    providerId: string;
+    username?: string | null;
+    displayName?: string | null;
+    emails: Array<{ value?: string; verified?: boolean }>;
+    avatar?: string | null;
+  }) {
+    const { ctx } = this;
+    const email = this.extractPrimaryEmail(params.emails) || this.generateFallbackEmail(params.provider, params.providerId);
+    let usernameCandidate = params.username || params.displayName || params.provider;
+    usernameCandidate = await this.ensureUniqueUsername(usernameCandidate ?? params.provider);
+
+    const randomPassword = randomBytes(16).toString('hex');
+    const hashedPassword = await this.hashPassword(randomPassword);
+
+    const user = await ctx.model.User.create({
+      username: usernameCandidate,
+      email,
+      password: hashedPassword,
+      isAdmin: false,
+      isActive: true,
+      avatar: params.avatar || null,
+    });
+
+    return user;
+  }
 
   async hashPassword(password: string): Promise<string> {
     const saltRounds = 12;
@@ -11,6 +88,52 @@ export default class UserService extends Service {
 
   async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
     return await bcrypt.compare(password, hashedPassword);
+  }
+
+  async findOrCreateFromProvider(params: {
+    provider: 'github' | 'google' | 'linuxdo';
+    providerId: string;
+    username?: string | null;
+    displayName?: string | null;
+    emails: Array<{ value?: string; verified?: boolean }>;
+    avatar?: string | null;
+    raw?: any;
+  }) {
+    const { ctx } = this;
+    const existingLink = await ctx.model.UserProvider.findOne({
+      provider: params.provider,
+      providerUserId: params.providerId,
+    });
+
+    if (existingLink) {
+      const linkedUser = await ctx.model.User.findById(existingLink.userId);
+      if (linkedUser) {
+        return linkedUser;
+      }
+      ctx.logger.warn('[oauth] dangling provider link detected, removing');
+      await ctx.model.UserProvider.deleteOne({ _id: existingLink._id });
+    }
+
+    const email = this.extractPrimaryEmail(params.emails);
+    if (email) {
+      const existingUser = await ctx.model.User.findOne({ email });
+      if (existingUser) {
+        throw new ConflictError('该邮箱已存在账号，请先使用原始方式登录后在个人设置中绑定此第三方账号');
+      }
+    }
+
+    const user = await this.createUserFromProvider(params);
+
+    await ctx.model.UserProvider.create({
+      userId: user._id,
+      provider: params.provider,
+      providerUserId: params.providerId,
+      email: email ?? undefined,
+      avatar: params.avatar ?? undefined,
+      profile: params.raw ?? null,
+    });
+
+    return user;
   }
 
   validateUserInput(username: string, email: string, password: string) {
@@ -76,7 +199,7 @@ export default class UserService extends Service {
   }
 
   async login() {
-    const { ctx, app } = this;
+    const { ctx } = this;
     const { username, password } = ctx.request.body;
 
     if (!username || !password) {
@@ -97,20 +220,16 @@ export default class UserService extends Service {
       throw new AuthenticationError('账号或密码错误');
     }
 
-    await ctx.model.User.findByIdAndUpdate(user._id, {
-      lastLoginAt: new Date(),
-    }, { useFindAndModify: false });
+    await this.recordSuccessfulLogin(user._id);
 
-    const token = app.jwt.sign({
-      userId: user._id,
-      username: user.username,
-      isAdmin: user.isAdmin,
-    }, app.config.jwt.secret, {
-      expiresIn: '24h',
-    });
+    const { accessToken, refreshToken } = await this.generateTokens(user);
 
     return {
-      token: 'Bearer ' + token,
+      token: 'Bearer ' + accessToken,
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
       user: {
         id: user._id,
         username: user.username,
@@ -119,6 +238,13 @@ export default class UserService extends Service {
         avatar: user.avatar,
       },
     };
+  }
+
+  async recordSuccessfulLogin(userId: string) {
+    const { ctx } = this;
+    await ctx.model.User.findByIdAndUpdate(userId, {
+      lastLoginAt: new Date(),
+    }, { useFindAndModify: false });
   }
 
   async getUserProfile(userId: string) {
@@ -133,6 +259,10 @@ export default class UserService extends Service {
     }
 
     return user;
+  }
+
+  async getById(userId: string) {
+    return await this.getUserProfile(userId);
   }
 
   async updateProfile(userId: string) {

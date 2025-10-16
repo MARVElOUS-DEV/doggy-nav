@@ -27,9 +27,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     clearTimeout(timeoutId);
     const responseTime = Date.now() - startTime;
-
+    // Treat 401/403 as accessible because the server is reachable but requires auth
+    const isAuthProtected = response.status === 401 || response.status === 403;
     res.status(200).json({
-      accessible: response.ok,
+      accessible: response.ok || isAuthProtected,
       status: response.status,
       responseTime,
     });

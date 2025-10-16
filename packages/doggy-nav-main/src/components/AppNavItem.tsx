@@ -139,7 +139,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
         {/* Main Content */}
         <Link
           href={`/nav/${data.id}`}
-          className="p-6 flex flex-col"
+          className="p-6 flex flex-col flex-1"
         >
           <div className="flex items-center space-x-4 mb-4">
             <div className="logo-container flex-shrink-0">
@@ -161,7 +161,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
                 {data.highlightedName || data.name}
               </h3>
               <p
-                className="desc text-sm transition-colors duration-200 line-clamp-2 max-h-[40px] overflow-hidden group-hover:text-theme-foreground"
+                className="desc text-sm transition-colors duration-200 line-clamp-2 h-[40px] overflow-hidden group-hover:text-theme-foreground"
                 style={{ color: 'var(--color-muted-foreground)' }}
                 title={typeof (data.highlightedDesc)  === 'string' ? data.highlightedDesc: data.desc? data.desc: t('no_description') }
               >

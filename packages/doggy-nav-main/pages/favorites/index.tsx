@@ -5,7 +5,7 @@ import { Spin, Empty, Button } from '@arco-design/web-react';
 import AuthGuard from '@/components/AuthGuard';
 import { NavItem } from '@/types';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { authStateAtom, favoritesAtom, favoritesActionsAtom, initAuthFromStorageAtom } from '@/store/store';
+import { authStateAtom, favoritesAtom, favoritesActionsAtom, initAuthFromServerAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
 import { DragEndEvent } from '@dnd-kit/core';
 import api from '@/utils/api';
@@ -29,7 +29,7 @@ export default function FavoritesPage() {
   const authState = useAtomValue(authStateAtom);
   const [favorites, setFavorites] = useAtom(favoritesAtom);
   const favoritesActions = useSetAtom(favoritesActionsAtom);
-  const initAuth = useSetAtom(initAuthFromStorageAtom);
+  const initAuth = useSetAtom(initAuthFromServerAtom);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation('translation');
@@ -188,7 +188,7 @@ export default function FavoritesPage() {
               <p className="text-gray-700 mb-8 text-center max-w-md text-lg">
                 {t('no_favorite_websites_tip')}
               </p>
-              <Link href="/navcontents">
+              <Link href="/">
                 <Button
                   type="primary"
                   size="large"

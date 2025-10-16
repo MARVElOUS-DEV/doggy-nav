@@ -1,7 +1,17 @@
 import { Application } from 'egg';
+import createOAuthCallback from './middleware/oauthCallback';
 
 export default (app: Application) => {
   const { controller, router } = app;
+  const oauthCallback = createOAuthCallback();
+  
+  router.post('/api/auth/logout', controller.auth.logout);
+  router.get('/api/auth/providers', controller.auth.providers);
+  router.get('/api/auth/me', controller.auth.me);
+  // OAuth callback route (dynamic provider)
+  router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);
+  // OAuth init route (dynamic provider)
+  router.get('/api/auth/:provider', controller.auth.oauthInit);
 
   router.post('/api/register', controller.user.register);
   router.post('/api/login', controller.user.login);

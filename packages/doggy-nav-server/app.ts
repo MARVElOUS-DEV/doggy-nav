@@ -1,6 +1,9 @@
 import { Application } from 'egg';
+import { registerOAuthStrategies } from './app/utils/oauth';
 
 export default (app: Application) => {
+  registerOAuthStrategies(app);
+
   app.beforeStart(async () => {
     app.logger.info('Application is starting...');
     app.logger.info(`Using MongoDB URL: ${app.config?.mongoose?.client?.url}`);

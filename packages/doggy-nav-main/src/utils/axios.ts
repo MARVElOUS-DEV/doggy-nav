@@ -20,18 +20,12 @@ const instance: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // Request interceptor
 instance.interceptors.request.use(
   (config: AxiosRequestConfig) => {
-    // Add auth token if available
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (token && config.headers) {
-      const hasBearer = token.startsWith('Bearer ');
-      (config.headers as any).Authorization = hasBearer ? token : `Bearer ${token}`;
-    }
-
     // Add request timestamp for debugging
     if (process.env.NODE_ENV === 'development') {
       console.info(`🚀 Request: ${config.method?.toUpperCase()} ${config.url}`, config.data || (config as any).params);
@@ -86,8 +80,8 @@ instance.interceptors.response.use(
         case 401:
           errorMessage = 'Unauthorized - Please login';
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('token');
-            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+            const isLoginPage = window.location.pathname.includes('/login')
+            !isLoginPage && (window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`);
           }
           break;
         case 403:

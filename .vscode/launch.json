@@ -17,29 +17,43 @@
       "console": "integratedTerminal"
     },
     {
-      "name": "Next.js: debug server-side",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "pnpm --filter doggy-nav-main web:dev"
-    },
-    {
-      "name": "Next.js: debug full stack",
+      "name": "Next.js: dev (launch + inspect)",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/packages/doggy-nav-main/node_modules/next/dist/bin/next",
-      "args": ["build"],
+      "args": ["dev"],
       "cwd": "${workspaceFolder}/packages/doggy-nav-main",
-      // "runtimeArgs": ["--inspect"],
+      "env": {
+        "PORT": "3001",
+        "NODE_OPTIONS": "--inspect=9229 --enable-source-maps"
+      },
       "console": "integratedTerminal",
-      "stopOnEntry": true,
-      "skipFiles": ["<node_internals>/**"],
-      "serverReadyAction": {
-        "action": "debugWithChrome",
-        "killOnServerStop": true,
-        "pattern": "- Local:.+(https?://.+)",
-        "uriFormat": "%s",
-        "webRoot": "${workspaceFolder}/packages/doggy-nav-main"
-      }
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/packages/doggy-nav-main/**",
+        "!**/node_modules/**"
+      ],
+      "outFiles": ["${workspaceFolder}/packages/doggy-nav-main/.next/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Attach: Next.js dev (9229)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "address": "localhost",
+      "cwd": "${workspaceFolder}/packages/doggy-nav-main",
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/packages/doggy-nav-main/**",
+        "!**/node_modules/**"
+      ],
+      "outFiles": ["${workspaceFolder}/packages/doggy-nav-main/.next/**/*.js"],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/packages/doggy-nav-main/node_modules/**"
+      ]
     }
   ]
 }

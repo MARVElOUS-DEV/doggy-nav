@@ -16,7 +16,6 @@ export const themeAtom = atom<'light' | 'dark'>('light');
 // Authentication atoms
 export const userAtom = atom<User | null>(null);
 export const isAuthenticatedAtom = atom<boolean>(false);
-export const tokenAtom = atom<string | null>(null);
 export const authInitializedAtom = atom<boolean>(false);
 
 // Derived atoms for auth state
@@ -24,7 +23,6 @@ export const authStateAtom = atom(
   (get) => ({
     isAuthenticated: get(isAuthenticatedAtom),
     user: get(userAtom),
-    token: get(tokenAtom),
     initialized: get(authInitializedAtom),
   })
 );
@@ -32,55 +30,51 @@ export const authStateAtom = atom(
 // Auth actions atom
 export const authActionsAtom = atom(
   null,
-  (get, set, action: { type: 'LOGIN'; payload: { user: User; token: string } } | { type: 'LOGOUT' }) => {
+  (get, set, action: { type: 'LOGIN'; payload: { user: User } } | { type: 'LOGOUT' } | { type: 'HYDRATE'; payload: { user: User | null } }) => {
     switch (action.type) {
       case 'LOGIN':
         set(userAtom, action.payload.user);
-        set(tokenAtom, action.payload.token);
         set(isAuthenticatedAtom, true);
-        // Save to localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('token', action.payload.token);
-          localStorage.setItem('user', JSON.stringify(action.payload.user));
-        }
         break;
       case 'LOGOUT':
         set(userAtom, null);
-        set(tokenAtom, null);
         set(isAuthenticatedAtom, false);
-        // Clear localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+        break;
+      case 'HYDRATE':
+        if (action.payload.user) {
+          set(userAtom, action.payload.user);
+          set(isAuthenticatedAtom, true);
+        } else {
+          set(userAtom, null);
+          set(isAuthenticatedAtom, false);
         }
         break;
     }
   }
 );
 
-// Initialize auth from localStorage atom
-export const initAuthFromStorageAtom = atom(
+// Initialize auth by calling API
+export const initAuthFromServerAtom = atom(
   null,
-  (get, set) => {
-    if (typeof window === 'undefined') return;
+  async (get, set) => {
+    if (typeof window === 'undefined' || get(authInitializedAtom)) return;
 
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-
-    if (savedToken && savedUser) {
-      try {
-        const user = JSON.parse(savedUser) as User;
-        set(userAtom, user);
-        set(tokenAtom, savedToken);
+    try {
+      const response = await api.getCurrentUser();
+      if (response?.authenticated && response.user) {
+        set(userAtom, response.user);
         set(isAuthenticatedAtom, true);
-      } catch (error) {
-        console.error('Failed to parse saved user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+      } else {
+        set(userAtom, null);
+        set(isAuthenticatedAtom, false);
       }
+    } catch (error) {
+      console.error('Failed to initialize auth state:', error);
+      set(userAtom, null);
+      set(isAuthenticatedAtom, false);
+    } finally {
+      set(authInitializedAtom, true);
     }
-
-    set(authInitializedAtom, true);
   }
 );
 
