@@ -185,7 +185,7 @@ export default function RegisterPage() {
               {t('already_have_account')}{' '}
               <button
                 onClick={() => router.push('/login')}
-                className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
+                className="cursor-pointer text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
               >
                 {t('sign_in_link')}
               </button>
@@ -193,7 +193,7 @@ export default function RegisterPage() {
             <div className="mt-4 pt-4 border-t border-white border-opacity-30">
               <button
                 onClick={() => router.push('/')}
-                className="text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200"
+                className="cursor-pointer text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200"
               >
                 {t('back_to_home')}
               </button>
