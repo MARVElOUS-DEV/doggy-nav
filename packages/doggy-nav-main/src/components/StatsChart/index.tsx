@@ -24,6 +24,8 @@ interface StatsChartProps {
 
 function StatsChart({ data }: StatsChartProps): JSX.Element {
   const { t } = useTranslation();
+  // Recharts Legend sometimes has mismatched TS types in certain versions; cast to relax
+  const LegendComp = Legend as unknown as React.ComponentType<any>;
   // Prepare data for top viewed sites
   const topViewedData = useMemo(() => {
     return (data?.view || [])
@@ -113,8 +115,8 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   }}
                   labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
-                <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
-                <Bar dataKey="view" name={t('views')} fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
+                <LegendComp wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
+                <Bar dataKey="view" name={t('views')} fill="var(--color-primary)" fillOpacity={0.9} stroke="var(--color-border)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -154,8 +156,8 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   }}
                   labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
-                <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
-                <Bar dataKey="star" name={t('stars')} fill="var(--color-secondary)" radius={[6, 6, 0, 0]} />
+                <LegendComp wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
+                <Bar dataKey="star" name={t('stars')} fill="#06B6D4" fillOpacity={0.9} stroke="var(--color-border)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -198,9 +200,9 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   }}
                   labelStyle={{ color: 'var(--color-muted-foreground)' }}
                 />
-                <Legend wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
-                <Bar dataKey="total" name={t('total_contribution')} fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="count" name={t('website_count')} fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
+                <LegendComp wrapperStyle={{ color: 'var(--color-muted-foreground)' }} />
+                <Bar dataKey="total" name={t('total_contribution')} fill="var(--color-primary)" fillOpacity={0.9} stroke="var(--color-border)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" name={t('website_count')} fill="#F59E0B" fillOpacity={0.9} stroke="var(--color-border)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

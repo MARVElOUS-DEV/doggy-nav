@@ -70,31 +70,14 @@ export default class AuthController extends Controller {
   }
 
   async me() {
-    const { ctx, app } = this;
-    let token = ctx.cookies.get('access_token');
-    if (!token) {
-      const authHeader = ctx.get('authorization');
-      if (authHeader?.startsWith('Bearer ')) {
-        token = authHeader.substring(7);
-      } else if (authHeader) {
-        token = authHeader;
-      }
-    }
-
-    if (!token) {
-      this.success({ authenticated: false, user: null });
+    const { ctx } = this;
+    const info = ctx.state.userinfo;
+    if (info?.userId) {
+      const user = await ctx.service.user.getById(info.userId);
+      this.success({ authenticated: true, user });
       return;
     }
-
-    try {
-      const payload = await app.jwt.verify(token, app.config.jwt.secret) as any;
-      const user = await ctx.service.user.getById(payload.userId);
-      this.success({ authenticated: true, user });
-    } catch (error) {
-      ctx.logger.warn('[auth/me] access token invalid', error);
-      clearAuthCookies(ctx);
-      this.success({ authenticated: false, user: null });
-    }
+    this.success({ authenticated: false, user: null });
   }
 
   async logout() {

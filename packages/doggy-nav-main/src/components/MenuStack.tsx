@@ -34,7 +34,7 @@ const renderMenuIcon = (category: Category, fontSize = 16) => {
   if (category.icon) {
     return <DynamicIcon iconName={category.icon} fontSize={fontSize} />;
   }
-  return <FallbackIcon name={t(category.name)} fontSize={fontSize} />;
+  return <FallbackIcon name={t(category.name, { defaultValue: category.name })} fontSize={fontSize} />;
 };
 
 
@@ -109,7 +109,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                     <div className="group flex items-center gap-3 w-full py-2.5">
                       {renderMenuIcon(category, 16)}
                       <span className="group-hover:text-theme-foreground transition-colors font-medium">
-                        {t(category.name)}
+                        {t(category.name, { defaultValue: category.name })}
                       </span>
                       <div className="ml-auto w-2 h-2 rounded-full bg-theme-background opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
                     </div>
@@ -126,7 +126,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                       <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 hover:bg-theme-muted rounded-xl">
                         {renderMenuIcon(child, 16)}
                         <span className="text-sm text-theme-muted-foreground group-hover:text-theme-foreground transition-colors font-medium">
-                          {t(child.name)}
+                          {t(child.name, { defaultValue: child.name })}
                         </span>
                         <div className="ml-auto w-2 h-2 rounded-full bg-theme-background opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
@@ -141,7 +141,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
               key={category.id}
               onClick={() => onHandleSubMenuClick(category, category.id)}
               className="transition-all duration-200 hover:bg-theme-muted hover:shadow-sm"
-              renderItemInTooltip={() => t(category.name)}
+              renderItemInTooltip={() => t(category.name, { defaultValue: category.name })}
             >
               {collapse ? (
                 // Collapsed mode: only show icon
@@ -153,7 +153,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                 <div className="group flex items-center gap-3 w-full py-2.5">
                   {renderMenuIcon(category, 16)}
                   <span className="group-hover:text-theme-foreground transition-colors font-medium">
-                    {t(category.name)}
+                    {t(category.name, { defaultValue: category.name })}
                   </span>
                   <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
                 </div>

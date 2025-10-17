@@ -46,7 +46,7 @@ export const GoogleIcon: React.FC<{className?: string}> = ({ className = "w-5 h-
 );
 
 export const LinuxDoIcon: React.FC<{className?: string}> = ({ className = "w-5 h-5" }) => (
-  <svg className={className} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><clipPath id="linuxdo-clip-sxj7p05gb"><circle cx="60" cy="60" r="47"></circle></clipPath><circle fill="#f0f0f0" cx="60" cy="60" r="50"></circle><rect fill="#1c1c1e" clip-path="url(#linuxdo-clip-sxj7p05gb)" x="10" y="10" width="100" height="30"></rect><rect fill="#f0f0f0" clip-path="url(#linuxdo-clip-sxj7p05gb)" x="10" y="40" width="100" height="40"></rect><rect fill="#ffb003" clip-path="url(#linuxdo-clip-sxj7p05gb)" x="10" y="80" width="100" height="30"></rect></svg>
+  <svg className={className} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><clipPath id="linuxdo-clip-sxj7p05gb"><circle cx="60" cy="60" r="47"></circle></clipPath><circle fill="#f0f0f0" cx="60" cy="60" r="50"></circle><rect fill="#1c1c1e" clipPath="url(#linuxdo-clip-sxj7p05gb)" x="10" y="10" width="100" height="30"></rect><rect fill="#f0f0f0" clipPath="url(#linuxdo-clip-sxj7p05gb)" x="10" y="40" width="100" height="40"></rect><rect fill="#ffb003" clipPath="url(#linuxdo-clip-sxj7p05gb)" x="10" y="80" width="100" height="30"></rect></svg>
 );
 export const CommonProviderIcon: React.FC<{className?: string}> = ({ className = "w-5 h-5" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
