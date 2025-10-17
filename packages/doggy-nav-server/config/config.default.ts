@@ -12,7 +12,8 @@ export default (appInfo: EggAppInfo) => {
   const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
   const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
-  config.keys = appInfo.name + '_' + Math.random().toString(36).substr(2, 8);
+  // Stable cookie signing key to prevent signed-cookie invalidation across restarts
+  config.keys = process.env.COOKIE_KEYS || (appInfo.name + '_doggy_nav_cookie_key');
 
   const allowedOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',') : [ 'http://localhost:3000' ];
 
