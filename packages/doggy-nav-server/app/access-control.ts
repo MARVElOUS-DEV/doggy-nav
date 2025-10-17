@@ -14,11 +14,16 @@ export const routePermissions: RoutePermission[] = [
   { method: 'POST', path: '/api/login', access: 'public', description: 'User login' },
   { method: 'GET', path: '/api/auth/me', access: 'optional', description: 'Get current authenticated user' },
   { method: 'POST', path: '/api/auth/logout', access: 'public', description: 'Logout (clear auth cookies)' },
+  { method: 'GET', path: '/api/auth/config', access: 'public', description: 'Get auth-related configuration' },
   { method: 'GET', path: '/api/auth/providers', access: 'public', description: 'List enabled OAuth providers' },
   { method: 'GET', path: '/api/auth/:provider', access: 'public', description: 'Start OAuth with provider' },
   { method: 'GET', path: '/api/auth/:provider/callback', access: 'public', description: 'OAuth callback for provider' },
   { method: 'GET', path: '/api/user/profile', access: 'authenticated', description: 'Get user profile' },
   { method: 'PUT', path: '/api/user/profile', access: 'authenticated', description: 'Get user profile' },
+  { method: 'GET', path: '/api/invite-codes/list', access: 'admin', description: 'List invite codes' },
+  { method: 'POST', path: '/api/invite-codes', access: 'admin', description: 'Create invite codes' },
+  { method: 'PUT', path: '/api/invite-codes/:id', access: 'admin', description: 'Update invite code' },
+  { method: 'POST', path: '/api/invite-codes/:id/revoke', access: 'admin', description: 'Revoke invite code' },
 
   // Application routes
   { method: 'POST', path: '/api/application', access: 'admin', description: 'Create application' },

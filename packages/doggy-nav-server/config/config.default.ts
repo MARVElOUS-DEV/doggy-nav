@@ -108,6 +108,11 @@ export default (appInfo: EggAppInfo) => {
     },
   };
 
+  config.invite = {
+    requireForLocalRegister: process.env.REQUIRE_INVITE_CODE === 'true' || false,
+    codeLength: 12,
+  };
+
   // Route access control is now handled by the access-control.js configuration
   // config.routerAuth is deprecated
 
@@ -161,6 +166,7 @@ export default (appInfo: EggAppInfo) => {
       '/api/auth/:provider',
       '/api/auth/:provider/callback',
       '/api/auth/providers',
+      '/api/auth/config',
       '/api/auth/me',
       '/api/auth/logout',
     ],

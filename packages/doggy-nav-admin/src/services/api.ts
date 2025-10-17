@@ -8,6 +8,8 @@ export const API_CATEGORY_LIST = '/api/category/list'
 export const API_CATEGORY = '/api/category'
 export const API_TAG = '/api/tag'
 export const API_TAG_list = '/api/tag/list'
+export const API_INVITE_CODES = '/api/invite-codes'
+export const API_INVITE_CODES_LIST = '/api/invite-codes/list'
 
 export async function login(data: { username: string, password: string }) {
   return request({
@@ -22,5 +24,36 @@ export async function getNavList(data: any) {
     url: API_NAV_LIST,
     method: 'GET',
     data
+  });
+}
+
+export async function getInviteCodes(params: any) {
+  return request({
+    url: API_INVITE_CODES_LIST,
+    method: 'GET',
+    data: params,
+  });
+}
+
+export async function createInviteCodes(data: any) {
+  return request({
+    url: API_INVITE_CODES,
+    method: 'POST',
+    data,
+  });
+}
+
+export async function updateInviteCode(id: string, data: any) {
+  return request({
+    url: `${API_INVITE_CODES}/${id}`,
+    method: 'PUT',
+    data,
+  });
+}
+
+export async function revokeInviteCode(id: string) {
+  return request({
+    url: `${API_INVITE_CODES}/${id}/revoke`,
+    method: 'POST',
   });
 }

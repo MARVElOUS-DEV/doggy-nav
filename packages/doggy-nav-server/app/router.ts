@@ -8,7 +8,8 @@ export default (app: Application) => {
   router.post('/api/auth/logout', controller.auth.logout);
   router.get('/api/auth/providers', controller.auth.providers);
   router.get('/api/auth/me', controller.auth.me);
-  // OAuth callback route (dynamic provider)
+  router.get('/api/auth/config', controller.auth.getAuthConfig);
+  // OAuth callback route (dynamic provider), Note: dynamic route should be after the common ones.
   router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);
   // OAuth init route (dynamic provider)
   router.get('/api/auth/:provider', controller.auth.oauthInit);
@@ -17,14 +18,19 @@ export default (app: Application) => {
   router.post('/api/login', controller.user.login);
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
+  // invitation code routes
+  router.get('/api/invite-codes/list', controller.inviteCode.list);
+  router.post('/api/invite-codes', controller.inviteCode.create);
+  router.put('/api/invite-codes/:id', controller.inviteCode.update);
+  router.post('/api/invite-codes/:id/revoke', controller.inviteCode.revoke);
 
   // Application routes
   router.post('/api/application', controller.application.create);
   router.get('/api/application/list', controller.application.list);
+  router.post('/api/application/verify-client-secret', controller.application.verifyClientSecret);
   router.put('/api/application/:id', controller.application.update);
   router.post('/api/application/:id/regenerate-secret', controller.application.regenerateSecret);
   router.delete('/api/application/:id/revoke', controller.application.revoke);
-  router.post('/api/application/verify-client-secret', controller.application.verifyClientSecret);
 
   router.post('/api/category', controller.category.add);
   router.delete('/api/category', controller.category.del);
@@ -65,9 +71,9 @@ export default (app: Application) => {
   router.get('/api/favorites/list', controller.favorite.list);
   router.get('/api/favorites/structured', controller.favorite.structured);
   router.post('/api/favorites/folders', controller.favorite.createFolder);
-  router.put('/api/favorites/folders/:id', controller.favorite.updateFolder);
-  router.delete('/api/favorites/folders/:id', controller.favorite.deleteFolder);
   router.put('/api/favorites/placements', controller.favorite.placements);
   router.get('/api/favorites/check', controller.favorite.check);
   router.get('/api/favorites/count', controller.favorite.count);
+  router.put('/api/favorites/folders/:id', controller.favorite.updateFolder);
+  router.delete('/api/favorites/folders/:id', controller.favorite.deleteFolder);
 };

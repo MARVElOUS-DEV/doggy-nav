@@ -1,5 +1,5 @@
 import { Grid, Message } from '@arco-design/web-react';
-import AppNavItem from './AppNavItem';
+import NavCard from './NavCard';
 import { NavItem } from '@/types';
 import { useAtom } from 'jotai';
 import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
@@ -59,7 +59,7 @@ export default function AppNavList({ list }: AppNavListProps) {
     <div className="nav-list-container">
       <Row gutter={[24, 24]}>
         {list.map((item) => (
-          <AppNavItem
+          <NavCard
             key={item.id}
             data={item}
             onHandleNavClick={handleNavClick}

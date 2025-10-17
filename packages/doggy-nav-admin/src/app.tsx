@@ -1,8 +1,6 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
 import type { RequestConfig } from '@umijs/max';
 import { history } from '@umijs/max';
-import { getPersistenceData } from "@/utils/persistence";
-import { CURRENT_USER, TOKEN } from "@/constants";
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import React from 'react';
 import ContentHeader from './components/ContentHeader';
@@ -18,30 +16,9 @@ export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
-  const fetchUserInfo = async () => {
-    const token = getPersistenceData(TOKEN)
-    const user: any = getPersistenceData(CURRENT_USER)
-    if (token) {
-      return {
-        name: JSON.parse(user)?.name,
-        access: 'admin',
-      }
-    } else {
-      history.push(loginPath);
-    }
-    return undefined;
-  };
-
-  if (history.location.pathname !== loginPath) {
-    const currentUser = await fetchUserInfo();
-    return {
-      fetchUserInfo,
-      currentUser,
-      settings: {},
-    };
-  }
+  // With cookie-based authentication, we don't need to check tokens locally
+  // The server will handle authentication via cookies
   return {
-    fetchUserInfo,
     settings: {},
   };
 }
@@ -68,12 +45,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     },
     isChildrenLayout: false,
     onPageChange: () => {
-      const { location } = history;
-      // 如果没有登录，重定向到 login
-      const token = getPersistenceData(TOKEN)
-      if (!token && location.pathname !== loginPath) {
-        history.push(loginPath);
-      }
+      // With cookie-based authentication, the server handles auth redirects
+      // No need for client-side token checks
     },
     menuHeaderRender: (logo)=> logo,
     headerRender: () => {

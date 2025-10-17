@@ -4,10 +4,14 @@ describe('test/app/controller/user.test.ts', () => {
   it('should login Ok /', async () => {
     app.mockService('user', 'login', () => {
       return {
-        name: 'testName',
+        token: 'Bearer mock',
+        tokens: {
+          accessToken: 'mock-access',
+        },
+        user: { name: 'testName' },
       };
     });
     return await app.httpRequest().post('/api/login').expect(200)
-      .expect({ code: 1, msg: 'ok', data: { name: 'testName' } });
+      .expect({ code: 1, msg: 'ok', data: { token: 'Bearer mock', user: { name: 'testName' } } });
   });
 });

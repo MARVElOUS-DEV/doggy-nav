@@ -4,12 +4,10 @@ import {
 import { message } from 'antd';
 import React, { useState, useEffect, useRef } from 'react';
 import ProForm, { ProFormText } from '@ant-design/pro-form';
-import { Link, history, useLocation, useModel } from '@umijs/max';
+import { Link, history, useLocation } from '@umijs/max';
 import Footer from '@/components/Footer';
 import styles from './index.less';
 import { login } from "@/services/api";
-import { setPersistenceData } from "@/utils/persistence";
-import { CURRENT_USER, TOKEN } from "@/constants";
 
 
 const goto = (search: URLSearchParams) => {
@@ -22,7 +20,6 @@ const goto = (search: URLSearchParams) => {
 
 const Login: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
-  const {setInitialState} = useModel('@@initialState');
   const {search: searchStr} = useLocation();
   const search = new URLSearchParams(searchStr);
   const formRef = useRef<any>();
@@ -68,15 +65,8 @@ const Login: React.FC = () => {
       if (res?.data) {
         const defaultloginSuccessMessage = '登录成功！';
         message.success(defaultloginSuccessMessage);
-        setInitialState({
-          currentUser: {
-            name: values.username,
-            access: 'admin',
-          }
-        })
+        // With cookie-based authentication, no need to store tokens locally
         goto(search);
-        setPersistenceData(TOKEN, res.data?.token)
-        setPersistenceData(CURRENT_USER, { name: values.username })
         return;
       } // 如果失败去设置用户错误信息
 

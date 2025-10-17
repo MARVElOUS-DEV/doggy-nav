@@ -152,6 +152,7 @@ export default function NavListPage() {
         columns={columns}
         requestParams={{url: API_NAV_LIST, method: 'GET'}}
         showPageHeader={false}
+        // Ensure horizontal scroll for long/fixed columns to prevent overflow
         scroll={{ x: 'max-content' }}
         rowSelection={rowSelection}
         toolbar={{

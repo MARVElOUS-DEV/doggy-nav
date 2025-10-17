@@ -29,7 +29,7 @@ The frontend application for Doggy Nav, built with Next.js 15 and modern React.
 pnpm install
 
 # Copy environment variables
-cp .env.local.example .env.local
+cp .env.example .env.local
 
 # Start development server
 pnpm dev

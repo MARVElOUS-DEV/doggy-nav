@@ -232,6 +232,7 @@ function TableCom(props: TableComProps, ref: any) {
         return {
           ...column,
           width: optimizedWidth,
+          ellipsis: column.ellipsis ?? true,
           render: (dom: any, record: any, index: number, action: any, schema: any) => {
             // Original render function if exists
             const originalRender = typeof column.render === 'function'
@@ -291,15 +292,25 @@ function TableCom(props: TableComProps, ref: any) {
     return processedColumns;
   }, [renderOptions, columns]);
 
+  // Ensure horizontal scroll when columns are fixed to avoid overflow at narrower widths
+  const mergedTableProps: ProTableProps<any, any> = { ...proTableProps };
+  if (!mergedTableProps.scroll && realColumns.some((c: any) => c && c.fixed)) {
+    mergedTableProps.scroll = { x: 'max-content' } as any;
+  }
+  // A fixed table layout helps keep cells within bounds when widths are constrained
+  if (!('tableLayout' in mergedTableProps)) {
+    (mergedTableProps as any).tableLayout = 'fixed';
+  }
+
   const proTable = (
     <ProTable
       columns={realColumns}
       loading={loading}
       formRef={from}
-      request={proTableProps.request || onRequest}
-      rowSelection={{type: 'checkbox'}}
+      request={mergedTableProps.request || onRequest}
+      rowSelection={{ type: 'checkbox' }}
       rowKey={'_id'}
-      {...proTableProps}
+      {...mergedTableProps}
     />
   );
 

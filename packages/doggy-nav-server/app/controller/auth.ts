@@ -1,9 +1,9 @@
 import { randomBytes } from 'crypto';
-import Controller from '../core/base_controller';
+import CommonController from '../core/base_controller';
 import { clearAuthCookies, setAuthCookies, setStateCookie, getStateCookie, clearStateCookie } from '../utils/authCookie';
 import { getEnabledProviders, isProviderEnabled } from '../utils/oauth';
 
-export default class AuthController extends Controller {
+export default class AuthController extends CommonController {
   private async issueCookiesForUser(user: any) {
     const { ctx } = this;
     const tokens = await ctx.service.user.generateTokens(user);
@@ -91,5 +91,13 @@ export default class AuthController extends Controller {
     const { app } = this;
     const providers = getEnabledProviders(app);
     this.success({ providers });
+  }
+
+  async getAuthConfig() {
+    const { app } = this;
+    const inviteConfig = app.config.invite || {};
+    this.success({
+      requireInviteForLocalRegister: !!inviteConfig.requireForLocalRegister,
+    });
   }
 }

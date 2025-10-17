@@ -158,6 +158,34 @@ export default class UserService extends Service {
     return errors;
   }
 
+  private normalizeInviteCode(raw: unknown) {
+    if (!raw) return '';
+    if (typeof raw !== 'string') return '';
+    return raw.trim();
+  }
+
+  private async assertInviteRequirement(email: string) {
+    const { ctx, app } = this;
+    const requireInvite = app.config?.invite?.requireForLocalRegister === true;
+    if (!requireInvite) return null;
+
+    const inviteCode = this.normalizeInviteCode(ctx.request.body?.inviteCode);
+    if (!inviteCode) {
+      throw new ValidationError('需要邀请码');
+    }
+
+    const claimed = await ctx.service.inviteCode.claim(inviteCode, email);
+    if (claimed === 'domain') {
+      throw new ValidationError('邮箱域名不符合邀请码限制');
+    }
+
+    if (!claimed) {
+      throw new ValidationError('邀请码无效或已过期');
+    }
+
+    return claimed;
+  }
+
   async register() {
     const { ctx } = this;
     const { username, email, password } = ctx.request.body;
@@ -175,6 +203,8 @@ export default class UserService extends Service {
       throw new ConflictError('用户名或邮箱已存在');
     }
 
+    const invite = await this.assertInviteRequirement(email);
+
     const hashedPassword = await this.hashPassword(password);
 
     const newUser = await ctx.model.User.create({
@@ -184,6 +214,19 @@ export default class UserService extends Service {
       isAdmin: false,
       isActive: true,
     });
+
+    if (invite) {
+      const shouldDeactivate = invite.usedCount >= invite.usageLimit;
+      await ctx.model.InviteCode.updateOne(
+        { _id: invite._id },
+        {
+          $set: {
+            lastUsedBy: newUser._id,
+            active: shouldDeactivate ? false : invite.active,
+          },
+        },
+      );
+    }
 
     const userResponse = {
       user: {

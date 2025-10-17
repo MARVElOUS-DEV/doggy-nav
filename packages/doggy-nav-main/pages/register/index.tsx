@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type React from 'react';
 import { useRouter } from 'next/router';
 import { Form, Input, Button, Message } from '@arco-design/web-react';
-import { useAtom } from 'jotai';
 import { motion } from 'framer-motion';
-import { authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
 import type { RegisterFormValues } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +13,7 @@ export default function RegisterPage() {
   const { t } = useTranslation('translation');
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [, dispatchAuth] = useAtom(authActionsAtom);
+  const [requireInvite, setRequireInvite] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (values: RegisterFormValues) => {
@@ -25,8 +24,9 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const { user: {username} } = await api.register(values);
-      if(username){
+      const payload = requireInvite ? values : { ...values, inviteCode: undefined };
+      const { user: { username } } = await api.register(payload);
+      if (username) {
         Message.success(t('registration_successful'));
         router.push('/login');
       }
@@ -41,13 +41,21 @@ export default function RegisterPage() {
     }
   };
 
+  useEffect(() => {
+    api.getAuthConfig()
+      .then((config) => {
+        setRequireInvite(!!config.requireInviteForLocalRegister);
+      })
+      .catch(() => setRequireInvite(false));
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse delay-500"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 dark:bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-400 dark:bg-purple-700 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400 dark:bg-pink-700 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse delay-500"></div>
       </div>
 
       <motion.div
@@ -57,21 +65,20 @@ export default function RegisterPage() {
         className="relative z-10"
       >
         {/* Glass card */}
-        <div className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg backdrop-saturate-150 rounded-2xl border border-white border-opacity-30 shadow-2xl p-8 w-full max-w-md">
+        <div className="bg-white/20 dark:bg-gray-800/40 backdrop-blur-lg backdrop-saturate-150 rounded-2xl border border-white/30 dark:border-gray-700/40 shadow-2xl p-8 w-full max-w-md">
           {/* Logo and title */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-center mb-8"
-          >
+            className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
               <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('join_doggy_nav')}</h1>
-            <p className="text-gray-600">{t('create_account')}</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t('join_doggy_nav')}</h1>
+            <p className="text-gray-600 dark:text-gray-300">{t('create_account')}</p>
           </motion.div>
 
           {/* Register form */}
@@ -87,7 +94,7 @@ export default function RegisterPage() {
               requiredSymbol={false}
             >
               <FormItem
-                label={<span className="text-gray-700 font-medium">{t('username')}</span>}
+                label={<span className="text-gray-700 dark:text-gray-200 font-medium">{t('username')}</span>}
                 field="username"
                 rules={[
                   { required: true, message: t('username_required') },
@@ -98,7 +105,7 @@ export default function RegisterPage() {
                 <Input
                   placeholder={t('enter_username')}
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
                   prefix={<i className="iconfont icon-user text-gray-400"></i>}
                 />
               </FormItem>
@@ -114,7 +121,7 @@ export default function RegisterPage() {
                 <Input
                   placeholder={t('enter_email')}
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
                   prefix={<i className="iconfont icon-email text-gray-400"></i>}
                 />
               </FormItem>
@@ -130,7 +137,7 @@ export default function RegisterPage() {
                 <Input.Password
                   placeholder={t('enter_password')}
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
                   prefix={<i className="iconfont icon-lock text-gray-400"></i>}
                 />
               </FormItem>
@@ -155,10 +162,27 @@ export default function RegisterPage() {
                 <Input.Password
                   placeholder={t('enter_confirm_password')}
                   size="large"
-                  className="bg-white bg-opacity-50 border-white border-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl"
+                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
                   prefix={<i className="iconfont icon-lock text-gray-400"></i>}
                 />
               </FormItem>
+
+              {requireInvite && (
+                <FormItem
+                  label={<span className="text-gray-700 font-medium">{t('invite_code')}</span>}
+                  field="inviteCode"
+                  rules={[
+                    { required: true, message: t('invite_code_required') },
+                  ]}
+                >
+                  <Input
+                    placeholder={t('enter_invite_code')}
+                    size="large"
+                    className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
+                    prefix={<i className="iconfont icon-key text-gray-400"></i>}
+                  />
+                </FormItem>
+              )}
 
               <FormItem>
                 <Button
@@ -181,16 +205,16 @@ export default function RegisterPage() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="text-center mt-6"
           >
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
               {t('already_have_account')}{' '}
               <button
                 onClick={() => router.push('/login')}
-                className="cursor-pointer text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
+                className="cursor-pointer text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200"
               >
                 {t('sign_in_link')}
               </button>
             </p>
-            <div className="mt-4 pt-4 border-t border-white border-opacity-30">
+            <div className="mt-4 pt-4 border-t border-white/30 dark:border-gray-700/40">
               <button
                 onClick={() => router.push('/')}
                 className="cursor-pointer text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200"

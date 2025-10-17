@@ -1,8 +1,8 @@
-import Controller from '../core/base_controller';
+import CommonController from '../core/base_controller';
 import { AuthenticationError } from '../core/errors';
 import { setAuthCookies } from '../utils/authCookie';
 
-export default class UserController extends Controller {
+export default class UserController extends CommonController {
   tableName(): string {
     return 'User';
   }
