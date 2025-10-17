@@ -235,6 +235,52 @@ ANALYZE=false
 SERVER_URL=http://localhost:3002
 ```
 
+### Environment Variables Reference
+
+#### Backend (packages/doggy-nav-server)
+
+| Variable                  | Required (prod) | Default                               | Description                                                                                          |
+| ------------------------- | --------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| NODE_ENV                  | No              | development                           | Node environment.                                                                                    |
+| PORT                      | No              | 3002                                  | API server port.                                                                                     |
+| MONGO_URL                 | No              | 127.0.0.1:27017 (or full SRV)         | If a mongodb+srv URL is provided, it’s used as-is; otherwise host:port and DB “navigation” are used. |
+| JWT_SECRET                | Yes             | a_super_secure_token                  | HMAC secret for signing JWTs.                                                                        |
+| JWT_ACCESS_EXPIRES_IN     | No              | 15m                                   | Access token lifetime.                                                                               |
+| JWT_REFRESH_EXPIRES_IN    | No              | 7d                                    | Refresh token lifetime.                                                                              |
+| COOKIE_KEYS               | Recommended     | appInfo.name + \_doggy_nav_cookie_key | Signed-cookie key(s) for Egg; set a stable value to avoid logouts on restart.                        |
+| COOKIE_DOMAIN             | Optional        | (unset)                               | Cookie domain (set for cross-subdomain auth).                                                        |
+| CORS_ORIGIN               | Optional        | http://localhost:3000                 | Comma-separated allowed origins.                                                                     |
+| REQUIRE_INVITE_CODE       | Optional        | false                                 | Enable invite-only local registration.                                                               |
+| REQUIRE_CLIENT_SECRET     | Optional        | false                                 | Require x-client-secret on all APIs (except bypass routes).                                          |
+| PUBLIC_BASE_URL           | Optional        | (unset)                               | OAuth success redirect base URL.                                                                     |
+| GITHUB_CLIENT_ID          | Optional        | (unset)                               | GitHub OAuth.                                                                                        |
+| GITHUB_CLIENT_SECRET      | Optional        | (unset)                               | GitHub OAuth.                                                                                        |
+| GITHUB_CALLBACK_URL       | Optional        | (unset)                               | GitHub OAuth callback.                                                                               |
+| GOOGLE_CLIENT_ID          | Optional        | (unset)                               | Google OAuth.                                                                                        |
+| GOOGLE_CLIENT_SECRET      | Optional        | (unset)                               | Google OAuth.                                                                                        |
+| GOOGLE_CALLBACK_URL       | Optional        | (unset)                               | Google OAuth callback.                                                                               |
+| LINUXDO_CLIENT_ID         | Optional        | (unset)                               | LinuxDo OAuth.                                                                                       |
+| LINUXDO_CLIENT_SECRET     | Optional        | (unset)                               | LinuxDo OAuth.                                                                                       |
+| LINUXDO_CALLBACK_URL      | Optional        | (unset)                               | LinuxDo OAuth callback.                                                                              |
+| LINUXDO_AUTHORIZATION_URL | Optional        | (unset)                               | LinuxDo OAuth auth URL.                                                                              |
+| LINUXDO_TOKEN_URL         | Optional        | (unset)                               | LinuxDo OAuth token URL.                                                                             |
+| LINUXDO_PROFILE_URL       | Optional        | (unset)                               | LinuxDo user profile URL.                                                                            |
+| LINUXDO_SCOPE             | Optional        | (unset)                               | Comma-separated scopes for LinuxDo.                                                                  |
+
+#### Frontend (packages/doggy-nav-main)
+
+| Variable   | Required (prod) | Default               | Description                                        |
+| ---------- | --------------- | --------------------- | -------------------------------------------------- |
+| SERVER_URL | Recommended     | http://localhost:3002 | Backend base URL used by Next.js API proxy routes. |
+| ANALYZE    | Optional        | false                 | Enable bundle analyzer.                            |
+
+#### Admin (packages/doggy-nav-admin)
+
+| Variable                   | Required | Default               | Description                                                                                            |
+| -------------------------- | -------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
+| DOGGY_SERVER               | No       | http://localhost:3002 | Dev proxy target for API.                                                                              |
+| DOGGY_SERVER_CLIENT_SECRET | Optional | (unset)               | If REQUIRE_CLIENT_SECRET=true, set to your server client secret; injected by proxy as x-client-secret. |
+
 ## 🚀 Deployment
 
 ### ☁️ Cloud Platforms

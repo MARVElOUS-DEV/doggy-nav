@@ -74,6 +74,13 @@ export default (appInfo: EggAppInfo) => {
     refreshExpiresIn : JWT_REFRESH_EXPIRES_IN
   };
 
+  // Logger configuration for better diagnostics (tunable via env)
+  config.logger = {
+    dir: process.env.LOG_DIR || undefined,
+    level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'INFO' : 'DEBUG'),
+    consoleLevel: process.env.CONSOLE_LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'WARN' : 'DEBUG'),
+  };
+
   const cookieConfig: any = {
     httpOnly: true,
     sameSite: 'lax',
@@ -83,6 +90,10 @@ export default (appInfo: EggAppInfo) => {
     cookieConfig.domain = COOKIE_DOMAIN;
   }
   config.cookies = cookieConfig;
+
+  // Trust proxy headers (X-Forwarded-*) so secure cookies work behind TLS-terminating proxies
+  // Ensure your reverse proxy sets X-Forwarded-Proto and Host correctly
+  config.proxy = process.env.NODE_ENV ==='production';
 
   config.oauth = {
     baseUrl: process.env.PUBLIC_BASE_URL || '',

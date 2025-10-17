@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
 const SERVER_CLIENT_SECRET = process.env.SERVER_CLIENT_SECRET;
@@ -62,7 +62,14 @@ export const createApiHandler = (config: ApiConfig) => {
       }
 
       let response;
-      const axiosConfig = { headers, params, withCredentials: true };
+      const axiosConfig:AxiosRequestConfig = {
+        headers,
+        params,
+        withCredentials: true,
+      };
+      if (process.env.NODE_ENV === 'development') {
+        axiosConfig.timeout = 0
+      }
 
       if (method === 'get') {
         response = await axios.get(url, axiosConfig);

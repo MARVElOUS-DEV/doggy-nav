@@ -33,6 +33,7 @@ export default class AuthController extends CommonController {
 
     const passport = (app as any).passport;
 
+    ctx.logger.debug('[oauth/init] redirecting to provider', { provider: prov });
     await (passport.authenticate as any)(prov, {
       session: false,
       scope: strategyConfig.scope,
@@ -54,6 +55,7 @@ export default class AuthController extends CommonController {
 
     const user = ctx.user;
     if (!user) {
+      ctx.logger.warn('[oauth/callback] no user on context after passport', { provider: ctx.params.provider });
       clearStateCookie(ctx);
       ctx.redirect('/login?err=oauth_user');
       return;
@@ -62,6 +64,7 @@ export default class AuthController extends CommonController {
     await this.issueCookiesForUser(user);
     clearStateCookie(ctx);
     const redirectTo = app.config.oauth?.baseUrl || '/';
+    ctx.logger.debug('[oauth/callback] issuing cookies and redirect', { provider: ctx.params.provider, to: redirectTo });
     if (redirectTo.startsWith('/')) {
       ctx.redirect(redirectTo);
     } else {
