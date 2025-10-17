@@ -79,6 +79,9 @@ const api = {
   register: (userData: RegisterFormValues): Promise<{ user: User }> =>
     axios.post('/api/auth/register', userData),
 
+  getAuthConfig: (): Promise<{ requireInviteForLocalRegister: boolean }> =>
+    axios.get('/api/auth/config'),
+
   logout: (): Promise<void> =>
     axios.post('/api/auth/logout'),
 

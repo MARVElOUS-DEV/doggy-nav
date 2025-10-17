@@ -159,7 +159,7 @@ export default function VerticalTimelineContainer({
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
-                              const id = item.id;
+                              const id = (item as any).navId || (item as any).id;
                               if (id) {
                                 await api.updateNavView(String(id));
                               }

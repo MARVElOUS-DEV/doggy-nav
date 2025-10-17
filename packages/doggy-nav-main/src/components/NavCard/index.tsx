@@ -6,7 +6,7 @@ import { NavItem } from '@/types';
 import { useUrlStatus } from '@/utils/urlStatus';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconRightCircle } from '@arco-design/web-react/icon';
-import { FavoriteButton, StarButton, ViewCounter } from './Buttons';
+import { FavoriteButton, StarButton, ViewCounter } from '../Buttons';
 import { useTranslation } from 'react-i18next';
 
 const { Col } = Grid;

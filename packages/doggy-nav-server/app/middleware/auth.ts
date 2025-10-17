@@ -1,171 +1,116 @@
 import { getRoutePermission, hasAccess } from '../access-control';
+import { setAuthCookies } from '../utils/authCookie';
 
 export default () => {
   return async function(ctx: any, next: any) {
-    let url = ctx.url;
-    if (url.includes('?')) {
-      url = url.split('?')[0];
-    }
+    const url = normalizePath(ctx.url);
 
-    // FIRST: Check client secret if enabled (for ALL endpoints)
-    const clientSecretConfig = ctx?.app?.config?.clientSecret || {};
-    const isClientSecretRequired = Boolean(clientSecretConfig.requireForAllAPIs);
-    const bypassRoutes: string[] = Array.isArray(clientSecretConfig.bypassRoutes) ? clientSecretConfig.bypassRoutes : [];
-
-    // Check if this route is in bypass list
-    const isBypassRoute = bypassRoutes.some((route: string) => {
-      if (route === url) return true;
-      // Handle path parameters for bypass routes
-      const routeParts = route.split('/');
-      const urlParts = url.split('/');
-      if (routeParts.length !== urlParts.length) return false;
-      return routeParts.every((part: string, index: number) => {
-        return part.startsWith(':') || part === urlParts[index];
-      });
-    });
-
-    if (isClientSecretRequired && !isBypassRoute) {
-      // Require client secret for ALL APIs
-      const clientSecret = ctx.headers[(clientSecretConfig as any).headerName || 'x-client-secret'];
-
-      if (!clientSecret) {
-        ctx.status = 401;
-        ctx.body = {
-          code: 401,
-          msg: '请提供客户端密钥',
-          data: null,
-        };
-        return;
-      }
-
-      // Verify client secret
-      try {
-        const isValid = await ctx.service.clientSecret.verifyClientSecret(clientSecret);
-        if (!isValid) {
-          ctx.status = 401;
-          ctx.body = {
-            code: 401,
-            msg: '无效的客户端密钥',
-            data: null,
-          };
-          return;
-        }
-
-        // Store the application info in context for potential future use
-        const application = await ctx.service.clientSecret.getApplicationByClientSecret(clientSecret);
-        if (application) {
-          ctx.state.clientApplication = {
-            id: application._id,
-            name: application.name,
-            authType: 'client_secret',
-          };
-        }
-      } catch (e) {
-        ctx.logger.error('Client secret verification error:', e);
-        ctx.status = 500;
-        ctx.body = {
-          code: 500,
-          msg: '客户端密钥验证失败',
-          data: null,
-        };
-        return;
-      }
-    }
-
-    // SECOND: Check route permissions and user authentication
-    // Get the route permission for this endpoint
+    // permission
     const permission = getRoutePermission(ctx.method, url);
+    if (!permission) return respond(ctx, 403, '访问被拒绝：未配置权限');
 
-    // If no permission rule found, default to authenticated (secure by default)
-    if (!permission) {
-      ctx.status = 403;
-      ctx.body = {
-        code: 403,
-        msg: '访问被拒绝：未配置权限',
-        data: null,
-      };
-      return;
-    }
+    // client secret
+    const clientSecretOk = await clientSecretGuard(ctx, url);
+    if (!clientSecretOk) return; // response already sent
 
-    // If public access, allow without user authentication
-    if (permission.access === 'public') {
-      await next();
-      return;
-    }
-
-    // For optional access, proceed without requiring authentication
-    // but still try to authenticate if credentials are provided
+    // access modes
+    if (permission.access === 'public') return await next();
     if (permission.access === 'optional') {
-      // Try to authenticate but don't require it
-      await tryAuthenticate(ctx);
-      await next();
-      return;
+      await authenticateWithRefresh(ctx); // best-effort
+      return await next();
     }
 
-    // For authenticated and admin access, try to authenticate
-    const authResult = await tryAuthenticate(ctx);
-
-    // Check if user has required access level
-    if (hasAccess(permission, ctx.state.userinfo)) {
-      await next();
-    } else {
-      // Authentication failed or user doesn't have required permissions
-      if (authResult.authenticated) {
-        // User is authenticated but doesn't have required permissions
-        ctx.status = 403;
-        ctx.body = {
-          code: 403,
-          msg: '权限不足',
-          data: null,
-        };
-      } else {
-        // User is not authenticated
-        ctx.status = 401;
-        ctx.body = {
-          code: 401,
-          msg: authResult.error || '需要身份验证',
-          data: null,
-        };
-      }
+    // authenticated/admin
+    const authResult = await authenticateWithRefresh(ctx);
+    if (!hasAccess(permission, ctx.state.userinfo)) {
+      if (authResult.authenticated) return respond(ctx, 403, '权限不足');
+      return respond(ctx, 401, authResult.error || '需要身份验证');
     }
+
+    await next();
   };
 };
 
-// Helper function to attempt authentication
-async function tryAuthenticate(ctx: any) {
+function normalizePath(original: string) {
+  const i = original.indexOf('?');
+  return i >= 0 ? original.slice(0, i) : original;
+}
+
+function respond(ctx: any, status: number, msg: string) {
+  ctx.status = status;
+  ctx.body = { code: status, msg, data: null };
+}
+
+async function clientSecretGuard(ctx: any, url: string) {
+  const cfg = ctx?.app?.config?.clientSecret || {};
+  const required = Boolean(cfg.requireForAllAPIs);
+  const bypass: string[] = Array.isArray(cfg.bypassRoutes) ? cfg.bypassRoutes : [];
+  if (!required) return true;
+  const isBypass = matchesBypass(url, bypass);
+  if (isBypass) return true;
+
+  const headerName = (cfg as any).headerName || 'x-client-secret';
+  const clientSecret = ctx.headers[headerName];
+  if (!clientSecret) return respond(ctx, 401, '请提供客户端密钥'), false;
+  try {
+    const isValid = await ctx.service.clientSecret.verifyClientSecret(clientSecret);
+    if (!isValid) return respond(ctx, 401, '无效的客户端密钥'), false;
+    const appInfo = await ctx.service.clientSecret.getApplicationByClientSecret(clientSecret);
+    if (appInfo) {
+      ctx.state.clientApplication = { id: appInfo._id, name: appInfo.name, authType: 'client_secret' };
+    }
+    return true;
+  } catch (e) {
+    ctx.logger.error('Client secret verification error:', e);
+    return respond(ctx, 500, '客户端密钥验证失败'), false;
+  }
+}
+
+function matchesBypass(url: string, routes: string[]) {
+  return routes.some((route) => {
+    if (route === url) return true;
+    const r = route.split('/');
+    const u = url.split('/');
+    if (r.length !== u.length) return false;
+    return r.every((part, i) => part.startsWith(':') || part === u[i]);
+  });
+}
+
+async function authenticateWithRefresh(ctx: any) {
   const bearer = ctx.headers.authorization ? ctx.headers.authorization : '';
   let token: string | null = null;
-
-  if (bearer && bearer.startsWith('Bearer ')) {
-    token = bearer.substring(7);
-  }
-
+  if (bearer && bearer.startsWith('Bearer ')) token = bearer.substring(7);
   if (!token) {
     const cookieToken = ctx.cookies.get('access_token');
-    if (cookieToken) {
-      token = cookieToken.startsWith('Bearer ') ? cookieToken.substring(7) : cookieToken;
-    }
+    if (cookieToken) token = cookieToken.startsWith('Bearer ') ? cookieToken.substring(7) : cookieToken;
   }
+
+  const jwt = ctx?.app?.jwt;
+  const secret = ctx?.app?.config?.jwt?.secret;
+  if (!jwt || !secret) return { authenticated: false, error: 'JWT not available' };
 
   if (token) {
     try {
-      const jwt = ctx?.app?.jwt;
-      const secret = ctx?.app?.config?.jwt?.secret;
-      if (!jwt || !secret) {
-        ctx.logger.warn('JWT verification skipped: plugin or secret missing');
-        return { authenticated: false, error: 'JWT not available' };
-      }
       const decode = await jwt.verify(token, secret);
-      ctx.state.userinfo = {
-        ...decode,
-        authType: 'jwt',
-      };
+      ctx.state.userinfo = { ...decode, authType: 'jwt' };
       return { authenticated: true };
     } catch (err) {
-      ctx.logger.debug('JWT authentication error:', err);
-      return { authenticated: false, error: 'token失效或解析错误' };
+      ctx.logger.debug('JWT auth (access) error:', err);
     }
   }
 
-  return { authenticated: false, error: '未提供认证信息' };
+  try {
+    const refresh = ctx.cookies.get('refresh_token');
+    if (!refresh) return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
+    const payload: any = await jwt.verify(refresh, secret);
+    if (payload?.typ !== 'refresh') return { authenticated: false, error: 'refresh token 类型错误' };
+    const user = await ctx.service.user.getById(payload.sub);
+    const tokens = await ctx.service.user.generateTokens(user);
+    setAuthCookies(ctx, tokens);
+    ctx.state.userinfo = { ...tokens.payload, authType: 'jwt' };
+    return { authenticated: true };
+  } catch (err) {
+    ctx.logger.debug('JWT auth (refresh) error:', err);
+    return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
+  }
 }

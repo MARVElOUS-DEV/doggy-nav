@@ -130,6 +130,9 @@
   "enter_confirm_password": "请确认您的密码",
   "confirm_password_required": "请确认您的密码",
   "password_mismatch": "密码不匹配",
+  "invite_code": "邀请码",
+  "enter_invite_code": "请输入邀请码",
+  "invite_code_required": "请输入有效的邀请码",
   "creating_account": "创建账户中...",
   "create_account_button": "创建账户",
   "already_have_account": "已经有账户？",
@@ -258,5 +261,17 @@
   "no_navigation_content": "暂无导航内容",
   "no_resources_any_category": "该分类下暂时没有任何网站资源",
   "showing": "已为您展示",
-  "website_resources": "个网站资源"
+  "website_resources": "个网站资源",
+  "Overview": "概览",
+  "Tech & Dev": "技术与开发",
+  "Design": "设计",
+  "Business": "商业",
+  "Learn": "学习",
+  "Social": "社交",
+  "Media": "媒体",
+  "Tools": "工具",
+  "Shop": "购物",
+  "Life": "生活",
+  "Science": "科学",
+  "translation~Overview": "概览"
 }

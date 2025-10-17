@@ -110,7 +110,7 @@ export default function Recommend() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="p-8 border border-theme-border border-x-0 dark:border-gray-700/50"
+            className="relative p-8 border border-theme-border border-x-0 dark:border-gray-700/50 rounded-2xl"
           >
             <Form form={form} layout="vertical" onSubmit={addNav}>
               <AnimatePresence>
@@ -119,9 +119,9 @@ export default function Recommend() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 rounded-2xl flex items-center justify-center z-10"
+                    className="absolute inset-0 bg-theme-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10 ring-1 ring-theme-border"
                   >
-                    <Spin size={20} />
+                    <Spin size={24} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -137,6 +137,8 @@ export default function Recommend() {
                     <Input
                       placeholder={t('enter_website_url')}
                       onBlur={getNavInfo}
+                      aria-busy={formLoading}
+                      suffix={formLoading ? <Spin size={16} /> : null}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-purple-200 dark:focus:ring-purple-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </FormItem>

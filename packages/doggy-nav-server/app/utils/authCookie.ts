@@ -5,10 +5,11 @@ interface TokenPair {
   refreshToken?: string;
 }
 
-const buildCookieOptions = (ctx: Context) => {
+const buildCookieOptions = (_ctx: Context) => {
   const options: any = {
     httpOnly: true,
-    secure: ctx.secure ?? ctx.request.protocol === 'https',
+    // In dev with localhost over http, force secure=false so cookies persist
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   };

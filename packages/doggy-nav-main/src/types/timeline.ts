@@ -2,6 +2,8 @@ import { NavItem } from './index';
 
 export interface TimelineItem {
   id: string;
+  // The actual navigation document id in database
+  navId?: string;
   title: string;
   description?: string;
   url: string;

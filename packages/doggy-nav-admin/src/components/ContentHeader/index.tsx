@@ -6,7 +6,6 @@ import {
   UserOutlined, LogoutOutlined
 } from '@ant-design/icons';
 import { history } from '@umijs/max';
-import { clearPersistenceData } from '@/utils/persistence';
 import './style.less';
 
 const loginPath = '/user/login';
@@ -29,10 +28,9 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
   showSearch = true
 }) => {
   const handleLogout = () => {
-    // Clear authentication data
-    clearPersistenceData();
+    // With cookie-based authentication, logout is handled server-side
+    // Just redirect to login page - server will clear cookies
     message.success('退出登录成功');
-    // Redirect to login page
     history.push(loginPath);
   };
 

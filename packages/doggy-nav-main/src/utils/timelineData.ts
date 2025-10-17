@@ -217,6 +217,7 @@ export function groupWebsitesByYear(websites: NavItem[]): TimelineYear[] {
     // 添加到线性时间轴项目
     yearData.items.push({
       id: website.id || website.href || `item-${Math.random()}`,
+      navId: website.id, // preserve the actual nav id for stats updates
       title: website.name || 'Unknown',
       description: website.desc || '',
       url: website.href || '#',

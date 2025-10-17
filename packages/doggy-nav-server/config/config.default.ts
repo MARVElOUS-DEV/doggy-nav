@@ -12,7 +12,8 @@ export default (appInfo: EggAppInfo) => {
   const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
   const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
-  config.keys = appInfo.name + '_' + Math.random().toString(36).substr(2, 8);
+  // Stable cookie signing key to prevent signed-cookie invalidation across restarts
+  config.keys = process.env.COOKIE_KEYS || (appInfo.name + '_doggy_nav_cookie_key');
 
   const allowedOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',') : [ 'http://localhost:3000' ];
 
@@ -108,6 +109,11 @@ export default (appInfo: EggAppInfo) => {
     },
   };
 
+  config.invite = {
+    requireForLocalRegister: process.env.REQUIRE_INVITE_CODE === 'true' || false,
+    codeLength: 12,
+  };
+
   // Route access control is now handled by the access-control.js configuration
   // config.routerAuth is deprecated
 
@@ -161,6 +167,7 @@ export default (appInfo: EggAppInfo) => {
       '/api/auth/:provider',
       '/api/auth/:provider/callback',
       '/api/auth/providers',
+      '/api/auth/config',
       '/api/auth/me',
       '/api/auth/logout',
     ],
