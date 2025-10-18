@@ -96,7 +96,7 @@ export default function FavoriteItem({ item, onRemove }: { item: NavItem; onRemo
         {item.name}
       </span>
       <span className="text-xs text-center text-gray-500 mt-1 max-w-full truncate">
-        {item.categoryName || t('uncategorized')}
+        {t(item.categoryName || 'uncategorized', { defaultValue: item.categoryName || t('uncategorized') })}
       </span>
     </div>
   );

@@ -108,7 +108,7 @@ export default function SearchResultsPage() {
               }}
             >
               <div className="website-title" style={{ color: 'var(--color-foreground)' }}>
-                {group.name} ({group.list.length})
+                {t(group.name, { defaultValue: group.name })} ({group.list.length})
               </div>
               <AppNavList list={group.list} />
             </div>

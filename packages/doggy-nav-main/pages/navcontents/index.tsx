@@ -61,7 +61,7 @@ export default function NavContentsPage() {
                       id={item.id}
                       className="text-2xl font-bold"
                     >
-                      {item.name}
+                      {t(item.name, { defaultValue: item.name })}
                     </h2>
                     {item.list && (
                       <span
