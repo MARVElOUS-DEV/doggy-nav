@@ -1,3 +1,4 @@
+import { buildAudienceOr } from '../utils/audience';
 import { Service } from 'egg';
 import { SortOrder } from 'mongoose';
 
@@ -9,16 +10,16 @@ export enum NAV_STATUS {
 
 
 export default class NavService extends Service {
-  async findMaxValueList(value, isAuthenticated = false) {
-    const query: any = { status: NAV_STATUS.pass };
+  async findMaxValueList(value: string, _isAuthenticated = false) {
+    const userCtx = this.ctx.state.userinfo as { roleIds?: string[]; groupIds?: string[] };
+    const baseQuery: any = { status: NAV_STATUS.pass };
 
-    // For non-authenticated users, only show non-hidden items
-    if (!isAuthenticated) {
-      query.hide = { $eq: false };
-    }
+    // Audience filtering
+    const or = buildAudienceOr(userCtx as any, true);
 
-    const docs = await this.ctx.model.Nav.find(query).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
-    // Convert to JSON to ensure schema transformations are applied (id field instead of _id)
+    const finalQuery = { $and: [ baseQuery, { $or: or } ] };
+
+    const docs = await this.ctx.model.Nav.find(finalQuery).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
     return docs.map(doc => doc.toJSON());
   }
 

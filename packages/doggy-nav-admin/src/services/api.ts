@@ -10,6 +10,8 @@ export const API_TAG = '/api/tag'
 export const API_TAG_list = '/api/tag/list'
 export const API_INVITE_CODES = '/api/invite-codes'
 export const API_INVITE_CODES_LIST = '/api/invite-codes/list'
+export const API_ROLES = '/api/roles'
+export const API_GROUPS = '/api/groups'
 
 export async function login(data: { username: string, password: string }) {
   return request({
@@ -56,4 +58,12 @@ export async function revokeInviteCode(id: string) {
     url: `${API_INVITE_CODES}/${id}/revoke`,
     method: 'POST',
   });
+}
+
+export async function getRoles() {
+  return request({ url: API_ROLES, method: 'GET' });
+}
+
+export async function getGroups() {
+  return request({ url: API_GROUPS, method: 'GET' });
 }

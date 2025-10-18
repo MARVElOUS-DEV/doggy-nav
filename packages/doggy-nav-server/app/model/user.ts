@@ -32,6 +32,9 @@ export default function(app: any) {
       type: Boolean,
       default: true,
     },
+    roles: [{ type: Schema.Types.ObjectId, ref: 'Role', default: [] }],
+    groups: [{ type: Schema.Types.ObjectId, ref: 'Group', default: [] }],
+    extraPermissions: { type: [ String ], default: [] },
     lastLoginAt: {
       type: Date,
       default: null,
@@ -86,6 +89,9 @@ export default function(app: any) {
       },
     },
   });
+
+  UserSchema.index({ roles: 1 });
+  UserSchema.index({ groups: 1 });
 
   return mongoose.model('User', UserSchema);
 }

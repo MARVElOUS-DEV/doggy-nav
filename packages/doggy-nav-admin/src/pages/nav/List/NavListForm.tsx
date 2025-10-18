@@ -1,6 +1,6 @@
 import {
   DrawerForm, ProFormDependency, ProFormText,
-  ProFormTextArea, ProFormSwitch
+  ProFormTextArea, ProFormSelect
 } from "@ant-design/pro-form";
 import useProFormItem from "@/hooks/useProFormItem";
 import { Form } from "antd";
@@ -9,8 +9,25 @@ import { API_NAV } from "@/services/api";
 import request from "@/utils/request";
 import CategorySelect from "@/pages/nav/Category/CategorySelect";
 import TagSelect from "@/pages/nav/Tag/TagSelect";
+import { useEffect, useState } from "react";
+import { getGroups, getRoles } from "@/services/api";
 
 export default function NavListForm(props: any) {
+  const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
+  const [groupOptions, setGroupOptions] = useState<{ label: string; value: string }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [rolesRes, groupsRes] = await Promise.all([getRoles(), getGroups()]);
+        const roles = rolesRes?.data?.data || rolesRes?.data || [];
+        const groups = groupsRes?.data?.data || groupsRes?.data || [];
+        setRoleOptions((roles || []).map((r: any) => ({ label: r.displayName || r.slug, value: r._id })));
+        setGroupOptions((groups || []).map((g: any) => ({ label: g.displayName || g.slug, value: g._id })));
+      } catch {}
+    })();
+  }, []);
+
   const formProps = useProForm({
     ...props,
     onFinish: async (values) => {
@@ -58,11 +75,6 @@ export default function NavListForm(props: any) {
     label: '作者网站',
   })
 
-  const statusProps = useProFormItem({
-    name: 'hide',
-    label: '隐藏状态',
-    required: false,
-  })
   return (
     <DrawerForm {...props} {...formProps} drawerProps={{ width: 600 }}>
       <ProFormDependency name={['logo']}>
@@ -80,14 +92,34 @@ export default function NavListForm(props: any) {
       <ProFormText {...urlProps} />
       <ProFormText {...authorProps} />
       <ProFormText {...authorUrlProps} />
-      <ProFormSwitch
-        {...statusProps}
-        fieldProps={{
-          checkedChildren: '隐藏',
-          unCheckedChildren: '显示'
+      <ProFormSelect
+        name={['audience','visibility']}
+        label="可见性"
+        valueEnum={{
+          public: '公开',
+          authenticated: '登录可见',
+          restricted: '受限（指定角色/用户组）'
         }}
-        initialValue={false}
+        initialValue={'public'}
       />
+      <ProFormDependency name={['audience']}>
+        {({ audience }) => audience?.visibility === 'restricted' ? (
+          <>
+            <ProFormSelect
+              name={['audience','allowRoles']}
+              label="允许角色"
+              mode="multiple"
+              options={roleOptions}
+            />
+            <ProFormSelect
+              name={['audience','allowGroups']}
+              label="允许用户组"
+              mode="multiple"
+              options={groupOptions}
+            />
+          </>
+        ) : null}
+      </ProFormDependency>
     </DrawerForm>
   )
 }

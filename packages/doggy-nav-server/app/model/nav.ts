@@ -55,6 +55,11 @@ export default function(app: any) {
       type: Number,
       default: null,
     },
+    audience: {
+      visibility: { type: String, enum: [ 'public', 'authenticated', 'restricted' ], default: 'public' },
+      allowRoles: [{ type: Schema.Types.ObjectId, ref: 'Role', default: [] }],
+      allowGroups: [{ type: Schema.Types.ObjectId, ref: 'Group', default: [] }],
+    },
   }, {
     collection: 'nav',
     toJSON: {
@@ -82,6 +87,8 @@ export default function(app: any) {
       },
     },
   });
+  NavSchema.index({ 'audience.allowRoles': 1 });
+  NavSchema.index({ 'audience.allowGroups': 1 });
 
   // Virtual getters to convert Chrome time to user-friendly Date
   NavSchema.virtual('createTimeDate').get(function() {

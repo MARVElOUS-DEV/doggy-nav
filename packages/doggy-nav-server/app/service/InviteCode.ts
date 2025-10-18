@@ -25,6 +25,7 @@ export default class InviteCodeService extends Service {
         $set: { lastUsedAt: now },
       },
       {
+        useFindAndModify:true,
         new: true,
       },
     );

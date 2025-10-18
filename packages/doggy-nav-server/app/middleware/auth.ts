@@ -14,8 +14,8 @@ export default () => {
     if (!clientSecretOk) return; // response already sent
 
     // access modes
-    if (permission.access === 'public') return await next();
-    if (permission.access === 'optional') {
+    if (permission.require?.level === 'public') return await next();
+    if (permission.require?.level === 'optional') {
       await authenticateWithRefresh(ctx); // best-effort
       return await next();
     }

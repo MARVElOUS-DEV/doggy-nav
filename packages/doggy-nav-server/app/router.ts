@@ -18,6 +18,16 @@ export default (app: Application) => {
   router.post('/api/login', controller.user.login);
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
+  // RBAC resources
+  router.get('/api/roles', controller.role.getList);
+  router.post('/api/roles', controller.role.add);
+  router.put('/api/roles', controller.role.edit);
+  router.delete('/api/roles', controller.role.del);
+
+  router.get('/api/groups', controller.group.getList);
+  router.post('/api/groups', controller.group.add);
+  router.put('/api/groups', controller.group.edit);
+  router.delete('/api/groups', controller.group.del);
   // invitation code routes
   router.get('/api/invite-codes/list', controller.inviteCode.list);
   router.post('/api/invite-codes', controller.inviteCode.create);

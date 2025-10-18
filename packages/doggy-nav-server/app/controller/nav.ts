@@ -2,6 +2,7 @@ import { PipelineStage, Types } from 'mongoose';
 import { parseHTML } from '../../utils/reptileHelper';
 import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
+import { buildAudienceOr } from '../utils/audience';
 
 enum NAV_STATUS {
   pass,
@@ -16,7 +17,7 @@ export default class NavController extends Controller {
 
   async list() {
     const { ctx } = this;
-    const { status = 0, categoryId, name, hide } = ctx.query;
+    const { status = 0, categoryId, name } = ctx.query;
 
     let findParam: any = {};
 
@@ -41,16 +42,7 @@ export default class NavController extends Controller {
       findParam.status = NAV_STATUS.pass;
     }
 
-    // Filter hide based on authentication state
-    if (!isAuthenticated) {
-      // For non-authenticated users, only show non-hidden items
-      if (!hide) {
-        findParam.hide = { $eq: false };
-      }
-    } else if (hide !== undefined) {
-      // For authenticated users, respect the hide parameter if provided
-      findParam.hide = { $eq: hide === 'true' };
-    }
+    // Audience-based visibility is handled below; legacy `hide` is no longer used for filtering
 
     if (categoryId) {
       findParam.categoryId = {
@@ -63,6 +55,11 @@ export default class NavController extends Controller {
         $regex: reg,
       };
     }
+
+    // Audience filtering (+ legacy hide compatibility)
+    const userCtx = ctx.state.userinfo;
+    const or = buildAudienceOr(userCtx, true);
+    findParam = { $and: [ findParam, { $or: or } ] };
 
     // If user is authenticated, include favorite status
     if (isAuthenticated) {
@@ -121,6 +118,8 @@ export default class NavController extends Controller {
       ];
 
       const countPipeline = [{ $match: findParam }, { $count: 'total' }];
+      // Handle case where findParam uses $and with nested objects not directly matchable in count
+      // Use the same match condition
 
       const [ data, countResult ] = await Promise.all([
         ctx.model.Nav.aggregate(pipeline),
@@ -192,18 +191,19 @@ export default class NavController extends Controller {
     try {
       const { categoryId } = request.query;
       const resData: any = [];
-      // 取所有子分类， filter by hide based on authentication
+      // 取所有子分类， apply audience-based filtering
       const isAuthenticated = this.isAuthenticated();
-      const categoryFilter: any = {
+      const categoryFilterBase: any = {
         $or: [
           { categoryId },
           { _id: categoryId },
-        ] };
+        ],
+      };
 
-      // For non-authenticated users, also filter out hidden categories
-      if (!isAuthenticated) {
-        categoryFilter.hide = { $eq: false };
-      }
+      // Audience filtering for categories (+ legacy hide compatibility)
+      const userCtx = this.ctx.state.userinfo;
+      const catOr = buildAudienceOr(userCtx, true);
+      const categoryFilter: any = { $and: [ categoryFilterBase, { $or: catOr } ] };
 
       const categorys = await model.Category.find(categoryFilter);
       const categoryIds = categorys.reduce((t, v) => [ ...t, v._id ], []);
@@ -212,7 +212,7 @@ export default class NavController extends Controller {
         categoryId: { $in: categoryIds },
       };
 
-      // Filter by status and hide based on authentication
+      // Filter by status and apply audience visibility for navs
       if (isAuthenticated) {
         // Authenticated users see approved or legacy items without status
         navFindParam.$or = [
@@ -222,10 +222,13 @@ export default class NavController extends Controller {
       } else {
         // Non-authenticated users only see approved items
         navFindParam.status = NAV_STATUS.pass;
-        navFindParam.hide = { $eq: false };
       }
 
-      const navs = await model.Nav.find(navFindParam);
+      // Audience filtering for navs (+ legacy hide compatibility)
+      const navOr = buildAudienceOr(userCtx, true);
+      const finalNavFindParam: any = { $and: [ navFindParam, { $or: navOr } ] };
+
+      const navs = await model.Nav.find(finalNavFindParam);
 
       // Build favorites set for authenticated users
       let favoriteSet: Set<string> | null = null;
@@ -247,6 +250,7 @@ export default class NavController extends Controller {
           });
         resData.push({
           _id: category._id,
+          id: category._id.toString(),
           name: category.name,
           list: nowNavs,
         });
@@ -270,10 +274,12 @@ export default class NavController extends Controller {
       // Non-authenticated users can only access approved items
       if (!isAuthenticated) {
         navQuery.status = NAV_STATUS.pass;
-        navQuery.hide = { $eq: false };
       }
 
-      const nav = await ctx.model.Nav.findOne(navQuery);
+      // Audience filtering for single item (+ legacy hide compatibility)
+      const userCtx = ctx.state.userinfo;
+      const or = buildAudienceOr(userCtx, true);
+      const nav = await ctx.model.Nav.findOne({ $and: [ navQuery, { $or: or } ] });
       if (nav && nav.categoryId) {
         const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
         if (category) {
@@ -308,10 +314,9 @@ export default class NavController extends Controller {
         name: { $regex: reg },
       };
 
-      // For non-authenticated users, filter by status and hide
+      // For non-authenticated users, filter by status
       const isAuthenticated = this.isAuthenticated();
       if (!isAuthenticated) {
-        searchQuery.hide = { $eq: false };
         searchQuery.status = NAV_STATUS.pass; // Only show approved items
       }
 

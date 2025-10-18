@@ -7,7 +7,7 @@ export default class InviteCodeController extends CommonController {
   }
 
   async list() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.isAdmin) {
+    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
       throw new ForbiddenError('需要管理员权限');
     }
     const { ctx } = this;
@@ -44,7 +44,7 @@ export default class InviteCodeController extends CommonController {
   }
 
   async create() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.isAdmin) {
+    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
       throw new ForbiddenError('需要管理员权限');
     }
     const { ctx } = this;
@@ -87,7 +87,7 @@ export default class InviteCodeController extends CommonController {
   }
 
   async update() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.isAdmin) {
+    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
       throw new ForbiddenError('需要管理员权限');
     }
     const { ctx } = this;
@@ -142,7 +142,7 @@ export default class InviteCodeController extends CommonController {
   }
 
   async revoke() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.isAdmin) {
+    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
       throw new ForbiddenError('需要管理员权限');
     }
     const { ctx } = this;
