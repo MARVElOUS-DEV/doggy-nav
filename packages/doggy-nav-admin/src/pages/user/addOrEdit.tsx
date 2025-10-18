@@ -11,12 +11,13 @@ import { useRequest } from "@umijs/max";
 
 const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
     const [form] = Form.useForm();
+    const isEdit = !!id;
 
-    const {loading, run: queryRun} = useRequest(`/user/${id}`,
+    const {loading, run: queryRun} = useRequest(`/api/user/${id}`,
         {
             manual: true,
             onSuccess: (res) => {
-                form.setFieldsValue(res)
+                if (res) form.setFieldsValue(res)
             }
         });
 
@@ -25,13 +26,13 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
             if (id) {
                 return {
                     method: 'PATCH',
-                    url: `/user/${id}`,
+                    url: `/api/user/${id}`,
                     data,
                 }
             }
             return {
                 method: 'POST',
-                url: `/user`,
+                url: `/api/user`,
                 data,
             }
         },
@@ -58,7 +59,7 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
             form={form}
             autoFocusFirstInput
             drawerProps={{
-                destroyOnClose: true,
+                destroyOnHidden: true,
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
@@ -84,7 +85,26 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                 width="md"
                 label="Email"
                 placeholder="请输入email"
-                rules={[{required: true}]}
+                rules={[
+                  { required: true, message: '请输入email' },
+                  { type: 'email', message: '请输入有效的邮箱地址' },
+                ]}
+            />
+            <ProFormText.Password
+                name="password"
+                width="md"
+                label="密码"
+                placeholder={isEdit ? '留空则不修改密码' : '请输入密码'}
+                rules={[
+                  { required: !isEdit, message: '请输入密码' },
+                  {
+                    validator: async (_: any, value: string) => {
+                      if (!value) return Promise.resolve();
+                      const ok = value.length >= 6 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value);
+                      return ok ? Promise.resolve() : Promise.reject(new Error('密码至少6位且包含大小写字母和数字'));
+                    }
+                  }
+                ]}
             />
             <ProFormText
                 name="phone"

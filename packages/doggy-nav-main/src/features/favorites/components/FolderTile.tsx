@@ -20,8 +20,10 @@ export default function FolderTile({ items, name, onClick }: { items: NavItem[];
       }}
     >
       <div className="w-16 h-16 bg-white rounded-2xl shadow-lg p-1.5 mb-2 grid grid-cols-2 grid-rows-2 gap-1">
-        {preview.map((it) => (
-          <div key={it.id} className="w-full h-full rounded-md bg-white overflow-hidden flex items-center justify-center">
+        {preview.map((it, idx) => {
+          const key = String((it as any).id ?? (it as any)._id ?? (it as any).href ?? `${it.name ?? 'item'}-${idx}`);
+          return (
+          <div key={key} className="w-full h-full rounded-md bg-white overflow-hidden flex items-center justify-center">
             {it.logo ? (
               <DoggyImage
                 logo={it.logo}
@@ -34,7 +36,8 @@ export default function FolderTile({ items, name, onClick }: { items: NavItem[];
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
       <span className="text-sm text-center text-gray-700 font-medium max-w-full truncate">
         {name || t('folder')}

@@ -166,10 +166,7 @@ export default function LoginPage() {
                   >
                     <span className="flex items-center justify-center gap-2">
                       {loading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          {t('signing_in')}
-                        </>
+                        <>{t('signing_in')}</>
                       ) : (
                         <>
                           <i className="iconfont icon-login"></i>

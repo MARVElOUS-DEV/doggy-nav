@@ -77,7 +77,9 @@ export default class FavoriteController extends Controller {
         { $match: { userId: new Types.ObjectId(userInfo.userId), parentFolderId: null } },
         { $lookup: { from: 'nav', localField: 'navId', foreignField: '_id', as: 'navItem' } },
         { $unwind: '$navItem' },
-        { $lookup: { from: 'category', localField: 'navItem.categoryId', foreignField: '_id', as: 'category', pipeline: [ { $project: { name: 1 } } ] } },
+        // Convert string categoryId to ObjectId for proper lookup
+        { $addFields: { categoryObjectId: { $cond: [ { $regexMatch: { input: '$navItem.categoryId', regex: /^[a-fA-F0-9]{24}$/ } }, { $toObjectId: '$navItem.categoryId' }, null ] } } },
+        { $lookup: { from: 'category', localField: 'categoryObjectId', foreignField: '_id', as: 'category', pipeline: [ { $project: { name: 1 } } ] } },
         { $addFields: { 'navItem.categoryName': { $ifNull: [ { $arrayElemAt: [ '$category.name', 0 ] }, null ] } } },
         { $project: { _id: 1, userId: 1, navId: 1, order: 1, parentFolderId: 1, navItem: { _id: '$navItem._id', name: '$navItem.name', href: '$navItem.href', desc: '$navItem.desc', logo: '$navItem.logo', authorName: '$navItem.authorName', authorUrl: '$navItem.authorUrl', categoryId: '$navItem.categoryId', categoryName: '$navItem.categoryName', tags: '$navItem.tags', view: '$navItem.view', star: '$navItem.star', status: '$navItem.status', hide: '$navItem.hide', createTime: '$navItem.createTime', auditTime: '$navItem.auditTime' } } },
         { $sort: { order: 1, createdAt: -1 } },
@@ -95,7 +97,8 @@ export default class FavoriteController extends Controller {
           { $match: { userId: new Types.ObjectId(userInfo.userId), parentFolderId: { $in: folderIds.map((id: any) => new Types.ObjectId(id)) } } },
           { $lookup: { from: 'nav', localField: 'navId', foreignField: '_id', as: 'navItem' } },
           { $unwind: '$navItem' },
-          { $lookup: { from: 'category', localField: 'navItem.categoryId', foreignField: '_id', as: 'category', pipeline: [ { $project: { name: 1 } } ] } },
+          { $addFields: { categoryObjectId: { $cond: [ { $regexMatch: { input: '$navItem.categoryId', regex: /^[a-fA-F0-9]{24}$/ } }, { $toObjectId: '$navItem.categoryId' }, null ] } } },
+          { $lookup: { from: 'category', localField: 'categoryObjectId', foreignField: '_id', as: 'category', pipeline: [ { $project: { name: 1 } } ] } },
           { $addFields: { 'navItem.categoryName': { $ifNull: [ { $arrayElemAt: [ '$category.name', 0 ] }, null ] } } },
           { $project: { _id: 1, userId: 1, navId: 1, parentFolderId: 1, order: 1, navItem: { _id: '$navItem._id', name: '$navItem.name', href: '$navItem.href', desc: '$navItem.desc', logo: '$navItem.logo', authorName: '$navItem.authorName', authorUrl: '$navItem.authorUrl', categoryId: '$navItem.categoryId', categoryName: '$navItem.categoryName', tags: '$navItem.tags', view: '$navItem.view', star: '$navItem.star', status: '$navItem.status', hide: '$navItem.hide', createTime: '$navItem.createTime', auditTime: '$navItem.auditTime' } } },
           { $sort: { order: 1, createdAt: -1 } },
@@ -340,10 +343,22 @@ export default class FavoriteController extends Controller {
         {
           $unwind: '$navItem',
         },
+        // Ensure categoryId string is converted to ObjectId for lookup
+        {
+          $addFields: {
+            categoryObjectId: {
+              $cond: [
+                { $regexMatch: { input: '$navItem.categoryId', regex: /^[a-fA-F0-9]{24}$/ } },
+                { $toObjectId: '$navItem.categoryId' },
+                null,
+              ],
+            },
+          },
+        },
         {
           $lookup: {
             from: 'category',
-            localField: 'navItem.categoryId',
+            localField: 'categoryObjectId',
             foreignField: '_id',
             as: 'category',
             pipeline: [

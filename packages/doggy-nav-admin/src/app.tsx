@@ -16,11 +16,16 @@ export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
-  // With cookie-based authentication, we don't need to check tokens locally
-  // The server will handle authentication via cookies
-  return {
-    settings: {},
-  };
+  // Fetch current user info (roles included) to drive access control
+  try {
+    const resp = await fetch('/api/auth/me', { credentials: 'include' });
+    const json = await resp.json();
+    const currentUser = json?.data?.user || undefined;
+    const fetchUserInfo = async () => currentUser;
+    return { settings: {}, currentUser, fetchUserInfo };
+  } catch {
+    return { settings: {} };
+  }
 }
 
 // 页面标题和子标题映射
@@ -37,7 +42,18 @@ const pageTitles: Record<string, { title: string; subtitle: string; showUserMenu
   '/nav/audit': { title: '审核管理', subtitle: '审核网站提交', showUserMenu: true,showSearch: false, },
 };
 
-export const layout: RunTimeLayoutConfig = ({ initialState }) => {
+export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+  //expose a global helper to refresh currentUser so access() re-evaluates without full reload
+  (window as any).g_updateInitialState = async () => {
+    try {
+      const resp = await fetch('/api/auth/me', { credentials: 'include' });
+      const json = await resp.json();
+      const currentUser = json?.data?.user || undefined;
+      await setInitialState((s: any) => ({ ...s, currentUser }));
+    } catch {
+      await setInitialState((s: any) => ({ ...s, currentUser: undefined }));
+    }
+  };
   return {
     disableContentMargin: false,
     waterMarkProps: {
@@ -81,6 +97,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     // 自定义 403 页面
     unAccessible: <div>unAccessible</div>,
     ...initialState?.settings,
+    // Expose a helper to refresh currentUser and trigger menu re-render
+    rightContentRender: () => null,
   };
 };
 export const request: RequestConfig = requestConfigure();

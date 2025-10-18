@@ -421,7 +421,7 @@ export default function BookmarksImportPage() {
                   open={drawerOpen}
                   width={520}
                   onClose={() => setDrawerOpen(false)}
-                  destroyOnClose
+                  destroyOnHidden
                   footer={null}
                 >
                   <Form

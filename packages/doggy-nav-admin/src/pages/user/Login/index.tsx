@@ -65,7 +65,12 @@ const Login: React.FC = () => {
       if (res?.data) {
         const defaultloginSuccessMessage = '登录成功！';
         message.success(defaultloginSuccessMessage);
-        // With cookie-based authentication, no need to store tokens locally
+        // Refresh initial state so access roles update immediately
+        try {
+          if ((window as any)?.g_updateInitialState) {
+            await (window as any).g_updateInitialState();
+          }
+        } catch {}
         goto(search);
         return;
       } // 如果失败去设置用户错误信息

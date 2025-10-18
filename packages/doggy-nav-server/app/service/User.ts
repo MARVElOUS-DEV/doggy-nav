@@ -5,18 +5,40 @@ import { ValidationError, AuthenticationError, ConflictError, NotFoundError } fr
 
 export default class UserService extends Service {
 
-  private buildJwtPayload(user: any) {
+  private buildJwtPayload(user: {
+    _id: any;
+    username: string;
+    roles?: Array<{ _id?: any; slug?: string } | string>;
+    groups?: Array<{ _id?: any; slug?: string } | string>;
+    computedPermissions?: string[];
+    extraPermissions?: string[];
+  }) {
+    const roles = Array.isArray(user?.roles) ? user.roles : [];
+    const groups = Array.isArray(user?.groups) ? user.groups : [];
+    const roleSlugs: string[] = roles.map((r: any) => r?.slug || r).filter(Boolean);
+    const groupSlugs: string[] = groups.map((g: any) => g?.slug || g).filter(Boolean);
+    const roleIds: string[] = roles.map((r: any) => (r?._id?.toString?.() ?? r)).filter(Boolean);
+    const groupIds: string[] = groups.map((g: any) => (g?._id?.toString?.() ?? g)).filter(Boolean);
+    const isSuperAdmin = roleSlugs.includes('superadmin');
+    const permissions: string[] = Array.isArray(user?.computedPermissions)
+      ? user.computedPermissions
+      : [];
     return {
-      userId: user._id?.toString() ?? user.id,
+      userId: (user as any)._id?.toString?.() ?? (user as any).id,
       username: user.username,
-      isAdmin: user.isAdmin,
+      isSuperAdmin,
+      roles: roleSlugs,
+      roleIds,
+      groups: groupSlugs,
+      groupIds,
+      permissions,
     };
   }
 
-  async generateTokens(user: any) {
+  async generateTokens(user: Parameters<UserService['buildJwtPayload']>[0]) {
     const { app } = this;
     const payload = this.buildJwtPayload(user);
-    const jwtConfig = app.config.jwt as any;
+    const jwtConfig = app.config.jwt as { accessExpiresIn?: string; refreshExpiresIn?: string };
     const accessToken = app.jwt.sign(payload, app.config.jwt.secret, {
       expiresIn: jwtConfig?.accessExpiresIn || '15m',
     });
@@ -26,6 +48,28 @@ export default class UserService extends Service {
     });
 
     return { accessToken, refreshToken, payload };
+  }
+
+  /**
+   * Load user with role/group documents (slugs) suitable for JWT payload building.
+   * Also attaches computedPermissions for token embedding.
+   */
+  async getAuthUserForTokens(userId: string): Promise<{ _id: any; username: string; roles?: Array<{ _id?: any; slug?: string } | string>; groups?: Array<{ _id?: any; slug?: string } | string>; computedPermissions?: string[]; extraPermissions?: string[]; email?: string; avatar?: string; }> {
+    const { ctx } = this;
+    const user = await ctx.model.User.findById(userId).lean();
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+    const roleIds = Array.isArray((user as any).roles) ? (user as any).roles : [];
+    const groupIds = Array.isArray((user as any).groups) ? (user as any).groups : [];
+    const [ roleDocs, groupDocs ] = await Promise.all([
+      roleIds.length ? ctx.model.Role.find({ _id: { $in: roleIds } }, { slug: 1 }).lean() : Promise.resolve([]),
+      groupIds.length ? ctx.model.Group.find({ _id: { $in: groupIds } }, { slug: 1, roles: 1 }).lean() : Promise.resolve([]),
+    ]);
+    (user as any).roles = roleDocs;
+    (user as any).groups = groupDocs;
+    (user as any).computedPermissions = await this.computePermissions(user as any);
+    return user as any;
   }
 
   private async ensureUniqueUsername(base: string) {
@@ -211,7 +255,6 @@ export default class UserService extends Service {
       username: username.trim(),
       email: email.toLowerCase().trim(),
       password: hashedPassword,
-      isAdmin: false,
       isActive: true,
     });
 
@@ -233,7 +276,9 @@ export default class UserService extends Service {
         id: newUser._id,
         username: newUser.username,
         email: newUser.email,
-        isAdmin: newUser.isAdmin,
+        roles: [],
+        groups: [],
+        permissions: [],
         createdAt: newUser.createdAt,
       },
     };
@@ -265,7 +310,10 @@ export default class UserService extends Service {
 
     await this.recordSuccessfulLogin(user._id);
 
-    const { accessToken, refreshToken } = await this.generateTokens(user);
+    // Re-load lean user with roles/groups for token composition
+    const authUser = await this.getAuthUserForTokens(user._id);
+    const computedPermissions = (authUser as any).computedPermissions as string[];
+    const { accessToken, refreshToken } = await this.generateTokens(authUser);
 
     return {
       token: 'Bearer ' + accessToken,
@@ -274,20 +322,28 @@ export default class UserService extends Service {
         refreshToken,
       },
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        avatar: user.avatar,
+        id: authUser._id,
+        username: (authUser as any).username,
+        email: (authUser as any).email,
+        avatar: (authUser as any).avatar,
+        roles: Array.isArray((authUser as any).roles) ? (authUser as any).roles.map((r: any) => r.slug || r) : [],
+        groups: Array.isArray((authUser as any).groups) ? (authUser as any).groups.map((g: any) => g.slug || g) : [],
+        permissions: computedPermissions,
       },
     };
   }
 
   async recordSuccessfulLogin(userId: string) {
     const { ctx } = this;
-    await ctx.model.User.findByIdAndUpdate(userId, {
-      lastLoginAt: new Date(),
-    }, { useFindAndModify: false });
+    try {
+      const isValid = ctx.app.mongoose?.Types?.ObjectId?.isValid?.(userId);
+      if (!isValid) return;
+      await ctx.model.User.findByIdAndUpdate(userId, {
+        lastLoginAt: new Date(),
+      }, { useFindAndModify: false });
+    } catch {
+      // ignore in tests or invalid ids
+    }
   }
 
   async getUserProfile(userId: string) {
@@ -295,13 +351,16 @@ export default class UserService extends Service {
 
     const user = await ctx.model.User.findById(userId)
       .select('-password -resetPasswordToken')
+      .populate('roles')
+      .populate('groups')
       .lean();
 
     if (!user) {
       throw new NotFoundError('用户不存在');
     }
 
-    return user;
+    const permissions = await this.computePermissions(user as any);
+    return { ...user, roles: (user as any)?.roles?.map?.((r: any) => r?.slug || r) ?? [], groups: (user as any)?.groups?.map?.((g: any) => g?.slug || g) ?? [], permissions } as any;
   }
 
   async getById(userId: string) {
@@ -348,8 +407,28 @@ export default class UserService extends Service {
       { new: true, useFindAndModify: false }
     )
       .select('-password -resetPasswordToken')
+      .populate('roles')
+      .populate('groups')
       .lean();
 
-    return updatedUser;
+    const permissions = await this.computePermissions(updatedUser as any);
+    return { ...updatedUser, roles: (updatedUser as any)?.roles?.map?.((r: any) => r?.slug || r) ?? [], groups: (updatedUser as any)?.groups?.map?.((g: any) => g?.slug || g) ?? [], permissions } as any;
+  }
+
+  private async computePermissions(user: any): Promise<string[]> {
+    const { ctx } = this;
+    if (!user) return [];
+    const roleDocs = Array.isArray(user.roles) ? user.roles : [];
+    const groupDocs = Array.isArray(user.groups) ? user.groups : [];
+    const groupRoleIds = groupDocs.flatMap((g: any) => Array.isArray(g?.roles) ? g.roles : []);
+    const allRoleIds = [ ...roleDocs.map((r: any) => r?._id || r), ...groupRoleIds ];
+    if (allRoleIds.length === 0) return Array.from(new Set([ ...(user.extraPermissions || []) ]));
+    const roles = await ctx.model.Role.find({ _id: { $in: allRoleIds } }).lean();
+    const perms = new Set<string>();
+    for (const r of roles) {
+      for (const p of (r.permissions || [])) perms.add(p);
+    }
+    for (const p of (user.extraPermissions || [])) perms.add(p);
+    return Array.from(perms);
   }
 }

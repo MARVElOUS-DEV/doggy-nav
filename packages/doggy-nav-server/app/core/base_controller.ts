@@ -1,3 +1,4 @@
+import { buildAudienceOr } from '../utils/audience';
 import { Controller } from 'egg';
 import { ValidationError } from './errors';
 
@@ -165,8 +166,15 @@ export default class CommonController extends Controller {
     const table = this.ctx.model[tableName];
 
     const [ data, total ] = await Promise.all([
-      otherCMD(table.find(findObj).skip(skipNumber).limit(pageSize)
-        .sort({ _id: -1 })),
+      otherCMD(
+        table
+          .find(findObj)
+          .skip(skipNumber)
+          .limit(pageSize)
+          .sort({ _id: -1 })
+          .lean()
+          .select('-__v')
+      ),
       table.find(findObj).countDocuments(),
     ]);
 
@@ -187,17 +195,16 @@ export default class CommonController extends Controller {
 
     if (tableName === 'Nav') {
       const isAuthenticated = this.isAuthenticated();
+      const userCtx = this.ctx.state.userinfo;
       const matchQuery: any = {};
 
-      // For non-authenticated users, only show approved and non-hidden items
       if (!isAuthenticated) {
-        matchQuery.hide = { $eq: false };
         matchQuery.status = 0; // NAV_STATUS.pass
       }
 
-      if (Object.keys(matchQuery).length > 0) {
-        pipeline.push({ $match: matchQuery });
-      }
+      const or = buildAudienceOr(userCtx);
+      const finalMatch = Object.keys(matchQuery).length > 0 ? { $and: [ matchQuery, { $or: or } ] } : { $or: or };
+      pipeline.push({ $match: finalMatch });
     }
 
     pipeline.push({ $sample: { size: safeRandomNumber } });

@@ -31,11 +31,18 @@ export default function(app: any) {
       type: Boolean,
       default: true,
     },
+    audience: {
+      visibility: { type: String, enum: [ 'public', 'authenticated', 'restricted' ], default: 'public' },
+      allowRoles: [{ type: Schema.Types.ObjectId, ref: 'Role', default: [] }],
+      allowGroups: [{ type: Schema.Types.ObjectId, ref: 'Group', default: [] }],
+    },
   }, {
     collection: 'category',
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   });
+  CategorySchema.index({ 'audience.allowRoles': 1 });
+  CategorySchema.index({ 'audience.allowGroups': 1 });
 
   // Virtual getter to convert Chrome time to user-friendly Date
   CategorySchema.virtual('createAtDate').get(function() {

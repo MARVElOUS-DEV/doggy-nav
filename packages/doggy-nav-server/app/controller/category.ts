@@ -1,4 +1,6 @@
 import Controller from '../core/base_controller';
+import { buildAudienceOr } from '../utils/audience';
+import type { AuthUserContext } from '../../types/rbac';
 
 export default class CategoryController extends Controller {
   tableName(): string {
@@ -7,26 +9,18 @@ export default class CategoryController extends Controller {
 
   async list() {
     const { ctx } = this;
-    const { showInMenu, hide } = ctx.query;
+    const { showInMenu } = ctx.query;
     try {
       const params: any = {};
       if (showInMenu) {
         params.showInMenu = { $eq: showInMenu !== 'false' };
       }
 
-      // Filter hide based on authentication state
-      // If user is not authenticated, exclude hidden items
-      // If user is authenticated, include all items unless hide parameter is explicitly set
-      const isAuthenticated = this.isAuthenticated();
-      if (!isAuthenticated) {
-        // For non-authenticated users, only show non-hidden items
-        params.hide = { $eq: false };
-      } else if (hide !== undefined) {
-        // For authenticated users, respect the hide parameter if provided
-        params.hide = { $eq: hide === 'true' };
-      }
+      // Audience filtering (+ legacy hide compatibility)
+      const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
+      const or = buildAudienceOr(userCtx);
 
-      const data = await ctx.model.Category.find(params).limit(100000);
+      const data = await ctx.model.Category.find({ $and: [ params, { $or: or } ] }).limit(100000);
 
       const newData = ctx.service.category.formatCategoryList(data);
       this.success(newData);

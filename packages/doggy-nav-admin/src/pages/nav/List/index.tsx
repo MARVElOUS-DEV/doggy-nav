@@ -3,7 +3,6 @@ import { ProColumns } from "@ant-design/pro-table";
 import useTableComPopup from "@/components/TableCom/useTableComPopup";
 import NavListForm from "@/pages/nav/List/NavListForm";
 import { Popconfirm, Tag, Space, message, Modal, Button } from "antd";
-import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import request from "@/utils/request";
 import { useRef, useState } from "react";
 import CategorySelect from "@/pages/nav/Category/CategorySelect";
@@ -101,35 +100,12 @@ export default function NavListPage() {
       dataIndex: 'href',
       search: false,
     },
-    {
-      title: '显示状态',
-      dataIndex: 'hide',
-      search: false,
-      width: 100,
-      render: (_, record) => (
-        <Space>
-          {record.hide ? (
-            <EyeInvisibleOutlined
-              style={{ color: '#ff4d4f', fontSize: '16px' }}
-              title="已隐藏"
-            />
-          ) : (
-            <EyeOutlined
-              style={{ color: '#52c41a', fontSize: '16px' }}
-              title="显示中"
-            />
-          )}
-        </Space>
-      ),
-      filters: [
-        { text: '显示', value: false },
-        { text: '隐藏', value: true }
-      ],
-      valueEnum: {
-        false: { text: '显示', status: 'Success' },
-        true: { text: '隐藏', status: 'Error' }
-      }
-    },
+    // Audience visibility shown as text
+    { title: '可见性', dataIndex: ['audience','visibility'], search: false, width: 120, valueEnum: {
+      public: { text: '公开' },
+      authenticated: { text: '登录可见' },
+      restricted: { text: '受限' },
+    }},
     {
       title: '创建时间',
       dataIndex: 'createTime',

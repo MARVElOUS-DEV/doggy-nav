@@ -72,14 +72,20 @@ function request(params: RequestOptions): any {
 
 export function requestConfigure(options= {}): RequestConfig {
   return {
+    withCredentials: true,
     requestInterceptors: [
       (config) => {
+        const url = (config as any)?.url || '';
+        const isAbsolute = /^https?:\/\//i.test(url);
+        const hasApiPrefix = url.startsWith('/api/');
+        const finalUrl = isAbsolute || hasApiPrefix ? url : `/api${url.startsWith('/') ? '' : '/'}${url}`;
         return {
           ...config,
+          url: finalUrl,
           headers: {
             ...config.headers,
-            ...defaultHeaders()
-          }
+            ...defaultHeaders(),
+          },
         };
       },
     ],

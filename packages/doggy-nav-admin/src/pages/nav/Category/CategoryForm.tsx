@@ -7,8 +7,23 @@ import { API_CATEGORY } from "@/services/api";
 import request from "@/utils/request";
 import IconPicker from "@/components/IconPicker";
 import "./style.less";
+import { useEffect, useState } from "react";
+import { getGroups, getRoles } from "@/services/api";
 
 export default function CategoryForm(props: {categoryList: any[], isEdit?: boolean, selectedData?: any, hide?: () => void, tableRef: any} ) {
+  const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
+  const [groupOptions, setGroupOptions] = useState<{ label: string; value: string }[]>([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const [rolesRes, groupsRes] = await Promise.all([getRoles(), getGroups()]);
+        const roles = rolesRes?.data?.data || rolesRes?.data || [];
+        const groups = groupsRes?.data?.data || groupsRes?.data || [];
+        setRoleOptions((roles || []).map((r: any) => ({ label: r.displayName || r.slug, value: r._id })));
+        setGroupOptions((groups || []).map((g: any) => ({ label: g.displayName || g.slug, value: g._id })));
+      } catch {}
+    })();
+  }, []);
   const {...formProps} = useProForm({
     ...props,
     onInitialValues(values: any): object {
@@ -62,6 +77,24 @@ export default function CategoryForm(props: {categoryList: any[], isEdit?: boole
         <IconPicker placeholder="选择分类图标" />
       </ProFormItem>
       <ProFormSwitch {...showMenuProps} />
+      <ProFormSelect
+        name={['audience','visibility']}
+        label="可见性"
+        valueEnum={{ public: '公开', authenticated: '登录可见', restricted: '受限（指定角色/用户组）' }}
+        initialValue={'public'}
+      />
+      <ProFormSelect
+        name={['audience','allowRoles']}
+        label="允许角色"
+        mode="multiple"
+        options={roleOptions}
+      />
+      <ProFormSelect
+        name={['audience','allowGroups']}
+        label="允许用户组"
+        mode="multiple"
+        options={groupOptions}
+      />
     </ModalForm>
   )
 }
