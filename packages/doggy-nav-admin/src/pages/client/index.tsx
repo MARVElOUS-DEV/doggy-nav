@@ -53,7 +53,7 @@ const ClientPage: React.FC = () => {
         (id: string) => {
             return {
                 method: 'POST',
-                url: `/api/application/${id}/regenerate`,
+                url: `/api/application/${id}/regenerate-secret`,
             }
         },
         {

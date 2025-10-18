@@ -31,7 +31,7 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
 (async () => {
   try {
     const mongoUrl = mongoCfg.mongoUrl;
-    const db = await mongoose.connect(mongoUrl) as any;
+    const db = await mongoose.connect(mongoUrl) as unknown as { mongoose: typeof mongoose };
     db.mongoose = mongoose;
 
     const userSchemaModel = userModel(db);
@@ -49,9 +49,9 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
       username: { $eq: finalUsername },
     }, { password: finalPassword, email: 'admin@doggy-nav.cn', isActive: true }, { upsert: true });
     // Seed default roles
-    const roleDocs: Record<string, any> = {};
+    const roleDocs: Record<string, { _id: string; slug: string }> = {};
     for (const key of Object.keys(DEFAULT_ROLES)) {
-      const def = (DEFAULT_ROLES as any)[key];
+      const def = (DEFAULT_ROLES as unknown as Record<string, { slug: string; displayName: string; isSystem?: boolean; permissions: string[] }>)[key];
       const existing = await roleSchemaModel.findOne({ slug: def.slug });
       if (!existing) {
         const created = await roleSchemaModel.create({ slug: def.slug, displayName: def.displayName, permissions: def.permissions, isSystem: def.isSystem });

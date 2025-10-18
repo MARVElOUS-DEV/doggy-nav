@@ -18,6 +18,12 @@ export default (app: Application) => {
   router.post('/api/login', controller.user.login);
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
+  // Admin user management
+  router.get('/api/user', controller.user.adminList);
+  router.get('/api/user/:id', controller.user.adminGetOne);
+  router.post('/api/user', controller.user.adminCreate);
+  router.patch('/api/user/:id', controller.user.adminUpdate);
+  router.delete('/api/user', controller.user.adminDelete);
   // RBAC resources
   router.get('/api/roles', controller.role.getList);
   router.post('/api/roles', controller.role.add);

@@ -17,7 +17,7 @@ const UserPage: React.FC = () => {
         (ids: string[]) => {
             return {
                 method: 'DELETE',
-                url: `/user`,
+                url: `/api/user`,
                 data: {ids},
             }
         },
@@ -117,7 +117,7 @@ const UserPage: React.FC = () => {
     const {loading, run} = useRequest((params) => {
         return {
             method: 'GET',
-            url: '/user',
+            url: '/api/user',
             params,
         }
     }, {
@@ -151,7 +151,6 @@ const UserPage: React.FC = () => {
                     </Access>
                 ]}
                 request={async (params) => {
-
                     const {list, total} = await run(params);
                     return {
                         data: list || [],

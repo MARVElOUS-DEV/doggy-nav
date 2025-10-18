@@ -1,3 +1,4 @@
+import type { AuthUserContext } from '../types/rbac';
 export type AccessLevel = 'public' | 'authenticated' | 'optional';
 
 // Optional, more granular requirement (RBAC extension)
@@ -29,15 +30,23 @@ export const routePermissions: RoutePermission[] = [
   { method: 'GET', path: '/api/auth/:provider/callback', require: { level: 'public' }, description: 'OAuth callback for provider' },
   { method: 'GET', path: '/api/user/profile', require: { level: 'authenticated' }, description: 'Get user profile' },
   { method: 'PUT', path: '/api/user/profile', require: { level: 'authenticated' }, description: 'Update user profile' },
+  // User management
+  { method: 'GET', path: '/api/user', require: { anyRole: ['superadmin'] }, description: 'List users' },
+  { method: 'GET', path: '/api/user/:id', require: { anyRole: ['superadmin'] }, description: 'Get user detail' },
+  { method: 'POST', path: '/api/user', require: { anyRole: ['superadmin'] }, description: 'Create user' },
+  { method: 'PATCH', path: '/api/user/:id', require: { anyRole: ['superadmin'] }, description: 'Update user' },
+  { method: 'DELETE', path: '/api/user', require: { anyRole: ['superadmin'] }, description: 'Delete users' },
+  
+  { method: 'GET', path: '/api/roles', require: { anyRole: ['admin'] }, description: 'List roles' },
+  { method: 'GET', path: '/api/groups', require: { anyRole: ['admin'] }, description: 'List groups' },
   // RBAC management (superadmin only)
-  { method: 'GET', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'List roles' },
   { method: 'POST', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Create role' },
   { method: 'PUT', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Update role' },
   { method: 'DELETE', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Delete role' },
-  { method: 'GET', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'List groups' },
   { method: 'POST', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Create group' },
   { method: 'PUT', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Update group' },
   { method: 'DELETE', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Delete group' },
+  // invite-codes
   { method: 'GET', path: '/api/invite-codes/list', require: { anyRole: ['admin'] }, description: 'List invite codes' },
   { method: 'POST', path: '/api/invite-codes', require: { anyRole: ['admin'] }, description: 'Create invite codes' },
   { method: 'PUT', path: '/api/invite-codes/:id', require: { anyRole: ['admin'] }, description: 'Update invite code' },
@@ -128,8 +137,8 @@ export function getRoutePermission(method: string, path: string): RoutePermissio
   return permission;
 }
 
-// Check if user has required access level
-export function hasAccess(permission: RoutePermission, user: any): boolean {
+// Check if user has required access level;
+export function hasAccess(permission: RoutePermission, user: AuthUserContext | undefined): boolean {
   const req = permission.require;
   if (!req) return !!user; // default to authenticated
   if (req.level === 'public' || req.level === 'optional') return true;

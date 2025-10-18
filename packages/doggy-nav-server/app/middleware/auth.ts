@@ -1,5 +1,6 @@
 import { getRoutePermission, hasAccess } from '../access-control';
 import { setAuthCookies } from '../utils/authCookie';
+import type { AuthUserContext } from '../../types/rbac';
 
 export default () => {
   return async function(ctx: any, next: any) {
@@ -22,7 +23,7 @@ export default () => {
 
     // authenticated/admin
     const authResult = await authenticateWithRefresh(ctx);
-    if (!hasAccess(permission, ctx.state.userinfo)) {
+    if (!hasAccess(permission, ctx.state.userinfo as AuthUserContext | undefined)) {
       if (authResult.authenticated) return respond(ctx, 403, '权限不足');
       return respond(ctx, 401, authResult.error || '需要身份验证');
     }
@@ -92,7 +93,7 @@ async function authenticateWithRefresh(ctx: any) {
   if (token) {
     try {
       const decode = await jwt.verify(token, secret);
-      ctx.state.userinfo = { ...decode, authType: 'jwt' };
+      ctx.state.userinfo = { ...decode, authType: 'jwt' } as AuthUserContext;
       return { authenticated: true };
     } catch (err) {
       ctx.logger.debug('JWT auth (access) error:', err);
@@ -104,10 +105,11 @@ async function authenticateWithRefresh(ctx: any) {
     if (!refresh) return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
     const payload: any = await jwt.verify(refresh, secret);
     if (payload?.typ !== 'refresh') return { authenticated: false, error: 'refresh token 类型错误' };
-    const user = await ctx.service.user.getById(payload.sub);
+    // Load user with populated roles/groups to ensure roleIds/groupIds are ObjectId strings in JWT
+    const user = await ctx.service.user.getAuthUserForTokens(payload.sub);
     const tokens = await ctx.service.user.generateTokens(user);
     setAuthCookies(ctx, tokens);
-    ctx.state.userinfo = { ...tokens.payload, authType: 'jwt' };
+    ctx.state.userinfo = { ...tokens.payload, authType: 'jwt' } as AuthUserContext;
     return { authenticated: true };
   } catch (err) {
     ctx.logger.debug('JWT auth (refresh) error:', err);

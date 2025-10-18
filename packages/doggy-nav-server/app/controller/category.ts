@@ -1,5 +1,6 @@
 import Controller from '../core/base_controller';
 import { buildAudienceOr } from '../utils/audience';
+import type { AuthUserContext } from '../../types/rbac';
 
 export default class CategoryController extends Controller {
   tableName(): string {
@@ -15,11 +16,9 @@ export default class CategoryController extends Controller {
         params.showInMenu = { $eq: showInMenu !== 'false' };
       }
 
-      // Audience-based visibility replaces legacy `hide` filtering
-
       // Audience filtering (+ legacy hide compatibility)
-      const userCtx = ctx.state.userinfo;
-      const or = buildAudienceOr(userCtx, true);
+      const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
+      const or = buildAudienceOr(userCtx);
 
       const data = await ctx.model.Category.find({ $and: [ params, { $or: or } ] }).limit(100000);
 

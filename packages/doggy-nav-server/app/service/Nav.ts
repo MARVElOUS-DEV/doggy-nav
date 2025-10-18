@@ -15,7 +15,7 @@ export default class NavService extends Service {
     const baseQuery: any = { status: NAV_STATUS.pass };
 
     // Audience filtering
-    const or = buildAudienceOr(userCtx as any, true);
+    const or = buildAudienceOr(userCtx);
 
     const finalQuery = { $and: [ baseQuery, { $or: or } ] };
 

@@ -191,7 +191,7 @@ const InviteCodePage: React.FC = () => {
         title="生成邀请码"
         onCancel={() => setGenerateVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={generateForm}
@@ -235,7 +235,7 @@ const InviteCodePage: React.FC = () => {
         title="编辑邀请码"
         onCancel={() => setEditRecord(null)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={editForm}

@@ -42,4 +42,143 @@ export default class UserController extends CommonController {
     const res = await ctx.service.user.updateProfile(userId);
     this.success(res);
   }
+
+  // ===== Admin user management =====
+  public async adminList() {
+    const { ctx } = this;
+    const query = this.getSanitizedQuery();
+    const pageSize = Math.min(Math.max(Number(query.pageSize || query.page_size || 10), 1), 100);
+    const current = Math.max(Number(query.pageNumber || query.current || 1), 1);
+    const skipNumber = pageSize * current - pageSize;
+
+    const where: any = {};
+    if (query.account) where.username = new RegExp(query.account as string, 'i');
+    if (query.email) where.email = new RegExp(query.email as string, 'i');
+    if (query.status !== undefined && query.status !== '') {
+      const s = String(query.status);
+      where.isActive = s === '1' || s === 'true';
+    }
+
+    const [ users, total ] = await Promise.all([
+      ctx.model.User.find(where).skip(skipNumber).limit(pageSize).sort({ _id: -1 }).lean().select('-__v'),
+      ctx.model.User.countDocuments(where),
+    ]);
+
+    const list = (users as any[]).map((u: any) => ({
+      id: u._id?.toString?.() || u.id,
+      account: u.username,
+      nickName: u.nickName || u.username,
+      avatar: u.avatar || '',
+      email: u.email,
+      role: Array.isArray(u.roles) && u.roles.length > 0 ? 'admin' : 'default',
+      status: u.isActive ? 1 : 0,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    }));
+
+    this.success({ list, total });
+  }
+
+  public async adminGetOne() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+    const u: any = await ctx.model.User.findById(id).lean();
+    if (!u) return this.success(null);
+    this.success({
+      id: u._id?.toString?.() || u.id,
+      account: u.username,
+      nickName: u.nickName || u.username,
+      email: u.email,
+      phone: u.phone || '',
+      status: !!u.isActive,
+      role: Array.isArray(u.roles) && u.roles.length > 0 ? 'admin' : 'default',
+    });
+  }
+
+  public async adminCreate() {
+    const { ctx } = this;
+    const body = this.getSanitizedBody();
+    const username = String(body.account || '').trim();
+    const email = String(body.email || '').trim().toLowerCase();
+    const plainPassword = String(body.password || '');
+    if (!username || !email) return this.error('账号和邮箱必填');
+    if (!plainPassword) return this.error('密码必填');
+
+    const exists = await ctx.model.User.findOne({ $or: [ { username }, { email } ] });
+    if (exists) return this.error('账号或邮箱已存在');
+
+    const validationErrors = ctx.service.user.validateUserInput(username, email, plainPassword);
+    if (validationErrors && validationErrors.length) return this.error(validationErrors.join(', '));
+
+    const password = await ctx.service.user.hashPassword(plainPassword);
+
+    const roleSlug = body.role === 'admin' ? 'admin' : 'user';
+    const roleIds = await this.resolveRoleIds([ roleSlug ]);
+
+    const created = await ctx.model.User.create({
+      username,
+      email,
+      password,
+      isActive: !!body.status,
+      nickName: body.nickName || username,
+      phone: body.phone || '',
+      roles: roleIds,
+    });
+    this.success({ id: created._id?.toString?.() });
+  }
+
+  public async adminUpdate() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+    const body = this.getSanitizedBody();
+    const update: any = {};
+    if (body.account) update.username = String(body.account).trim();
+    if (body.email) update.email = String(body.email).toLowerCase().trim();
+    if (typeof body.status !== 'undefined') update.isActive = !!body.status;
+    if (typeof body.nickName !== 'undefined') update.nickName = body.nickName;
+    if (typeof body.phone !== 'undefined') update.phone = body.phone;
+    if (body.password) {
+      const pw = String(body.password);
+      const errs = ctx.service.user.validateUserInput(update.username || '', update.email || '', pw);
+      // Only validate password complexity here; if username/email not provided in update, skip those checks
+      if (pw.length < 6 || !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(pw)) {
+        return this.error('密码至少6位且包含大小写字母和数字');
+      }
+      if (errs.length) {
+        return this.error(errs.join());
+      }
+      update.password = await ctx.service.user.hashPassword(pw);
+    }
+    if (typeof body.role !== 'undefined') {
+      const roleSlug = body.role === 'admin' ? 'admin' : 'user';
+      update.roles = await this.resolveRoleIds([ roleSlug ]);
+    }
+
+    if (update.username || update.email) {
+      const or: any[] = [];
+      if (update.username) or.push({ username: update.username });
+      if (update.email) or.push({ email: update.email });
+      if (or.length) {
+        const dup = await ctx.model.User.findOne({ _id: { $ne: id }, $or: or });
+        if (dup) return this.error('账号或邮箱已存在');
+      }
+    }
+
+    await ctx.model.User.updateOne({ _id: id }, update);
+    this.success(true);
+  }
+
+  public async adminDelete() {
+    const { ctx } = this;
+    const ids: string[] = Array.isArray(ctx.request.body?.ids) ? ctx.request.body.ids : [];
+    if (!ids.length) return this.error('缺少ids');
+    await ctx.model.User.deleteMany({ _id: { $in: ids } });
+    this.success(true);
+  }
+
+  private async resolveRoleIds(slugs: string[]) {
+    const { ctx } = this;
+    const roles = await ctx.model.Role.find({ slug: { $in: slugs } }, { _id: 1 }).lean();
+    return roles.map(r => r._id);
+  }
 }

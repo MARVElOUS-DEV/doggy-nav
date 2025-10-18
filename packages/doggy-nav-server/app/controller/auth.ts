@@ -4,7 +4,7 @@ import { clearAuthCookies, setAuthCookies, setStateCookie, getStateCookie, clear
 import { getEnabledProviders, isProviderEnabled } from '../utils/oauth';
 
 export default class AuthController extends CommonController {
-  private async issueCookiesForUser(user: any) {
+  private async issueCookiesForUser(user: { _id: any; username: string; roles?: Array<{ _id?: any; slug?: string } | string>; groups?: Array<{ _id?: any; slug?: string } | string>; computedPermissions?: string[]; extraPermissions?: string[]; }) {
     const { ctx } = this;
     const tokens = await ctx.service.user.generateTokens(user);
     await ctx.service.user.recordSuccessfulLogin(tokens.payload.userId);

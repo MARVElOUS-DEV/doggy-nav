@@ -5,7 +5,14 @@ import { ValidationError, AuthenticationError, ConflictError, NotFoundError } fr
 
 export default class UserService extends Service {
 
-  private buildJwtPayload(user: any) {
+  private buildJwtPayload(user: {
+    _id: any;
+    username: string;
+    roles?: Array<{ _id?: any; slug?: string } | string>;
+    groups?: Array<{ _id?: any; slug?: string } | string>;
+    computedPermissions?: string[];
+    extraPermissions?: string[];
+  }) {
     const roles = Array.isArray(user?.roles) ? user.roles : [];
     const groups = Array.isArray(user?.groups) ? user.groups : [];
     const roleSlugs: string[] = roles.map((r: any) => r?.slug || r).filter(Boolean);
@@ -13,11 +20,11 @@ export default class UserService extends Service {
     const roleIds: string[] = roles.map((r: any) => (r?._id?.toString?.() ?? r)).filter(Boolean);
     const groupIds: string[] = groups.map((g: any) => (g?._id?.toString?.() ?? g)).filter(Boolean);
     const isSuperAdmin = roleSlugs.includes('superadmin');
-    const permissions: string[] = Array.isArray((user as any)?.computedPermissions)
-      ? (user as any).computedPermissions
+    const permissions: string[] = Array.isArray(user?.computedPermissions)
+      ? user.computedPermissions
       : [];
     return {
-      userId: user._id?.toString() ?? user.id,
+      userId: (user as any)._id?.toString?.() ?? (user as any).id,
       username: user.username,
       isSuperAdmin,
       roles: roleSlugs,
@@ -25,13 +32,13 @@ export default class UserService extends Service {
       groups: groupSlugs,
       groupIds,
       permissions,
-    } as any;
+    };
   }
 
-  async generateTokens(user: any) {
+  async generateTokens(user: Parameters<UserService['buildJwtPayload']>[0]) {
     const { app } = this;
     const payload = this.buildJwtPayload(user);
-    const jwtConfig = app.config.jwt as any;
+    const jwtConfig = app.config.jwt as { accessExpiresIn?: string; refreshExpiresIn?: string };
     const accessToken = app.jwt.sign(payload, app.config.jwt.secret, {
       expiresIn: jwtConfig?.accessExpiresIn || '15m',
     });
@@ -41,6 +48,28 @@ export default class UserService extends Service {
     });
 
     return { accessToken, refreshToken, payload };
+  }
+
+  /**
+   * Load user with role/group documents (slugs) suitable for JWT payload building.
+   * Also attaches computedPermissions for token embedding.
+   */
+  async getAuthUserForTokens(userId: string): Promise<{ _id: any; username: string; roles?: Array<{ _id?: any; slug?: string } | string>; groups?: Array<{ _id?: any; slug?: string } | string>; computedPermissions?: string[]; extraPermissions?: string[]; email?: string; avatar?: string; }> {
+    const { ctx } = this;
+    const user = await ctx.model.User.findById(userId).lean();
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+    const roleIds = Array.isArray((user as any).roles) ? (user as any).roles : [];
+    const groupIds = Array.isArray((user as any).groups) ? (user as any).groups : [];
+    const [ roleDocs, groupDocs ] = await Promise.all([
+      roleIds.length ? ctx.model.Role.find({ _id: { $in: roleIds } }, { slug: 1 }).lean() : Promise.resolve([]),
+      groupIds.length ? ctx.model.Group.find({ _id: { $in: groupIds } }, { slug: 1, roles: 1 }).lean() : Promise.resolve([]),
+    ]);
+    (user as any).roles = roleDocs;
+    (user as any).groups = groupDocs;
+    (user as any).computedPermissions = await this.computePermissions(user as any);
+    return user as any;
   }
 
   private async ensureUniqueUsername(base: string) {
@@ -281,10 +310,10 @@ export default class UserService extends Service {
 
     await this.recordSuccessfulLogin(user._id);
 
-    // compute permissions snapshot
-    const computedPermissions = await this.computePermissions(user);
-    (user as any).computedPermissions = computedPermissions;
-    const { accessToken, refreshToken } = await this.generateTokens(user);
+    // Re-load lean user with roles/groups for token composition
+    const authUser = await this.getAuthUserForTokens(user._id);
+    const computedPermissions = (authUser as any).computedPermissions as string[];
+    const { accessToken, refreshToken } = await this.generateTokens(authUser);
 
     return {
       token: 'Bearer ' + accessToken,
@@ -293,12 +322,12 @@ export default class UserService extends Service {
         refreshToken,
       },
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        roles: Array.isArray(user.roles) ? user.roles.map((r: any) => r.slug || r) : [],
-        groups: Array.isArray(user.groups) ? user.groups.map((g: any) => g.slug || g) : [],
+        id: authUser._id,
+        username: (authUser as any).username,
+        email: (authUser as any).email,
+        avatar: (authUser as any).avatar,
+        roles: Array.isArray((authUser as any).roles) ? (authUser as any).roles.map((r: any) => r.slug || r) : [],
+        groups: Array.isArray((authUser as any).groups) ? (authUser as any).groups.map((g: any) => g.slug || g) : [],
         permissions: computedPermissions,
       },
     };

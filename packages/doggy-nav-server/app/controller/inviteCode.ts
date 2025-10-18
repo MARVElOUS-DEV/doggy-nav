@@ -1,5 +1,5 @@
 import CommonController from '../core/base_controller';
-import { ForbiddenError, ValidationError } from '../core/errors';
+import { ValidationError } from '../core/errors';
 
 export default class InviteCodeController extends CommonController {
   tableName(): string {
@@ -7,9 +7,6 @@ export default class InviteCodeController extends CommonController {
   }
 
   async list() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
-      throw new ForbiddenError('需要管理员权限');
-    }
     const { ctx } = this;
     const rawQuery = ctx.query;
     const query = this.getSanitizedQuery();
@@ -44,9 +41,6 @@ export default class InviteCodeController extends CommonController {
   }
 
   async create() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
-      throw new ForbiddenError('需要管理员权限');
-    }
     const { ctx } = this;
     const body = this.getSanitizedBody();
     const count = Number(body.count);
@@ -87,9 +81,6 @@ export default class InviteCodeController extends CommonController {
   }
 
   async update() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
-      throw new ForbiddenError('需要管理员权限');
-    }
     const { ctx } = this;
     const { id } = ctx.params;
     if (!id) {
@@ -142,9 +133,6 @@ export default class InviteCodeController extends CommonController {
   }
 
   async revoke() {
-    if (!this.isAuthenticated() || !this.getUserInfo()?.roles?.includes?.('admin')) {
-      throw new ForbiddenError('需要管理员权限');
-    }
     const { ctx } = this;
     const { id } = ctx.params;
     if (!id) {
