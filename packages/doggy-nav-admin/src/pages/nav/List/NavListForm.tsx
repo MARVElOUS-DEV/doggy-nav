@@ -40,6 +40,8 @@ export default function NavListForm(props: NavListFormProps) {
   const formControls = useProForm({
     visible: props.visible,
     onVisibleChange: props.onVisibleChange,
+    isEdit: props.isEdit,
+    selectedData: props.selectedData,
     onFinish: async (values) => {
       const data = {
         id: props.isEdit ? props.selectedData?._id : undefined,
@@ -86,7 +88,22 @@ export default function NavListForm(props: NavListFormProps) {
   })
 
   return (
-    <DrawerForm formRef={formControls.formRef} visible={formControls.visible} onVisibleChange={formControls.onVisibleChange} drawerProps={{ width: 600 }}>
+    <DrawerForm
+      formRef={formControls.formRef}
+      visible={formControls.visible}
+      onVisibleChange={formControls.onVisibleChange}
+      drawerProps={{ width: 600 }}
+      onFinish={async (values) => {
+        const data = {
+          id: props.isEdit ? props.selectedData?._id : undefined,
+          ...values,
+        };
+        await request({ url: API_NAV, method: props.isEdit ? 'PUT' : 'POST', msg: props.isEdit ? '编辑成功' : '添加成功', data });
+        props.hide?.();
+        props.tableRef?.reload?.();
+        return true;
+      }}
+    >
       <ProFormDependency name={['logo']}>
         {({ logo })=> <ProFormText {...logoProps} formItemProps={{extra: <img width={50} src={logo} />}} />}
       </ProFormDependency>

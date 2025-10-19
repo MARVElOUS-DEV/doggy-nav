@@ -5,18 +5,20 @@ export interface UserContextLike {
   groupIds?: string[];
 }
 
-/**
- * Build a Mongo $or clause for audience visibility checks with optional legacy `hide` compatibility.
- * Legacy compatibility rules:
- * - If audience missing and hide is false or missing => treat as public
- * - If audience missing and hide is true => treat as authenticated-only
- */
-export function buildAudienceOr(userCtx?: UserContextLike | AuthUserContext | null): any[] {
+// Path-aware audience $or builder
+export function buildAudienceOrFor(fieldPath = 'audience', userCtx?: UserContextLike | AuthUserContext | null): any[] {
+  const fp = (key: string) => `${fieldPath}.${key}`;
   const or: any[] = [];
 
-  // Always allow public or missing audience
-  or.push({ 'audience.visibility': 'public' });
-  or.push({ 'audience.visibility': { $exists: false } });
+  // Allow public when allow lists are empty; also allow missing audience
+  or.push({
+    $and: [
+      { [fp('visibility')]: 'public' },
+      { $or: [ { [fp('allowRoles')]: { $exists: false } }, { [fp('allowRoles.0')]: { $exists: false } } ] },
+      { $or: [ { [fp('allowGroups')]: { $exists: false } }, { [fp('allowGroups.0')]: { $exists: false } } ] },
+    ],
+  });
+  or.push({ [fp('visibility')]: { $exists: false } });
 
   if (userCtx) {
     const isValidObjectIdString = (v: unknown): v is string => typeof v === 'string' && /^[a-fA-F0-9]{24}$/.test(v);
@@ -28,20 +30,42 @@ export function buildAudienceOr(userCtx?: UserContextLike | AuthUserContext | nu
       .map(toIdString)
       .filter(isValidObjectIdString);
 
-    // Authenticated users can also see "authenticated" audience
-    or.push({ 'audience.visibility': 'authenticated' });
+    // Authenticated users also see "authenticated"
+    or.push({ [fp('visibility')]: 'authenticated' });
 
-    // Restricted audience by role/group membership — only include valid ObjectId strings
-    if (roleIds.length > 0 || groupIds.length > 0) {
+    const membershipOr: any[] = [];
+    if (roleIds.length > 0) membershipOr.push({ [fp('allowRoles')]: { $in: roleIds } });
+    if (groupIds.length > 0) membershipOr.push({ [fp('allowGroups')]: { $in: groupIds } });
+    if (membershipOr.length > 0) {
       or.push({
-        'audience.visibility': 'restricted',
-        $or: [
-          ...(roleIds.length > 0 ? [{ 'audience.allowRoles': { $in: roleIds } }] : []),
-          ...(groupIds.length > 0 ? [{ 'audience.allowGroups': { $in: groupIds } }] : []),
+        $and: [
+          {
+            $or: [
+              { [fp('visibility')]: 'restricted' },
+              { [fp('allowRoles.0')]: { $exists: true } },
+              { [fp('allowGroups.0')]: { $exists: true } },
+            ],
+          },
+          { $or: membershipOr },
         ],
       });
     }
   }
 
   return or;
+}
+
+// Backward compatibility wrapper (default path: 'audience')
+export function buildAudienceOr(userCtx?: UserContextLike | AuthUserContext | null): any[] {
+  return buildAudienceOrFor('audience', userCtx);
+}
+
+// Merge a base query with the audience $or clause
+export function buildAudienceFilter(
+  base: Record<string, any> = {},
+  userCtx?: UserContextLike | AuthUserContext | null,
+  fieldPath = 'audience',
+): Record<string, any> {
+  const or = buildAudienceOrFor(fieldPath, userCtx);
+  return Object.keys(base).length > 0 ? { $and: [ base, { $or: or } ] } : { $or: or };
 }

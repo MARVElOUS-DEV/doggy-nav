@@ -62,7 +62,7 @@ instance.interceptors.response.use(
     // Return raw response if not in expected format
     return response.data;
   },
-  (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<ApiError>) => {
     console.error('❌ Response Error:', error);
 
     let errorMessage = 'Network Error';
@@ -77,13 +77,28 @@ instance.interceptors.response.use(
         case 400:
           errorMessage = data?.msg || 'Bad Request';
           break;
-        case 401:
-          errorMessage = 'Unauthorized - Please login';
-          if (typeof window !== 'undefined') {
-            const isLoginPage = window.location.pathname.includes('/login')
-            !isLoginPage && (window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        case 401: {
+          // Attempt silent refresh once
+          const cfg: any = { ...(error.config || {}) };
+          if (!cfg.__retried) {
+            try {
+              cfg.__retried = true;
+              await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+              const retryUrl: string | undefined = cfg.url || (error.response as any)?.config?.url;
+              if (typeof retryUrl === 'string' && retryUrl.length > 1 && retryUrl !== '/api/') {
+                return instance.request({ ...cfg, url: retryUrl });
+              }
+            } catch {
+              // fallthrough to logout
+            }
           }
+          // Public site: clear cookies (server-side) instead of redirect
+          try {
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+          } catch {}
+          errorMessage = 'Unauthorized';
           break;
+        }
         case 403:
           errorMessage = 'Forbidden - Access denied';
           break;

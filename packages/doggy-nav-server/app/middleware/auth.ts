@@ -4,6 +4,8 @@ import type { AuthUserContext } from '../../types/rbac';
 
 export default () => {
   return async function(ctx: any, next: any) {
+    // Allow CORS preflight without auth/permission checks
+    if (ctx.method === 'OPTIONS') return await next();
     const url = normalizePath(ctx.url);
 
     // permission
@@ -92,7 +94,23 @@ async function authenticateWithRefresh(ctx: any) {
 
   if (token) {
     try {
-      const decode = await jwt.verify(token, secret);
+      const decode: any = await jwt.verify(token, secret);
+      // If token verified but contains no roles (older/stale token), try to refresh to enrich claims
+      const needsUpgrade = !Array.isArray(decode?.roles) || decode.roles.length === 0;
+      if (needsUpgrade && ctx.cookies.get('refresh_token')) {
+        try {
+          const payload: any = await jwt.verify(ctx.cookies.get('refresh_token') as string, secret);
+          if (payload?.typ === 'refresh' && payload?.sub) {
+            const user = await ctx.service.user.getAuthUserForTokens(payload.sub);
+            const tokens = await ctx.service.user.generateTokens(user);
+            setAuthCookies(ctx, tokens);
+            ctx.state.userinfo = { ...tokens.payload, authType: 'jwt' } as AuthUserContext;
+            return { authenticated: true };
+          }
+        } catch {
+          // fall back to decoded access token
+        }
+      }
       ctx.state.userinfo = { ...decode, authType: 'jwt' } as AuthUserContext;
       return { authenticated: true };
     } catch (err) {
@@ -100,19 +118,6 @@ async function authenticateWithRefresh(ctx: any) {
     }
   }
 
-  try {
-    const refresh = ctx.cookies.get('refresh_token');
-    if (!refresh) return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
-    const payload: any = await jwt.verify(refresh, secret);
-    if (payload?.typ !== 'refresh') return { authenticated: false, error: 'refresh token 类型错误' };
-    // Load user with populated roles/groups to ensure roleIds/groupIds are ObjectId strings in JWT
-    const user = await ctx.service.user.getAuthUserForTokens(payload.sub);
-    const tokens = await ctx.service.user.generateTokens(user);
-    setAuthCookies(ctx, tokens);
-    ctx.state.userinfo = { ...tokens.payload, authType: 'jwt' } as AuthUserContext;
-    return { authenticated: true };
-  } catch (err) {
-    ctx.logger.debug('JWT auth (refresh) error:', err);
-    return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
-  }
+  // Do not auto-refresh here anymore; use explicit /api/auth/refresh endpoint
+  return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
 }

@@ -22,6 +22,7 @@ export const routePermissions: RoutePermission[] = [
   // User authentication routes
   { method: 'POST', path: '/api/register', require: { level: 'public' }, description: 'User registration' },
   { method: 'POST', path: '/api/login', require: { level: 'public' }, description: 'User login' },
+  { method: 'POST', path: '/api/auth/refresh', require: { level: 'public' }, description: 'Refresh access token' },
   { method: 'GET', path: '/api/auth/me', require: { level: 'optional' }, description: 'Get current authenticated user' },
   { method: 'POST', path: '/api/auth/logout', require: { level: 'public' }, description: 'Logout (clear auth cookies)' },
   { method: 'GET', path: '/api/auth/config', require: { level: 'public' }, description: 'Get auth-related configuration' },
@@ -37,8 +38,8 @@ export const routePermissions: RoutePermission[] = [
   { method: 'PATCH', path: '/api/user/:id', require: { anyRole: ['superadmin'] }, description: 'Update user' },
   { method: 'DELETE', path: '/api/user', require: { anyRole: ['superadmin'] }, description: 'Delete users' },
   
-  { method: 'GET', path: '/api/roles', require: { anyRole: ['admin'] }, description: 'List roles' },
-  { method: 'GET', path: '/api/groups', require: { anyRole: ['admin'] }, description: 'List groups' },
+  { method: 'GET', path: '/api/roles', require: { level: 'optional' }, description: 'List roles (filtered by current user context)' },
+  { method: 'GET', path: '/api/groups', require: { level: 'optional' }, description: 'List groups (filtered by current user context)' },
   // RBAC management (superadmin only)
   { method: 'POST', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Create role' },
   { method: 'PUT', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Update role' },

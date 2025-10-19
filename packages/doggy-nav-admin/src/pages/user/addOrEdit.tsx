@@ -18,7 +18,17 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
         {
             manual: true,
             onSuccess: (res) => {
-                if (res) form.setFieldsValue(res)
+                const data = (res && (res as any).data) ? (res as any).data : res;
+                if (!data) return;
+                const roles: string[] = Array.isArray((data as any).roles) ? (data as any).roles.filter((v: any) => typeof v === 'string') : [];
+                form.setFieldsValue({
+                    account: data.account,
+                    nickName: data.nickName,
+                    email: data.email,
+                    phone: data.phone,
+                    status: data.status,
+                    roles,
+                });
             }
         });
 
@@ -27,10 +37,11 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
         {
             manual: true,
             onSuccess: (res) => {
-                const roles = res?.data || [];
-                const options = roles.map((role: any) => ({
+                // Normalize API response shape; use role _id as value for precise assignment
+                const raw = (res?.data?.data || res?.data || res || []) as any[];
+                const options = (raw || []).map((role: any) => ({
                     label: role.displayName || role.slug,
-                    value: role.slug
+                    value: role._id || role.id || role.slug,
                 }));
                 setRoleOptions(options);
             }
@@ -82,7 +93,11 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
-                saveRun(values)
+                // Send actual role ids via `roles` array; server supports this
+                const selected: string[] = Array.isArray(values.roles) ? values.roles : [];
+                const payload: any = { ...values, roles: selected };
+                delete payload.role;
+                saveRun(payload)
             }}
         >
             <ProFormText

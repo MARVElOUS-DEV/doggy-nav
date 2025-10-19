@@ -8,6 +8,7 @@ export default (app: Application) => {
   router.post('/api/auth/logout', controller.auth.logout);
   router.get('/api/auth/providers', controller.auth.providers);
   router.get('/api/auth/me', controller.auth.me);
+  router.post('/api/auth/refresh', controller.auth.refresh);
   router.get('/api/auth/config', controller.auth.getAuthConfig);
   // OAuth callback route (dynamic provider), Note: dynamic route should be after the common ones.
   router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);

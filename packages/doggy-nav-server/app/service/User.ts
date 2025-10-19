@@ -53,19 +53,42 @@ export default class UserService extends Service {
   /**
    * Load user with role/group documents (slugs) suitable for JWT payload building.
    * Also attaches computedPermissions for token embedding.
-   */
+   * FIXME: simplify this function
+  */
   async getAuthUserForTokens(userId: string): Promise<{ _id: any; username: string; roles?: Array<{ _id?: any; slug?: string } | string>; groups?: Array<{ _id?: any; slug?: string } | string>; computedPermissions?: string[]; extraPermissions?: string[]; email?: string; avatar?: string; }> {
     const { ctx } = this;
     const user = await ctx.model.User.findById(userId).lean();
     if (!user) {
       throw new NotFoundError('用户不存在');
     }
-    const roleIds = Array.isArray((user as any).roles) ? (user as any).roles : [];
-    const groupIds = Array.isArray((user as any).groups) ? (user as any).groups : [];
-    const [ roleDocs, groupDocs ] = await Promise.all([
-      roleIds.length ? ctx.model.Role.find({ _id: { $in: roleIds } }, { slug: 1 }).lean() : Promise.resolve([]),
-      groupIds.length ? ctx.model.Group.find({ _id: { $in: groupIds } }, { slug: 1, roles: 1 }).lean() : Promise.resolve([]),
+    const rawRoles = Array.isArray((user as any).roles) ? (user as any).roles : [];
+    const rawGroups = Array.isArray((user as any).groups) ? (user as any).groups : [];
+
+    const isValidId = (v: any) => {
+      try {
+        return !!ctx.app.mongoose?.Types?.ObjectId?.isValid?.(v);
+      } catch { return false; }
+    };
+
+    const roleIdLikes: any[] = rawRoles.filter((r: any) => typeof r !== 'object' ? isValidId(r) : isValidId(r?._id));
+    const roleSlugLikes: string[] = rawRoles
+      .map((r: any) => (typeof r === 'string' ? r : r?.slug))
+      .filter((s: any) => typeof s === 'string' && !isValidId(s));
+
+    const groupIdLikes: any[] = rawGroups.filter((g: any) => typeof g !== 'object' ? isValidId(g) : isValidId(g?._id));
+    const groupSlugLikes: string[] = rawGroups
+      .map((g: any) => (typeof g === 'string' ? g : g?.slug))
+      .filter((s: any) => typeof s === 'string' && !isValidId(s));
+
+    const [ roleById, roleBySlug, groupById, groupBySlug ] = await Promise.all([
+      roleIdLikes.length ? ctx.model.Role.find({ _id: { $in: roleIdLikes } }, { slug: 1 }).lean() : Promise.resolve([]),
+      roleSlugLikes.length ? ctx.model.Role.find({ slug: { $in: roleSlugLikes } }, { slug: 1 }).lean() : Promise.resolve([]),
+      groupIdLikes.length ? ctx.model.Group.find({ _id: { $in: groupIdLikes } }, { slug: 1, roles: 1 }).lean() : Promise.resolve([]),
+      groupSlugLikes.length ? ctx.model.Group.find({ slug: { $in: groupSlugLikes } }, { slug: 1, roles: 1 }).lean() : Promise.resolve([]),
     ]);
+
+    const roleDocs = [ ...roleById, ...roleBySlug ];
+    const groupDocs = [ ...groupById, ...groupBySlug ];
     (user as any).roles = roleDocs;
     (user as any).groups = groupDocs;
     (user as any).computedPermissions = await this.computePermissions(user as any);
@@ -421,9 +444,28 @@ export default class UserService extends Service {
     const roleDocs = Array.isArray(user.roles) ? user.roles : [];
     const groupDocs = Array.isArray(user.groups) ? user.groups : [];
     const groupRoleIds = groupDocs.flatMap((g: any) => Array.isArray(g?.roles) ? g.roles : []);
-    const allRoleIds = [ ...roleDocs.map((r: any) => r?._id || r), ...groupRoleIds ];
-    if (allRoleIds.length === 0) return Array.from(new Set([ ...(user.extraPermissions || []) ]));
-    const roles = await ctx.model.Role.find({ _id: { $in: allRoleIds } }).lean();
+
+    const isValidId = (v: any) => {
+      try { return !!ctx.app.mongoose?.Types?.ObjectId?.isValid?.(v); } catch { return false; }
+    };
+
+    const directIds: any[] = roleDocs
+      .map((r: any) => r?._id || r)
+      .filter((v: any) => isValidId(v));
+    const directSlugs: string[] = roleDocs
+      .map((r: any) => (typeof r === 'string' ? r : r?.slug))
+      .filter((s: any) => typeof s === 'string' && !isValidId(s));
+
+    const allIdCandidates = [ ...directIds, ...groupRoleIds ].filter(Boolean);
+    if (allIdCandidates.length === 0 && directSlugs.length === 0) {
+      return Array.from(new Set([ ...(user.extraPermissions || []) ]));
+    }
+
+    const [ rolesById, rolesBySlug ] = await Promise.all([
+      allIdCandidates.length ? ctx.model.Role.find({ _id: { $in: allIdCandidates } }).lean() : Promise.resolve([]),
+      directSlugs.length ? ctx.model.Role.find({ slug: { $in: directSlugs } }).lean() : Promise.resolve([]),
+    ]);
+    const roles = [ ...rolesById, ...rolesBySlug ];
     const perms = new Set<string>();
     for (const r of roles) {
       for (const p of (r.permissions || [])) perms.add(p);

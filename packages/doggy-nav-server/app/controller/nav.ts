@@ -3,7 +3,7 @@ import { parseHTML } from '../../utils/reptileHelper';
 import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
-import { buildAudienceOr } from '../utils/audience';
+import { buildAudienceFilter } from '../utils/audience';
 
 enum NAV_STATUS {
   pass,
@@ -59,8 +59,7 @@ export default class NavController extends Controller {
 
     // Audience filtering (+ legacy hide compatibility)
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-    const or = buildAudienceOr(userCtx);
-    findParam = { $and: [ findParam, { $or: or } ] };
+    findParam = buildAudienceFilter(findParam, userCtx);
 
     // If user is authenticated, include favorite status
     if (isAuthenticated) {
@@ -203,8 +202,7 @@ export default class NavController extends Controller {
 
       // Audience filtering for categories (+ legacy hide compatibility)
       const userCtx = this.ctx.state.userinfo as AuthUserContext | undefined;
-      const catOr = buildAudienceOr(userCtx);
-      const categoryFilter: any = { $and: [ categoryFilterBase, { $or: catOr } ] };
+      const categoryFilter: any = buildAudienceFilter(categoryFilterBase, userCtx);
 
       const categorys = await model.Category.find(categoryFilter);
       const categoryIds = categorys.reduce((t, v) => [ ...t, v._id ], []);
@@ -226,8 +224,7 @@ export default class NavController extends Controller {
       }
 
       // Audience filtering for navs (+ legacy hide compatibility)
-      const navOr = buildAudienceOr(userCtx);
-      const finalNavFindParam: any = { $and: [ navFindParam, { $or: navOr } ] };
+      const finalNavFindParam: any = buildAudienceFilter(navFindParam, userCtx);
 
       const navs = await model.Nav.find(finalNavFindParam);
 
@@ -279,8 +276,7 @@ export default class NavController extends Controller {
 
       // Audience filtering for single item (+ legacy hide compatibility)
       const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-      const or = buildAudienceOr(userCtx);
-      const nav = await ctx.model.Nav.findOne({ $and: [ navQuery, { $or: or } ] });
+      const nav = await ctx.model.Nav.findOne(buildAudienceFilter(navQuery, userCtx));
       if (nav && nav.categoryId) {
         const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
         if (category) {

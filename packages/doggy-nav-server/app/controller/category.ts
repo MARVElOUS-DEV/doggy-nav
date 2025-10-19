@@ -1,5 +1,5 @@
 import Controller from '../core/base_controller';
-import { buildAudienceOr } from '../utils/audience';
+import { buildAudienceFilter } from '../utils/audience';
 import type { AuthUserContext } from '../../types/rbac';
 
 export default class CategoryController extends Controller {
@@ -18,9 +18,9 @@ export default class CategoryController extends Controller {
 
       // Audience filtering (+ legacy hide compatibility)
       const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-      const or = buildAudienceOr(userCtx);
+      const filter = buildAudienceFilter(params, userCtx);
 
-      const data = await ctx.model.Category.find({ $and: [ params, { $or: or } ] }).limit(100000);
+      const data = await ctx.model.Category.find(filter).limit(100000);
 
       const newData = ctx.service.category.formatCategoryList(data);
       this.success(newData);

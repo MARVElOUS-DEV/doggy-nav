@@ -79,6 +79,8 @@ export function requestConfigure(options= {}): RequestConfig {
         const isAbsolute = /^https?:\/\//i.test(url);
         const hasApiPrefix = url.startsWith('/api/');
         const finalUrl = isAbsolute || hasApiPrefix ? url : `/api${url.startsWith('/') ? '' : '/'}${url}`;
+        // Preserve resolved URL for reliable retries in error handler
+        (config as any).__finalUrl = finalUrl;
         return {
           ...config,
           url: finalUrl,
@@ -90,12 +92,10 @@ export function requestConfigure(options= {}): RequestConfig {
       },
     ],
     responseInterceptors: [
-      (response) => {
-        return response;
-      },
+      async (response) => response,
     ],
     errorConfig: {
-      errorHandler: (error: any) => {
+      errorHandler: async (error: any) => {
         const { response } = error;
         const loginPath = '/user/login';
 
@@ -105,11 +105,30 @@ export function requestConfigure(options= {}): RequestConfig {
             message: '网络异常',
           });
         } else if (response.status === 401) {
-          // Handle 401 Unauthorized - redirect to login
-          notification.error({
-            description: '您的登录已过期，请重新登录',
-            message: '登录过期',
-          });
+          // Attempt silent refresh once
+          const cfg: any = { ...(error.request?.options || {}) };
+          if (!cfg.__retried) {
+            try {
+              cfg.__retried = true;
+              await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+              // FIXME: find why the url is '/api'?
+              // Determine the original, fully-resolved URL to retry
+              const isAbs = (u: string) => /^https?:\/\//i.test(u);
+              let resolvedUrl: string | undefined = cfg.__finalUrl || error.request?.url || cfg.url;
+              if (!resolvedUrl || resolvedUrl === '/api/' || resolvedUrl === '/' || resolvedUrl.trim() === '') {
+                const raw = (cfg.url || '') as string;
+                if (raw) {
+                  const hasApi = raw.startsWith('/api/');
+                  resolvedUrl = isAbs(raw) || hasApi ? raw : `/api${raw.startsWith('/') ? '' : '/'}${raw}`;
+                }
+              }
+              if (typeof resolvedUrl === 'string' && resolvedUrl.length > 1 && resolvedUrl !== '/api/') {
+                const retryResp = await umiRequest(resolvedUrl, { ...cfg, url: resolvedUrl, __retried: true });
+                return retryResp;
+              }
+            } catch {}
+          }
+          notification.error({ description: '您的登录已过期，请重新登录', message: '登录过期' });
           history.push(loginPath);
         } else if (response.status >= 500) {
           notification.error({

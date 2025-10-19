@@ -1,4 +1,4 @@
-import { buildAudienceOr } from '../utils/audience';
+import { buildAudienceFilter } from '../utils/audience';
 import { Controller } from 'egg';
 import { ValidationError } from './errors';
 
@@ -202,8 +202,7 @@ export default class CommonController extends Controller {
         matchQuery.status = 0; // NAV_STATUS.pass
       }
 
-      const or = buildAudienceOr(userCtx);
-      const finalMatch = Object.keys(matchQuery).length > 0 ? { $and: [ matchQuery, { $or: or } ] } : { $or: or };
+      const finalMatch = buildAudienceFilter(matchQuery, userCtx);
       pipeline.push({ $match: finalMatch });
     }
 

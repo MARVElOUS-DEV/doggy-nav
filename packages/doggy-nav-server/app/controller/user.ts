@@ -92,6 +92,8 @@ export default class UserController extends CommonController {
       phone: u.phone || '',
       status: !!u.isActive,
       role: Array.isArray(u.roles) && u.roles.length > 0 ? 'admin' : 'default',
+      // return actual role ids for admin edit form (multi-role assignment)
+      roles: Array.isArray(u.roles) ? (u.roles as any[]).map((r) => (typeof r === 'string' ? r : r?.toString?.() || '')) : [],
     });
   }
 
@@ -112,8 +114,19 @@ export default class UserController extends CommonController {
 
     const password = await ctx.service.user.hashPassword(plainPassword);
 
-    const roleSlug = body.role === 'admin' ? 'admin' : 'user';
-    const roleIds = await this.resolveRoleIds([ roleSlug ]);
+    // Prefer explicit roles[] of ObjectId strings; fallback to aggregated role slug
+    let finalRoleIds: any[] = [];
+    if (Array.isArray(body.roles)) {
+      const ids = body.roles.filter((v: any) => typeof v === 'string');
+      if (ids.length) {
+        const docs = await ctx.model.Role.find({ _id: { $in: ids } }, { _id: 1 }).lean();
+        finalRoleIds = docs.map((d: any) => d._id);
+      }
+    }
+    if (!finalRoleIds.length) {
+      const roleSlug = body.role === 'admin' ? 'admin' : 'user';
+      finalRoleIds = await this.resolveRoleIds([ roleSlug ]);
+    }
 
     const created = await ctx.model.User.create({
       username,
@@ -122,7 +135,7 @@ export default class UserController extends CommonController {
       isActive: !!body.status,
       nickName: body.nickName || username,
       phone: body.phone || '',
-      roles: roleIds,
+      roles: finalRoleIds,
     });
     this.success({ id: created._id?.toString?.() });
   }
@@ -149,7 +162,17 @@ export default class UserController extends CommonController {
       }
       update.password = await ctx.service.user.hashPassword(pw);
     }
-    if (typeof body.role !== 'undefined') {
+    // Prefer explicit roles[] of ObjectId strings; allow clearing by passing []
+    if ('roles' in body) {
+      const ids = Array.isArray(body.roles) ? body.roles.filter((v: any) => typeof v === 'string') : [];
+      if (ids.length > 0) {
+        const docs = await ctx.model.Role.find({ _id: { $in: ids } }, { _id: 1 }).lean();
+        update.roles = docs.map((d: any) => d._id);
+      } else {
+        update.roles = [];
+      }
+    } else if (typeof body.role !== 'undefined') {
+      // Backward compatibility with aggregated role
       const roleSlug = body.role === 'admin' ? 'admin' : 'user';
       update.roles = await this.resolveRoleIds([ roleSlug ]);
     }

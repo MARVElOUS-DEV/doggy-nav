@@ -1,12 +1,15 @@
 import { randomBytes } from 'crypto';
 import CommonController from '../core/base_controller';
 import { clearAuthCookies, setAuthCookies, setStateCookie, getStateCookie, clearStateCookie } from '../utils/authCookie';
+import type { AuthUserContext } from '../../types/rbac';
 import { getEnabledProviders, isProviderEnabled } from '../utils/oauth';
 
 export default class AuthController extends CommonController {
   private async issueCookiesForUser(user: { _id: any; username: string; roles?: Array<{ _id?: any; slug?: string } | string>; groups?: Array<{ _id?: any; slug?: string } | string>; computedPermissions?: string[]; extraPermissions?: string[]; }) {
     const { ctx } = this;
-    const tokens = await ctx.service.user.generateTokens(user);
+    // Ensure JWT payload uses role/group slugs by loading populated user first
+    const authUser = await ctx.service.user.getAuthUserForTokens(user._id);
+    const tokens = await ctx.service.user.generateTokens(authUser);
     await ctx.service.user.recordSuccessfulLogin(tokens.payload.userId);
     setAuthCookies(ctx, tokens);
   }
@@ -81,6 +84,29 @@ export default class AuthController extends CommonController {
       return;
     }
     this.success({ authenticated: false, user: null });
+  }
+
+  // Explicit refresh endpoint: exchanges refresh token cookie for new access+refresh
+  async refresh() {
+    const { ctx, app } = this;
+    try {
+      const jwt = app.jwt;
+      const secret = app.config.jwt?.secret;
+      if (!jwt || !secret) return this.error('JWT not available');
+
+      const refresh = ctx.cookies.get('refresh_token');
+      if (!refresh) return this.error('缺少refresh token');
+      const payload: any = await jwt.verify(refresh, secret);
+      if (payload?.typ !== 'refresh' || !payload?.sub) return this.error('refresh token 类型错误');
+
+      const user = await ctx.service.user.getAuthUserForTokens(payload.sub);
+      const tokens = await ctx.service.user.generateTokens(user);
+      setAuthCookies(ctx, tokens);
+      ctx.state.userinfo = { ...tokens.payload, authType: 'jwt' } as AuthUserContext;
+      this.success({ token: 'Bearer ' + tokens.accessToken });
+    } catch {
+      this.error('刷新失败');
+    }
   }
 
   async logout() {
