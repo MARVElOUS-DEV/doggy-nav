@@ -3,7 +3,9 @@ import { Space, Button, Badge, Avatar, Dropdown, Typography, Row, Col, message }
 import {
   SearchOutlined,
   BellOutlined,
-  UserOutlined, LogoutOutlined
+  UserOutlined, 
+  LogoutOutlined,
+  CrownOutlined
 } from '@ant-design/icons';
 import { history } from '@umijs/max';
 import './style.less';
@@ -18,6 +20,7 @@ interface ContentHeaderProps {
   actions?: React.ReactNode[];
   showUserMenu?: boolean;
   showSearch?: boolean;
+  currentUser?: any;
 }
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({
@@ -25,7 +28,8 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
   subtitle = '导航网站管理系统',
   actions = [],
   showUserMenu = true,
-  showSearch = true
+  showSearch = true,
+  currentUser
 }) => {
   const handleLogout = () => {
     // With cookie-based authentication, logout is handled server-side
@@ -129,14 +133,17 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
                   <div className="user-menu-trigger">
                     <Avatar
                       size="large"
-                      icon={<UserOutlined />}
+                      icon={currentUser?.roles?.includes('superadmin') ? <CrownOutlined /> : <UserOutlined />}
                       style={{
-                        backgroundColor: '#1890ff',
+                        backgroundColor: currentUser?.roles?.includes('superadmin') ? '#f5222d' : '#1890ff',
                         cursor: 'pointer',
-                        marginRight: 8
+                        marginRight: 8,
+                        border: currentUser?.roles?.includes('superadmin') ? '2px solid #ffd700' : 'none'
                       }}
                     />
-                    <span style={{ cursor: 'pointer' }}>管理员</span>
+                    <span style={{ cursor: 'pointer' }}>
+                      {currentUser?.roles?.includes('superadmin') ? '超级管理员' : '管理员'}
+                    </span>
                   </div>
                 </Dropdown>
               )}

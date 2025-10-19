@@ -10,7 +10,17 @@ import "./style.less";
 import { useEffect, useState } from "react";
 import { getGroups, getRoles } from "@/services/api";
 
-export default function CategoryForm(props: {categoryList: any[], isEdit?: boolean, selectedData?: any, hide?: () => void, tableRef: any} ) {
+type CategoryFormProps = {
+  categoryList: any[];
+  isEdit?: boolean;
+  selectedData?: any;
+  hide?: () => void;
+  tableRef: any;
+  visible?: boolean;
+  onVisibleChange?: (v: boolean) => void;
+}
+
+export default function CategoryForm(props: CategoryFormProps) {
   const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
   const [groupOptions, setGroupOptions] = useState<{ label: string; value: string }[]>([]);
   useEffect(() => {
@@ -24,8 +34,11 @@ export default function CategoryForm(props: {categoryList: any[], isEdit?: boole
       } catch {}
     })();
   }, []);
-  const {...formProps} = useProForm({
-    ...props,
+  const { ...formControls } = useProForm({
+    visible: props.visible,
+    onVisibleChange: props.onVisibleChange,
+    selectedData: props.selectedData,
+    isEdit: props.isEdit,
     onInitialValues(values: any): object {
       return values
     },
@@ -68,9 +81,9 @@ export default function CategoryForm(props: {categoryList: any[], isEdit?: boole
   }
 
   return (
-    <ModalForm {...formProps} onFinish={onFinish} width={500}>
+    <ModalForm formRef={formControls.formRef} visible={formControls.visible} onVisibleChange={formControls.onVisibleChange} onFinish={onFinish} width={500}>
       <ProFormText {...nameProps} />
-      <ProFormSelect {...categoryProps} mode="single" disabled={props.selectedData.categoryId===''} options={props.categoryList.reduce((t, v) => [...t, {label: v.name, value: v._id}], [])}/>
+      <ProFormSelect {...categoryProps} mode="single" disabled={props.selectedData?.categoryId===''} options={props.categoryList.reduce((t, v) => [...t, {label: v.name, value: v._id}], [])}/>
       <ProFormItem name="icon" label={categoryIconProps.label}
         rules={[{ required: categoryIconProps.required }]}
       >

@@ -15,5 +15,6 @@ dist/*
 feat.md
 CLAUDE*
 .serena/*
+.factory/*
 
 .vercel

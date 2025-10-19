@@ -48,6 +48,13 @@ export const PERMISSIONS = {
   // url checker
   URLCHECK_READ: 'urlChecker:read',
   URLCHECK_MANAGE: 'urlChecker:manage',
+
+  // group
+  GROUP_LIST: 'group:list',
+  GROUP_READ: 'group:read',
+  GROUP_CREATE: 'group:create',
+  GROUP_UPDATE: 'group:update',
+  GROUP_DELETE: 'group:delete',
 } as const;
 
 export type PermissionCode = typeof PERMISSIONS[keyof typeof PERMISSIONS] | '*';

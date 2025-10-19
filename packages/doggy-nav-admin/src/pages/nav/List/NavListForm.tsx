@@ -12,7 +12,16 @@ import TagSelect from "@/pages/nav/Tag/TagSelect";
 import { useEffect, useState } from "react";
 import { getGroups, getRoles } from "@/services/api";
 
-export default function NavListForm(props: any) {
+type NavListFormProps = {
+  isEdit?: boolean;
+  selectedData?: any;
+  hide?: () => void;
+  tableRef?: any;
+  visible?: boolean;
+  onVisibleChange?: (v: boolean) => void;
+}
+
+export default function NavListForm(props: NavListFormProps) {
   const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
   const [groupOptions, setGroupOptions] = useState<{ label: string; value: string }[]>([]);
 
@@ -28,8 +37,9 @@ export default function NavListForm(props: any) {
     })();
   }, []);
 
-  const formProps = useProForm({
-    ...props,
+  const formControls = useProForm({
+    visible: props.visible,
+    onVisibleChange: props.onVisibleChange,
     onFinish: async (values) => {
       const data = {
         id: props.isEdit ? props.selectedData?._id : undefined,
@@ -76,7 +86,7 @@ export default function NavListForm(props: any) {
   })
 
   return (
-    <DrawerForm {...props} {...formProps} drawerProps={{ width: 600 }}>
+    <DrawerForm formRef={formControls.formRef} visible={formControls.visible} onVisibleChange={formControls.onVisibleChange} drawerProps={{ width: 600 }}>
       <ProFormDependency name={['logo']}>
         {({ logo })=> <ProFormText {...logoProps} formItemProps={{extra: <img width={50} src={logo} />}} />}
       </ProFormDependency>

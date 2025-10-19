@@ -3,6 +3,17 @@ import Controller from '../core/base_controller';
 export default class GroupController extends Controller {
   tableName(): string { return 'Group'; }
 
+  async getOne() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+    const group = await ctx.model.Group.findById(id).lean().select('-__v');
+    if (!group) {
+      this.ctx.status = 404;
+      return this.error('Group not found');
+    }
+    this.success({ data: group });
+  }
+
   async getList() {
     const { ctx } = this;
     const query = this.getSanitizedQuery();
@@ -17,8 +28,32 @@ export default class GroupController extends Controller {
     this.success({ data, total, pageNumber: Math.ceil(total / pageSize) });
   }
 
+  async add() {
+    const body = this.getSanitizedBody();
+    const group = await this.ctx.model.Group.create(body);
+    this.success({ data: group });
+  }
+
   async edit() {
     await super.update();
+  }
+
+  async update() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+    const updateData = ctx.request.body;
+    
+    const group = await ctx.model.Group.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true, useFindAndModify:true }
+    ).lean().select('-__v');
+    
+    if (!group) {
+      this.ctx.status = 404;
+      return this.error('Group not found');
+    }
+    this.success({ data: group });
   }
 
   async del() {

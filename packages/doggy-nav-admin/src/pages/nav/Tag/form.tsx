@@ -6,9 +6,19 @@ import useProForm from "@/hooks/useProForm";
 import { API_TAG } from "@/services/api";
 import request from "@/utils/request";
 
-export default function TagForm(props: any) {
-  const formProps = useProForm({
-    ...props,
+type TagFormProps = {
+  isEdit?: boolean;
+  selectedData?: any;
+  hide?: () => void;
+  tableRef: any;
+  visible?: boolean;
+  onVisibleChange?: (v: boolean) => void;
+}
+
+export default function TagForm(props: TagFormProps) {
+  const formControls = useProForm({
+    visible: props.visible,
+    onVisibleChange: props.onVisibleChange,
     onInitialValues(values: any): object {
       return values
     },
@@ -31,12 +41,12 @@ export default function TagForm(props: any) {
         msg: props.isEdit ? '修改成功' : '添加成功',
         data
       })
-      props.hide();
+      props.hide?.();
       props.tableRef.reload()
   }
 
   return (
-    <ModalForm {...props} {...formProps} onFinish={onFinish} width={400}>
+    <ModalForm formRef={formControls.formRef} visible={formControls.visible} onVisibleChange={formControls.onVisibleChange} onFinish={onFinish} width={400}>
       <ProFormText {...nameProps} />
     </ModalForm>
   )

@@ -60,7 +60,7 @@ export default function NavAuditListPage() {
     {
       title: '分类名',
       dataIndex: 'name',
-      render: (text, record) => (<><span style={{marginRight: '4px'}}>{getIconComponent(record.icon)}</span><span>{text}</span></>)
+      render: (_text, record) => (<><span style={{marginRight: '4px'}}>{getIconComponent(record.icon)}</span><span>{record.name}</span></>)
     },
     {
       title: '显示在菜单',
@@ -71,29 +71,37 @@ export default function NavAuditListPage() {
         false: { text: '不显示', status: 'Error' },
       }
     },
+    {
+      title: '描述',
+      dataIndex: 'description',
+    },
+    {
+      title: '显示在菜单',
+      dataIndex: 'createAtDate',
+    },
   ]
   return (
     <>
-        <TableCom
-          actionRef={tableRef}
-          columns={columns}
-          search={false}
-          request={onRequestData}
-          toolbar={{
-            actions: [
-              <Button key="add" type='primary' onClick={() => formProps.show()} icon={<PlusOutlined />}>
-                添加分类
-              </Button>
-            ],
-          }}
-          renderOptions={(text, record: CategoryModel, _, action) => ([
-            <a key="edit" onClick={() => formProps.show({ type: 'edit', data: record, action })}>编辑</a>,
-            <Popconfirm key="delete" title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
-              <a>删除</a>
-            </Popconfirm>,
-          ])}
-          />
-        <CategoryForm {...formProps} tableRef={tableRef.current} categoryList={categoryList} />
-      </>
+      <TableCom
+        actionRef={tableRef}
+        columns={columns}
+        search={false}
+        request={onRequestData}
+        toolbar={{
+          actions: [
+            <Button key="add" type='primary' onClick={() => formProps.show()} icon={<PlusOutlined />}>
+              添加分类
+            </Button>
+          ],
+        }}
+        renderOptions={(text, record: CategoryModel, _, action) => ([
+          <a key="edit" onClick={() => formProps.show({ type: 'edit', data: record, action })}>编辑</a>,
+          <Popconfirm key="delete" title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
+            <a>删除</a>
+          </Popconfirm>,
+        ])}
+        />
+      <CategoryForm {...formProps} tableRef={tableRef.current} categoryList={categoryList} />
+    </>
   );
 }

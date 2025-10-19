@@ -1,14 +1,14 @@
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import { ActionType, ProTable } from '@ant-design/pro-table';
 import { Access, useRequest } from '@umijs/max';
-import { Button, Avatar, Space, Modal } from 'antd';
+import { Button, Space, Modal } from 'antd';
 import React, { useRef, useState } from "react";
-import { SmileOutlined, FrownOutlined, ExclamationCircleFilled } from '@ant-design/icons';
-import AddOrEdit from "@/pages/user/addOrEdit";
+import { PlusOutlined } from '@ant-design/icons';
+import AddOrEdit from "@/pages/group/addOrEdit";
 
-const UserPage: React.FC = () => {
+const GroupPage: React.FC = () => {
     const actionRef = useRef<ActionType>();
-    const [selectedRows, setSelectedRows] = useState<User.UserItem[]>([]);
+    const [selectedRows, setSelectedRows] = useState<Group.GroupItem[]>([]);
 
     const [id, setId] = useState<string>('');
     const [drawerVisible, setDrawerVisible] = useState(false)
@@ -17,7 +17,7 @@ const UserPage: React.FC = () => {
         (ids: string[]) => {
             return {
                 method: 'DELETE',
-                url: `/api/user`,
+                url: '/api/groups',
                 data: {ids},
             }
         },
@@ -32,7 +32,6 @@ const UserPage: React.FC = () => {
     const handleDelete = (ids: string[]) => {
         Modal.confirm({
             title: '温馨提示',
-            icon: <ExclamationCircleFilled/>,
             content: `确定要删除所选项吗？`,
             onOk() {
                 batchDelete(ids)
@@ -40,7 +39,7 @@ const UserPage: React.FC = () => {
         });
     }
     const handleEdit = (record) => {
-        setId(record.id)
+        setId(record._id)
         setDrawerVisible(true)
     }
     const renderActions = (text: string, record) => (
@@ -48,54 +47,31 @@ const UserPage: React.FC = () => {
             <Button type="link" onClick={() => handleEdit(record)}>
                 编辑
             </Button>
-            <Button type="text" loading={deleteLoading} danger onClick={() => handleDelete([record.id])}>
+            <Button type="text" loading={deleteLoading} danger onClick={() => handleDelete([record._id])}>
                 删除
             </Button>
         </Space>
     );
     const columns: any[] = [
         {
-            title: '账号',
-            dataIndex: 'account',
+            title: '名称',
+            dataIndex: 'slug',
         },
         {
-            title: '状态',
-            dataIndex: 'status',
-            valueEnum: {
-                1: {
-                    text: '正常',
-                    status: 'Success',
-                    icon: <SmileOutlined/>,
-                },
-                0: {
-                    text: '禁用',
-                    status: 'Error',
-                    icon: <FrownOutlined/>,
-                }
-            },
-        },
-        {
-            title: '昵称',
-            dataIndex: 'nickName',
+            title: '显示名称',
+            dataIndex: 'displayName',
             hideInSearch: true
         },
         {
-            title: '角色',
-            dataIndex: 'roles',
-            render: (roles: string[]) => {
-                if (!roles || !Array.isArray(roles)) return '-';
-                return roles.join(', ');
-            }
+            title: '标识',
+            dataIndex: 'slug',
+            hideInSearch: true
         },
         {
-            title: 'Email',
-            dataIndex: 'email'
-        },
-        {
-            title: '头像',
-            dataIndex: 'avatar',
+            title: '描述',
+            dataIndex: 'description',
             hideInSearch: true,
-            render: (avatar: string, user: User.UserItem) => <Avatar src={avatar} alt={user.nickName} size={40}/>
+            ellipsis: true,
         },
         {
             title: '创建时间',
@@ -117,7 +93,7 @@ const UserPage: React.FC = () => {
     const {loading, run} = useRequest((params) => {
         return {
             method: 'GET',
-            url: '/api/user',
+            url: '/api/groups',
             params,
         }
     }, {
@@ -128,11 +104,11 @@ const UserPage: React.FC = () => {
             {
                 drawerVisible ? <AddOrEdit setDrawerVisible={setDrawerVisible} id={id} actionRef={actionRef}/> : null
             }
-            <ProTable<User.UserItem>
+            <ProTable<Group.GroupItem>
                 scroll={{ x: 'max-content' }}
                 actionRef={actionRef}
                 loading={loading}
-                rowKey="id"
+                rowKey="_id"
                 search={{
                     labelWidth: 60,
                 }}
@@ -141,6 +117,7 @@ const UserPage: React.FC = () => {
                         <Button
                             key="add"
                             type="primary"
+                            icon={<PlusOutlined />}
                             onClick={() => {
                                 setId('')
                                 setDrawerVisible(true)
@@ -151,10 +128,10 @@ const UserPage: React.FC = () => {
                     </Access>
                 ]}
                 request={async (params) => {
-                    const {list, total} = await run(params);
+                    const response = await run(params);
                     return {
-                        data: list || [],
-                        total: total || 0,
+                        data: response?.data || [],
+                        total: response?.total || 0,
                     };
                 }}
                 columns={columns}
@@ -172,11 +149,11 @@ const UserPage: React.FC = () => {
                         </div>
                     }
                 >
-                    <Access accessible key='add'>
+                    <Access accessible key='delete'>
                         <Button
                             type="primary" danger
                             onClick={async () => {
-                                handleDelete(selectedRows.map(item => item.id))
+                                handleDelete(selectedRows.map(item => item._id))
                             }}
                         >
                             批量删除
@@ -188,4 +165,4 @@ const UserPage: React.FC = () => {
     );
 };
 
-export default UserPage;
+export default GroupPage;

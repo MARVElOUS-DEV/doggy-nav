@@ -67,3 +67,34 @@ export async function getRoles() {
 export async function getGroups() {
   return request({ url: API_GROUPS, method: 'GET' });
 }
+
+export async function createGroup(data: any) {
+  return request({
+    url: API_GROUPS,
+    method: 'POST',
+    data,
+  });
+}
+
+export async function updateGroup(id: string, data: any) {
+  return request({
+    url: `${API_GROUPS}/${id}`,
+    method: 'PUT',
+    data,
+  });
+}
+
+export async function deleteGroup(ids: string[]) {
+  return request({
+    url: API_GROUPS,
+    method: 'DELETE',
+    data: { ids },
+  });
+}
+
+export async function getGroupDetail(id: string) {
+  return request({
+    url: `${API_GROUPS}/${id}`,
+    method: 'GET',
+  });
+}

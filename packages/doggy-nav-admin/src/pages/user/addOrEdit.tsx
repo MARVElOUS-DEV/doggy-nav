@@ -2,16 +2,17 @@ import {
   DrawerForm,
   ProFormText,
   ProFormSwitch,
-  ProFormRadio
+  ProFormSelect
 } from '@ant-design/pro-form';
 import { Form } from 'antd';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRequest } from "@umijs/max";
 
 
 const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
     const [form] = Form.useForm();
     const isEdit = !!id;
+    const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
 
     const {loading, run: queryRun} = useRequest(`/api/user/${id}`,
         {
@@ -20,6 +21,21 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                 if (res) form.setFieldsValue(res)
             }
         });
+
+    const {loading: rolesLoading, run: getRoles} = useRequest(
+        '/api/roles',
+        {
+            manual: true,
+            onSuccess: (res) => {
+                const roles = res?.data || [];
+                const options = roles.map((role: any) => ({
+                    label: role.displayName || role.slug,
+                    value: role.slug
+                }));
+                setRoleOptions(options);
+            }
+        }
+    );
 
     const {loading: saveLoading, run: saveRun} = useRequest(
         (data) => {
@@ -45,6 +61,9 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
         });
 
     useEffect(() => {
+        // Load roles regardless of edit/create mode
+        getRoles();
+        
         if (id) {
             queryRun()
         }
@@ -118,20 +137,17 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                 fieldProps={{checkedChildren: '启用', unCheckedChildren: '禁用'}}
                 rules={[{required: true}]}
             />
-            <ProFormRadio.Group
-                name="role"
+            <ProFormSelect
+                name="roles"
+                width="md"
                 label="角色"
-                options={[
-                    {
-                        label: '管理员',
-                        value: 'admin',
-                    },
-                    {
-                        label: '普通用户',
-                        value: 'default',
-                    }
-                ]}
-                rules={[{required: true}]}
+                placeholder="请选择角色"
+                options={roleOptions}
+                fieldProps={{
+                    mode: 'multiple',
+                    loading: rolesLoading,
+                }}
+                rules={[{required: true, message: '请选择至少一个角色'}]}
             />
         </DrawerForm>
     );

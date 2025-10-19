@@ -31,8 +31,10 @@ export default (app: Application) => {
   router.delete('/api/roles', controller.role.del);
 
   router.get('/api/groups', controller.group.getList);
+  router.get('/api/groups/:id', controller.group.getOne);
   router.post('/api/groups', controller.group.add);
   router.put('/api/groups', controller.group.edit);
+  router.put('/api/groups/:id', controller.group.update);
   router.delete('/api/groups', controller.group.del);
   // invitation code routes
   router.get('/api/invite-codes/list', controller.inviteCode.list);

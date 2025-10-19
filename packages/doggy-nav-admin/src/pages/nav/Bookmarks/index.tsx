@@ -9,6 +9,7 @@ import Editor from '@monaco-editor/react';
 import CategorySelect from '@/pages/nav/Category/CategorySelect';
 import request from '@/utils/request';
 import { API_CATEGORY, API_NAV } from '@/services/api';
+import { GLOBAL_CATEGORY_ID } from '@/constants';
 
 type RowItem = {
   _id?: string;
@@ -290,7 +291,6 @@ export default function BookmarksImportPage() {
     message.success(`完成：成功 ${succ} 条，失败 ${fail} 条`);
   };
 
-  const GLOBAL_ROOT_ID = '4bvirtualcb9ff050738cc16';
 
   const saveCategories = async () => {
     if (!cats.length) { message.info('无分类可保存'); return; }
@@ -301,7 +301,7 @@ export default function BookmarksImportPage() {
     const pending = new Set<string>(cats.map(c => c.guid));
     const tryCreate = async (guid: string) => {
       const c = byGuid.get(guid)!;
-      const parentId = c.parentGuid ? created.get(c.parentGuid) : (topParentCategoryId || GLOBAL_ROOT_ID);
+      const parentId = c.parentGuid ? created.get(c.parentGuid) : (topParentCategoryId || GLOBAL_CATEGORY_ID);
       if (c.parentGuid && !parentId) return false; // parent not created yet
       const res = await request({ url: API_CATEGORY, method: 'POST', data: { name: c.name, categoryId: parentId, hide: true } });
       const id = res?.data?._id || res?._id || res?.id;

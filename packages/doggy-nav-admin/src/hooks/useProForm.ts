@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react';
 import type { ProFormProps } from '@ant-design/pro-form';
 
 interface IProps extends ProFormProps {
-  onInitialValues(values: any): object,
+  onInitialValues?(values: any): object,
   [name: string]: any
 }
 
-export default function useProForm(props: IProps): IProps & { formRef: any } {
+export default function useProForm(props: IProps): Pick<IProps, 'visible' | 'onVisibleChange'> & { formRef: any } {
   const form = useRef<any>({});
 
   useEffect(() => {
@@ -17,9 +17,9 @@ export default function useProForm(props: IProps): IProps & { formRef: any } {
         if (props.onInitialValues) {
           selectedData = props.onInitialValues(props.selectedData)
         }
-        form.current.setFieldsValue(selectedData)
+        try { form.current?.setFieldsValue?.(selectedData) } catch {}
       } else {
-        form.current.resetFields()
+        try { form.current?.resetFields?.() } catch {}
       }
 
     }
@@ -28,6 +28,7 @@ export default function useProForm(props: IProps): IProps & { formRef: any } {
 
   return {
     formRef: form,
-    ...props
+    visible: props.visible,
+    onVisibleChange: props.onVisibleChange,
   }
 }

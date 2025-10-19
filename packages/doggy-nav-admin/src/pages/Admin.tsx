@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { HeartTwoTone, TagsOutlined, TrophyOutlined, RocketOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { Typography, Row, Col, Statistic, Space } from 'antd';
 import EnhancedCard from '@/components/EnhancedCard';
@@ -11,15 +11,16 @@ export default (): React.ReactNode => {
   const [categoryCount, setCategoryCount] = useState<number>(0);
   const [tagCount, setTagCount] = useState<number>(0);
 
+  const mountedRef = useRef(true);
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
     async function fetchCounts() {
       try {
         const [catRes, tagRes] = await Promise.all([
           request({ url: API_CATEGORY_LIST, method: 'GET' }),
           request({ url: API_TAG_list, method: 'GET' })
         ]);
-        if (!mounted) return;
+        if (!mountedRef.current) return;
         // category list returns nested tree; count all nodes including children
         const cats = catRes?.data || [];
         const countCats = (arr: any[]): number => arr.reduce((acc: number, item: any) => acc + 1 + (Array.isArray(item.children) ? countCats(item.children) : 0), 0);
@@ -30,7 +31,7 @@ export default (): React.ReactNode => {
       }
     }
     fetchCounts();
-    return () => { mounted = false; };
+    return () => { mountedRef.current = false; };
   }, []);
 
   return (

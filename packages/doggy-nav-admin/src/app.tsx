@@ -40,6 +40,7 @@ const pageTitles: Record<string, { title: string; subtitle: string; showUserMenu
   '/nav/category': { title: '分类管理', subtitle: '管理网站分类', showUserMenu: true, showSearch: false,},
   '/nav/tag': { title: '标签管理', subtitle: '管理网站标签', showUserMenu: true, showSearch: false, },
   '/nav/audit': { title: '审核管理', subtitle: '审核网站提交', showUserMenu: true,showSearch: false, },
+  '/group/manage': { title: '分组管理', subtitle: '管理用户分组', showUserMenu: true, showSearch: false, },
 };
 
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
@@ -60,10 +61,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       content: initialState?.currentUser?.name,
     },
     isChildrenLayout: false,
-    onPageChange: () => {
-      // With cookie-based authentication, the server handles auth redirects
-      // No need for client-side token checks
-    },
     menuHeaderRender: (logo)=> logo,
     headerRender: () => {
       const pathname = history.location.pathname;
@@ -88,6 +85,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               showUserMenu={pageInfo.showUserMenu}
               showSearch={pageInfo.showSearch}
               actions={pageInfo.actions}
+              currentUser={initialState?.currentUser}
             />
           )}
         </div>
@@ -97,8 +95,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // 自定义 403 页面
     unAccessible: <div>unAccessible</div>,
     ...initialState?.settings,
-    // Expose a helper to refresh currentUser and trigger menu re-render
-    rightContentRender: () => null,
+
   };
 };
 export const request: RequestConfig = requestConfigure();

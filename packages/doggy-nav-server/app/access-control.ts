@@ -45,6 +45,8 @@ export const routePermissions: RoutePermission[] = [
   { method: 'DELETE', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Delete role' },
   { method: 'POST', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Create group' },
   { method: 'PUT', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Update group' },
+  { method: 'GET', path: '/api/groups/:id', require: { anyRole: ['superadmin'] }, description: 'Get group detail' },
+  { method: 'PUT', path: '/api/groups/:id', require: { anyRole: ['superadmin'] }, description: 'Update group by ID' },
   { method: 'DELETE', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Delete group' },
   // invite-codes
   { method: 'GET', path: '/api/invite-codes/list', require: { anyRole: ['admin'] }, description: 'List invite codes' },

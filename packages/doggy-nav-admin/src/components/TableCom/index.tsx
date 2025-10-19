@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React, { useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { ProColumns, ProTableProps } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { PageContainer, PageContainerProps } from '@ant-design/pro-layout';
@@ -31,11 +31,17 @@ function TableCom(props: TableComProps, ref: any) {
   useImperativeHandle(ref, () => ({ from: from.current }), []);
 
   const [loading, setLoading] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   async function onRequest(
     params: any
   ): Promise<Partial<{ data: any[]; total: number; success: boolean }>> {
-    setLoading(true);
+    if (mountedRef.current) setLoading(true);
     try {
       const { url, pageSize, current } = params;
       delete params.url;
@@ -52,14 +58,14 @@ function TableCom(props: TableComProps, ref: any) {
           ...params,
         },
       });
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
       return {
         data: res?.data?.data ?? [],
         total: res?.data?.total ?? 0,
         success: true,
       };
     } catch (err: any) {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
       console.error(err);
       return {
         data: [],
@@ -295,11 +301,11 @@ function TableCom(props: TableComProps, ref: any) {
   // Ensure horizontal scroll when columns are fixed to avoid overflow at narrower widths
   const mergedTableProps: ProTableProps<any, any> = { ...proTableProps };
   if (!mergedTableProps.scroll && realColumns.some((c: any) => c && c.fixed)) {
-    mergedTableProps.scroll = { x: 'max-content' } as any;
+    mergedTableProps.scroll = { x: 'max-content' };
   }
   // A fixed table layout helps keep cells within bounds when widths are constrained
   if (!('tableLayout' in mergedTableProps)) {
-    (mergedTableProps as any).tableLayout = 'fixed';
+    mergedTableProps.tableLayout = 'fixed';
   }
 
   const proTable = (
