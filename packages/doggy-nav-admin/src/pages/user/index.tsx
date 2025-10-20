@@ -1,9 +1,9 @@
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import { ActionType, ProTable } from '@ant-design/pro-table';
 import { Access, useRequest } from '@umijs/max';
-import { Button, Avatar, Space, Modal } from 'antd';
+import { Button, Space, Modal, Avatar } from 'antd';
 import React, { useRef, useState } from "react";
-import { SmileOutlined, FrownOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { SmileOutlined, FrownOutlined, ExclamationCircleFilled, UserOutlined } from '@ant-design/icons';
 import AddOrEdit from "@/pages/user/addOrEdit";
 
 const UserPage: React.FC = () => {
@@ -27,7 +27,7 @@ const UserPage: React.FC = () => {
                 setSelectedRows([]);
                 actionRef?.current?.reloadAndRest?.();
             }
-        });
+    });
 
     const handleDelete = (ids: string[]) => {
         Modal.confirm({
@@ -39,11 +39,11 @@ const UserPage: React.FC = () => {
             }
         });
     }
-    const handleEdit = (record) => {
+    const handleEdit = (record: User.UserItem) => {
         setId(record.id)
         setDrawerVisible(true)
     }
-    const renderActions = (text: string, record) => (
+    const renderActions = (_text: string, record: User.UserItem) => (
         <Space>
             <Button type="link" onClick={() => handleEdit(record)}>
                 编辑
@@ -95,7 +95,15 @@ const UserPage: React.FC = () => {
             title: '头像',
             dataIndex: 'avatar',
             hideInSearch: true,
-            render: (avatar: string, user: User.UserItem) => <Avatar src={avatar} alt={user.nickName} size={40}/>
+            render: (avatar: string, user: User.UserItem) => {
+                const valid = typeof avatar === 'string'
+                  && avatar.trim() !== ''
+                  && avatar.trim() !== '-'
+                  && /^(https?:|data:|\/)/.test(avatar);
+                return valid
+                  ? <Avatar src={avatar} alt={user.nickName} size={40} />
+                  : <Avatar icon={<UserOutlined />} size={40} />;
+            }
         },
         {
             title: '创建时间',

@@ -56,11 +56,11 @@ export const routePermissions: RoutePermission[] = [
   { method: 'POST', path: '/api/invite-codes/:id/revoke', require: { anyRole: ['admin'] }, description: 'Revoke invite code' },
 
   // Application routes
-  { method: 'POST', path: '/api/application', require: { anyRole: ['admin'] }, description: 'Create application' },
-  { method: 'GET', path: '/api/application/list', require: { anyRole: ['admin'] }, description: 'List applications' },
-  { method: 'PUT', path: '/api/application/:id', require: { anyRole: ['admin'] }, description: 'Update application' },
-  { method: 'POST', path: '/api/application/:id/regenerate-secret', require: { anyRole: ['admin'] }, description: 'Regenerate application secret' },
-  { method: 'DELETE', path: '/api/application/:id/revoke', require: { anyRole: ['admin'] }, description: 'Revoke application' },
+  { method: 'POST', path: '/api/application', require: { anyRole: ['sysadmin'] }, description: 'Create application' },
+  { method: 'GET', path: '/api/application/list', require: { anyRole: ['sysadmin'] }, description: 'List applications' },
+  { method: 'PUT', path: '/api/application/:id', require: { anyRole: ['sysadmin'] }, description: 'Update application' },
+  { method: 'POST', path: '/api/application/:id/regenerate-secret', require: { anyRole: ['sysadmin'] }, description: 'Regenerate application secret' },
+  { method: 'DELETE', path: '/api/application/:id/revoke', require: { anyRole: ['sysadmin'] }, description: 'Revoke application' },
   { method: 'POST', path: '/api/application/verify-client-secret', require: { level: 'public' }, description: 'Verify application client secret' },
 
   // Category routes
@@ -77,7 +77,7 @@ export const routePermissions: RoutePermission[] = [
   { method: 'GET', path: '/api/nav/reptile', require: { level: 'public' }, description: 'Get reptile navigation items' },
   { method: 'GET', path: '/api/nav/random', require: { level: 'optional' }, description: 'Get random navigation items' },
   { method: 'DELETE', path: '/api/nav', require: { anyRole: ['admin'] }, description: 'Delete navigation item' },
-  { method: 'PUT', path: '/api/nav', require: { level: 'authenticated' }, description: 'Update navigation item' },
+  { method: 'PUT', path: '/api/nav', require: { anyRole: ['user','admin'] }, description: 'Update navigation item' },
   { method: 'GET', path: '/api/nav/find', require: { level: 'optional' }, description: 'Find navigation item' },
   { method: 'GET', path: '/api/nav/ranking', require: { level: 'optional' }, description: 'Get navigation rankings' },
   { method: 'POST', path: '/api/nav/:id/view', require: { level: 'public' }, description: 'Increment navigation view count' },
@@ -91,12 +91,12 @@ export const routePermissions: RoutePermission[] = [
 
   // URL Checker routes
   { method: 'GET', path: '/api/url-checker/status', require: { level: 'public' }, description: 'Get URL checker status' },
-  { method: 'POST', path: '/api/url-checker/start', require: { anyRole: ['admin'] }, description: 'Start URL checker' },
-  { method: 'POST', path: '/api/url-checker/stop', require: { anyRole: ['admin'] }, description: 'Stop URL checker' },
-  { method: 'POST', path: '/api/url-checker/restart', require: { anyRole: ['admin'] }, description: 'Restart URL checker' },
-  { method: 'PUT', path: '/api/url-checker/config', require: { anyRole: ['admin'] }, description: 'Update URL checker config' },
-  { method: 'POST', path: '/api/url-checker/check', require: { anyRole: ['admin'] }, description: 'Trigger URL check' },
-  { method: 'POST', path: '/api/url-checker/check/:id', require: { anyRole: ['admin'] }, description: 'Check specific URL' },
+  { method: 'POST', path: '/api/url-checker/start', require: { anyRole: ['sysadmin'] }, description: 'Start URL checker' },
+  { method: 'POST', path: '/api/url-checker/stop', require: { anyRole: ['sysadmin'] }, description: 'Stop URL checker' },
+  { method: 'POST', path: '/api/url-checker/restart', require: { anyRole: ['sysadmin'] }, description: 'Restart URL checker' },
+  { method: 'PUT', path: '/api/url-checker/config', require: { anyRole: ['sysadmin'] }, description: 'Update URL checker config' },
+  { method: 'POST', path: '/api/url-checker/check', require: { anyRole: ['sysadmin'] }, description: 'Trigger URL check' },
+  { method: 'POST', path: '/api/url-checker/check/:id', require: { anyRole: ['sysadmin'] }, description: 'Check specific URL' },
   { method: 'GET', path: '/api/url-checker/nav-status', require: { level: 'public' }, description: 'Get navigation URL status' },
   // Favorite routes - require authentication
   { method: 'POST', path: '/api/favorites', require: { level: 'authenticated' }, description: 'Add favorite nav item' },
@@ -144,13 +144,16 @@ export function getRoutePermission(method: string, path: string): RoutePermissio
 export function hasAccess(permission: RoutePermission, user: AuthUserContext | undefined): boolean {
   const req = permission.require;
   if (!req) return !!user; // default to authenticated
+  // Public is always allowed; optional is allowed to continue middleware, but when source=admin we
+  // require authentication to access admin UIs consistently. Final decision handled in middleware.
   if (req.level === 'public' || req.level === 'optional') return true;
   if (!user) return false;
   // sysadmin bypass (role-based)
-  if (Array.isArray(user.roles) && user.roles.includes('sysadmin')) return true;
+  const eff = Array.isArray(user.effectiveRoles) && user.effectiveRoles.length > 0 ? user.effectiveRoles : (Array.isArray(user.roles) ? user.roles : []);
+  if (eff.includes('sysadmin')) return true;
   if (req.level === 'authenticated') return true;
 
-  const roles: string[] = Array.isArray(user.roles) ? user.roles : [];
+  const roles: string[] = eff;
   const groups: string[] = Array.isArray(user.groups) ? user.groups : [];
   const perms: string[] = Array.isArray(user.permissions) ? user.permissions : [];
 

@@ -94,7 +94,7 @@ instance.interceptors.response.use(
           }
           // Public site: clear cookies (server-side) instead of redirect
           try {
-            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+            await axios.post('/api/auth/logout', { withCredentials: true });
           } catch {}
           errorMessage = 'Unauthorized';
           break;

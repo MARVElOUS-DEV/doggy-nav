@@ -1,5 +1,5 @@
 import Controller from '../core/base_controller';
-import { buildAudienceFilter } from '../utils/audience';
+import { buildAudienceFilterEx } from '../utils/audienceEx';
 import type { AuthUserContext } from '../../types/rbac';
 
 export default class CategoryController extends Controller {
@@ -18,7 +18,7 @@ export default class CategoryController extends Controller {
 
       // Audience filtering (+ legacy hide compatibility)
       const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-      const filter = buildAudienceFilter(params, userCtx);
+      const filter = buildAudienceFilterEx(params, userCtx);
 
       const data = await ctx.model.Category.find(filter).limit(100000);
 

@@ -147,6 +147,7 @@ export const checkUrlAccessibility = async (url: string): Promise<UrlStatusInfo>
         const response = await fetch(`/api/check-url?url=${encodeURIComponent(url)}`, {
           method: 'GET',
           signal: controller.signal,
+          credentials: 'same-origin'
         });
 
         clearTimeout(timeoutId);

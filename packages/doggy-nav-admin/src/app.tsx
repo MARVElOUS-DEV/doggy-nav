@@ -4,7 +4,7 @@ import { history } from '@umijs/max';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import React from 'react';
 import ContentHeader from './components/ContentHeader';
-import { requestConfigure } from './utils/request';
+import apiRequest, { requestConfigure } from './utils/request';
 
 const loginPath = '/user/login';
 // const isDev = process.env.NODE_ENV === 'development';
@@ -18,8 +18,7 @@ export async function getInitialState(): Promise<{
 }> {
   // Fetch current user info (roles included) to drive access control
   try {
-    const resp = await fetch('/api/auth/me', { credentials: 'include' });
-    const json = await resp.json();
+    const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
     const currentUser = json?.data?.user || undefined;
     const fetchUserInfo = async () => currentUser;
     return { settings: {}, currentUser, fetchUserInfo };
@@ -47,8 +46,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   //expose a global helper to refresh currentUser so access() re-evaluates without full reload
   (window as any).g_updateInitialState = async () => {
     try {
-      const resp = await fetch('/api/auth/me', { credentials: 'include' });
-      const json = await resp.json();
+      const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
       const currentUser = json?.data?.user || undefined;
       await setInitialState((s: any) => ({ ...s, currentUser }));
     } catch {

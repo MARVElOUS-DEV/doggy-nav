@@ -1,5 +1,6 @@
 import { getRoutePermission, hasAccess } from '../access-control';
 import { setAuthCookies } from '../utils/authCookie';
+import { computeEffectiveRoles } from '../utils/rbac';
 import type { AuthUserContext } from '../../types/rbac';
 
 export default () => {
@@ -7,6 +8,15 @@ export default () => {
     // Allow CORS preflight without auth/permission checks
     if (ctx.method === 'OPTIONS') return await next();
     const url = normalizePath(ctx.url);
+
+    // Validate request source header strictly
+    const hdrRaw = ctx.get('X-App-Source');
+    if (!hdrRaw) return respond(ctx, 400, 'malformed request');
+    const hdr = String(hdrRaw).trim().toLowerCase();
+    if (hdr !== 'main' && hdr !== 'admin') {
+      return respond(ctx, 400, 'malformed request');
+    }
+    ctx.state.requestSource = hdr;
 
     // permission
     const permission = getRoutePermission(ctx.method, url);
@@ -19,7 +29,18 @@ export default () => {
     // access modes
     if (permission.require?.level === 'public') return await next();
     if (permission.require?.level === 'optional') {
-      await authenticateWithRefresh(ctx); // best-effort
+      // In admin source, treat optional as authenticated + admin/sysadmin role
+      if (ctx.state.requestSource === 'admin') {
+        const authResult = await authenticateWithRefresh(ctx);
+        if (!authResult.authenticated) return respond(ctx, 401, authResult.error || '需要身份验证');
+        const user = ctx.state.userinfo as AuthUserContext | undefined;
+        const eff = Array.isArray(user?.effectiveRoles) && user!.effectiveRoles!.length ? user!.effectiveRoles! : (Array.isArray(user?.roles) ? user!.roles! : []);
+        if (!(eff.includes('admin') || eff.includes('sysadmin'))) {
+          return respond(ctx, 403, '权限不足');
+        }
+        return await next();
+      }
+      await authenticateWithRefresh(ctx); // best-effort for main
       return await next();
     }
 
@@ -111,7 +132,10 @@ async function authenticateWithRefresh(ctx: any) {
           // fall back to decoded access token
         }
       }
-      ctx.state.userinfo = { ...decode, authType: 'jwt' } as AuthUserContext;
+      // Attach request source and effective roles
+      const source = ctx.state.requestSource === 'admin' ? 'admin' : 'main';
+      const eff = computeEffectiveRoles(Array.isArray(decode?.roles) ? decode.roles : [], source);
+      ctx.state.userinfo = { ...decode, authType: 'jwt', source, effectiveRoles: eff } as AuthUserContext;
       return { authenticated: true };
     } catch (err) {
       ctx.logger.debug('JWT auth (access) error:', err);
@@ -121,3 +145,5 @@ async function authenticateWithRefresh(ctx: any) {
   // Do not auto-refresh here anymore; use explicit /api/auth/refresh endpoint
   return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
 }
+
+// legacy helper removed in favor of utils/rbac.ts

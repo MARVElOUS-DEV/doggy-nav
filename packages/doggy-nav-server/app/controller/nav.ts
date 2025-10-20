@@ -3,7 +3,7 @@ import { parseHTML } from '../../utils/reptileHelper';
 import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
-import { buildAudienceFilter } from '../utils/audience';
+import { buildAudienceFilterEx } from '../utils/audienceEx';
 
 enum NAV_STATUS {
   pass,
@@ -59,7 +59,7 @@ export default class NavController extends Controller {
 
     // Audience filtering (+ legacy hide compatibility)
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-    findParam = buildAudienceFilter(findParam, userCtx);
+    findParam = buildAudienceFilterEx(findParam, userCtx);
 
     // If user is authenticated, include favorite status
     if (isAuthenticated) {
@@ -202,7 +202,7 @@ export default class NavController extends Controller {
 
       // Audience filtering for categories (+ legacy hide compatibility)
       const userCtx = this.ctx.state.userinfo as AuthUserContext | undefined;
-      const categoryFilter: any = buildAudienceFilter(categoryFilterBase, userCtx);
+      const categoryFilter: any = buildAudienceFilterEx(categoryFilterBase, userCtx);
 
       const categorys = await model.Category.find(categoryFilter);
       const categoryIds = categorys.reduce((t, v) => [ ...t, v._id ], []);
@@ -224,7 +224,7 @@ export default class NavController extends Controller {
       }
 
       // Audience filtering for navs (+ legacy hide compatibility)
-      const finalNavFindParam: any = buildAudienceFilter(navFindParam, userCtx);
+      const finalNavFindParam: any = buildAudienceFilterEx(navFindParam, userCtx);
 
       const navs = await model.Nav.find(finalNavFindParam);
 
@@ -276,7 +276,7 @@ export default class NavController extends Controller {
 
       // Audience filtering for single item (+ legacy hide compatibility)
       const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-      const nav = await ctx.model.Nav.findOne(buildAudienceFilter(navQuery, userCtx));
+      const nav = await ctx.model.Nav.findOne(buildAudienceFilterEx(navQuery, userCtx));
       if (nav && nav.categoryId) {
         const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
         if (category) {

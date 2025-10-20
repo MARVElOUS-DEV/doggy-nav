@@ -102,7 +102,8 @@ export default class AuthController extends CommonController {
       const user = await ctx.service.user.getAuthUserForTokens(payload.sub);
       const tokens = await ctx.service.user.generateTokens(user);
       setAuthCookies(ctx, tokens);
-      ctx.state.userinfo = { ...tokens.payload, authType: 'jwt' } as AuthUserContext;
+      const source = (ctx.get('X-App-Source') || '').toLowerCase() === 'admin' ? 'admin' : 'main';
+      ctx.state.userinfo = { ...tokens.payload, authType: 'jwt', source } as AuthUserContext;
       this.success({ token: 'Bearer ' + tokens.accessToken });
     } catch {
       this.error('刷新失败');

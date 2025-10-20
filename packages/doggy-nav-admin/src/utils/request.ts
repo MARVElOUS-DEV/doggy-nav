@@ -3,7 +3,7 @@ import { message, notification } from "antd";
 import { history } from "@umijs/max";
 
 function defaultHeaders() {
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = {'X-App-Source': 'admin'}
   return headers
 }
 
@@ -78,7 +78,7 @@ export function requestConfigure(options= {}): RequestConfig {
     ],
     errorConfig: {
       errorHandler: async (error: any) => {
-        const { response, request, config } = error;
+        const { response, request: eRequest, config } = error;
         const loginPath = '/user/login';
 
         if (!response) {
@@ -92,8 +92,8 @@ export function requestConfigure(options= {}): RequestConfig {
           if (!cfg.__retried) {
             try {
               cfg.__retried = true;
-              await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-              let resolvedUrl: string = cfg.__finalUrl || request?.responseUrl || '';
+              await umiRequest('/api/auth/refresh', { method: 'POST', withCredentials: true});
+              let resolvedUrl: string = cfg.__finalUrl || eRequest?.responseUrl || '';
               if (typeof resolvedUrl === 'string' && resolvedUrl.length > 1) {
                 const retryResp = await umiRequest(resolvedUrl, { ...cfg, __retried: true });
                 return retryResp;
@@ -102,8 +102,10 @@ export function requestConfigure(options= {}): RequestConfig {
               console.error('silent refresh failed:', e);
             }
           }
-          notification.error({ description: '您的登录已过期，请重新登录', message: '登录过期' });
-          history.push(loginPath);
+          if (location.pathname !== loginPath) {
+            history.push(loginPath);
+          }
+          return;
         } else if (response.status >= 500) {
           notification.error({
             description: '服务器发生错误，请稍后重试',

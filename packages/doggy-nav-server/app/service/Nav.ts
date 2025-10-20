@@ -1,4 +1,4 @@
-import { buildAudienceFilter } from '../utils/audience';
+import { buildAudienceFilterEx } from '../utils/audienceEx';
 import { Service } from 'egg';
 import { SortOrder } from 'mongoose';
 
@@ -15,7 +15,7 @@ export default class NavService extends Service {
     const baseQuery: any = { status: NAV_STATUS.pass };
 
     // Audience filtering
-    const finalQuery = buildAudienceFilter(baseQuery, userCtx);
+    const finalQuery = buildAudienceFilterEx(baseQuery, userCtx as any);
 
     const docs = await this.ctx.model.Nav.find(finalQuery).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
     return docs.map(doc => doc.toJSON());

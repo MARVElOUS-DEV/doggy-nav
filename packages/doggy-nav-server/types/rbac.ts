@@ -27,4 +27,7 @@ export interface AuthJwtPayload {
 // Context object stored on ctx.state.userinfo during requests
 export interface AuthUserContext extends AuthJwtPayload {
   authType?: 'jwt' | 'client_secret';
+  // Request-scoped fields (not part of JWT payload)
+  source?: 'main' | 'admin';
+  effectiveRoles?: string[];
 }
