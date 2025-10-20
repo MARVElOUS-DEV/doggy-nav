@@ -32,23 +32,23 @@ export const routePermissions: RoutePermission[] = [
   { method: 'GET', path: '/api/user/profile', require: { level: 'authenticated' }, description: 'Get user profile' },
   { method: 'PUT', path: '/api/user/profile', require: { level: 'authenticated' }, description: 'Update user profile' },
   // User management
-  { method: 'GET', path: '/api/user', require: { anyRole: ['superadmin'] }, description: 'List users' },
-  { method: 'GET', path: '/api/user/:id', require: { anyRole: ['superadmin'] }, description: 'Get user detail' },
-  { method: 'POST', path: '/api/user', require: { anyRole: ['superadmin'] }, description: 'Create user' },
-  { method: 'PATCH', path: '/api/user/:id', require: { anyRole: ['superadmin'] }, description: 'Update user' },
-  { method: 'DELETE', path: '/api/user', require: { anyRole: ['superadmin'] }, description: 'Delete users' },
+  { method: 'GET', path: '/api/user', require: { anyRole: ['sysadmin'] }, description: 'List users' },
+  { method: 'GET', path: '/api/user/:id', require: { anyRole: ['sysadmin'] }, description: 'Get user detail' },
+  { method: 'POST', path: '/api/user', require: { anyRole: ['sysadmin'] }, description: 'Create user' },
+  { method: 'PATCH', path: '/api/user/:id', require: { anyRole: ['sysadmin'] }, description: 'Update user' },
+  { method: 'DELETE', path: '/api/user', require: { anyRole: ['sysadmin'] }, description: 'Delete users' },
   
   { method: 'GET', path: '/api/roles', require: { level: 'optional' }, description: 'List roles (filtered by current user context)' },
   { method: 'GET', path: '/api/groups', require: { level: 'optional' }, description: 'List groups (filtered by current user context)' },
-  // RBAC management (superadmin only)
-  { method: 'POST', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Create role' },
-  { method: 'PUT', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Update role' },
-  { method: 'DELETE', path: '/api/roles', require: { anyRole: ['superadmin'] }, description: 'Delete role' },
-  { method: 'POST', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Create group' },
-  { method: 'PUT', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Update group' },
-  { method: 'GET', path: '/api/groups/:id', require: { anyRole: ['superadmin'] }, description: 'Get group detail' },
-  { method: 'PUT', path: '/api/groups/:id', require: { anyRole: ['superadmin'] }, description: 'Update group by ID' },
-  { method: 'DELETE', path: '/api/groups', require: { anyRole: ['superadmin'] }, description: 'Delete group' },
+  // RBAC management (sysadmin only)
+  { method: 'POST', path: '/api/roles', require: { anyRole: ['sysadmin'] }, description: 'Create role' },
+  { method: 'PUT', path: '/api/roles', require: { anyRole: ['sysadmin'] }, description: 'Update role' },
+  { method: 'DELETE', path: '/api/roles', require: { anyRole: ['sysadmin'] }, description: 'Delete role' },
+  { method: 'POST', path: '/api/groups', require: { anyRole: ['sysadmin'] }, description: 'Create group' },
+  { method: 'PUT', path: '/api/groups', require: { anyRole: ['sysadmin'] }, description: 'Update group' },
+  { method: 'GET', path: '/api/groups/:id', require: { anyRole: ['sysadmin'] }, description: 'Get group detail' },
+  { method: 'PUT', path: '/api/groups/:id', require: { anyRole: ['sysadmin'] }, description: 'Update group by ID' },
+  { method: 'DELETE', path: '/api/groups', require: { anyRole: ['sysadmin'] }, description: 'Delete group' },
   // invite-codes
   { method: 'GET', path: '/api/invite-codes/list', require: { anyRole: ['admin'] }, description: 'List invite codes' },
   { method: 'POST', path: '/api/invite-codes', require: { anyRole: ['admin'] }, description: 'Create invite codes' },
@@ -146,8 +146,8 @@ export function hasAccess(permission: RoutePermission, user: AuthUserContext | u
   if (!req) return !!user; // default to authenticated
   if (req.level === 'public' || req.level === 'optional') return true;
   if (!user) return false;
-  // superadmin bypass (role-based)
-  if (Array.isArray(user.roles) && user.roles.includes('superadmin')) return true;
+  // sysadmin bypass (role-based)
+  if (Array.isArray(user.roles) && user.roles.includes('sysadmin')) return true;
   if (req.level === 'authenticated') return true;
 
   const roles: string[] = Array.isArray(user.roles) ? user.roles : [];

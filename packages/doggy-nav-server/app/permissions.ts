@@ -60,8 +60,8 @@ export const PERMISSIONS = {
 export type PermissionCode = typeof PERMISSIONS[keyof typeof PERMISSIONS] | '*';
 
 export const DEFAULT_ROLES = {
-  superadmin: {
-    slug: 'superadmin',
+  sysadmin: {
+    slug: 'sysadmin',
     displayName: 'Super Admin',
     isSystem: true,
     permissions: ['*'] as PermissionCode[],

@@ -16,7 +16,7 @@ export interface GroupRef {
 export interface AuthJwtPayload {
   userId: string;
   username: string;
-  isSuperAdmin: boolean;
+  isSysAdmin: boolean;
   roles: string[];     // role slugs
   roleIds: string[];   // role ids as strings
   groups: string[];    // group slugs

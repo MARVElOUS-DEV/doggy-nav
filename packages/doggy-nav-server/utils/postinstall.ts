@@ -61,12 +61,12 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
       }
     }
 
-    // Map existing isAdmin users to superadmin role
-    const superAdminRole = roleDocs['superadmin'] || await roleSchemaModel.findOne({ slug: 'superadmin' });
-    if (superAdminRole) {
-      // ensure the created/updated admin user is superadmin
-      await userSchemaModel.updateOne({ username: finalUsername }, { $addToSet: { roles: superAdminRole._id } });
-      console.info(`ensured ${finalUsername} has superadmin role ✅`);
+    // Map existing isAdmin users to sysadmin role
+    const sysAdminRole = roleDocs['sysadmin'] || await roleSchemaModel.findOne({ slug: 'sysadmin' });
+    if (sysAdminRole) {
+      // ensure the created/updated admin user is sysadmin
+      await userSchemaModel.updateOne({ username: finalUsername }, { $addToSet: { roles: sysAdminRole._id } });
+      console.info(`ensured ${finalUsername} has sysadmin role ✅`);
     }
 
 

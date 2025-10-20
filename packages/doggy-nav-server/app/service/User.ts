@@ -19,14 +19,14 @@ export default class UserService extends Service {
     const groupSlugs: string[] = groups.map((g: any) => g?.slug || g).filter(Boolean);
     const roleIds: string[] = roles.map((r: any) => (r?._id?.toString?.() ?? r)).filter(Boolean);
     const groupIds: string[] = groups.map((g: any) => (g?._id?.toString?.() ?? g)).filter(Boolean);
-    const isSuperAdmin = roleSlugs.includes('superadmin');
+    const isSysAdmin = roleSlugs.includes('sysadmin');
     const permissions: string[] = Array.isArray(user?.computedPermissions)
       ? user.computedPermissions
       : [];
     return {
       userId: (user as any)._id?.toString?.() ?? (user as any).id,
       username: user.username,
-      isSuperAdmin,
+      isSysAdmin,
       roles: roleSlugs,
       roleIds,
       groups: groupSlugs,

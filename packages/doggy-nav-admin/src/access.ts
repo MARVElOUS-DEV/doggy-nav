@@ -2,7 +2,7 @@
 export default function access(initialState: { currentUser?: any } = {}) {
   const { currentUser } = initialState || {};
   const roles: string[] = currentUser?.roles || [];
-  const isSuperadmin = roles.includes('superadmin');
-  const isAdmin = isSuperadmin || roles.includes('admin');
-  return { isAdmin, isSuperadmin } as const;
+  const isSysadmin = roles.includes('sysadmin');
+  const isAdmin = isSysadmin || roles.includes('admin');
+  return { isAdmin, isSysadmin } as const;
 }

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Space, Button, Badge, Avatar, Dropdown, Typography, Row, Col, message } from 'antd';
 import {
-  SearchOutlined,
-  BellOutlined,
-  UserOutlined, 
-  LogoutOutlined,
-  CrownOutlined
+    SearchOutlined,
+    BellOutlined,
+    UserOutlined,
+    LogoutOutlined,
+    CrownOutlined
 } from '@ant-design/icons';
 import { history } from '@umijs/max';
 import './style.less';
@@ -133,16 +133,16 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
                   <div className="user-menu-trigger">
                     <Avatar
                       size="large"
-                      icon={currentUser?.roles?.includes('superadmin') ? <CrownOutlined /> : <UserOutlined />}
+                      icon={currentUser?.roles?.includes('sysadmin') ? <CrownOutlined /> : <UserOutlined />}
                       style={{
-                        backgroundColor: currentUser?.roles?.includes('superadmin') ? '#f5222d' : '#1890ff',
+                        backgroundColor: currentUser?.roles?.includes('sysadmin') ? '#f5222d' : '#1890ff',
                         cursor: 'pointer',
                         marginRight: 8,
-                        border: currentUser?.roles?.includes('superadmin') ? '2px solid #ffd700' : 'none'
+                        border: currentUser?.roles?.includes('sysadmin') ? '2px solid #ffd700' : 'none'
                       }}
                     />
                     <span style={{ cursor: 'pointer' }}>
-                      {currentUser?.roles?.includes('superadmin') ? '超级管理员' : '管理员'}
+                      {currentUser?.roles?.includes('sysadmin') ? '超级管理员' : '管理员'}
                     </span>
                   </div>
                 </Dropdown>

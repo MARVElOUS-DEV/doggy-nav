@@ -84,8 +84,8 @@ instance.interceptors.response.use(
             try {
               cfg.__retried = true;
               await axios.post('/api/auth/refresh', {}, { withCredentials: true });
-              const retryUrl: string | undefined = cfg.url || (error.response as any)?.config?.url;
-              if (typeof retryUrl === 'string' && retryUrl.length > 1 && retryUrl !== '/api/') {
+              const retryUrl: string  = cfg.url || error?.request?.responseUrl;
+              if (typeof retryUrl === 'string' && retryUrl.length > 1) {
                 return instance.request({ ...cfg, url: retryUrl });
               }
             } catch {

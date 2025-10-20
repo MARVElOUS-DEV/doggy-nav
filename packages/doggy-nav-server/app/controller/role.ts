@@ -14,7 +14,7 @@ export default class RoleController extends Controller {
     const skipNumber = pageSize * pageNumber - pageSize;
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
     const roles = Array.isArray(userCtx?.roles) ? userCtx!.roles : [];
-    const isAdmin = roles.includes('superadmin') || roles.includes('admin');
+    const isAdmin = roles.includes('sysadmin') || roles.includes('admin');
 
     const cond = isAdmin ? {} : (roles.length > 0 ? { slug: { $in: roles } } : { _id: { $in: [] } });
 

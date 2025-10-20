@@ -25,7 +25,7 @@ export default class GroupController extends Controller {
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
     const groups = Array.isArray(userCtx?.groups) ? userCtx!.groups : [];
     const roles = Array.isArray(userCtx?.roles) ? userCtx!.roles : [];
-    const isAdmin = roles.includes('superadmin') || roles.includes('admin');
+    const isAdmin = roles.includes('sysadmin') || roles.includes('admin');
 
     const cond = isAdmin ? {} : (groups.length > 0 ? { slug: { $in: groups } } : { _id: { $in: [] } });
 
