@@ -1,10 +1,10 @@
+import { PlusOutlined } from '@ant-design/icons';
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { Access, useRequest } from '@umijs/max';
 import { Button, Modal, Space, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
 import RoleModal from './modal';
 
 const RolePage: React.FC = () => {
@@ -21,7 +21,7 @@ const RolePage: React.FC = () => {
         setSelectedRows([]);
         actionRef.current?.reloadAndRest?.();
       },
-    }
+    },
   );
 
   const handleDelete = (ids: string[]) => {
@@ -45,7 +45,11 @@ const RolePage: React.FC = () => {
       title: '权限数',
       dataIndex: 'permissions',
       hideInSearch: true,
-      render: (_, r: any) => <Tag color="blue">{Array.isArray(r?.permissions) ? r.permissions.length : 0}</Tag>,
+      render: (_, r: any) => (
+        <Tag color="blue">
+          {Array.isArray(r?.permissions) ? r.permissions.length : 0}
+        </Tag>
+      ),
     },
     { title: '创建时间', dataIndex: 'createdAt', hideInSearch: true },
     { title: '更新时间', dataIndex: 'updatedAt', hideInSearch: true },
@@ -54,14 +58,32 @@ const RolePage: React.FC = () => {
       valueType: 'option',
       render: (_, record: any) => (
         <Space>
-          <Button type="link" onClick={() => { setEditingId(record._id); setModalOpen(true); }}>编辑</Button>
-          <Button type="text" loading={deleteLoading} danger onClick={() => handleDelete([record._id])}>删除</Button>
+          <Button
+            type="link"
+            onClick={() => {
+              setEditingId(record.id);
+              setModalOpen(true);
+            }}
+          >
+            编辑
+          </Button>
+          <Button
+            type="text"
+            loading={deleteLoading}
+            danger
+            onClick={() => handleDelete([record.id])}
+          >
+            删除
+          </Button>
         </Space>
       ),
     },
   ];
 
-  const { loading, run } = useRequest((params) => ({ method: 'GET', url: '/api/roles', params }), { manual: true });
+  const { loading, run } = useRequest(
+    (params) => ({ method: 'GET', url: '/api/roles', params }),
+    { manual: true },
+  );
 
   return (
     <PageContainer header={{ title: false }}>
@@ -69,20 +91,35 @@ const RolePage: React.FC = () => {
         <RoleModal
           id={editingId}
           open={modalOpen}
-          onClose={() => { setModalOpen(false); setEditingId(undefined); }}
-          onOk={() => { setModalOpen(false); actionRef.current?.reloadAndRest?.(); }}
+          onClose={() => {
+            setModalOpen(false);
+            setEditingId(undefined);
+          }}
+          onOk={() => {
+            setModalOpen(false);
+            actionRef.current?.reloadAndRest?.();
+          }}
         />
       ) : null}
       <ProTable
         scroll={{ x: 'max-content' }}
         actionRef={actionRef}
         loading={loading}
-        rowKey="_id"
+        rowKey="id"
         search={{ labelWidth: 60 }}
         toolBarRender={() => [
           <Access accessible key="add">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingId(undefined); setModalOpen(true); }}>新建</Button>
-          </Access>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setEditingId(undefined);
+                setModalOpen(true);
+              }}
+            >
+              新建
+            </Button>
+          </Access>,
         ]}
         request={async (params) => {
           const res = await run(params);
@@ -93,10 +130,18 @@ const RolePage: React.FC = () => {
       />
       {selectedRows?.length > 0 && (
         <FooterToolbar
-          extra={<div>已选择 <a style={{ fontWeight: 600 }}>{selectedRows.length}</a> 项</div>}
+          extra={
+            <div>
+              已选择 <a style={{ fontWeight: 600 }}>{selectedRows.length}</a> 项
+            </div>
+          }
         >
           <Access accessible key="delete">
-            <Button type="primary" danger onClick={() => handleDelete(selectedRows.map((r) => r._id))}>
+            <Button
+              type="primary"
+              danger
+              onClick={() => handleDelete(selectedRows.map((r) => r.id))}
+            >
               批量删除
             </Button>
           </Access>

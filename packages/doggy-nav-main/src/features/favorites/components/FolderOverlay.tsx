@@ -3,7 +3,17 @@ import { NavItem } from '@/types';
 import FavoriteItem from './FavoriteItem';
 import { X } from 'lucide-react';
 
-export default function FolderOverlay({ name, items, onClose, onRemove }: { name?: string; items: NavItem[]; onClose: () => void; onRemove?: (navId: string) => void }) {
+export default function FolderOverlay({
+  name,
+  items,
+  onClose,
+  onRemove,
+}: {
+  name?: string;
+  items: NavItem[];
+  onClose: () => void;
+  onRemove?: (navId: string) => void;
+}) {
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -29,7 +39,7 @@ export default function FolderOverlay({ name, items, onClose, onRemove }: { name
           ) : null}
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
             {items.map((it) => (
-              <FavoriteItem key={(it as any).id || (it as any)._id || it.href} item={it} onRemove={onRemove} />
+              <FavoriteItem key={(it as any).id || it.href} item={it} onRemove={onRemove} />
             ))}
           </div>
         </div>

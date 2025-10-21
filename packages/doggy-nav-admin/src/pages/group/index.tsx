@@ -43,7 +43,7 @@ const GroupPage: React.FC = () => {
     });
   };
   const handleEdit = (record) => {
-    setId(record._id);
+    setId(record.id);
     setDrawerVisible(true);
   };
   const renderActions = (text: string, record) => (
@@ -54,7 +54,7 @@ const GroupPage: React.FC = () => {
       <Button
         type="link"
         onClick={() => {
-          setMemberGroupId(record._id);
+          setMemberGroupId(record.id);
           setMemberModalOpen(true);
         }}
       >
@@ -64,7 +64,7 @@ const GroupPage: React.FC = () => {
         type="text"
         loading={deleteLoading}
         danger
-        onClick={() => handleDelete([record._id])}
+        onClick={() => handleDelete([record.id])}
       >
         删除
       </Button>
@@ -141,7 +141,7 @@ const GroupPage: React.FC = () => {
         scroll={{ x: 'max-content' }}
         actionRef={actionRef}
         loading={loading}
-        rowKey="_id"
+        rowKey="id"
         search={{
           labelWidth: 60,
         }}
@@ -187,7 +187,7 @@ const GroupPage: React.FC = () => {
               type="primary"
               danger
               onClick={async () => {
-                handleDelete(selectedRows.map((item) => item._id));
+                handleDelete(selectedRows.map((item) => item.id));
               }}
             >
               批量删除

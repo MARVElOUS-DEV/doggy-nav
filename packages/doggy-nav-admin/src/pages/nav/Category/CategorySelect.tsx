@@ -1,9 +1,9 @@
-import { Select } from "antd";
+import { API_CATEGORY_LIST } from '@/services/api';
+import { CategoryModel } from '@/types/api';
+import request from '@/utils/request';
 import type { SelectProps } from 'antd';
-import request from "@/utils/request";
-import { API_CATEGORY_LIST } from "@/services/api";
-import { useEffect, useMemo, useState } from "react";
-import { CategoryModel } from "@/types/api";
+import { Select } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 
 interface CategorySelectProps {
   onChange?: (value: string) => void;
@@ -16,25 +16,25 @@ export default function CategorySelect(props: CategorySelectProps) {
   const [categoryList, setCategoryList] = useState<CategoryModel[]>([]);
   const [internalValue, setInternalValue] = useState<string>('');
 
-  useEffect(()=> {
+  useEffect(() => {
     let isMounted = true;
 
     async function getCategoryList() {
       const res = await request({
         url: API_CATEGORY_LIST,
-        method: 'GET'
-      })
+        method: 'GET',
+      });
       if (isMounted) {
-        setCategoryList(res.data)
+        setCategoryList(res.data);
       }
     }
 
-    getCategoryList()
+    getCategoryList();
 
     return () => {
       isMounted = false;
     };
-  }, [])
+  }, []);
 
   function onSelectChange(value: string) {
     setInternalValue(value);
@@ -47,15 +47,16 @@ export default function CategorySelect(props: CategorySelectProps) {
 
   const options = useMemo<SelectProps['options']>(() => {
     return (categoryList || []).map((item) => {
-      const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+      const hasChildren =
+        Array.isArray(item.children) && item.children.length > 0;
       if (!hasChildren) {
-        return { label: item.name, value: item._id };
+        return { label: item.name, value: item.id };
       }
       return {
         label: item.name,
         options: [
-          { label: item.name, value: item._id },
-          ...item.children.map((sub) => ({ label: sub.name, value: sub._id })),
+          { label: item.name, value: item.id },
+          ...item.children.map((sub) => ({ label: sub.name, value: sub.id })),
         ],
       } as any;
     });
@@ -69,5 +70,5 @@ export default function CategorySelect(props: CategorySelectProps) {
       optionFilterProp="label"
       options={options}
     />
-  )
+  );
 }

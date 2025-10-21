@@ -1,34 +1,33 @@
-import { Button, Popconfirm } from "antd";
-import request from "@/utils/request";
-import { API_CATEGORY, API_CATEGORY_LIST } from "@/services/api";
-import { ActionType, ProColumns } from "@ant-design/pro-table";
-import { PlusOutlined } from "@ant-design/icons";
-import useTableComPopup from "@/components/TableCom/useTableComPopup";
-import CategoryForm from "@/pages/nav/Category/CategoryForm";
-import { useRef, useState } from "react";
-import { CategoryModel } from "@/types/api";
-import TableCom from "@/components/TableCom";
-import { getIconComponent } from "@/utils/helpers";
-
+import TableCom from '@/components/TableCom';
+import useTableComPopup from '@/components/TableCom/useTableComPopup';
+import CategoryForm from '@/pages/nav/Category/CategoryForm';
+import { API_CATEGORY, API_CATEGORY_LIST } from '@/services/api';
+import { CategoryModel } from '@/types/api';
+import { getIconComponent } from '@/utils/helpers';
+import request from '@/utils/request';
+import { PlusOutlined } from '@ant-design/icons';
+import { ActionType, ProColumns } from '@ant-design/pro-table';
+import { Button, Popconfirm } from 'antd';
+import { useRef, useState } from 'react';
 
 function transformCategoryList(list: any) {
-  const newList: any = []
-  list.map(item => {
-    const listItem: any = { key: item._id, ...item, children: [] }
+  const newList: any = [];
+  list.map((item) => {
+    const listItem: any = { key: item.id, ...item, children: [] };
     if (Array.isArray(item.children)) {
-      item.children.map(subItem => {
-        listItem.children.push({ key: subItem._id, ...subItem })
+      item.children.map((subItem) => {
+        listItem.children.push({ key: subItem.id, ...subItem });
         return subItem;
-      })
+      });
     }
-    newList.push(listItem)
+    newList.push(listItem);
     return item;
-  })
-  return newList
+  });
+  return newList;
 }
 
 export default function NavAuditListPage() {
-  const formProps = useTableComPopup()
+  const formProps = useTableComPopup();
   const tableRef = useRef<ActionType>();
   const [categoryList, setCategoryList] = useState<{ key: string }[]>([]);
 
@@ -36,12 +35,12 @@ export default function NavAuditListPage() {
     const res = await request({
       url: API_CATEGORY_LIST,
       method: 'GET',
-    })
-    const data = transformCategoryList(res.data)
-    setCategoryList(data)
+    });
+    const data = transformCategoryList(res.data);
+    setCategoryList(data);
     return {
       data,
-    }
+    };
   }
 
   async function onDelete(id: string, action: any) {
@@ -52,15 +51,22 @@ export default function NavAuditListPage() {
         id,
       },
       msg: '删除成功',
-    })
-    action.reload()
+    });
+    action.reload();
   }
 
   const columns: ProColumns[] = [
     {
       title: '分类名',
       dataIndex: 'name',
-      render: (_text, record) => (<><span style={{marginRight: '4px'}}>{getIconComponent(record.icon)}</span><span>{record.name}</span></>)
+      render: (_text, record) => (
+        <>
+          <span style={{ marginRight: '4px' }}>
+            {getIconComponent(record.icon)}
+          </span>
+          <span>{record.name}</span>
+        </>
+      ),
     },
     {
       title: '显示在菜单',
@@ -69,7 +75,7 @@ export default function NavAuditListPage() {
       valueEnum: {
         true: { text: '显示', status: 'Success' },
         false: { text: '不显示', status: 'Error' },
-      }
+      },
     },
     {
       title: '描述',
@@ -79,7 +85,7 @@ export default function NavAuditListPage() {
       title: '显示在菜单',
       dataIndex: 'createAtDate',
     },
-  ]
+  ];
   return (
     <>
       <TableCom
@@ -89,19 +95,39 @@ export default function NavAuditListPage() {
         request={onRequestData}
         toolbar={{
           actions: [
-            <Button key="add" type='primary' onClick={() => formProps.show()} icon={<PlusOutlined />}>
+            <Button
+              key="add"
+              type="primary"
+              onClick={() => formProps.show()}
+              icon={<PlusOutlined />}
+            >
               添加分类
-            </Button>
+            </Button>,
           ],
         }}
-        renderOptions={(text, record: CategoryModel, _, action) => ([
-          <a key="edit" onClick={() => formProps.show({ type: 'edit', data: record, action })}>编辑</a>,
-          <Popconfirm key="delete" title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
+        renderOptions={(text, record: CategoryModel, _, action) => [
+          <a
+            key="edit"
+            onClick={() =>
+              formProps.show({ type: 'edit', data: record, action })
+            }
+          >
+            编辑
+          </a>,
+          <Popconfirm
+            key="delete"
+            title={'确定删除吗？'}
+            onConfirm={() => onDelete(record.id, action)}
+          >
             <a>删除</a>
           </Popconfirm>,
-        ])}
-        />
-      <CategoryForm {...formProps} tableRef={tableRef.current} categoryList={categoryList} />
+        ]}
+      />
+      <CategoryForm
+        {...formProps}
+        tableRef={tableRef.current}
+        categoryList={categoryList}
+      />
     </>
   );
 }

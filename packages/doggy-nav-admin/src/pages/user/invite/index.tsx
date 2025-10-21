@@ -1,11 +1,29 @@
-import React, { useRef, useState } from 'react';
-import { Button, Form, InputNumber, message, Modal, Space, Tag, Tooltip, DatePicker, Input, Switch, Typography } from 'antd';
-import type { ProColumns } from '@ant-design/pro-table';
 import TableCom from '@/components/TableCom';
-import { createInviteCodes, updateInviteCode, revokeInviteCode, API_INVITE_CODES_LIST } from '@/services/api';
+import {
+  API_INVITE_CODES_LIST,
+  createInviteCodes,
+  revokeInviteCode,
+  updateInviteCode,
+} from '@/services/api';
+import type { ProColumns } from '@ant-design/pro-table';
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Space,
+  Switch,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
+import React, { useRef, useState } from 'react';
 
 interface InviteCodeRecord {
-  _id: string;
+  id: string;
   code: string;
   usageLimit: number;
   usedCount: number;
@@ -21,10 +39,15 @@ const InviteCodePage: React.FC = () => {
   const tableRef = useRef<any>();
   const [generateVisible, setGenerateVisible] = useState(false);
   const [editRecord, setEditRecord] = useState<InviteCodeRecord | null>(null);
-  const [filters, setFilters] = useState({ code: '', active: undefined as boolean | undefined });
+  const [filters, setFilters] = useState({
+    code: '',
+    active: undefined as boolean | undefined,
+  });
   const [generateForm] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [recentCodes, setRecentCodes] = useState<Array<{ code: string; id: string }>>([]);
+  const [recentCodes, setRecentCodes] = useState<
+    Array<{ code: string; id: string }>
+  >([]);
 
   const columns: ProColumns<InviteCodeRecord>[] = [
     {
@@ -46,7 +69,12 @@ const InviteCodePage: React.FC = () => {
       title: '状态',
       dataIndex: 'active',
       search: false,
-      render: (_, record) => (record.active ? <Tag color="green">启用</Tag> : <Tag color="red">停用</Tag>),
+      render: (_, record) =>
+        record.active ? (
+          <Tag color="green">启用</Tag>
+        ) : (
+          <Tag color="red">停用</Tag>
+        ),
     },
     {
       title: '邮箱域名',
@@ -85,7 +113,10 @@ const InviteCodePage: React.FC = () => {
 
   const handleGenerate = async (values: any) => {
     try {
-      if (values.expiresAt && typeof (values.expiresAt as any).toDate === 'function') {
+      if (
+        values.expiresAt &&
+        typeof (values.expiresAt as any).toDate === 'function'
+      ) {
         values.expiresAt = (values.expiresAt as any).toDate().toISOString();
       }
       const res = await createInviteCodes(values);
@@ -103,10 +134,13 @@ const InviteCodePage: React.FC = () => {
   const handleUpdate = async (values: any) => {
     if (!editRecord) return;
     try {
-      if (values.expiresAt && typeof (values.expiresAt as any).toDate === 'function') {
+      if (
+        values.expiresAt &&
+        typeof (values.expiresAt as any).toDate === 'function'
+      ) {
         values.expiresAt = (values.expiresAt as any).toDate().toISOString();
       }
-      await updateInviteCode(editRecord._id, values);
+      await updateInviteCode(editRecord.id, values);
       message.success('更新成功');
       editForm.resetFields();
       setEditRecord(null);
@@ -126,7 +160,10 @@ const InviteCodePage: React.FC = () => {
         requestParams={{ url: API_INVITE_CODES_LIST, method: 'GET' }}
         defaultRequestData={{
           code: filters.code || undefined,
-          active: typeof filters.active === 'boolean' ? String(filters.active) : undefined,
+          active:
+            typeof filters.active === 'boolean'
+              ? String(filters.active)
+              : undefined,
         }}
         toolbar={{
           actions: [
@@ -135,7 +172,7 @@ const InviteCodePage: React.FC = () => {
               allowClear
               placeholder="搜索邀请码"
               onSearch={(value) => {
-                setFilters(prev => ({ ...prev, code: value }));
+                setFilters((prev) => ({ ...prev, code: value }));
                 setTimeout(() => tableRef.current?.reload?.(), 0);
               }}
               style={{ width: 200 }}
@@ -145,14 +182,21 @@ const InviteCodePage: React.FC = () => {
               checkedChildren="仅启用"
               unCheckedChildren="全部"
               onChange={(checked) => {
-                setFilters(prev => ({ ...prev, active: checked ? true : undefined }));
+                setFilters((prev) => ({
+                  ...prev,
+                  active: checked ? true : undefined,
+                }));
                 setTimeout(() => tableRef.current?.reload?.(), 0);
               }}
             />,
-            <Button key="gen" type="primary" onClick={() => setGenerateVisible(true)}>
+            <Button
+              key="gen"
+              type="primary"
+              onClick={() => setGenerateVisible(true)}
+            >
               批量生成
             </Button>,
-          ]
+          ],
         }}
         renderOptions={(_, record) => [
           <a
@@ -173,7 +217,7 @@ const InviteCodePage: React.FC = () => {
             key="revoke"
             onClick={async () => {
               try {
-                await revokeInviteCode(record._id);
+                await revokeInviteCode(record.id);
                 message.success('操作成功');
                 tableRef.current?.reload?.();
               } catch (e: any) {
@@ -199,10 +243,14 @@ const InviteCodePage: React.FC = () => {
           initialValues={{ count: 1, usageLimit: 1 }}
           onFinish={handleGenerate}
         >
-          <Form.Item label="生成数量" name="count" rules={[{ required: true }]}> 
+          <Form.Item label="生成数量" name="count" rules={[{ required: true }]}>
             <InputNumber min={1} max={100} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item label="使用次数" name="usageLimit" rules={[{ required: true }]}> 
+          <Form.Item
+            label="使用次数"
+            name="usageLimit"
+            rules={[{ required: true }]}
+          >
             <InputNumber min={1} max={1000} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item label="过期时间" name="expiresAt">
@@ -217,14 +265,16 @@ const InviteCodePage: React.FC = () => {
           {recentCodes.length > 0 && (
             <Form.Item label="最近生成">
               <Typography.Paragraph copyable style={{ marginBottom: 0 }}>
-                {recentCodes.map(item => item.code).join(', ')}
+                {recentCodes.map((item) => item.code).join(', ')}
               </Typography.Paragraph>
             </Form.Item>
           )}
           <Form.Item>
             <Space>
               <Button onClick={() => setGenerateVisible(false)}>取消</Button>
-              <Button type="primary" htmlType="submit">生成</Button>
+              <Button type="primary" htmlType="submit">
+                生成
+              </Button>
             </Space>
           </Form.Item>
         </Form>
@@ -237,13 +287,12 @@ const InviteCodePage: React.FC = () => {
         footer={null}
         destroyOnHidden
       >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={handleUpdate}
-        >
+        <Form form={editForm} layout="vertical" onFinish={handleUpdate}>
           <Form.Item label="使用次数上限" name="usageLimit">
-            <InputNumber min={editRecord?.usedCount || 0} style={{ width: '100%' }} />
+            <InputNumber
+              min={editRecord?.usedCount || 0}
+              style={{ width: '100%' }}
+            />
           </Form.Item>
           <Form.Item label="是否启用" name="active" valuePropName="checked">
             <Switch />
@@ -260,7 +309,9 @@ const InviteCodePage: React.FC = () => {
           <Form.Item>
             <Space>
               <Button onClick={() => setEditRecord(null)}>取消</Button>
-              <Button type="primary" htmlType="submit">保存</Button>
+              <Button type="primary" htmlType="submit">
+                保存
+              </Button>
             </Space>
           </Form.Item>
         </Form>
