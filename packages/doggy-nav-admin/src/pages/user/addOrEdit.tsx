@@ -13,6 +13,7 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
     const [form] = Form.useForm();
     const isEdit = !!id;
     const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
+    const [groupOptions, setGroupOptions] = useState<{ label: string; value: string }[]>([]);
 
     const {loading, run: queryRun} = useRequest(`/api/user/${id}`,
         {
@@ -21,6 +22,7 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                 const data = (res && (res as any).data) ? (res as any).data : res;
                 if (!data) return;
                 const roles: string[] = Array.isArray((data as any).roles) ? (data as any).roles.filter((v: any) => typeof v === 'string') : [];
+                const groups: string[] = Array.isArray((data as any).groups) ? (data as any).groups.filter((v: any) => typeof v === 'string') : [];
                 form.setFieldsValue({
                     account: data.account,
                     nickName: data.nickName,
@@ -28,6 +30,7 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                     phone: data.phone,
                     status: data.status,
                     roles,
+                    groups,
                 });
             }
         });
@@ -44,6 +47,21 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                     value: role._id || role.id || role.slug,
                 }));
                 setRoleOptions(options);
+            }
+        }
+    );
+
+    const { loading: groupsLoading, run: getGroups } = useRequest(
+        '/api/groups',
+        {
+            manual: true,
+            onSuccess: (res) => {
+                const raw = (res?.data?.data || res?.data || res || []) as any[];
+                const options = (raw || []).map((g: any) => ({
+                    label: g.displayName || g.slug,
+                    value: g._id || g.id || g.slug,
+                }));
+                setGroupOptions(options);
             }
         }
     );
@@ -74,6 +92,8 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
     useEffect(() => {
         // Load roles regardless of edit/create mode
         getRoles();
+        // Load groups; optional field only when available
+        getGroups();
         
         if (id) {
             queryRun()
@@ -96,7 +116,14 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                 // Send actual role ids via `roles` array; server supports this
                 const selected: string[] = Array.isArray(values.roles) ? values.roles : [];
                 const payload: any = { ...values, roles: selected };
+                // Attach groups when provided (both create and edit)
+                const gs: string[] = Array.isArray(values.groups) ? values.groups : [];
+                if (gs.length > 0) payload.groups = gs;
                 delete payload.role;
+                // Do not send empty groups field
+                if ('groups' in payload && (!Array.isArray(payload.groups) || payload.groups.length === 0)) {
+                  delete payload.groups;
+                }
                 saveRun(payload)
             }}
         >
@@ -164,6 +191,19 @@ const AddOrEdit: React.FC<any> = ({setDrawerVisible, id, actionRef}) => {
                 }}
                 rules={[{required: true, message: '请选择至少一个角色'}]}
             />
+            {(groupOptions.length > 0) ? (
+              <ProFormSelect
+                name="groups"
+                width="md"
+                label={isEdit ? '用户组' : '用户组（可选）'}
+                placeholder="请选择所属用户组"
+                options={groupOptions}
+                fieldProps={{
+                  mode: 'multiple',
+                  loading: groupsLoading,
+                }}
+              />
+            ) : null}
         </DrawerForm>
     );
 };

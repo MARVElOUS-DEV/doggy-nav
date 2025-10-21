@@ -117,6 +117,7 @@ const UserPage: React.FC = () => {
         },
         {
             title: '操作',
+            fixed: 'right',
             valueType: 'option',
             render: renderActions,
         },
@@ -142,7 +143,7 @@ const UserPage: React.FC = () => {
                 loading={loading}
                 rowKey="id"
                 search={{
-                    labelWidth: 60,
+                  labelWidth: 60,
                 }}
                 toolBarRender={() => [
                     <Access accessible key='add'>
@@ -150,8 +151,8 @@ const UserPage: React.FC = () => {
                             key="add"
                             type="primary"
                             onClick={() => {
-                                setId('')
-                                setDrawerVisible(true)
+                              setId('')
+                              setDrawerVisible(true)
                             }}
                         >
                             新建

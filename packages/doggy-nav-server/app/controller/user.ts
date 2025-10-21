@@ -1,6 +1,6 @@
 import CommonController from '../core/base_controller';
 import { AuthenticationError } from '../core/errors';
-import { setAuthCookies } from '../utils/authCookie';
+import { EnforceAdminOnAdminSource } from '../utils/decorators';
 
 export default class UserController extends CommonController {
   tableName(): string {
@@ -13,14 +13,11 @@ export default class UserController extends CommonController {
     this.success(res);
   }
 
+  @EnforceAdminOnAdminSource()
   public async login() {
     const { ctx } = this;
     const res = await ctx.service.user.login();
-    setAuthCookies(ctx, res.tokens);
-    this.success({
-      token: res.token,
-      user: res.user,
-    });
+    return res;
   }
 
   public async profile() {
@@ -94,6 +91,8 @@ export default class UserController extends CommonController {
       role: Array.isArray(u.roles) && u.roles.length > 0 ? 'admin' : 'default',
       // return actual role ids for admin edit form (multi-role assignment)
       roles: Array.isArray(u.roles) ? (u.roles as any[]).map((r) => (typeof r === 'string' ? r : r?.toString?.() || '')) : [],
+      // return group ids for edit form
+      groups: Array.isArray(u.groups) ? (u.groups as any[]).map((g) => (typeof g === 'string' ? g : g?.toString?.() || '')) : [],
     });
   }
 
@@ -136,6 +135,8 @@ export default class UserController extends CommonController {
       nickName: body.nickName || username,
       phone: body.phone || '',
       roles: finalRoleIds,
+      // optional groups
+      groups: await this.resolveGroupIds(Array.isArray(body.groups) ? body.groups : []),
     });
     this.success({ id: created._id?.toString?.() });
   }
@@ -177,6 +178,17 @@ export default class UserController extends CommonController {
       update.roles = await this.resolveRoleIds([ roleSlug ]);
     }
 
+    // Optional groups update; allow clearing by []
+    if ('groups' in body) {
+      const ids = Array.isArray(body.groups) ? body.groups.filter((v: any) => typeof v === 'string') : [];
+      if (ids.length > 0) {
+        const docs = await ctx.model.Group.find({ _id: { $in: ids } }, { _id: 1 }).lean();
+        update.groups = docs.map((d: any) => d._id);
+      } else {
+        update.groups = [];
+      }
+    }
+
     if (update.username || update.email) {
       const or: any[] = [];
       if (update.username) or.push({ username: update.username });
@@ -203,5 +215,13 @@ export default class UserController extends CommonController {
     const { ctx } = this;
     const roles = await ctx.model.Role.find({ slug: { $in: slugs } }, { _id: 1 }).lean();
     return roles.map(r => r._id);
+  }
+
+  private async resolveGroupIds(ids: string[]) {
+    const { ctx } = this;
+    const validIds = Array.isArray(ids) ? ids.filter((v: any) => typeof v === 'string') : [];
+    if (!validIds.length) return [] as any[];
+    const groups = await ctx.model.Group.find({ _id: { $in: validIds } }, { _id: 1 }).lean();
+    return groups.map((g: any) => g._id);
   }
 }
