@@ -1,4 +1,5 @@
 import type { Context } from 'egg';
+import { getAppSource, getCookieNames } from './appSource';
 
 interface TokenPair {
   accessToken: string;
@@ -22,22 +23,25 @@ const buildCookieOptions = (_ctx: Context, path: string = '/') => {
 };
 
 export const setAuthCookies = (ctx: Context, tokens: TokenPair) => {
-  // Access token available for all APIs
-  const accessOptions = buildCookieOptions(ctx, '/');
-  ctx.cookies.set('access_token', tokens.accessToken, accessOptions);
+  const src = getAppSource(ctx);
+  const { access, refresh } = getCookieNames(src);
 
-  // Limit refresh token to the refresh endpoint path to avoid sending it on every request
+  const accessOptions = buildCookieOptions(ctx, '/');
+  ctx.cookies.set(access, tokens.accessToken, accessOptions);
+
   if (tokens.refreshToken) {
     const refreshOptions = buildCookieOptions(ctx, '/api/auth/refresh');
-    ctx.cookies.set('refresh_token', tokens.refreshToken, refreshOptions);
+    ctx.cookies.set(refresh, tokens.refreshToken, refreshOptions);
   }
 };
 
 export const clearAuthCookies = (ctx: Context) => {
+  const src = getAppSource(ctx);
+  const { access, refresh } = getCookieNames(src);
   const accessOptions = buildCookieOptions(ctx, '/');
   const refreshOptions = buildCookieOptions(ctx, '/api/auth/refresh');
-  ctx.cookies.set('access_token', '', { ...accessOptions, maxAge: 0 });
-  ctx.cookies.set('refresh_token', '', { ...refreshOptions, maxAge: 0 });
+  ctx.cookies.set(access, '', { ...accessOptions, maxAge: 0 });
+  ctx.cookies.set(refresh, '', { ...refreshOptions, maxAge: 0 });
 };
 
 export const setStateCookie = (ctx: Context, state: string) => {

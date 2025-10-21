@@ -1,5 +1,5 @@
 import Controller from '../core/base_controller';
-import { buildAudienceFilterEx } from '../utils/audienceEx';
+import { buildAudienceFilterEx } from '../utils/audience';
 import type { AuthUserContext } from '../../types/rbac';
 
 export default class CategoryController extends Controller {
@@ -24,7 +24,7 @@ export default class CategoryController extends Controller {
 
       const newData = ctx.service.category.formatCategoryList(data);
       this.success(newData);
-    } catch (error:any) {
+    } catch (error: any) {
       this.error(error.message);
     }
   }
@@ -46,7 +46,7 @@ export default class CategoryController extends Controller {
         ctx.model.Category.deleteOne({ categoryId: id }),
       ]);
       this.success(data);
-    } catch (error:any) {
+    } catch (error: any) {
       this.error(error.message);
     }
   }

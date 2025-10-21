@@ -2,7 +2,7 @@ import { history, RequestConfig, request as umiRequest } from '@umijs/max';
 import { message, notification } from 'antd';
 import { setAccessExpEpochMs } from './session';
 
-function defaultHeaders() {
+export function defaultHeaders() {
   const headers: Record<string, string> = { 'X-App-Source': 'admin' };
   return headers;
 }
@@ -48,8 +48,19 @@ function request(params: RequestOptions): any {
         resolve(res);
       })
       .catch((err) => {
-        console.log(new Error(err));
-        notification.error({ message: err.toString() });
+        try {
+          console.log(new Error(err));
+        } catch {}
+        const status =
+          (err && err.response && err.response.status) || err?.data?.status;
+        const path =
+          typeof window !== 'undefined' ? window.location.pathname : '';
+        // Suppress auth noise on login page or plain 401s
+        if (!(status === 401 || path === '/user/login')) {
+          notification.error({
+            message: err?.message || err?.toString?.() || '请求失败',
+          });
+        }
         reject(err);
       });
   });
@@ -109,6 +120,10 @@ export function requestConfigure(options = {}): RequestConfig {
           const cfg = { ...(config || {}) };
           const failingUrl: string =
             cfg.__finalUrl || eRequest?.responseURL || cfg.url || '';
+          // On login page, do not attempt silent refresh and suppress noise
+          if (location.pathname === loginPath) {
+            return;
+          }
           if (typeof failingUrl === 'string' && isRefreshUrl(failingUrl)) {
             // refresh itself failed -> proceed to logout/redirect
           } else if (cfg.__isRetryRequest) {

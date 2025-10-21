@@ -85,6 +85,7 @@ instance.interceptors.response.use(
 
     let errorMessage = 'Network Error';
     let errorCode = 0;
+    const isLoginPage = typeof window !== 'undefined' && window.location?.pathname?.startsWith('/login');
 
     if (error.response) {
       // Server responded with error status
@@ -105,7 +106,7 @@ instance.interceptors.response.use(
             break;
           }
 
-          if (cfg.__isRetryRequest) {
+          if (cfg.__isRetryRequest || isLoginPage) {
             errorMessage = 'Unauthorized';
             break;
           }
@@ -158,7 +159,10 @@ instance.interceptors.response.use(
 
     // Show error message to user
     if (typeof window !== 'undefined') {
-      Message.error(errorMessage);
+      // Suppress noisy auth errors on login page or plain 401s
+      if (!(errorCode === 401 || isLoginPage)) {
+        Message.error(errorMessage);
+      }
     }
 
     // Create enhanced error object

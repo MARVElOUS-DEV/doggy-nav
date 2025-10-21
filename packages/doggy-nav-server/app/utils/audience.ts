@@ -6,7 +6,10 @@ export interface UserContextLike {
 }
 
 // Path-aware audience $or builder
-export function buildAudienceOrFor(fieldPath = 'audience', userCtx?: UserContextLike | AuthUserContext | null): any[] {
+export function buildAudienceOrFor(
+  fieldPath = 'audience',
+  userCtx?: UserContextLike | AuthUserContext | null
+): any[] {
   const fp = (key: string) => `${fieldPath}.${key}`;
   const or: any[] = [];
 
@@ -14,15 +17,27 @@ export function buildAudienceOrFor(fieldPath = 'audience', userCtx?: UserContext
   or.push({
     $and: [
       { [fp('visibility')]: 'public' },
-      { $or: [ { [fp('allowRoles')]: { $exists: false } }, { [fp('allowRoles.0')]: { $exists: false } } ] },
-      { $or: [ { [fp('allowGroups')]: { $exists: false } }, { [fp('allowGroups.0')]: { $exists: false } } ] },
+      {
+        $or: [
+          { [fp('allowRoles')]: { $exists: false } },
+          { [fp('allowRoles.0')]: { $exists: false } },
+        ],
+      },
+      {
+        $or: [
+          { [fp('allowGroups')]: { $exists: false } },
+          { [fp('allowGroups.0')]: { $exists: false } },
+        ],
+      },
     ],
   });
   or.push({ [fp('visibility')]: { $exists: false } });
 
   if (userCtx) {
-    const isValidObjectIdString = (v: unknown): v is string => typeof v === 'string' && /^[a-fA-F0-9]{24}$/.test(v);
-    const toIdString = (v: unknown) => (typeof v === 'string' ? v : (v as any)?.toString?.() ?? '');
+    const isValidObjectIdString = (v: unknown): v is string =>
+      typeof v === 'string' && /^[a-fA-F0-9]{24}$/.test(v);
+    const toIdString = (v: unknown) =>
+      typeof v === 'string' ? v : ((v as any)?.toString?.() ?? '');
     const roleIds = (Array.isArray((userCtx as any).roleIds) ? (userCtx as any).roleIds : [])
       .map(toIdString)
       .filter(isValidObjectIdString);
@@ -64,8 +79,54 @@ export function buildAudienceOr(userCtx?: UserContextLike | AuthUserContext | nu
 export function buildAudienceFilter(
   base: Record<string, any> = {},
   userCtx?: UserContextLike | AuthUserContext | null,
-  fieldPath = 'audience',
+  fieldPath = 'audience'
 ): Record<string, any> {
   const or = buildAudienceOrFor(fieldPath, userCtx);
-  return Object.keys(base).length > 0 ? { $and: [ base, { $or: or } ] } : { $or: or };
+  return Object.keys(base).length > 0 ? { $and: [base, { $or: or }] } : { $or: or };
+}
+
+function openPublicOnly(fieldPath = 'audience') {
+  const fp = (key: string) => `${fieldPath}.${key}`;
+  return {
+    $or: [
+      { [fp('visibility')]: { $exists: false } },
+      {
+        $and: [
+          { [fp('visibility')]: 'public' },
+          {
+            $or: [
+              { [fp('allowRoles')]: { $exists: false } },
+              { [fp('allowRoles.0')]: { $exists: false } },
+            ],
+          },
+          {
+            $or: [
+              { [fp('allowGroups')]: { $exists: false } },
+              { [fp('allowGroups.0')]: { $exists: false } },
+            ],
+          },
+        ],
+      },
+    ],
+  } as any;
+}
+
+export function buildAudienceFilterEx(
+  base: Record<string, any> = {},
+  ctxUser?: AuthUserContext | null,
+  fieldPath = 'audience'
+) {
+  const roles =
+    Array.isArray(ctxUser?.effectiveRoles) && ctxUser!.effectiveRoles!.length > 0
+      ? ctxUser!.effectiveRoles!
+      : Array.isArray(ctxUser?.roles)
+        ? ctxUser!.roles!
+        : [];
+  const source = (ctxUser as any)?.source === 'admin' ? 'admin' : 'main';
+  if (roles.includes('sysadmin')) return base && Object.keys(base).length ? base : {};
+  if (source === 'main' && roles.includes('viewer')) {
+    const open = openPublicOnly(fieldPath);
+    return Object.keys(base).length ? { $and: [base, open] } : open;
+  }
+  return buildAudienceFilter(base, ctxUser);
 }
