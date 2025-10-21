@@ -93,12 +93,25 @@ export default class CommonController extends Controller {
       const sanitized: any = {};
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
-          // Convert ObjectId to string if present
-          if (key === '_id' && typeof data[key] === 'object' && data[key].toString) {
-            sanitized[key] = data[key].toString();
-          } else {
-            sanitized[key] = this.sanitizeResponseData(data[key]);
+          // Skip internal version key
+          if (key === '__v') continue;
+
+          // Normalize id
+          if (key === '_id') {
+            const raw = (data as any)[key];
+            const id = raw && typeof raw.toString === 'function' ? raw.toString() : raw;
+            sanitized.id = id;
+            continue;
           }
+
+          const value = (data as any)[key];
+          // If the property is named id and is an ObjectId-like, stringify it
+          if (key === 'id' && value && typeof value === 'object' && typeof (value as any).toString === 'function' && !(value instanceof Date)) {
+            sanitized[key] = (value as any).toString();
+            continue;
+          }
+
+          sanitized[key] = this.sanitizeResponseData(value);
         }
       }
 

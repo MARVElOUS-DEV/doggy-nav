@@ -76,7 +76,7 @@ export default class InviteCodeController extends CommonController {
 
     const created = await ctx.model.InviteCode.insertMany(generatedCodes);
     this.success({
-      codes: created.map(c => ({ code: c.code, id: c._id })),
+      codes: created.map(c => ({ code: c.code, id: c._id?.toString?.() ?? c.id })),
     });
   }
 

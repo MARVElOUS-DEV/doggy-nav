@@ -454,7 +454,7 @@ export default class NavController extends Controller {
         this.error('Nav item not found');
         return;
       }
-      this.success({ id: updated._id, view: updated.view });
+      this.success({ id: updated._id?.toString?.() ?? updated.id, view: updated.view });
     } catch (e: any) {
       this.error(e.message || 'Failed to increment view');
     }
@@ -474,7 +474,7 @@ export default class NavController extends Controller {
         this.error('Nav item not found');
         return;
       }
-      this.success({ id: updated._id, star: updated.star });
+      this.success({ id: updated._id?.toString?.() ?? updated.id, star: updated.star });
     } catch (e: any) {
       this.error(e.message || 'Failed to increment star');
     }

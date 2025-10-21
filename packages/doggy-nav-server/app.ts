@@ -1,8 +1,14 @@
 import { Application } from 'egg';
 import { registerOAuthStrategies } from './app/utils/oauth';
+import normalizePlugin from './app/utils/mongoose/normalize';
 
 export default (app: Application) => {
   registerOAuthStrategies(app);
+
+  // Apply global Mongoose schema normalization plugin
+  if (app.mongoose) {
+    app.mongoose.plugin(normalizePlugin as any);
+  }
 
   app.beforeStart(async () => {
     app.logger.info('Application is starting...');

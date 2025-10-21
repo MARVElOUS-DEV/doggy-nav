@@ -81,7 +81,7 @@ async function clientSecretGuard(ctx: any, url: string) {
     if (!isValid) return respond(ctx, 401, '无效的客户端密钥'), false;
     const appInfo = await ctx.service.clientSecret.getApplicationByClientSecret(clientSecret);
     if (appInfo) {
-      ctx.state.clientApplication = { id: appInfo._id, name: appInfo.name, authType: 'client_secret' };
+      ctx.state.clientApplication = { id: appInfo._id?.toString?.() ?? appInfo.id, name: appInfo.name, authType: 'client_secret' };
     }
     return true;
   } catch (e) {
