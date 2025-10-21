@@ -24,7 +24,12 @@ const AddOrEdit: React.FC<AddOrEditProps> = ({
     {
       manual: true,
       onSuccess: (data) => {
-        form.setFieldsValue(data?.data);
+        const g = data?.data || {};
+        form.setFieldsValue({
+          ...g,
+          // map server displayName to form name for edit convenience
+          name: g.displayName || g.name || '',
+        });
       },
     },
   );
@@ -55,7 +60,11 @@ const AddOrEdit: React.FC<AddOrEditProps> = ({
   }, [id]);
 
   const handleSubmit = async (values: any) => {
-    await submit(values);
+    const payload: any = { ...values };
+    if (!payload.displayName && payload.name)
+      payload.displayName = payload.name;
+    delete payload.name; // server schema has no `name`
+    await submit(payload);
   };
 
   return (

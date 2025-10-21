@@ -99,6 +99,16 @@ const UserPage: React.FC = () => {
       },
     },
     {
+      title: '用户组',
+      dataIndex: 'groups',
+      hideInSearch: true,
+      render: (groups: string[]) => {
+        if (!groups || !Array.isArray(groups) || groups.length === 0)
+          return '-';
+        return groups.join(', ');
+      },
+    },
+    {
       title: 'Email',
       dataIndex: 'email',
     },

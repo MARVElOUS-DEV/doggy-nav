@@ -36,6 +36,7 @@ export default (app: Application) => {
   router.post('/api/groups', controller.group.add);
   router.put('/api/groups', controller.group.edit);
   router.put('/api/groups/:id', controller.group.update);
+  router.post('/api/groups/:id/members', controller.group.addMembers);
   router.delete('/api/groups', controller.group.del);
   // invitation code routes
   router.get('/api/invite-codes/list', controller.inviteCode.list);

@@ -48,6 +48,7 @@ export const routePermissions: RoutePermission[] = [
   { method: 'PUT', path: '/api/groups', require: { anyRole: ['sysadmin'] }, description: 'Update group' },
   { method: 'GET', path: '/api/groups/:id', require: { anyRole: ['sysadmin'] }, description: 'Get group detail' },
   { method: 'PUT', path: '/api/groups/:id', require: { anyRole: ['sysadmin'] }, description: 'Update group by ID' },
+  { method: 'POST', path: '/api/groups/:id/members', require: { anyRole: ['sysadmin'] }, description: 'Add users to group' },
   { method: 'DELETE', path: '/api/groups', require: { anyRole: ['sysadmin'] }, description: 'Delete group' },
   // invite-codes
   { method: 'GET', path: '/api/invite-codes/list', require: { anyRole: ['admin'] }, description: 'List invite codes' },

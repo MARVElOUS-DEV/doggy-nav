@@ -67,4 +67,16 @@ export default class GroupController extends Controller {
   async del() {
     await super.remove();
   }
+
+  async addMembers() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+    const userIds: string[] = Array.isArray(ctx.request.body?.userIds) ? ctx.request.body.userIds : [];
+    if (!id) return this.error('缺少分组ID');
+    if (!userIds.length) return this.error('缺少用户ID列表');
+    const group = await ctx.model.Group.findById(id).lean();
+    if (!group) return this.error('Group not found');
+    const result: any = await ctx.model.User.updateMany({ _id: { $in: userIds } }, { $addToSet: { groups: id } });
+    this.success({ modified: result.modifiedCount || result.nModified || 0 });
+  }
 }

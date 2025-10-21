@@ -57,7 +57,14 @@ export default class UserController extends CommonController {
     }
 
     const [ users, total ] = await Promise.all([
-      ctx.model.User.find(where).skip(skipNumber).limit(pageSize).sort({ _id: -1 }).lean().select('-__v'),
+      ctx.model.User
+        .find(where)
+        .skip(skipNumber)
+        .limit(pageSize)
+        .sort({ _id: -1 })
+        .select('-__v')
+        .populate('groups', 'slug displayName')
+        .lean(),
       ctx.model.User.countDocuments(where),
     ]);
 
@@ -68,6 +75,7 @@ export default class UserController extends CommonController {
       avatar: u.avatar || '',
       email: u.email,
       role: Array.isArray(u.roles) && u.roles.length > 0 ? 'admin' : 'default',
+      groups: Array.isArray(u.groups) ? (u.groups as any[]).map((g: any) => g?.displayName || g?.slug || '').filter(Boolean) : [],
       status: u.isActive ? 1 : 0,
       createdAt: u.createdAt,
       updatedAt: u.updatedAt,
