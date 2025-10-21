@@ -7,7 +7,7 @@ export default function(app: any) {
     displayName: { type: String, required: true },
     description: { type: String, default: '' },
     permissions: { type: [ String ], default: [] },
-    isSystem: { type: Boolean, default: false },
+    isSystem: { type: Boolean, default: false }, // system defined roles
   }, {
     collection: 'role',
     timestamps: true,

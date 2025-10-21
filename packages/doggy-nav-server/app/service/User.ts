@@ -136,6 +136,9 @@ export default class UserService extends Service {
     const randomPassword = randomBytes(16).toString('hex');
     const hashedPassword = await this.hashPassword(randomPassword);
 
+    // assign default role "user" if exists
+    const defaultUserRole = await ctx.model.Role.findOne({ slug: 'user' }, { _id: 1 }).lean();
+
     const user = await ctx.model.User.create({
       username: usernameCandidate,
       email,
@@ -143,6 +146,7 @@ export default class UserService extends Service {
       isAdmin: false,
       isActive: true,
       avatar: params.avatar || null,
+      roles: defaultUserRole ? [ (defaultUserRole as any)._id ] : [],
     });
 
     return user;
@@ -274,11 +278,15 @@ export default class UserService extends Service {
 
     const hashedPassword = await this.hashPassword(password);
 
+    // default role
+    const defaultUserRole = await ctx.model.Role.findOne({ slug: 'user' }, { _id: 1, slug: 1 }).lean();
+
     const newUser = await ctx.model.User.create({
       username: username.trim(),
       email: email.toLowerCase().trim(),
       password: hashedPassword,
       isActive: true,
+      roles: defaultUserRole ? [ (defaultUserRole as any)._id ] : [],
     });
 
     if (invite) {
@@ -299,7 +307,7 @@ export default class UserService extends Service {
         id: newUser._id,
         username: newUser.username,
         email: newUser.email,
-        roles: [],
+        roles: defaultUserRole ? [ 'user' ] : [],
         groups: [],
         permissions: [],
         createdAt: newUser.createdAt,

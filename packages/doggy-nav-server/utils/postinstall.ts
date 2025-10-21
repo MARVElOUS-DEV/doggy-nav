@@ -61,7 +61,6 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
       }
     }
 
-    // Map existing isAdmin users to sysadmin role
     const sysAdminRole = roleDocs['sysadmin'] || await roleSchemaModel.findOne({ slug: 'sysadmin' });
     if (sysAdminRole) {
       // ensure the created/updated admin user is sysadmin

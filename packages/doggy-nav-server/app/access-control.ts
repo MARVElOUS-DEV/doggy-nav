@@ -142,24 +142,24 @@ export function getRoutePermission(method: string, path: string): RoutePermissio
 
 // Check if user has required access level;
 export function hasAccess(permission: RoutePermission, user: AuthUserContext | undefined): boolean {
-  const req = permission.require;
-  if (!req) return !!user; // default to authenticated
+  const {require} = permission;
+  if (!require) return !!user; // default to authenticated
   // Public is always allowed; optional is allowed to continue middleware, but when source=admin we
   // require authentication to access admin UIs consistently. Final decision handled in middleware.
-  if (req.level === 'public' || req.level === 'optional') return true;
+  if (require.level === 'public' || require.level === 'optional') return true;
   if (!user) return false;
   // sysadmin bypass (role-based)
   const eff = Array.isArray(user.effectiveRoles) && user.effectiveRoles.length > 0 ? user.effectiveRoles : (Array.isArray(user.roles) ? user.roles : []);
   if (eff.includes('sysadmin')) return true;
-  if (req.level === 'authenticated') return true;
+  if (require.level === 'authenticated') return true;
 
   const roles: string[] = eff;
   const groups: string[] = Array.isArray(user.groups) ? user.groups : [];
   const perms: string[] = Array.isArray(user.permissions) ? user.permissions : [];
 
-  if (req.anyRole && req.anyRole.some(r => roles.includes(r))) return true;
-  if (req.anyGroup && req.anyGroup.some(g => groups.includes(g))) return true;
-  if (req.anyPermission && req.anyPermission.some(p => perms.includes(p) || perms.includes('*'))) return true;
-  if (req.allPermissions && req.allPermissions.every(p => perms.includes(p) || perms.includes('*'))) return true;
+  if (require.anyRole && require.anyRole.some(r => roles.includes(r))) return true;
+  if (require.anyGroup && require.anyGroup.some(g => groups.includes(g))) return true;
+  if (require.anyPermission && require.anyPermission.some(p => perms.includes(p) || perms.includes('*'))) return true;
+  if (require.allPermissions && require.allPermissions.every(p => perms.includes(p) || perms.includes('*'))) return true;
   return false;
 }

@@ -9,7 +9,7 @@ export default () => {
     if (ctx.method === 'OPTIONS') return await next();
     const url = normalizePath(ctx.url);
 
-    // Validate request source header strictly
+    // 1.Validate request source header strictly
     const hdrRaw = ctx.get('X-App-Source');
     if (!hdrRaw) return respond(ctx, 400, 'malformed request');
     const hdr = String(hdrRaw).trim().toLowerCase();
@@ -18,15 +18,15 @@ export default () => {
     }
     ctx.state.requestSource = hdr;
 
-    // permission
+    // 2.permission
     const permission = getRoutePermission(ctx.method, url);
     if (!permission) return respond(ctx, 403, '访问被拒绝：未配置权限');
 
-    // client secret
+    // 3.client secret
     const clientSecretOk = await clientSecretGuard(ctx, url);
     if (!clientSecretOk) return; // response already sent
 
-    // access modes
+    // 4.access modes
     if (permission.require?.level === 'public') return await next();
     if (permission.require?.level === 'optional') {
       // In admin source, treat optional as authenticated + admin/sysadmin role
@@ -44,7 +44,7 @@ export default () => {
       return await next();
     }
 
-    // authenticated/admin
+    // 5.authenticated/admin
     const authResult = await authenticateWithRefresh(ctx);
     if (!hasAccess(permission, ctx.state.userinfo as AuthUserContext | undefined)) {
       if (authResult.authenticated) return respond(ctx, 403, '权限不足');
@@ -117,6 +117,7 @@ async function authenticateWithRefresh(ctx: any) {
     try {
       const decode: any = await jwt.verify(token, secret);
       // If token verified but contains no roles (older/stale token), try to refresh to enrich claims
+      // FIXME: seems no need refresh here, the client will send refresh request
       const needsUpgrade = !Array.isArray(decode?.roles) || decode.roles.length === 0;
       if (needsUpgrade && ctx.cookies.get('refresh_token')) {
         try {
@@ -145,5 +146,3 @@ async function authenticateWithRefresh(ctx: any) {
   // Do not auto-refresh here anymore; use explicit /api/auth/refresh endpoint
   return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
 }
-
-// legacy helper removed in favor of utils/rbac.ts

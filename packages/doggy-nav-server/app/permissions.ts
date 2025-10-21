@@ -102,7 +102,7 @@ export const DEFAULT_ROLES = {
   user: {
     slug: 'user',
     displayName: 'User',
-    isSystem: false,
+    isSystem: true,
     permissions: [
       PERMISSIONS.FAV_LIST, PERMISSIONS.FAV_READ, PERMISSIONS.FAV_CREATE, PERMISSIONS.FAV_UPDATE, PERMISSIONS.FAV_DELETE,
       PERMISSIONS.NAV_LIST, PERMISSIONS.NAV_READ,
@@ -112,7 +112,7 @@ export const DEFAULT_ROLES = {
   viewer: {
     slug: 'viewer',
     displayName: 'Viewer',
-    isSystem: false,
+    isSystem: true,
     permissions: [ PERMISSIONS.NAV_LIST, PERMISSIONS.NAV_READ, PERMISSIONS.CATEGORY_LIST, PERMISSIONS.CATEGORY_READ ] as PermissionCode[],
   },
 } as const;
