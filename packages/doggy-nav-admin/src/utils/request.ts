@@ -1,58 +1,66 @@
-import { RequestConfig, request as umiRequest } from "@umijs/max";
-import { message, notification } from "antd";
-import { history } from "@umijs/max";
+import { history, RequestConfig, request as umiRequest } from '@umijs/max';
+import { message, notification } from 'antd';
 
 function defaultHeaders() {
-  const headers: Record<string, string> = {'X-App-Source': 'admin'}
-  return headers
+  const headers: Record<string, string> = { 'X-App-Source': 'admin' };
+  return headers;
 }
 
 interface RequestOptions {
-  url: string
-  method?: 'GET' | 'POST' | 'DELETE' | 'PUT'
-  headers?: any
-  data?: any
-  body?: any
-  msg?: string
-  [rest: string]: any
+  url: string;
+  method?: 'GET' | 'POST' | 'DELETE' | 'PUT';
+  headers?: any;
+  data?: any;
+  body?: any;
+  msg?: string;
+  [rest: string]: any;
 }
 
 function request(params: RequestOptions): any {
-  let { url, method = 'GET', headers, data, body, msg } = params
+  let { url, method = 'GET', headers, data, body, msg } = params;
   if (!headers) {
-    headers = defaultHeaders()
+    headers = defaultHeaders();
   }
   if (method === 'GET' && data) {
     const cleaned: Record<string, any> = {};
     Object.keys(data).forEach((k) => {
       const v = (data as any)[k];
-      if (v === undefined || v === null || v === '' || v === 'undefined') return;
+      if (v === undefined || v === null || v === '' || v === 'undefined')
+        return;
       cleaned[k] = v;
     });
-    const urlQueryParams = new URLSearchParams(cleaned as any)
+    const urlQueryParams = new URLSearchParams(cleaned as any);
     const qs = urlQueryParams.toString();
-    if (qs) url = url + `?${qs}`
+    if (qs) url = url + `?${qs}`;
   }
-  return new Promise((resolve, reject)=> {
+  return new Promise((resolve, reject) => {
     umiRequest(url, {
       method,
       headers,
       data,
-      body
-    }).then(res=> {
-      if (msg) {
-        message.success(msg)
-      }
-      resolve(res)
-    }).catch(err=> {
-      console.log(new Error(err))
-      notification.error({message: err.toString()})
-      reject(err)
+      body,
     })
-  })
+      .then((res) => {
+        if (msg) {
+          message.success(msg);
+        }
+        resolve(res);
+      })
+      .catch((err) => {
+        console.log(new Error(err));
+        notification.error({ message: err.toString() });
+        reject(err);
+      });
+  });
 }
 
-export function requestConfigure(options= {}): RequestConfig {
+export function requestConfigure(options = {}): RequestConfig {
+  // Single-flight refresh guard shared across all requests
+  let refreshPromise: Promise<any> | null = null;
+  const isRefreshUrl = (url: string) => /\/api\/auth\/refresh\b/.test(url);
+  const doRefresh = () =>
+    umiRequest('/api/auth/refresh', { method: 'POST', withCredentials: true });
+
   return {
     withCredentials: true,
     requestInterceptors: [
@@ -60,7 +68,10 @@ export function requestConfigure(options= {}): RequestConfig {
         const url = (config as any)?.url || '';
         const isAbsolute = /^https?:\/\//i.test(url);
         const hasApiPrefix = url.startsWith('/api/');
-        const finalUrl = isAbsolute || hasApiPrefix ? url : `/api${url.startsWith('/') ? '' : '/'}${url}`;
+        const finalUrl =
+          isAbsolute || hasApiPrefix
+            ? url
+            : `/api${url.startsWith('/') ? '' : '/'}${url}`;
         // Preserve resolved URL for reliable retries in error handler
         config.__finalUrl = finalUrl;
         return {
@@ -73,9 +84,7 @@ export function requestConfigure(options= {}): RequestConfig {
         };
       },
     ],
-    responseInterceptors: [
-      async (response) => response,
-    ],
+    responseInterceptors: [async (response) => response],
     errorConfig: {
       errorHandler: async (error: any) => {
         const { response, request: eRequest, config } = error;
@@ -87,16 +96,28 @@ export function requestConfigure(options= {}): RequestConfig {
             message: '网络异常',
           });
         } else if (response.status === 401) {
-          // Attempt silent refresh once
           const cfg = { ...(config || {}) };
-          if (!cfg.__retried) {
+          const failingUrl: string =
+            cfg.__finalUrl || eRequest?.responseURL || cfg.url || '';
+          if (typeof failingUrl === 'string' && isRefreshUrl(failingUrl)) {
+            // refresh itself failed -> proceed to logout/redirect
+          } else if (cfg.__isRetryRequest) {
+            // already retried once, stop here
+          } else {
             try {
-              cfg.__retried = true;
-              await umiRequest('/api/auth/refresh', { method: 'POST', withCredentials: true});
-              let resolvedUrl: string = cfg.__finalUrl || eRequest?.responseUrl || '';
+              if (!refreshPromise) {
+                refreshPromise = doRefresh().finally(() => {
+                  refreshPromise = null;
+                });
+              }
+              await refreshPromise;
+              const resolvedUrl: string =
+                cfg.__finalUrl || eRequest?.responseURL || cfg.url || '';
               if (typeof resolvedUrl === 'string' && resolvedUrl.length > 1) {
-                const retryResp = await umiRequest(resolvedUrl, { ...cfg, __retried: true });
-                return retryResp;
+                return await umiRequest(resolvedUrl, {
+                  ...cfg,
+                  __isRetryRequest: true,
+                });
               }
             } catch (e) {
               console.error('silent refresh failed:', e);
@@ -125,8 +146,8 @@ export function requestConfigure(options= {}): RequestConfig {
         throw error;
       },
     },
-    ...options, 
-  }
+    ...options,
+  };
 }
 
-export default request
+export default request;

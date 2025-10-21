@@ -23,12 +23,22 @@ const instance: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
+// Ensure only one refresh runs at a time; concurrent 401s await the same promise
+let refreshPromise: Promise<void> | null = null;
+
+async function refreshTokens() {
+  await axios.post('/api/auth/refresh', undefined, { withCredentials: true });
+}
+
 // Request interceptor
 instance.interceptors.request.use(
   (config: AxiosRequestConfig) => {
     // Add request timestamp for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.info(`🚀 Request: ${config.method?.toUpperCase()} ${config.url}`, config.data || (config as any).params);
+      console.info(
+        `🚀 Request: ${config.method?.toUpperCase()} ${config.url}`,
+        config.data || (config as any).params
+      );
     }
 
     return config;
@@ -43,7 +53,10 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
     if (process.env.NODE_ENV === 'development') {
-      console.info(`✅ Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
+      console.info(
+        `✅ Response: ${response.config.method?.toUpperCase()} ${response.config.url}`,
+        response.data
+      );
     }
 
     const { data } = response;
@@ -78,26 +91,36 @@ instance.interceptors.response.use(
           errorMessage = data?.msg || 'Bad Request';
           break;
         case 401: {
-          // Attempt silent refresh once
           const cfg: any = { ...(error.config || {}) };
-          if (!cfg.__retried) {
-            try {
-              cfg.__retried = true;
-              await axios.post('/api/auth/refresh', {}, { withCredentials: true });
-              const retryUrl: string  = cfg.url || error?.request?.responseUrl;
-              if (typeof retryUrl === 'string' && retryUrl.length > 1) {
-                return instance.request({ ...cfg, url: retryUrl });
-              }
-            } catch {
-              // fallthrough to logout
-            }
+          const failingUrl: string = (cfg.url as any) || (error as any)?.request?.responseURL || '';
+          const isRefreshEndpoint =
+            typeof failingUrl === 'string' && /\/api\/auth\/refresh\b/.test(failingUrl);
+          if (isRefreshEndpoint) {
+            errorMessage = 'Unauthorized';
+            break;
           }
-          // Public site: clear cookies (server-side) instead of redirect
+
+          if (cfg.__isRetryRequest) {
+            errorMessage = 'Unauthorized';
+            break;
+          }
+
           try {
-            await axios.post('/api/auth/logout', { withCredentials: true });
-          } catch {}
-          errorMessage = 'Unauthorized';
-          break;
+            if (!refreshPromise) {
+              refreshPromise = refreshTokens().finally(() => {
+                refreshPromise = null;
+              });
+            }
+            await refreshPromise;
+            cfg.__isRetryRequest = true;
+            return instance.request(cfg);
+          } catch {
+            try {
+              await axios.post('/api/auth/logout', undefined, { withCredentials: true });
+            } catch {}
+            errorMessage = 'Unauthorized';
+            break;
+          }
         }
         case 403:
           errorMessage = 'Forbidden - Access denied';

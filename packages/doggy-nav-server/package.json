@@ -72,6 +72,7 @@
     "esbuild": "^0.25.10",
     "eslint": "^8.57.1",
     "eslint-config-egg": "^14.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   },
