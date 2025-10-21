@@ -80,10 +80,11 @@ export default class AuthController extends CommonController {
     const info = ctx.state.userinfo;
     if (info?.userId) {
       const user = await ctx.service.user.getById(info.userId);
-      this.success({ authenticated: true, user });
+      const exp = (info as any)?.exp ? Number((info as any).exp) * 1000 : null;
+      this.success({ authenticated: true, user, accessExp: exp });
       return;
     }
-    this.success({ authenticated: false, user: null });
+    this.success({ authenticated: false, user: null, accessExp: null });
   }
 
   // Explicit refresh endpoint: exchanges refresh token cookie for new access+refresh
@@ -104,7 +105,14 @@ export default class AuthController extends CommonController {
       setAuthCookies(ctx, tokens);
       const source = (ctx.get('X-App-Source') || '').toLowerCase() === 'admin' ? 'admin' : 'main';
       ctx.state.userinfo = { ...tokens.payload, authType: 'jwt', source } as AuthUserContext;
-      this.success({ token: 'Bearer ' + tokens.accessToken });
+      let accessExp: number | null = null;
+      try {
+        const decoded: any = (app as any).jwt.decode(tokens.accessToken);
+        if (decoded?.exp) accessExp = Number(decoded.exp) * 1000;
+      } catch (e) {
+        ctx.logger.debug('decode access token failed for exp', e);
+      }
+      this.success({ token: 'Bearer ' + tokens.accessToken, accessExp });
     } catch {
       this.error('刷新失败');
     }

@@ -1,5 +1,6 @@
 import { history, RequestConfig, request as umiRequest } from '@umijs/max';
 import { message, notification } from 'antd';
+import { setAccessExpEpochMs } from './session';
 
 function defaultHeaders() {
   const headers: Record<string, string> = { 'X-App-Source': 'admin' };
@@ -58,8 +59,17 @@ export function requestConfigure(options = {}): RequestConfig {
   // Single-flight refresh guard shared across all requests
   let refreshPromise: Promise<any> | null = null;
   const isRefreshUrl = (url: string) => /\/api\/auth\/refresh\b/.test(url);
-  const doRefresh = () =>
-    umiRequest('/api/auth/refresh', { method: 'POST', withCredentials: true });
+  const doRefresh = async () => {
+    const resp = await umiRequest('/api/auth/refresh', {
+      method: 'POST',
+      withCredentials: true,
+    });
+    try {
+      const exp = (resp as any)?.data?.accessExp;
+      if (typeof exp === 'number') setAccessExpEpochMs(exp);
+    } catch {}
+    return resp;
+  };
 
   return {
     withCredentials: true,

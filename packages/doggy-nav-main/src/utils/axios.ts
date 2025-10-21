@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { Message } from '@arco-design/web-react';
+import { setAccessExpEpochMs, startProactiveAuthRefresh } from './session';
 
 interface ApiResponse<T = any> {
   code: number;
@@ -27,7 +28,11 @@ const instance: AxiosInstance = axios.create({
 let refreshPromise: Promise<void> | null = null;
 
 async function refreshTokens() {
-  await axios.post('/api/auth/refresh', undefined, { withCredentials: true });
+  const res = await axios.post('/api/auth/refresh', undefined, { withCredentials: true });
+  try {
+    const exp = (res?.data?.data?.accessExp as number) || null;
+    if (typeof exp === 'number') setAccessExpEpochMs(exp);
+  } catch {}
 }
 
 // Request interceptor
@@ -169,3 +174,8 @@ export default instance;
 
 // Export types for use in components
 export type { ApiResponse, ApiError };
+
+// start proactive refresh on the client
+if (typeof window !== 'undefined') {
+  startProactiveAuthRefresh();
+}

@@ -7,6 +7,7 @@ import { debugHydration } from '@/utils/hydrationDebug';
 import i18n from '@/i18n';
 import { useRouter } from 'next/router';
 import './global.css';
+import { startProactiveAuthRefresh } from '@/utils/session';
 
 export type NextPageWithLayout<P = Record<string, any>, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -22,6 +23,10 @@ export default function MyApp({ Component, pageProps }: { Component: NextPageWit
       i18n.changeLanguage(router.locale);
     }
   }, [router.locale, router.isReady]);
+
+  useEffect(() => {
+    startProactiveAuthRefresh();
+  }, []);
 
   // Use the layout defined at the page level, if available
   const getLayout = Component.getLayout ?? ((page: ReactElement) => (
