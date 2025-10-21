@@ -5,8 +5,8 @@ language: node_js
 
 # Test on multiple Node.js versions
 node_js:
-  - '20'   # LTS
-  - '22'   # Current
+  - '20' # LTS
+  - '22' # Current
   - 'lts/*' # Latest LTS
 
 # Operating systems to test on
@@ -49,45 +49,45 @@ script:
 jobs:
   include:
     # Lint and format checks
-    - stage: "Code Quality"
-      name: "Lint & Format Check"
+    - stage: 'Code Quality'
+      name: 'Lint & Format Check'
       node_js: '20'
       script:
-        - pnpm --filter doggy-nav-server lint
-        - pnpm --filter doggy-nav-main lint
-        - pnpm --filter doggy-nav-admin lint
+        - pnpm -F doggy-nav-server lint
+        - pnpm -F doggy-nav-main lint
+        - pnpm -F doggy-nav-admin lint
 
     # Unit tests
-    - stage: "Unit Tests"
-      name: "Server Tests"
+    - stage: 'Unit Tests'
+      name: 'Server Tests'
       node_js: '20'
       before_script:
         - sleep 15 # wait for mongodb
       script:
-        - pnpm --filter doggy-nav-server test-local
+        - pnpm -F doggy-nav-server test-local
       after_script:
-        - pnpm --filter doggy-nav-server clean
+        - pnpm -F doggy-nav-server clean
 
     # Build tests
-    - stage: "Build Tests"
-      name: "Frontend Build"
+    - stage: 'Build Tests'
+      name: 'Frontend Build'
       node_js: '20'
       script:
         - pnpm web:build
 
-    - name: "Admin Build"
+    - name: 'Admin Build'
       node_js: '20'
       script:
         - pnpm admin:build
 
-    - name: "Server Build"
+    - name: 'Server Build'
       node_js: '20'
       script:
         - pnpm server:build
 
     # Docker build tests
-    - stage: "Docker Tests"
-      name: "Docker Build Test"
+    - stage: 'Docker Tests'
+      name: 'Docker Build Test'
       node_js: '20'
       services:
         - docker
@@ -97,13 +97,13 @@ jobs:
         - docker build -f Dockerfile-Admin -t doggy-nav-admin:test .
 
     # Coverage and reporting
-    - stage: "Coverage"
-      name: "Test Coverage"
+    - stage: 'Coverage'
+      name: 'Test Coverage'
       node_js: '20'
       before_script:
         - sleep 15 # wait for mongodb
       script:
-        - pnpm --filter doggy-nav-server cov
+        - pnpm -F doggy-nav-server cov
       after_success:
         - bash <(curl -s https://codecov.io/bash) || echo "Codecov failed"
 
@@ -118,11 +118,11 @@ deploy:
 
 # Build stages
 stages:
-  - "Code Quality"
-  - "Unit Tests"
-  - "Build Tests"
-  - "Docker Tests"
-  - "Coverage"
+  - 'Code Quality'
+  - 'Unit Tests'
+  - 'Build Tests'
+  - 'Docker Tests'
+  - 'Coverage'
 
 # Notifications
 notifications:
@@ -133,7 +133,7 @@ notifications:
     on_failure: always
   slack:
     rooms:
-      - secure: "your-encrypted-slack-token"
+      - secure: 'your-encrypted-slack-token'
     on_success: change
     on_failure: always
 

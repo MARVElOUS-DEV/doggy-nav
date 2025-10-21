@@ -185,12 +185,12 @@ pnpm admin:build    # Build admin panel only
 
 # Testing
 pnpm test           # Run all tests
-pnpm --filter doggy-nav-server test-local  # Backend tests only
+pnpm -F doggy-nav-server test-local  # Backend tests only
 
 # Linting
-pnpm --filter doggy-nav-server lint        # Backend linting
-pnpm --filter doggy-nav-main lint          # Frontend linting
-pnpm --filter doggy-nav-admin lint         # Admin panel linting
+pnpm -F doggy-nav-server lint        # Backend linting
+pnpm -F doggy-nav-main lint          # Frontend linting
+pnpm -F doggy-nav-admin lint         # Admin panel linting
 ```
 
 ### 🗃 Database Setup
