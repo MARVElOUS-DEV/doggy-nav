@@ -83,8 +83,8 @@ export default class UserService extends Service {
     const [ roleById, roleBySlug, groupById, groupBySlug ] = await Promise.all([
       roleIdLikes.length ? ctx.model.Role.find({ _id: { $in: roleIdLikes } }, { slug: 1 }).lean() : Promise.resolve([]),
       roleSlugLikes.length ? ctx.model.Role.find({ slug: { $in: roleSlugLikes } }, { slug: 1 }).lean() : Promise.resolve([]),
-      groupIdLikes.length ? ctx.model.Group.find({ _id: { $in: groupIdLikes } }, { slug: 1, roles: 1 }).lean() : Promise.resolve([]),
-      groupSlugLikes.length ? ctx.model.Group.find({ slug: { $in: groupSlugLikes } }, { slug: 1, roles: 1 }).lean() : Promise.resolve([]),
+      groupIdLikes.length ? ctx.model.Group.find({ _id: { $in: groupIdLikes } }, { slug: 1 }).lean() : Promise.resolve([]),
+      groupSlugLikes.length ? ctx.model.Group.find({ slug: { $in: groupSlugLikes } }, { slug: 1 }).lean() : Promise.resolve([]),
     ]);
 
     const roleDocs = [ ...roleById, ...roleBySlug ];
@@ -450,8 +450,6 @@ export default class UserService extends Service {
     const { ctx } = this;
     if (!user) return [];
     const roleDocs = Array.isArray(user.roles) ? user.roles : [];
-    const groupDocs = Array.isArray(user.groups) ? user.groups : [];
-    const groupRoleIds = groupDocs.flatMap((g: any) => Array.isArray(g?.roles) ? g.roles : []);
 
     const isValidId = (v: any) => {
       try { return !!ctx.app.mongoose?.Types?.ObjectId?.isValid?.(v); } catch { return false; }
@@ -464,7 +462,7 @@ export default class UserService extends Service {
       .map((r: any) => (typeof r === 'string' ? r : r?.slug))
       .filter((s: any) => typeof s === 'string' && !isValidId(s));
 
-    const allIdCandidates = [ ...directIds, ...groupRoleIds ].filter(Boolean);
+    const allIdCandidates = [ ...directIds ].filter(Boolean);
     if (allIdCandidates.length === 0 && directSlugs.length === 0) {
       return Array.from(new Set([ ...(user.extraPermissions || []) ]));
     }
