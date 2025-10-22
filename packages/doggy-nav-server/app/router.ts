@@ -96,4 +96,7 @@ export default (app: Application) => {
   router.get('/api/favorites/count', controller.favorite.count);
   router.put('/api/favorites/folders/:id', controller.favorite.updateFolder);
   router.delete('/api/favorites/folders/:id', controller.favorite.deleteFolder);
+
+  // Translation routes
+  router.post('/api/translate', controller.translate.translate);
 };

@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const nextConfig: NextConfig = {
@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   distDir: 'dist',
   typescript: {
-    ignoreBuildErrors: process.env.NODE_ENV==='production',
+    ignoreBuildErrors: process.env.NODE_ENV === 'production',
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if
@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
         hostname: 'img.alicdn.com',
         port: '',
         pathname: '/imgextra/**',
-      }
+      },
     ],
   },
   // async rewrites() {
