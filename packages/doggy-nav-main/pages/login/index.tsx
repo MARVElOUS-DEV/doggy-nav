@@ -5,6 +5,7 @@ import { useSetAtom } from 'jotai';
 import { motion } from 'framer-motion';
 import { authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
+import { setAccessExpEpochMs } from '@/utils/session';
 import type { LoginFormValues, OAuthProvider } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { GitHubIcon, GoogleIcon, LinuxDoIcon } from '@/components/OAuthIcons';
@@ -31,6 +32,12 @@ export default function LoginPage() {
       });
 
       Message.success(t('login_successful'));
+
+      // Prime proactive refresh by fetching accessExp after cookies are set
+      try {
+        const me: any = await api.getCurrentUser();
+        if (typeof me?.accessExp === 'number') setAccessExpEpochMs(me.accessExp);
+      } catch {}
 
       // Redirect to home or previous page
       const redirectTo = (router.query.redirect as string) || '/';

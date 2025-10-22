@@ -20,7 +20,7 @@ export interface NavItem {
   authorName?: string;
   authorUrl?: string;
   auditTime?: string;
-  createTime?: string;
+  createTime: number | string;
   tags: string[];
   view: number;
   star: number;

@@ -10,6 +10,7 @@
   "scripts": {
     "start": "EGG_SERVER_ENV=prod node scripts/validate-secrets.js && egg-scripts start  --port=3002 --daemon --title=doggy-nav-server",
     "docker-start": "EGG_SERVER_ENV=prod node scripts/validate-secrets.js && egg-scripts start --title=doggy-nav-server",
+    "start:railway": "EGG_SERVER_ENV=prod node scripts/validate-secrets.js && egg-scripts start --no-daemon --title=doggy-nav-server",
     "build": "npm run tsbuild",
     "build:ci": "npm run tsbuild:ci",
     "stop": "egg-scripts stop --title=doggy-nav-server",

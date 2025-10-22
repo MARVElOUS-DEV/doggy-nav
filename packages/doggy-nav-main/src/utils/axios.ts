@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { Message } from '@arco-design/web-react';
-import { setAccessExpEpochMs, startProactiveAuthRefresh } from './session';
+import { setAccessExpEpochMs } from './session';
 
 interface ApiResponse<T = any> {
   code: number;
@@ -85,7 +85,8 @@ instance.interceptors.response.use(
 
     let errorMessage = 'Network Error';
     let errorCode = 0;
-    const isLoginPage = typeof window !== 'undefined' && window.location?.pathname?.startsWith('/login');
+    const isLoginPage =
+      typeof window !== 'undefined' && window.location?.pathname?.startsWith('/login');
 
     if (error.response) {
       // Server responded with error status
@@ -178,8 +179,3 @@ export default instance;
 
 // Export types for use in components
 export type { ApiResponse, ApiError };
-
-// start proactive refresh on the client
-if (typeof window !== 'undefined') {
-  startProactiveAuthRefresh();
-}

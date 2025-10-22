@@ -1,7 +1,6 @@
 let timer: any = null;
 let nextExpMs: number | null = null;
 let refreshing = false;
-let started = false;
 let failCount = 0;
 
 const LEEWAY_MS = (process.env.NODE_ENV === 'development' ? 10 : 90) * 1000;
@@ -76,17 +75,7 @@ function schedule() {
 
 async function bootstrap() {
   if (typeof window === 'undefined') return;
-  try {
-    const resp = await fetch('/api/auth/me', { credentials: 'include' });
-    const json = await resp.json().catch(() => null);
-    const exp = json?.data?.accessExp;
-    if (typeof exp === 'number') {
-      nextExpMs = normalizeEpochMs(exp);
-      schedule();
-    }
-  } catch {
-    // ignore
-  }
+  schedule();
 }
 
 function onVisibilityOrFocus() {
@@ -102,9 +91,8 @@ function onVisibilityOrFocus() {
 
 export function startProactiveAuthRefresh() {
   if (typeof window === 'undefined') return;
-  if ((window as any).__proactiveRefreshStarted || started) return;
+  if ((window as any).__proactiveRefreshStarted) return;
   (window as any).__proactiveRefreshStarted = true;
-  started = true;
   bootstrap();
   window.addEventListener('focus', onVisibilityOrFocus);
   document.addEventListener('visibilitychange', onVisibilityOrFocus);

@@ -1,12 +1,16 @@
 import { atom } from 'jotai';
 import { NavItem, Category, Tag, User } from '@/types';
 import api from '@/utils/api';
-
+import { setAccessExpEpochMs } from '@/utils/session';
 
 export const categoriesAtom = atom<Category[]>([]);
 export const selectedCategoryAtom = atom<string>('');
 export const tagsAtom = atom<Tag[]>([]);
-export const navRankingAtom = atom<{ view: NavItem[]; star: NavItem[]; news: NavItem[] }>({ view: [], star: [], news: [] });
+export const navRankingAtom = atom<{ view: NavItem[]; star: NavItem[]; news: NavItem[] }>({
+  view: [],
+  star: [],
+  news: [],
+});
 export const showMenuTypeAtom = atom(true);
 export const mobileAtom = atom(false);
 export const manualCollapseAtom = atom<boolean | null>(null); // null = no manual action, true/false = manual action
@@ -19,18 +23,23 @@ export const isAuthenticatedAtom = atom<boolean>(false);
 export const authInitializedAtom = atom<boolean>(false);
 
 // Derived atoms for auth state
-export const authStateAtom = atom(
-  (get) => ({
-    isAuthenticated: get(isAuthenticatedAtom),
-    user: get(userAtom),
-    initialized: get(authInitializedAtom),
-  })
-);
+export const authStateAtom = atom((get) => ({
+  isAuthenticated: get(isAuthenticatedAtom),
+  user: get(userAtom),
+  initialized: get(authInitializedAtom),
+}));
 
 // Auth actions atom
 export const authActionsAtom = atom(
   null,
-  (get, set, action: { type: 'LOGIN'; payload: { user: User } } | { type: 'LOGOUT' } | { type: 'HYDRATE'; payload: { user: User | null } }) => {
+  (
+    get,
+    set,
+    action:
+      | { type: 'LOGIN'; payload: { user: User } }
+      | { type: 'LOGOUT' }
+      | { type: 'HYDRATE'; payload: { user: User | null } }
+  ) => {
     switch (action.type) {
       case 'LOGIN':
         set(userAtom, action.payload.user);
@@ -54,38 +63,41 @@ export const authActionsAtom = atom(
 );
 
 // Initialize auth by calling API
-export const initAuthFromServerAtom = atom(
-  null,
-  async (get, set) => {
-    if (typeof window === 'undefined' || get(authInitializedAtom)) return;
+export const initAuthFromServerAtom = atom(null, async (get, set) => {
+  if (typeof window === 'undefined' || get(authInitializedAtom)) return;
 
-    try {
-      const response = await api.getCurrentUser();
-      if (response?.authenticated && response.user) {
-        set(userAtom, response.user);
-        set(isAuthenticatedAtom, true);
-      } else {
-        set(userAtom, null);
-        set(isAuthenticatedAtom, false);
+  try {
+    const response = await api.getCurrentUser();
+    if (response?.authenticated && response.user) {
+      set(userAtom, response.user);
+      set(isAuthenticatedAtom, true);
+      if (typeof response.accessExp === 'number') {
+        setAccessExpEpochMs(response.accessExp);
       }
-    } catch (error) {
-      console.error('Failed to initialize auth state:', error);
+    } else {
       set(userAtom, null);
       set(isAuthenticatedAtom, false);
-    } finally {
-      set(authInitializedAtom, true);
     }
+  } catch (error) {
+    console.error('Failed to initialize auth state:', error);
+    set(userAtom, null);
+    set(isAuthenticatedAtom, false);
+  } finally {
+    set(authInitializedAtom, true);
   }
-);
+});
 
 // Favorites actions atom - simplified for add/remove operations only
 export const favoritesActionsAtom = atom(
   null,
-  (get, set, action:
-    | { type: 'ADD_FAVORITE'; navId: string }
-    | { type: 'REMOVE_FAVORITE'; navId: string }
-    | { type: 'LOAD_FAVORITES' } // Keep for favorites page initialization
-    | { type: 'SET_FAVORITES'; favorites: NavItem[] }
+  (
+    get,
+    set,
+    action:
+      | { type: 'ADD_FAVORITE'; navId: string }
+      | { type: 'REMOVE_FAVORITE'; navId: string }
+      | { type: 'LOAD_FAVORITES' } // Keep for favorites page initialization
+      | { type: 'SET_FAVORITES'; favorites: NavItem[] }
   ) => {
     switch (action.type) {
       case 'ADD_FAVORITE':
@@ -99,12 +111,15 @@ export const favoritesActionsAtom = atom(
       case 'LOAD_FAVORITES':
         // Only used for dedicated favorites page
         if (get(isAuthenticatedAtom)) {
-          return api.getFavoritesList().then(response => {
-            set(favoritesAtom, response.data);
-          }).catch(error => {
-            console.error('Failed to load favorites:', error);
-            set(favoritesAtom, []);
-          });
+          return api
+            .getFavoritesList()
+            .then((response) => {
+              set(favoritesAtom, response.data);
+            })
+            .catch((error) => {
+              console.error('Failed to load favorites:', error);
+              set(favoritesAtom, []);
+            });
         } else {
           set(favoritesAtom, []);
         }
