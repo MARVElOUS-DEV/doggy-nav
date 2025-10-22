@@ -61,21 +61,28 @@ export default function NavListForm(props: NavListFormProps) {
     onVisibleChange: props.onVisibleChange,
     isEdit: props.isEdit,
     selectedData: props.selectedData,
-    onFinish: async (values) => {
-      const data = {
-        id: props.isEdit ? props.selectedData?.id : undefined,
-        ...values,
-      };
-      await request({
-        url: API_NAV,
-        method: props.isEdit ? 'PUT' : 'POST',
-        msg: props.isEdit ? '编辑成功' : '添加成功',
-        data,
-      });
-      props.hide();
-      props.tableRef?.reload();
-    },
   });
+  const onFinish = async (values) => {
+    const audience = values?.audience || {};
+    if (audience.visibility !== 'restricted') {
+      delete audience.allowRoles;
+      delete audience.allowGroups;
+    }
+    const data = {
+      id: props.isEdit ? props.selectedData?.id : undefined,
+      ...values,
+      audience,
+    };
+    await request({
+      url: API_NAV,
+      method: props.isEdit ? 'PUT' : 'POST',
+      msg: props.isEdit ? '编辑成功' : '添加成功',
+      data,
+    });
+    props.hide?.();
+    props.tableRef?.reload?.();
+    return true;
+  };
   const logoProps = useProFormItem({
     name: 'logo',
     label: '网站LOGO',
@@ -109,24 +116,10 @@ export default function NavListForm(props: NavListFormProps) {
   return (
     <DrawerForm
       formRef={formControls.formRef}
-      visible={formControls.visible}
-      onVisibleChange={formControls.onVisibleChange}
+      open={formControls.visible}
+      onOpenChange={formControls.onVisibleChange}
       drawerProps={{ width: 600 }}
-      onFinish={async (values) => {
-        const data = {
-          id: props.isEdit ? props.selectedData?.id : undefined,
-          ...values,
-        };
-        await request({
-          url: API_NAV,
-          method: props.isEdit ? 'PUT' : 'POST',
-          msg: props.isEdit ? '编辑成功' : '添加成功',
-          data,
-        });
-        props.hide?.();
-        props.tableRef?.reload?.();
-        return true;
-      }}
+      onFinish={onFinish}
     >
       <ProFormDependency name={['logo']}>
         {({ logo }) => (

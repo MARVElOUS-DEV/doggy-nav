@@ -120,7 +120,7 @@ export default function NavListPage() {
     },
     {
       title: '创建时间',
-      dataIndex: 'createTime',
+      dataIndex: 'createTimeDate',
       search: false,
       valueType: 'dateTime',
     },

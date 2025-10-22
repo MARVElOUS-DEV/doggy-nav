@@ -5,6 +5,7 @@ import { API_CATEGORY, getGroups, getRoles } from '@/services/api';
 import request from '@/utils/request';
 import {
   ModalForm,
+  ProFormDependency,
   ProFormItem,
   ProFormSelect,
   ProFormSwitch,
@@ -86,9 +87,15 @@ export default function CategoryForm(props: CategoryFormProps) {
   });
 
   async function onFinish(values: any) {
+    const audience = values?.audience || {};
+    if (audience.visibility !== 'restricted') {
+      delete audience.allowRoles;
+      delete audience.allowGroups;
+    }
     const data = {
       id: props.isEdit ? props.selectedData?.id : undefined,
       ...values,
+      audience,
     };
     await request({
       url: API_CATEGORY,
@@ -103,8 +110,8 @@ export default function CategoryForm(props: CategoryFormProps) {
   return (
     <ModalForm
       formRef={formControls.formRef}
-      visible={formControls.visible}
-      onVisibleChange={formControls.onVisibleChange}
+      open={formControls.visible}
+      onOpenChange={formControls.onVisibleChange}
       onFinish={onFinish}
       width={500}
     >
@@ -136,18 +143,26 @@ export default function CategoryForm(props: CategoryFormProps) {
         }}
         initialValue={'public'}
       />
-      <ProFormSelect
-        name={['audience', 'allowRoles']}
-        label="允许角色"
-        mode="multiple"
-        options={roleOptions}
-      />
-      <ProFormSelect
-        name={['audience', 'allowGroups']}
-        label="允许用户组"
-        mode="multiple"
-        options={groupOptions}
-      />
+      <ProFormDependency name={['audience']}>
+        {({ audience }) =>
+          audience?.visibility === 'restricted' ? (
+            <>
+              <ProFormSelect
+                name={['audience', 'allowRoles']}
+                label="允许角色"
+                mode="multiple"
+                options={roleOptions}
+              />
+              <ProFormSelect
+                name={['audience', 'allowGroups']}
+                label="允许用户组"
+                mode="multiple"
+                options={groupOptions}
+              />
+            </>
+          ) : null
+        }
+      </ProFormDependency>
     </ModalForm>
   );
 }

@@ -66,7 +66,22 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
     }
   };
 
+  const displayName =
+    (currentUser as any)?.username ||
+    (currentUser as any)?.nickName ||
+    '未登录';
+
   const userMenuItems = [
+    {
+      key: 'user-info',
+      icon: <UserOutlined />,
+      label: (
+        <span style={{ fontWeight: 500, cursor: 'default' }}>
+          {displayName}
+        </span>
+      ),
+      disabled: true,
+    },
     {
       key: 'logout',
       icon: <LogoutOutlined />,

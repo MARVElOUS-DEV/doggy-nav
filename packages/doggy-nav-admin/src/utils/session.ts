@@ -25,10 +25,8 @@ function calcBackoffMs() {
 function onOnline() {
   // If we had failures, try immediately; else just ensure schedule
   if (failCount > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     refreshNow();
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     schedule();
   }
 }
@@ -36,13 +34,11 @@ function scheduleBackoff() {
   if (typeof window === 'undefined') return;
   // If offline, wait for online event instead of tight retry
   if (typeof navigator !== 'undefined' && (navigator as any).onLine === false) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     window.addEventListener('online', onOnline, { once: true });
     return;
   }
   const delay = calcBackoffMs();
   if (timer) clearTimeout(timer);
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   timer = window.setTimeout(refreshNow, delay);
 }
 
@@ -89,24 +85,20 @@ function schedule() {
   const now = Date.now();
   const delay = Math.max(MIN_DELAY_MS, nextExpMs - now - LEEWAY_MS);
   if (timer) clearTimeout(timer);
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   timer = window.setTimeout(refreshNow, delay);
 }
 
 export function setAccessExpEpochMs(expMs: number | null | undefined) {
   if (!expMs || typeof expMs !== 'number') return;
   nextExpMs = normalizeEpochMs(expMs);
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   schedule();
 }
 
 function onVisibilityOrFocus() {
   if (document.visibilityState === 'visible') {
     if (nextExpMs && nextExpMs - Date.now() <= LEEWAY_MS) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       refreshNow();
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       schedule();
     }
   }
@@ -119,11 +111,9 @@ export function startProactiveAuthRefresh(initialExp?: number | null) {
   started = true;
   if (typeof initialExp === 'number') {
     nextExpMs = normalizeEpochMs(initialExp);
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     schedule();
   }
   window.addEventListener('focus', onVisibilityOrFocus);
   document.addEventListener('visibilitychange', onVisibilityOrFocus);
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   window.addEventListener('online', onOnline);
 }

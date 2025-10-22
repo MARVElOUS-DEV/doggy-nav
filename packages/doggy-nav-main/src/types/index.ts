@@ -1,4 +1,3 @@
-
 export interface Category {
   id: string;
   name: string;
@@ -7,7 +6,7 @@ export interface Category {
   icon?: string;
   children?: Category[];
   showInMenu: boolean;
-  href?: string
+  href?: string;
 }
 
 export interface NavItem {
@@ -58,7 +57,6 @@ export interface User {
   email?: string;
   avatar?: string;
   role?: string;
-  isAdmin?: boolean;
 }
 
 export interface LoginFormValues {

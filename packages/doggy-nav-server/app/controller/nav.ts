@@ -124,9 +124,10 @@ export default class NavController extends Controller {
       ]);
 
       const total = countResult.length > 0 ? countResult[0].total : 0;
+      const mapped = data.map((d: any) => ctx.model.Nav.hydrate(d));
 
       this.success({
-        data,
+        data: mapped,
         total,
         pageNumber: Math.ceil(total / pageSize),
       });
