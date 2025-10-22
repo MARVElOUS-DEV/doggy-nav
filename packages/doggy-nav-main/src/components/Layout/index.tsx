@@ -1,11 +1,17 @@
-import { useEffect, useTransition, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { I18nextProvider } from 'react-i18next';
 import AppNavMenus from '../AppNavMenus';
 import AppHeader from '../AppHeader';
 import i18n from '@/i18n';
 import { ConfigProvider, Drawer } from '@arco-design/web-react';
-import { showMenuTypeAtom, initAuthFromServerAtom, mobileAtom, manualCollapseAtom, themeAtom } from '@/store/store';
+import {
+  showMenuTypeAtom,
+  initAuthFromServerAtom,
+  mobileAtom,
+  manualCollapseAtom,
+  themeAtom,
+} from '@/store/store';
 import { useSetAtom } from 'jotai';
 import RightSideToolbar from '../RightSideToolbar';
 import LightbulbRope from '../LightbulbRope';
@@ -21,14 +27,8 @@ export default function RootLayout({
   const [isMobile, setIsMobile] = useAtom(mobileAtom);
   const [manualCollapse, setManualCollapse] = useAtom(manualCollapseAtom);
   const [theme] = useAtom(themeAtom);
-  const [isPending, startTransition] = useTransition()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  const handleNavigation = (href) => {
-    startTransition(() => {
-      router.push(href)
-    })
-  }
+
   // Initialize auth state from server session
   useEffect(() => {
     initAuth();
@@ -108,10 +108,7 @@ export default function RootLayout({
               className="bg-theme-background transition-all duration-300 flex flex-col overflow-hidden border-r border-theme-border"
               style={{ width: showMenuType ? 220 : 70 }}
             >
-              <AppNavMenus
-                showMenuType={showMenuType}
-                onShowMenus={toggleMenu}
-              />
+              <AppNavMenus showMenuType={showMenuType} onShowMenus={toggleMenu} />
             </div>
           )}
 
@@ -127,11 +124,12 @@ export default function RootLayout({
             </div>
 
             {/* Scrollable Content Area with Glass Effect */}
-            <div id="doggy-content-area" className="flex-1 overflow-y-auto glass-light dark:glass-dark">
+            <div
+              id="doggy-content-area"
+              className="flex-1 overflow-y-auto glass-light dark:glass-dark"
+            >
               <div className="p-4">
-                <div className="min-h-screen bg-theme-background transition-colors">
-                  {children}
-                </div>
+                <div className="min-h-screen bg-theme-background transition-colors">{children}</div>
               </div>
             </div>
           </div>

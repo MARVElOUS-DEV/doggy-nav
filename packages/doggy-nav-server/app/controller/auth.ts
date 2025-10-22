@@ -1,12 +1,29 @@
 import { randomBytes } from 'crypto';
 import CommonController from '../core/base_controller';
-import { clearAuthCookies, setAuthCookies, setStateCookie, getStateCookie, clearStateCookie } from '../utils/authCookie';
+import {
+  clearAuthCookies,
+  setAuthCookies,
+  setStateCookie,
+  getStateCookie,
+  clearStateCookie,
+} from '../utils/authCookie';
+import type { AuthUserContext } from '../../types/rbac';
 import { getEnabledProviders, isProviderEnabled } from '../utils/oauth';
+import { getAppSource, getRefreshTokenFromCookies } from '../utils/appSource';
 
 export default class AuthController extends CommonController {
-  private async issueCookiesForUser(user: any) {
+  private async issueCookiesForUser(user: {
+    _id: any;
+    username: string;
+    roles?: Array<{ _id?: any; slug?: string } | string>;
+    groups?: Array<{ _id?: any; slug?: string } | string>;
+    computedPermissions?: string[];
+    extraPermissions?: string[];
+  }) {
     const { ctx } = this;
-    const tokens = await ctx.service.user.generateTokens(user);
+    // Ensure JWT payload uses role/group slugs by loading populated user first
+    const authUser = await ctx.service.user.getAuthUserForTokens(user._id);
+    const tokens = await ctx.service.user.generateTokens(authUser);
     await ctx.service.user.recordSuccessfulLogin(tokens.payload.userId);
     setAuthCookies(ctx, tokens);
   }
@@ -55,7 +72,9 @@ export default class AuthController extends CommonController {
 
     const user = ctx.user;
     if (!user) {
-      ctx.logger.warn('[oauth/callback] no user on context after passport', { provider: ctx.params.provider });
+      ctx.logger.warn('[oauth/callback] no user on context after passport', {
+        provider: ctx.params.provider,
+      });
       clearStateCookie(ctx);
       ctx.redirect('/login?err=oauth_user');
       return;
@@ -64,7 +83,10 @@ export default class AuthController extends CommonController {
     await this.issueCookiesForUser(user);
     clearStateCookie(ctx);
     const redirectTo = app.config.oauth?.baseUrl || '/';
-    ctx.logger.debug('[oauth/callback] issuing cookies and redirect', { provider: ctx.params.provider, to: redirectTo });
+    ctx.logger.debug('[oauth/callback] issuing cookies and redirect', {
+      provider: ctx.params.provider,
+      to: redirectTo,
+    });
     if (redirectTo.startsWith('/')) {
       ctx.redirect(redirectTo);
     } else {
@@ -77,10 +99,42 @@ export default class AuthController extends CommonController {
     const info = ctx.state.userinfo;
     if (info?.userId) {
       const user = await ctx.service.user.getById(info.userId);
-      this.success({ authenticated: true, user });
+      const exp = (info as any)?.exp ? Number((info as any).exp) * 1000 : null;
+      this.success({ authenticated: true, user, accessExp: exp });
       return;
     }
-    this.success({ authenticated: false, user: null });
+    this.success({ authenticated: false, user: null, accessExp: null });
+  }
+
+  // Explicit refresh endpoint: exchanges refresh token cookie for new access+refresh
+  async refresh() {
+    const { ctx, app } = this;
+    try {
+      const jwt = app.jwt;
+      const secret = app.config.jwt?.secret;
+      if (!jwt || !secret) return this.error('JWT not available');
+
+      const refresh = getRefreshTokenFromCookies(ctx);
+      if (!refresh) return this.error('缺少refresh token');
+      const payload: any = await jwt.verify(refresh, secret);
+      if (payload?.typ !== 'refresh' || !payload?.sub) return this.error('refresh token 类型错误');
+
+      const user = await ctx.service.user.getAuthUserForTokens(payload.sub);
+      const tokens = await ctx.service.user.generateTokens(user);
+      setAuthCookies(ctx, tokens);
+      const source = getAppSource(ctx);
+      ctx.state.userinfo = { ...tokens.payload, authType: 'jwt', source } as AuthUserContext;
+      let accessExp: number | null = null;
+      try {
+        const decoded: any = (app as any).jwt.decode(tokens.accessToken);
+        if (decoded?.exp) accessExp = Number(decoded.exp) * 1000;
+      } catch (e) {
+        ctx.logger.debug('decode access token failed for exp', e);
+      }
+      this.success({ token: 'Bearer ' + tokens.accessToken, accessExp });
+    } catch {
+      this.error('刷新失败');
+    }
   }
 
   async logout() {

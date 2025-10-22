@@ -173,7 +173,7 @@ const IconPicker: React.FC<IconPickerProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('ant');
+  const [activeTab, setActiveTab] = useState('arco');
   const searchInputRef = useRef<InputRef>(null);
 
   // Focus search input when modal opens
@@ -189,8 +189,11 @@ const IconPicker: React.FC<IconPickerProps> = ({
     icon.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredEmojis = flatEmojis.filter(emoji =>
-    emoji.includes(searchTerm)
+  // Deduplicate emojis to avoid duplicate keys and repeated items across categories
+  const uniqueEmojis = React.useMemo(() => Array.from(new Set(flatEmojis)), []);
+  const filteredEmojis = React.useMemo(
+    () => uniqueEmojis.filter(emoji => emoji.includes(searchTerm)),
+    [uniqueEmojis, searchTerm]
   );
 
   const handleIconSelect = (icon: string) => {
@@ -203,10 +206,10 @@ const IconPicker: React.FC<IconPickerProps> = ({
     onChange?.('');
   };
 
-  const renderIconPreview = (icon: string, isEmoji: boolean = false, iconType: 'ant' | 'arco' = 'ant') => {
+  const renderIconPreview = (icon: string, isEmoji: boolean = false, iconType: 'ant' | 'arco' | 'emoji-category' | 'emoji-mood' = 'ant') => {
     if (isEmoji) {
       return (
-        <div className="icon-picker-item" onClick={() => handleIconSelect(`type:emoji_${icon}`)}>
+        <div key={`emoji-${icon}-${iconType}`} className="icon-picker-item" onClick={() => handleIconSelect(`type:emoji_${icon}`)}>
           <span className="icon-emoji" style={{ fontSize: '18px' }}>
             {icon}
           </span>
@@ -214,13 +217,13 @@ const IconPicker: React.FC<IconPickerProps> = ({
       );
     }
 
-if (iconType === 'arco') {
+  if (iconType === 'arco') {
       const IconComponent = arcoIconMap[icon as keyof typeof arcoIconMap];
       if (IconComponent) {
         return (
-          <div className="icon-picker-item" onClick={() => handleIconSelect(`type:arco_${icon}`)}>
+          <div key={`arco-${icon}-${iconType}`} className="icon-picker-item" onClick={() => handleIconSelect(`type:arco_${icon}`)}>
             <div className="icon-arco">
-              <IconComponent style={{ fontSize: '18px' }} />
+              <IconComponent style={{ fontSize: 18, width: 18, height: 18, color: '#666', display: 'inline-block' }} />
             </div>
           </div>
         );
@@ -237,7 +240,11 @@ if (iconType === 'arco') {
       children: (
         <div className="icon-picker-grid">
           {filteredArcoIcons.length > 0 ? (
-            filteredArcoIcons.map(icon => renderIconPreview(icon, false, 'arco'))
+            filteredArcoIcons.map((icon, idx) => (
+              <React.Fragment key={`arco-wrap-${icon}-${idx}`}>
+                {renderIconPreview(icon, false, 'arco')}
+              </React.Fragment>
+            ))
           ) : (
             <div className="no-results">没有找到匹配的图标</div>
           )}
@@ -250,7 +257,11 @@ if (iconType === 'arco') {
       children: (
         <div className="icon-picker-grid">
           {filteredEmojis.length > 0 ? (
-            filteredEmojis.map(emoji => renderIconPreview(emoji, true))
+            filteredEmojis.map((emoji, idx) => (
+              <React.Fragment key={`emoji-wrap-${emoji}-${idx}`}>
+                {renderIconPreview(emoji, true, 'emoji-mood')}
+              </React.Fragment>
+            ))
           ) : (
             <div className="no-results">没有找到匹配的表情</div>
           )}
@@ -263,10 +274,14 @@ if (iconType === 'arco') {
       children: (
         <div className="emoji-categories">
           {emojiCategories.map((category, index) => (
-            <div key={index} className="emoji-category">
+            <div key={`emoji-cat-${index}`} className="emoji-category">
               <div className="category-title">分类 {index + 1}</div>
               <div className="category-emojis">
-                {category.map(emoji => renderIconPreview(emoji, true))}
+                {Array.from(new Set(category)).map((emoji, i) => (
+                  <React.Fragment key={`emoji-cat-${index}-${emoji}-${i}`}>
+                    {renderIconPreview(emoji, true, 'emoji-category')}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
           ))}
@@ -301,7 +316,7 @@ if (iconType === 'arco') {
                 const iconName = value?.replace('type:arco_', '') || '';
                 const IconComponent = arcoIconMap[iconName as keyof typeof arcoIconMap];
                 if (IconComponent) {
-                  return <IconComponent style={{ fontSize: '18px' }} />;
+                  return <IconComponent style={{ fontSize: 18, width: 18, height: 18, color: '#666', display: 'inline-block' }} />;
                 }
               }
               return <span className="selected-icon">{value}</span>;
@@ -330,7 +345,7 @@ if (iconType === 'arco') {
                         const iconName = value?.replace('type:arco_', '') || '';
                         const IconComponent = arcoIconMap[iconName as keyof typeof arcoIconMap];
                         if (IconComponent) {
-                          return <IconComponent style={{ fontSize: '32px' }} />;
+                          return <IconComponent style={{ fontSize: 32, width: 32, height: 32, color: '#666', display: 'inline-block' }} />;
                         }
                       }
                       return <span className="preview-icon">{value}</span>;

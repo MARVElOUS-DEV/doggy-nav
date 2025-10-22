@@ -2,6 +2,8 @@ import { PipelineStage, Types } from 'mongoose';
 import { parseHTML } from '../../utils/reptileHelper';
 import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
+import type { AuthUserContext } from '../../types/rbac';
+import { buildAudienceFilterEx } from '../utils/audience';
 
 enum NAV_STATUS {
   pass,
@@ -16,7 +18,7 @@ export default class NavController extends Controller {
 
   async list() {
     const { ctx } = this;
-    const { status = 0, categoryId, name, hide } = ctx.query;
+    const { status = 0, categoryId, name } = ctx.query;
 
     let findParam: any = {};
 
@@ -30,10 +32,7 @@ export default class NavController extends Controller {
       } else {
         // Default for authenticated users: show approved or legacy items without status
         findParam = {
-          $or: [
-            { status: { $exists: false } },
-            { status: 0 },
-          ],
+          $or: [{ status: { $exists: false } }, { status: 0 }],
         };
       }
     } else {
@@ -41,16 +40,7 @@ export default class NavController extends Controller {
       findParam.status = NAV_STATUS.pass;
     }
 
-    // Filter hide based on authentication state
-    if (!isAuthenticated) {
-      // For non-authenticated users, only show non-hidden items
-      if (!hide) {
-        findParam.hide = { $eq: false };
-      }
-    } else if (hide !== undefined) {
-      // For authenticated users, respect the hide parameter if provided
-      findParam.hide = { $eq: hide === 'true' };
-    }
+    // Audience-based visibility is handled below; legacy `hide` is no longer used for filtering
 
     if (categoryId) {
       findParam.categoryId = {
@@ -63,6 +53,10 @@ export default class NavController extends Controller {
         $regex: reg,
       };
     }
+
+    // Audience filtering (+ legacy hide compatibility)
+    const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
+    findParam = buildAudienceFilterEx(findParam, userCtx);
 
     // If user is authenticated, include favorite status
     if (isAuthenticated) {
@@ -95,8 +89,8 @@ export default class NavController extends Controller {
                 $match: {
                   $expr: {
                     $and: [
-                      { $eq: [ '$navId', '$$navId' ] },
-                      { $eq: [ '$userId', new Types.ObjectId(userInfo.userId) ] },
+                      { $eq: ['$navId', '$$navId'] },
+                      { $eq: ['$userId', new Types.ObjectId(userInfo.userId)] },
                     ],
                   },
                 },
@@ -107,7 +101,7 @@ export default class NavController extends Controller {
         },
         {
           $addFields: {
-            isFavorite: { $gt: [{ $size: '$favoriteInfo' }, 0 ] },
+            isFavorite: { $gt: [{ $size: '$favoriteInfo' }, 0] },
           },
         },
         {
@@ -121,16 +115,19 @@ export default class NavController extends Controller {
       ];
 
       const countPipeline = [{ $match: findParam }, { $count: 'total' }];
+      // Handle case where findParam uses $and with nested objects not directly matchable in count
+      // Use the same match condition
 
-      const [ data, countResult ] = await Promise.all([
+      const [data, countResult] = await Promise.all([
         ctx.model.Nav.aggregate(pipeline),
         ctx.model.Nav.aggregate(countPipeline),
       ]);
 
       const total = countResult.length > 0 ? countResult[0].total : 0;
+      const mapped = data.map((d: any) => ctx.model.Nav.hydrate(d));
 
       this.success({
-        data,
+        data: mapped,
         total,
         pageNumber: Math.ceil(total / pageSize),
       });
@@ -192,53 +189,51 @@ export default class NavController extends Controller {
     try {
       const { categoryId } = request.query;
       const resData: any = [];
-      // 取所有子分类， filter by hide based on authentication
+      // 取所有子分类， apply audience-based filtering
       const isAuthenticated = this.isAuthenticated();
-      const categoryFilter: any = {
-        $or: [
-          { categoryId },
-          { _id: categoryId },
-        ] };
+      const categoryFilterBase: any = {
+        $or: [{ categoryId }, { _id: categoryId }],
+      };
 
-      // For non-authenticated users, also filter out hidden categories
-      if (!isAuthenticated) {
-        categoryFilter.hide = { $eq: false };
-      }
+      // Audience filtering for categories (+ legacy hide compatibility)
+      const userCtx = this.ctx.state.userinfo as AuthUserContext | undefined;
+      const categoryFilter: any = buildAudienceFilterEx(categoryFilterBase, userCtx);
 
       const categorys = await model.Category.find(categoryFilter);
-      const categoryIds = categorys.reduce((t, v) => [ ...t, v._id ], []);
+      const categoryIds = categorys.reduce((t, v) => [...t, v._id], []);
 
       const navFindParam: any = {
         categoryId: { $in: categoryIds },
       };
 
-      // Filter by status and hide based on authentication
+      // Filter by status and apply audience visibility for navs
       if (isAuthenticated) {
         // Authenticated users see approved or legacy items without status
-        navFindParam.$or = [
-          { status: { $exists: false } },
-          { status: NAV_STATUS.pass },
-        ];
+        navFindParam.$or = [{ status: { $exists: false } }, { status: NAV_STATUS.pass }];
       } else {
         // Non-authenticated users only see approved items
         navFindParam.status = NAV_STATUS.pass;
-        navFindParam.hide = { $eq: false };
       }
 
-      const navs = await model.Nav.find(navFindParam);
+      // Audience filtering for navs (+ legacy hide compatibility)
+      const finalNavFindParam: any = buildAudienceFilterEx(navFindParam, userCtx);
+
+      const navs = await model.Nav.find(finalNavFindParam);
 
       // Build favorites set for authenticated users
       let favoriteSet: Set<string> | null = null;
       if (isAuthenticated) {
         const userInfo = this.getUserInfo();
-        const favorites = await model.Favorite.find({ userId: new Types.ObjectId(userInfo.userId) }).select('navId');
+        const favorites = await model.Favorite.find({
+          userId: new Types.ObjectId(userInfo.userId),
+        }).select('navId');
         favoriteSet = new Set(favorites.map((f: any) => f.navId.toString()));
       }
 
-      categorys.map(category => {
+      categorys.map((category) => {
         const nowNavs = navs
-          .filter(nav => nav.categoryId === category._id.toString())
-          .map(nav => {
+          .filter((nav) => nav.categoryId === category._id.toString())
+          .map((nav) => {
             const obj: any = nav.toObject();
             if (favoriteSet) {
               obj.isFavorite = favoriteSet.has(nav._id.toString());
@@ -247,17 +242,17 @@ export default class NavController extends Controller {
           });
         resData.push({
           _id: category._id,
+          id: category._id.toString(),
           name: category.name,
           list: nowNavs,
         });
         return category;
       });
       this.success(resData);
-    } catch (error:any) {
+    } catch (error: any) {
       this.error(error.message);
     }
   }
-
 
   async get() {
     const { ctx } = this;
@@ -270,10 +265,11 @@ export default class NavController extends Controller {
       // Non-authenticated users can only access approved items
       if (!isAuthenticated) {
         navQuery.status = NAV_STATUS.pass;
-        navQuery.hide = { $eq: false };
       }
 
-      const nav = await ctx.model.Nav.findOne(navQuery);
+      // Audience filtering for single item (+ legacy hide compatibility)
+      const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
+      const nav = await ctx.model.Nav.findOne(buildAudienceFilterEx(navQuery, userCtx));
       if (nav && nav.categoryId) {
         const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
         if (category) {
@@ -281,7 +277,10 @@ export default class NavController extends Controller {
           navObj.categoryName = category.name;
           if (isAuthenticated) {
             const userInfo = this.getUserInfo();
-            const fav = await ctx.model.Favorite.findOne({ userId: new Types.ObjectId(userInfo.userId), navId: nav._id });
+            const fav = await ctx.model.Favorite.findOne({
+              userId: new Types.ObjectId(userInfo.userId),
+              navId: nav._id,
+            });
             navObj.isFavorite = !!fav;
           }
           this.success(navObj);
@@ -289,7 +288,10 @@ export default class NavController extends Controller {
           const navObj: any = nav.toObject();
           if (isAuthenticated) {
             const userInfo = this.getUserInfo();
-            const fav = await ctx.model.Favorite.findOne({ userId: new Types.ObjectId(userInfo.userId), navId: nav._id });
+            const fav = await ctx.model.Favorite.findOne({
+              userId: new Types.ObjectId(userInfo.userId),
+              navId: nav._id,
+            });
             navObj.isFavorite = !!fav;
           }
           this.success(navObj);
@@ -308,10 +310,9 @@ export default class NavController extends Controller {
         name: { $regex: reg },
       };
 
-      // For non-authenticated users, filter by status and hide
+      // For non-authenticated users, filter by status
       const isAuthenticated = this.isAuthenticated();
       if (!isAuthenticated) {
-        searchQuery.hide = { $eq: false };
         searchQuery.status = NAV_STATUS.pass; // Only show approved items
       }
 
@@ -320,23 +321,24 @@ export default class NavController extends Controller {
         await this.getSearchWithFavorites(searchQuery, skipNumber, pageSize);
       } else {
         // Use simple query for non-authenticated users
-        const [ navs, total ] = await Promise.all([
-          ctx.model.Nav.find(searchQuery).skip(skipNumber).limit(pageSize)
-            .sort({ _id: -1 }),
+        const [navs, total] = await Promise.all([
+          ctx.model.Nav.find(searchQuery).skip(skipNumber).limit(pageSize).sort({ _id: -1 }),
           ctx.model.Nav.find(searchQuery).countDocuments(),
         ]);
 
-        const navsWithCategory = await Promise.all(navs.map(async nav => {
-          if (nav.categoryId) {
-            const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
-            const navObj = nav.toObject();
-            if (category) {
-              navObj.categoryName = category.name;
+        const navsWithCategory = await Promise.all(
+          navs.map(async (nav) => {
+            if (nav.categoryId) {
+              const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
+              const navObj = nav.toObject();
+              if (category) {
+                navObj.categoryName = category.name;
+              }
+              return navObj;
             }
-            return navObj;
-          }
-          return nav.toObject();
-        }));
+            return nav.toObject();
+          })
+        );
 
         this.success({
           data: navsWithCategory,
@@ -364,8 +366,8 @@ export default class NavController extends Controller {
                 $match: {
                   $expr: {
                     $and: [
-                      { $eq: [ '$navId', '$$navId' ] },
-                      { $eq: [ '$userId', new Types.ObjectId(userInfo.userId) ] },
+                      { $eq: ['$navId', '$$navId'] },
+                      { $eq: ['$userId', new Types.ObjectId(userInfo.userId)] },
                     ],
                   },
                 },
@@ -384,8 +386,8 @@ export default class NavController extends Controller {
         },
         {
           $addFields: {
-            isFavorite: { $gt: [{ $size: '$favoriteInfo' }, 0 ] },
-            categoryName: { $arrayElemAt: [ '$category.name', 0 ] },
+            isFavorite: { $gt: [{ $size: '$favoriteInfo' }, 0] },
+            categoryName: { $arrayElemAt: ['$category.name', 0] },
           },
         },
         {
@@ -401,7 +403,7 @@ export default class NavController extends Controller {
 
       const countPipeline = [{ $match: searchQuery }, { $count: 'total' }];
 
-      const [ data, countResult ] = await Promise.all([
+      const [data, countResult] = await Promise.all([
         ctx.model.Nav.aggregate(pipeline),
         ctx.model.Nav.aggregate(countPipeline),
       ]);
@@ -425,7 +427,7 @@ export default class NavController extends Controller {
   async ranking() {
     const isAuthenticated = this.isAuthenticated();
 
-    const [ view, star, news ] = await Promise.all([
+    const [view, star, news] = await Promise.all([
       this.service.nav.findMaxValueList('view', isAuthenticated),
       this.service.nav.findMaxValueList('star', isAuthenticated),
       this.service.nav.findMaxValueList('createTime', isAuthenticated),
@@ -447,12 +449,16 @@ export default class NavController extends Controller {
       return;
     }
     try {
-      const updated = await ctx.model.Nav.findByIdAndUpdate(id, { $inc: { view: 1 } }, { new: true });
+      const updated = await ctx.model.Nav.findByIdAndUpdate(
+        id,
+        { $inc: { view: 1 } },
+        { new: true }
+      );
       if (!updated) {
         this.error('Nav item not found');
         return;
       }
-      this.success({ id: updated._id, view: updated.view });
+      this.success({ id: updated._id?.toString?.() ?? updated.id, view: updated.view });
     } catch (e: any) {
       this.error(e.message || 'Failed to increment view');
     }
@@ -467,12 +473,16 @@ export default class NavController extends Controller {
       return;
     }
     try {
-      const updated = await ctx.model.Nav.findByIdAndUpdate(id, { $inc: { star: 1 } }, { new: true });
+      const updated = await ctx.model.Nav.findByIdAndUpdate(
+        id,
+        { $inc: { star: 1 } },
+        { new: true }
+      );
       if (!updated) {
         this.error('Nav item not found');
         return;
       }
-      this.success({ id: updated._id, star: updated.star });
+      this.success({ id: updated._id?.toString?.() ?? updated.id, star: updated.star });
     } catch (e: any) {
       this.error(e.message || 'Failed to increment star');
     }

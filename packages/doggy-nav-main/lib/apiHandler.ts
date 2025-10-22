@@ -30,6 +30,7 @@ export const createApiHandler = (config: ApiConfig) => {
     try {
       const headers: any = {
         'Content-Type': 'application/json',
+        'X-App-Source': 'main',
       };
 
       if (req.headers.authorization) {

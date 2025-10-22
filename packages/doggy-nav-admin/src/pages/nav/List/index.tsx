@@ -1,13 +1,12 @@
-import { API_NAV, API_NAV_LIST } from "@/services/api";
-import { ProColumns } from "@ant-design/pro-table";
-import useTableComPopup from "@/components/TableCom/useTableComPopup";
-import NavListForm from "@/pages/nav/List/NavListForm";
-import { Popconfirm, Tag, Space, message, Modal, Button } from "antd";
-import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
-import request from "@/utils/request";
-import { useRef, useState } from "react";
-import CategorySelect from "@/pages/nav/Category/CategorySelect";
-import TableCom from "@/components/TableCom";
+import TableCom from '@/components/TableCom';
+import useTableComPopup from '@/components/TableCom/useTableComPopup';
+import CategorySelect from '@/pages/nav/Category/CategorySelect';
+import NavListForm from '@/pages/nav/List/NavListForm';
+import { API_NAV, API_NAV_LIST } from '@/services/api';
+import request from '@/utils/request';
+import { ProColumns } from '@ant-design/pro-table';
+import { Button, message, Modal, Popconfirm, Space, Tag } from 'antd';
+import { useRef, useState } from 'react';
 
 function RandomColorTag({ children }) {
   const colors = [
@@ -21,8 +20,12 @@ function RandomColorTag({ children }) {
     'cyan',
     'blue',
     'purple',
-  ]
-  return <Tag color={colors[Math.floor(Math.random() * colors.length)]}>{children}</Tag>
+  ];
+  return (
+    <Tag color={colors[Math.floor(Math.random() * colors.length)]}>
+      {children}
+    </Tag>
+  );
 }
 
 export default function NavListPage() {
@@ -45,12 +48,12 @@ export default function NavListPage() {
       onOk: async () => {
         try {
           // Create array of delete requests
-          const deleteRequests = selectedRowKeys.map(id =>
+          const deleteRequests = selectedRowKeys.map((id) =>
             request({
               url: API_NAV,
               method: 'DELETE',
-              data: { id }
-            })
+              data: { id },
+            }),
           );
 
           // Execute all delete requests
@@ -62,7 +65,7 @@ export default function NavListPage() {
         } catch (error) {
           message.error('批量删除失败，请重试');
         }
-      }
+      },
     });
   };
 
@@ -79,16 +82,18 @@ export default function NavListPage() {
       width: 250,
       renderText: (text, record) => (
         <Space>
-          {record.tags?.map(item => <RandomColorTag key={item}>{item}</RandomColorTag>)}
+          {record.tags?.map((item) => (
+            <RandomColorTag key={item}>{item}</RandomColorTag>
+          ))}
         </Space>
-      )
+      ),
     },
     {
       title: '分类',
       dataIndex: 'categoryId',
       width: 500,
       hideInTable: true,
-      renderFormItem: (props) => <CategorySelect {...props} />
+      renderFormItem: (props) => <CategorySelect {...props} />,
     },
     {
       title: '网站描述',
@@ -101,42 +106,25 @@ export default function NavListPage() {
       dataIndex: 'href',
       search: false,
     },
+    // Audience visibility shown as text
     {
-      title: '显示状态',
-      dataIndex: 'hide',
+      title: '可见性',
+      dataIndex: ['audience', 'visibility'],
       search: false,
-      width: 100,
-      render: (_, record) => (
-        <Space>
-          {record.hide ? (
-            <EyeInvisibleOutlined
-              style={{ color: '#ff4d4f', fontSize: '16px' }}
-              title="已隐藏"
-            />
-          ) : (
-            <EyeOutlined
-              style={{ color: '#52c41a', fontSize: '16px' }}
-              title="显示中"
-            />
-          )}
-        </Space>
-      ),
-      filters: [
-        { text: '显示', value: false },
-        { text: '隐藏', value: true }
-      ],
+      width: 120,
       valueEnum: {
-        false: { text: '显示', status: 'Success' },
-        true: { text: '隐藏', status: 'Error' }
-      }
+        public: { text: '公开' },
+        authenticated: { text: '登录可见' },
+        restricted: { text: '受限' },
+      },
     },
     {
       title: '创建时间',
-      dataIndex: 'createTime',
+      dataIndex: 'createTimeDate',
       search: false,
-      valueType: 'dateTime'
+      valueType: 'dateTime',
     },
-  ]
+  ];
 
   const rowSelection = {
     selectedRowKeys,
@@ -150,7 +138,7 @@ export default function NavListPage() {
       <TableCom
         actionRef={tableRef}
         columns={columns}
-        requestParams={{url: API_NAV_LIST, method: 'GET'}}
+        requestParams={{ url: API_NAV_LIST, method: 'GET' }}
         showPageHeader={false}
         // Ensure horizontal scroll for long/fixed columns to prevent overflow
         scroll={{ x: 'max-content' }}
@@ -173,29 +161,42 @@ export default function NavListPage() {
               disabled={selectedRowKeys.length === 0}
             >
               批量删除 ({selectedRowKeys.length})
-            </Button>
+            </Button>,
           ],
         }}
-        renderOptions={(_, record, __, action) => record.status !== 2 ? [
-          <a key="edit" onClick={() => formProps.show({action, data: record, type: 'edit'})}>编辑</a>,
-          <Popconfirm
-            key="delete"
-            title={'确定删除吗?'}
-            onConfirm={async () => {
-              await request({
-                url: API_NAV,
-                method: 'DELETE',
-                data: {
-                  id: record?._id
-                },
-                msg: '删除成功'
-              })
-              action.reload()
-            }}>
-            <a>删除</a>
-          </Popconfirm>,
-        ] : []}/>
+        renderOptions={(_, record, __, action) =>
+          record.status !== 2
+            ? [
+                <a
+                  key="edit"
+                  onClick={() =>
+                    formProps.show({ action, data: record, type: 'edit' })
+                  }
+                >
+                  编辑
+                </a>,
+                <Popconfirm
+                  key="delete"
+                  title={'确定删除吗?'}
+                  onConfirm={async () => {
+                    await request({
+                      url: API_NAV,
+                      method: 'DELETE',
+                      data: {
+                        id: record?.id,
+                      },
+                      msg: '删除成功',
+                    });
+                    action.reload();
+                  }}
+                >
+                  <a>删除</a>
+                </Popconfirm>,
+              ]
+            : []
+        }
+      />
       <NavListForm {...formProps} tableRef={tableRef.current} />
     </>
-  )
+  );
 }

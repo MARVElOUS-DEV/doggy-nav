@@ -1,0 +1,20 @@
+# Railway configuration for deploying the backend (doggy-nav-server)
+
+[project]
+name = "doggy-nav"
+
+[build]
+builder = "NIXPACKS"
+# Build only the server package in the monorepo
+buildCommand = "pnpm -F doggy-nav-server run build"
+
+[deploy]
+# Start Egg.js in foreground so the process stays attached
+startCommand = "pnpm -F doggy-nav-server run start:railway"
+restartPolicyType = "ON_FAILURE"
+numReplicas = 1
+
+[env]
+NODE_ENV = "production"
+# Railway provides PORT automatically; default to 3002 if not set
+PORT = "3002"

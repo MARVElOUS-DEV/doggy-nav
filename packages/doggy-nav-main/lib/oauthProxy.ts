@@ -7,6 +7,7 @@ const SERVER_CLIENT_SECRET = process.env.SERVER_CLIENT_SECRET;
 const buildHeaders = (req: NextApiRequest) => ({
   ...(req.headers.cookie ? { Cookie: req.headers.cookie } : {}),
   ...(SERVER_CLIENT_SECRET ? { 'x-client-secret': SERVER_CLIENT_SECRET } : {}),
+  'X-App-Source': 'main',
 });
 
 export function createOAuthInitHandler(provider: string) {
@@ -22,7 +23,7 @@ export function createOAuthInitHandler(provider: string) {
         maxRedirects: 0,
         validateStatus: () => true,
         withCredentials: true,
-        timeout: process.env.NODE_ENV === 'development'? 0: 30000,
+        timeout: process.env.NODE_ENV === 'development' ? 0 : 30000,
       });
 
       const setCookie = response.headers['set-cookie'];
@@ -59,7 +60,7 @@ export function createOAuthCallbackHandler(provider: string) {
         maxRedirects: 0,
         validateStatus: () => true,
         withCredentials: true,
-        timeout: process.env.NODE_ENV === 'development'? 0: 30000,
+        timeout: process.env.NODE_ENV === 'development' ? 0 : 30000,
       });
 
       const setCookie = response.headers['set-cookie'];

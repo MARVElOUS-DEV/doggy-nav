@@ -15,5 +15,8 @@ dist/*
 feat.md
 CLAUDE*
 .serena/*
+.factory/*
+openspec/*
+.kiro/
 
 .vercel

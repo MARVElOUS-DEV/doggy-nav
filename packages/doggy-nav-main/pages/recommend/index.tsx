@@ -11,7 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from '@/utils/axios'
 import { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api'
-import { useAtom } from 'jotai'
+import { useAtomValue } from 'jotai'
 import { RecommendFormValues } from '@/types'
 import { categoriesAtom, tagsAtom } from '@/store/store'
 import { useTranslation } from 'react-i18next'
@@ -21,8 +21,8 @@ const FormItem = Form.Item
 export default function Recommend() {
   const [loading, setLoading] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
-  const [categories] = useAtom(categoriesAtom)
-  const [tags] = useAtom(tagsAtom)
+  const categories = useAtomValue(categoriesAtom)
+  const tags = useAtomValue(tagsAtom)
   const [form] = Form.useForm()
   const { t } = useTranslation('translation')
 

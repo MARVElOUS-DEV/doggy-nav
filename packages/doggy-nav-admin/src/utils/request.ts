@@ -1,96 +1,114 @@
-import { RequestConfig, request as umiRequest } from "@umijs/max";
-import { message, notification } from "antd";
-import { history } from "@umijs/max";
+import { history, RequestConfig, request as umiRequest } from '@umijs/max';
+import { message, notification } from 'antd';
+import { setAccessExpEpochMs } from './session';
 
-function defaultHeaders() {
-  const headers: Record<string, string> = {}
-  return headers
+export function defaultHeaders() {
+  const headers: Record<string, string> = { 'X-App-Source': 'admin' };
+  return headers;
 }
 
-// const codeMessage = {
-//   200: '服务器成功返回请求的数据。',
-//   201: '新建或修改数据成功。',
-//   202: '一个请求已经进入后台排队（异步任务）。',
-//   204: '删除数据成功。',
-//   400: '发出的请求有错误，服务器没有进行新建或修改数据的操作。',
-//   401: '用户没有权限（令牌、用户名、密码错误）。',
-//   403: '用户得到授权，但是访问是被禁止的。',
-//   404: '发出的请求针对的是不存在的记录，服务器没有进行操作。',
-//   406: '请求的格式不可得。',
-//   410: '请求的资源被永久删除，且不会再得到的。',
-//   422: '当创建一个对象时，发生一个验证错误。',
-//   500: '服务器发生错误，请检查服务器。',
-//   502: '网关错误。',
-//   503: '服务不可用，服务器暂时过载或维护。',
-//   504: '网关超时。',
-// };
-
 interface RequestOptions {
-  url: string
-  method?: 'GET' | 'POST' | 'DELETE' | 'PUT'
-  headers?: any
-  data?: any
-  body?: any
-  msg?: string
-  [rest: string]: any
+  url: string;
+  method?: 'GET' | 'POST' | 'DELETE' | 'PUT';
+  headers?: any;
+  data?: any;
+  body?: any;
+  msg?: string;
+  [rest: string]: any;
 }
 
 function request(params: RequestOptions): any {
-  let { url, method = 'GET', headers, data, body, msg } = params
+  let { url, method = 'GET', headers, data, body, msg } = params;
   if (!headers) {
-    headers = defaultHeaders()
+    headers = defaultHeaders();
   }
   if (method === 'GET' && data) {
     const cleaned: Record<string, any> = {};
     Object.keys(data).forEach((k) => {
       const v = (data as any)[k];
-      if (v === undefined || v === null || v === '' || v === 'undefined') return;
+      if (v === undefined || v === null || v === '' || v === 'undefined')
+        return;
       cleaned[k] = v;
     });
-    const urlQueryParams = new URLSearchParams(cleaned as any)
+    const urlQueryParams = new URLSearchParams(cleaned as any);
     const qs = urlQueryParams.toString();
-    if (qs) url = url + `?${qs}`
+    if (qs) url = url + `?${qs}`;
   }
-  return new Promise((resolve, reject)=> {
+  return new Promise((resolve, reject) => {
     umiRequest(url, {
       method,
       headers,
       data,
-      body
-    }).then(res=> {
-      if (msg) {
-        message.success(msg)
-      }
-      resolve(res)
-    }).catch(err=> {
-      console.log(new Error(err))
-      notification.error({message: err.toString()})
-      reject(err)
+      body,
     })
-  })
+      .then((res) => {
+        if (msg) {
+          message.success(msg);
+        }
+        resolve(res);
+      })
+      .catch((err) => {
+        try {
+          console.log(new Error(err));
+        } catch {}
+        const status =
+          (err && err.response && err.response.status) || err?.data?.status;
+        const path =
+          typeof window !== 'undefined' ? window.location.pathname : '';
+        // Suppress auth noise on login page or plain 401s
+        if (!(status === 401 || path === '/user/login')) {
+          notification.error({
+            message: err?.message || err?.toString?.() || '请求失败',
+          });
+        }
+        reject(err);
+      });
+  });
 }
 
-export function requestConfigure(options= {}): RequestConfig {
+export function requestConfigure(options = {}): RequestConfig {
+  // Single-flight refresh guard shared across all requests
+  let refreshPromise: Promise<any> | null = null;
+  const isRefreshUrl = (url: string) => /\/api\/auth\/refresh\b/.test(url);
+  const doRefresh = async () => {
+    const resp = await umiRequest('/api/auth/refresh', {
+      method: 'POST',
+      withCredentials: true,
+    });
+    try {
+      const exp = (resp as any)?.data?.accessExp;
+      if (typeof exp === 'number') setAccessExpEpochMs(exp);
+    } catch {}
+    return resp;
+  };
+
   return {
+    withCredentials: true,
     requestInterceptors: [
       (config) => {
+        const url = (config as any)?.url || '';
+        const isAbsolute = /^https?:\/\//i.test(url);
+        const hasApiPrefix = url.startsWith('/api/');
+        const finalUrl =
+          isAbsolute || hasApiPrefix
+            ? url
+            : `/api${url.startsWith('/') ? '' : '/'}${url}`;
+        // Preserve resolved URL for reliable retries in error handler
+        config.__finalUrl = finalUrl;
         return {
           ...config,
+          url: finalUrl,
           headers: {
             ...config.headers,
-            ...defaultHeaders()
-          }
+            ...defaultHeaders(),
+          },
         };
       },
     ],
-    responseInterceptors: [
-      (response) => {
-        return response;
-      },
-    ],
+    responseInterceptors: [async (response) => response],
     errorConfig: {
-      errorHandler: (error: any) => {
-        const { response } = error;
+      errorHandler: async (error: any) => {
+        const { response, request: eRequest, config } = error;
         const loginPath = '/user/login';
 
         if (!response) {
@@ -99,12 +117,41 @@ export function requestConfigure(options= {}): RequestConfig {
             message: '网络异常',
           });
         } else if (response.status === 401) {
-          // Handle 401 Unauthorized - redirect to login
-          notification.error({
-            description: '您的登录已过期，请重新登录',
-            message: '登录过期',
-          });
-          history.push(loginPath);
+          const cfg = { ...(config || {}) };
+          const failingUrl: string =
+            cfg.__finalUrl || eRequest?.responseURL || cfg.url || '';
+          // On login page, do not attempt silent refresh and suppress noise
+          if (location.pathname === loginPath) {
+            return;
+          }
+          if (typeof failingUrl === 'string' && isRefreshUrl(failingUrl)) {
+            // refresh itself failed -> proceed to logout/redirect
+          } else if (cfg.__isRetryRequest) {
+            // already retried once, stop here
+          } else {
+            try {
+              if (!refreshPromise) {
+                refreshPromise = doRefresh().finally(() => {
+                  refreshPromise = null;
+                });
+              }
+              await refreshPromise;
+              const resolvedUrl: string =
+                cfg.__finalUrl || eRequest?.responseURL || cfg.url || '';
+              if (typeof resolvedUrl === 'string' && resolvedUrl.length > 1) {
+                return await umiRequest(resolvedUrl, {
+                  ...cfg,
+                  __isRetryRequest: true,
+                });
+              }
+            } catch (e) {
+              console.error('silent refresh failed:', e);
+            }
+          }
+          if (location.pathname !== loginPath) {
+            history.push(loginPath);
+          }
+          return;
         } else if (response.status >= 500) {
           notification.error({
             description: '服务器发生错误，请稍后重试',
@@ -124,8 +171,8 @@ export function requestConfigure(options= {}): RequestConfig {
         throw error;
       },
     },
-    ...options, 
-  }
+    ...options,
+  };
 }
 
-export default request
+export default request;

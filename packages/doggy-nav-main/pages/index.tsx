@@ -7,8 +7,8 @@ import VerticalTimelineContainer from '@/components/Timelines/VerticalTimelineCo
 import api from '@/utils/api';
 import { createTimelineData } from '@/utils/timelineData';
 import { chromeMicroToISO } from '@/utils/time';
-import { useAtom } from 'jotai';
-import { navRankingAtom } from '@/store/store';
+import { useAtom, useAtomValue } from 'jotai';
+import { categoriesAtom, navRankingAtom } from '@/store/store';
 import Link from 'next/link';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
 import { useTranslation } from 'react-i18next';
@@ -19,42 +19,50 @@ export default function HomePage() {
   const { t } = useTranslation('translation');
   const [currentYearData, setCurrentYearData] = useState<any>(null);
   const currentYear = new Date().getFullYear();
+  const categories = useAtomValue(categoriesAtom);
   const [selectedItem, setSelectedItem] = useState<TimelineItemType | undefined>();
   const [totalNavCount, setTotalNavCount] = useState(0);
-  const [totalCategoryCount, setTotalCategoryCount] = useState(0);
   const [totalViews, setTotalViews] = useState(0);
 
   // Initial data fetch - nav ranking and timeline data
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
         const navRankingData = await api.getNavRanking();
         setNavRanking(navRankingData);
 
-        // Fetch nav list and build timeline data
-        const list = await api.getNavAll({ pageSize: 500, pageNumber: 1 });
-        const normalized = (list?.data || []).map((n: any) => ({
+        // Fetch nav list and build timeline data TODO: add more action
+        const list = await api.getNavAll({ pageSize: 100, pageNumber: 1 });
+        const normalized = (list?.data || []).map((n) => ({
           ...n,
-          createTime: chromeMicroToISO((n as any).createTime) || (n as any).createTime,
+          createTime: chromeMicroToISO(n.createTime) || n.createTime,
         }));
         const timelineData = createTimelineData(normalized, true);
         const currentYear = new Date().getFullYear();
-        const cy = timelineData.find(y => y.year === currentYear);
-        setCurrentYearData(cy || { year: currentYear, items: [], totalWebsites: 0, color: '', position: { x: 0, y: 0, z: 0, rotation: 0 }, featuredWebsites: [] });
+        const cy = timelineData.find((y) => y.year === currentYear);
+        setCurrentYearData(
+          cy || {
+            year: currentYear,
+            items: [],
+            totalWebsites: 0,
+            color: '',
+            position: { x: 0, y: 0, z: 0, rotation: 0 },
+            featuredWebsites: [],
+          }
+        );
 
         // Fetch statistics for cards
         setTotalNavCount(list?.total || 0);
-        
-        const categories = await api.getCategoryList();
-        setTotalCategoryCount(categories?.length || 0);
-        
-        const totalViewsSum = normalized.reduce((sum: number, nav: any) => sum + (nav.view || 0), 0);
+        const totalViewsSum = normalized.reduce(
+          (sum: number, nav: any) => sum + (nav.view || 0),
+          0
+        );
         setTotalViews(totalViewsSum);
       } catch (error) {
-        console.error("Failed to fetch data", error);
+        console.error('Failed to fetch data', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     };
     fetchData();
@@ -103,7 +111,9 @@ export default function HomePage() {
           <div className="bg-theme-background rounded-3xl shadow-xl overflow-hidden border border-theme-border">
             <div className="hero-gradient p-8 text-white relative">
               <div className="max-w-3xl mx-auto text-center relative z-10">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('curated_website_navigation')}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                  {t('curated_website_navigation')}
+                </h1>
                 <p className="text-xl opacity-90 mb-8">{t('discover_quality_websites')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
@@ -133,8 +143,12 @@ export default function HomePage() {
         {!loading && (
           <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-theme-foreground mb-2">{t('popular_recommendations')}</h2>
-              <p className="text-theme-muted-foreground">{t('based_on_views_likes_new_additions')}</p>
+              <h2 className="text-2xl font-bold text-theme-foreground mb-2">
+                {t('popular_recommendations')}
+              </h2>
+              <p className="text-theme-muted-foreground">
+                {t('based_on_views_likes_new_additions')}
+              </p>
             </div>
             <NavRankingList data={navRanking} />
           </div>
@@ -162,7 +176,9 @@ export default function HomePage() {
               />
             ) : (
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-theme-foreground mb-2">{t('no_websites_collected_this_year')}</h2>
+                <h2 className="text-2xl font-bold text-theme-foreground mb-2">
+                  {t('no_websites_collected_this_year')}
+                </h2>
                 <p className="text-theme-muted-foreground mb-6">{t('submit_worthwhile_sites')}</p>
                 <Link
                   href="/recommend"
@@ -176,9 +192,7 @@ export default function HomePage() {
         )}
 
         {/* Statistics Chart Section */}
-        {!loading && navRanking && (
-          <StatsChart data={navRanking} />
-        )}
+        {!loading && navRanking && <StatsChart data={navRanking} />}
 
         {/* Stats Section */}
         {!loading && (
@@ -188,7 +202,7 @@ export default function HomePage() {
               <div className="text-blue-100">{t('total_nav_count')}</div>
             </div>
             <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-              <div className="text-3xl font-bold">{totalCategoryCount}</div>
+              <div className="text-3xl font-bold">{Math.max(categories.length - 1, 0)}</div>
               <div className="text-purple-100">{t('total_category_count')}</div>
             </div>
             <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
@@ -202,7 +216,9 @@ export default function HomePage() {
         {!loading && (
           <div className="mt-12 text-center">
             <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
-              <h3 className="text-2xl font-bold text-theme-foreground mb-4">{t('cant_find_website')}</h3>
+              <h3 className="text-2xl font-bold text-theme-foreground mb-4">
+                {t('cant_find_website')}
+              </h3>
               <p className="text-theme-muted-foreground mb-6 max-w-2xl mx-auto">
                 {t('best_navigation_service')}
               </p>
@@ -217,5 +233,5 @@ export default function HomePage() {
         )}
       </div>
     </div>
-  )
+  );
 }

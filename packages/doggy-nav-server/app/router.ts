@@ -8,6 +8,7 @@ export default (app: Application) => {
   router.post('/api/auth/logout', controller.auth.logout);
   router.get('/api/auth/providers', controller.auth.providers);
   router.get('/api/auth/me', controller.auth.me);
+  router.post('/api/auth/refresh', controller.auth.refresh);
   router.get('/api/auth/config', controller.auth.getAuthConfig);
   // OAuth callback route (dynamic provider), Note: dynamic route should be after the common ones.
   router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);
@@ -18,6 +19,25 @@ export default (app: Application) => {
   router.post('/api/login', controller.user.login);
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
+  // Admin user management
+  router.get('/api/user', controller.user.adminList);
+  router.get('/api/user/:id', controller.user.adminGetOne);
+  router.post('/api/user', controller.user.adminCreate);
+  router.patch('/api/user/:id', controller.user.adminUpdate);
+  router.delete('/api/user', controller.user.adminDelete);
+  // RBAC resources
+  router.get('/api/roles', controller.role.getList);
+  router.post('/api/roles', controller.role.add);
+  router.put('/api/roles', controller.role.edit);
+  router.delete('/api/roles', controller.role.del);
+
+  router.get('/api/groups', controller.group.getList);
+  router.get('/api/groups/:id', controller.group.getOne);
+  router.post('/api/groups', controller.group.add);
+  router.put('/api/groups', controller.group.edit);
+  router.put('/api/groups/:id', controller.group.update);
+  router.post('/api/groups/:id/members', controller.group.addMembers);
+  router.delete('/api/groups', controller.group.del);
   // invitation code routes
   router.get('/api/invite-codes/list', controller.inviteCode.list);
   router.post('/api/invite-codes', controller.inviteCode.create);

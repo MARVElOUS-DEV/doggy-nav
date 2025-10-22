@@ -13,9 +13,9 @@ export default (appInfo: EggAppInfo) => {
   const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
   // Stable cookie signing key to prevent signed-cookie invalidation across restarts
-  config.keys = process.env.COOKIE_KEYS || (appInfo.name + '_doggy_nav_cookie_key');
+  config.keys = process.env.COOKIE_KEYS || appInfo.name + '_doggy_nav_cookie_key';
 
-  const allowedOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',') : [ 'http://localhost:3000' ];
+  const allowedOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',') : ['http://localhost:3000'];
 
   config.security = {
     csrf: {
@@ -31,10 +31,10 @@ export default (appInfo: EggAppInfo) => {
     },
     csp: {
       policy: {
-        'default-src': '\'self\'',
-        'img-src': '\'self\' data:',
-        'script-src': '\'self\' \'unsafe-inline\'',
-        'style-src': '\'self\' \'unsafe-inline\'',
+        'default-src': "'self'",
+        'img-src': "'self' data:",
+        'script-src': "'self' 'unsafe-inline'",
+        'style-src': "'self' 'unsafe-inline'",
       },
     },
     xssProtection: {
@@ -66,19 +66,20 @@ export default (appInfo: EggAppInfo) => {
     },
   };
 
-  config.middleware = [ 'error', 'auth' ];
+  config.middleware = ['error', 'auth'];
 
   config.jwt = {
     secret: JWT_SECRET,
-    accessExpiresIn : JWT_ACCESS_EXPIRES_IN,
-    refreshExpiresIn : JWT_REFRESH_EXPIRES_IN
+    accessExpiresIn: JWT_ACCESS_EXPIRES_IN,
+    refreshExpiresIn: JWT_REFRESH_EXPIRES_IN,
   };
 
   // Logger configuration for better diagnostics (tunable via env)
   config.logger = {
     dir: process.env.LOG_DIR || undefined,
     level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'INFO' : 'DEBUG'),
-    consoleLevel: process.env.CONSOLE_LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'WARN' : 'DEBUG'),
+    consoleLevel:
+      process.env.CONSOLE_LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'WARN' : 'DEBUG'),
   };
 
   const cookieConfig: any = {
@@ -93,7 +94,7 @@ export default (appInfo: EggAppInfo) => {
 
   // Trust proxy headers (X-Forwarded-*) so secure cookies work behind TLS-terminating proxies
   // Ensure your reverse proxy sets X-Forwarded-Proto and Host correctly
-  config.proxy = process.env.NODE_ENV ==='production';
+  config.proxy = process.env.NODE_ENV === 'production';
 
   config.oauth = {
     baseUrl: process.env.PUBLIC_BASE_URL || '',
@@ -101,13 +102,13 @@ export default (appInfo: EggAppInfo) => {
       clientID: process.env.GITHUB_CLIENT_ID || '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
       callbackURL: process.env.GITHUB_CALLBACK_URL || '',
-      scope: [ 'read:user', 'user:email' ],
+      scope: ['read:user', 'user:email'],
     },
     google: {
       clientID: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
       callbackURL: process.env.GOOGLE_CALLBACK_URL || '',
-      scope: [ 'openid', 'profile', 'email' ],
+      scope: ['openid', 'profile', 'email'],
     },
     linuxdo: {
       clientID: process.env.LINUXDO_CLIENT_ID || '',
@@ -116,7 +117,11 @@ export default (appInfo: EggAppInfo) => {
       authorizationURL: process.env.LINUXDO_AUTHORIZATION_URL || '',
       tokenURL: process.env.LINUXDO_TOKEN_URL || '',
       userProfileURL: process.env.LINUXDO_PROFILE_URL || '',
-      scope: process.env.LINUXDO_SCOPE ? process.env.LINUXDO_SCOPE.split(',').map(item => item.trim()).filter(Boolean) : undefined,
+      scope: process.env.LINUXDO_SCOPE
+        ? process.env.LINUXDO_SCOPE.split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : undefined,
     },
   };
 

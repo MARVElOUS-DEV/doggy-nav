@@ -5,7 +5,13 @@ import * as React from 'react';
 import { X } from 'lucide-react';
 import api from '@/utils/api';
 
-export default function FavoriteItem({ item, onRemove }: { item: NavItem; onRemove?: (navId: string) => void }) {
+export default function FavoriteItem({
+  item,
+  onRemove,
+}: {
+  item: NavItem;
+  onRemove?: (navId: string) => void;
+}) {
   const { t } = useTranslation('translation');
   const [jiggle, setJiggle] = React.useState(false);
   const pressTimer = React.useRef<number | null>(null);
@@ -55,7 +61,7 @@ export default function FavoriteItem({ item, onRemove }: { item: NavItem; onRemo
           return;
         }
         try {
-          const id = (item as any).id || (item as any)._id;
+          const id = (item as any).id;
           if (id) {
             await api.updateNavView(String(id));
           }
@@ -69,7 +75,7 @@ export default function FavoriteItem({ item, onRemove }: { item: NavItem; onRemo
           className="absolute -top-1 -right-1 z-10 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shadow"
           onClick={(e) => {
             e.stopPropagation();
-            const id = (item as any).id || (item as any)._id || null;
+            const id = (item as any).id || null;
             if (id && onRemove) {
               onRemove(String(id));
             }
@@ -96,7 +102,9 @@ export default function FavoriteItem({ item, onRemove }: { item: NavItem; onRemo
         {item.name}
       </span>
       <span className="text-xs text-center text-gray-500 mt-1 max-w-full truncate">
-        {item.categoryName || t('uncategorized')}
+        {t(item.categoryName || 'uncategorized', {
+          defaultValue: item.categoryName || t('uncategorized'),
+        })}
       </span>
     </div>
   );

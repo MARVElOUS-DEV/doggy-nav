@@ -1,3 +1,25 @@
+<!-- OPENSPEC:START -->
+
+# OpenSpec Instructions
+
+These instructions are for AI assistants working in this project.
+
+Always open `@/openspec/AGENTS.md` when the request:
+
+- Mentions planning or proposals (words like proposal, spec, change, plan)
+- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
+- Sounds ambiguous and you need the authoritative spec before coding
+
+Use `@/openspec/AGENTS.md` to learn:
+
+- How to create and apply change proposals
+- Spec format and conventions
+- Project structure and guidelines
+
+Keep this managed block so 'openspec update' can refresh the instructions.
+
+<!-- OPENSPEC:END -->
+
 # Repository Guidelines
 
 ## Project Structure & Module Organization
@@ -7,7 +29,7 @@
 
 ## Build, Test & Development Commands
 
-- Bootstrap the workspace with `pnpm install` (Node >= 20.17.0). Add new dependencies with `pnpm --filter <package> i <name> [-D]` to keep scopes clean.
+- Bootstrap the workspace with `pnpm install` (Node >= 20.17.0). Add new dependencies with `pnpm -F <package> i <name> [-D]` to keep scopes clean.
 - Use `pnpm web:dev`, `pnpm admin:dev`, and `pnpm server:dev` for local development; each forwards to the respective package’s `dev` script.
 - Root quality gates: `pnpm lint`, `pnpm lint:fix`, `pnpm test`, and `pnpm build`.
 
@@ -19,7 +41,7 @@
 
 ## Testing Guidelines
 
-- Backend coverage relies on `egg-bin` and Mocha. Place specs under `packages/doggy-nav-server/test/` and run them with `pnpm --filter doggy-nav-server run test` or `run cov`.
+- Backend coverage relies on `egg-bin` and Mocha. Place specs under `packages/doggy-nav-server/test/` and run them with `pnpm -F doggy-nav-server run test` or `run cov`.
 - Client and admin tests reside in their respective `tests/` folders. Mirror feature names (`nav-menu.test.tsx`, `bookmarks.spec.ts`) and expose a `test` script you execute before submitting.
 - Treat failing or skipped tests as blockers and note any gaps or follow-up tickets in the PR description.
 

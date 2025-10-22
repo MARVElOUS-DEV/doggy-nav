@@ -1,9 +1,9 @@
-import { API_NAV_AUDIT, API_NAV_LIST } from "@/services/api";
-import { ProColumns } from "@ant-design/pro-table";
-import { Popconfirm, Tag, Space } from "antd";
-import request from "@/utils/request";
-import { NavStatus } from "@/types/api";
-import TableCom from "@/components/TableCom";
+import TableCom from '@/components/TableCom';
+import { API_NAV_AUDIT, API_NAV_LIST } from '@/services/api';
+import { NavStatus } from '@/types/api';
+import request from '@/utils/request';
+import { ProColumns } from '@ant-design/pro-table';
+import { Popconfirm, Space, Tag } from 'antd';
 
 function RandomColorTag({ children }) {
   const colors = [
@@ -17,8 +17,12 @@ function RandomColorTag({ children }) {
     'cyan',
     'blue',
     'purple',
-  ]
-  return <Tag color={colors[Math.floor(Math.random() * colors.length)]}>{children}</Tag>
+  ];
+  return (
+    <Tag color={colors[Math.floor(Math.random() * colors.length)]}>
+      {children}
+    </Tag>
+  );
 }
 
 export default function NavAuditListPage() {
@@ -29,8 +33,8 @@ export default function NavAuditListPage() {
       valueType: 'select',
       initialValue: ['1'],
       valueEnum: {
-        1: {text: '审核中', status: 'Default'},
-        2: {text: '已拒绝', status: 'Error'},
+        1: { text: '审核中', status: 'Default' },
+        2: { text: '已拒绝', status: 'Error' },
       },
       width: 100,
     },
@@ -45,9 +49,13 @@ export default function NavAuditListPage() {
       dataIndex: 'tags',
       search: false,
       width: 250,
-      renderText: (text, record)=> (<Space>
-        {record.tags.map(item=> <RandomColorTag key={item}>{item}</RandomColorTag>)}
-      </Space>)
+      renderText: (text, record) => (
+        <Space>
+          {record.tags.map((item) => (
+            <RandomColorTag key={item}>{item}</RandomColorTag>
+          ))}
+        </Space>
+      ),
     },
 
     {
@@ -65,11 +73,15 @@ export default function NavAuditListPage() {
       title: '创建时间',
       dataIndex: 'createTimeDate',
       search: false,
-      valueType: 'dateTime'
+      valueType: 'dateTime',
     },
-  ]
+  ];
 
-  async function onActionClick(id: string, action: any, status = NavStatus.pass) {
+  async function onActionClick(
+    id: string,
+    action: any,
+    status = NavStatus.pass,
+  ) {
     await request({
       url: API_NAV_AUDIT,
       method: 'PUT',
@@ -77,22 +89,35 @@ export default function NavAuditListPage() {
         id,
         status,
       },
-      msg: status === NavStatus.pass ? '通过成功' : '拒绝成功'
-    })
-    action?.reload()
+      msg: status === NavStatus.pass ? '通过成功' : '拒绝成功',
+    });
+    action?.reload();
   }
 
   return (
     <TableCom
       columns={columns}
-      requestParams={{url: API_NAV_LIST, method: 'GET'}}
-      renderOptions={(text, record, _, action) => record.status !== NavStatus.reject ? [
-        <Popconfirm title={'确定通过吗？'} onConfirm={() => onActionClick(record._id, action, 0)} key="确定通过吗？">
-          <a>通过</a>
-        </Popconfirm>,
-        <Popconfirm title={'确定拒绝吗？'} onConfirm={() => onActionClick(record._id, action, 2)} key="确定拒绝吗？" >
-          <a>拒绝</a>
-        </Popconfirm>
-      ] : []}/>
-  )
+      requestParams={{ url: API_NAV_LIST, method: 'GET' }}
+      renderOptions={(text, record, _, action) =>
+        record.status !== NavStatus.reject
+          ? [
+              <Popconfirm
+                title={'确定通过吗？'}
+                onConfirm={() => onActionClick(record.id, action, 0)}
+                key="确定通过吗？"
+              >
+                <a>通过</a>
+              </Popconfirm>,
+              <Popconfirm
+                title={'确定拒绝吗？'}
+                onConfirm={() => onActionClick(record.id, action, 2)}
+                key="确定拒绝吗？"
+              >
+                <a>拒绝</a>
+              </Popconfirm>,
+            ]
+          : []
+      }
+    />
+  );
 }

@@ -1,11 +1,24 @@
-import React from 'react';
-import { Space, Button, Badge, Avatar, Dropdown, Typography, Row, Col, message } from 'antd';
 import {
-  SearchOutlined,
   BellOutlined,
-  UserOutlined, LogoutOutlined
+  CrownOutlined,
+  LogoutOutlined,
+  SearchOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { history } from '@umijs/max';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Col,
+  Dropdown,
+  message,
+  Row,
+  Space,
+  Typography,
+} from 'antd';
+import React from 'react';
+import apiRequest from '../../utils/request';
 import './style.less';
 
 const loginPath = '/user/login';
@@ -18,6 +31,7 @@ interface ContentHeaderProps {
   actions?: React.ReactNode[];
   showUserMenu?: boolean;
   showSearch?: boolean;
+  currentUser?: any;
 }
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({
@@ -25,11 +39,13 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
   subtitle = '导航网站管理系统',
   actions = [],
   showUserMenu = true,
-  showSearch = true
+  showSearch = true,
+  currentUser,
 }) => {
-  const handleLogout = () => {
-    // With cookie-based authentication, logout is handled server-side
-    // Just redirect to login page - server will clear cookies
+  const handleLogout = async () => {
+    try {
+      await apiRequest({ url: '/api/auth/logout', method: 'POST' });
+    } catch {}
     message.success('退出登录成功');
     history.push(loginPath);
   };
@@ -50,7 +66,22 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
     }
   };
 
+  const displayName =
+    (currentUser as any)?.username ||
+    (currentUser as any)?.nickName ||
+    '未登录';
+
   const userMenuItems = [
+    {
+      key: 'user-info',
+      icon: <UserOutlined />,
+      label: (
+        <span style={{ fontWeight: 500, cursor: 'default' }}>
+          {displayName}
+        </span>
+      ),
+      disabled: true,
+    },
     {
       key: 'logout',
       icon: <LogoutOutlined />,
@@ -75,7 +106,7 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
                 style={{
                   height: '42px',
                   width: '120px',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
                 }}
               />
             </div>
@@ -84,7 +115,11 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
                 <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
                   {title}
                 </Title>
-                {subtitle && <Text type="secondary" style={{ marginLeft: 8 }}>{subtitle}</Text>}
+                {subtitle && (
+                  <Text type="secondary" style={{ marginLeft: 8 }}>
+                    {subtitle}
+                  </Text>
+                )}
               </div>
             </div>
           </div>
@@ -111,17 +146,13 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
                 />
               </Badge>
 
-              {actions && actions.length > 0 && (
-                <Space>
-                  {actions}
-                </Space>
-              )}
+              {actions && actions.length > 0 && <Space>{actions}</Space>}
 
               {showUserMenu && (
                 <Dropdown
                   menu={{
                     items: userMenuItems,
-                    onClick: handleMenuClick
+                    onClick: handleMenuClick,
                   }}
                   trigger={['click']}
                   placement="bottomRight"
@@ -129,14 +160,31 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
                   <div className="user-menu-trigger">
                     <Avatar
                       size="large"
-                      icon={<UserOutlined />}
+                      icon={
+                        currentUser?.roles?.includes('sysadmin') ? (
+                          <CrownOutlined />
+                        ) : (
+                          <UserOutlined />
+                        )
+                      }
                       style={{
-                        backgroundColor: '#1890ff',
+                        backgroundColor: currentUser?.roles?.includes(
+                          'sysadmin',
+                        )
+                          ? '#f5222d'
+                          : '#1890ff',
                         cursor: 'pointer',
-                        marginRight: 8
+                        marginRight: 8,
+                        border: currentUser?.roles?.includes('sysadmin')
+                          ? '2px solid #ffd700'
+                          : 'none',
                       }}
                     />
-                    <span style={{ cursor: 'pointer' }}>管理员</span>
+                    <span style={{ cursor: 'pointer' }}>
+                      {currentUser?.roles?.includes('sysadmin')
+                        ? '超级管理员'
+                        : '管理员'}
+                    </span>
                   </div>
                 </Dropdown>
               )}

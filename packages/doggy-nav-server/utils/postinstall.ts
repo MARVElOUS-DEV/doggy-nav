@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import userModel from '../app/model/user';
+import roleModel from '../app/model/role';
 import * as readline from 'readline';
 import mongoCfg from '../config/mongodb';
 import applicationModel from '../app/model/application';
 import * as crypto from 'crypto';
+import { DEFAULT_ROLES } from '../app/permissions';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -29,10 +31,11 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
 (async () => {
   try {
     const mongoUrl = mongoCfg.mongoUrl;
-    const db = await mongoose.connect(mongoUrl) as any;
+    const db = await mongoose.connect(mongoUrl) as unknown as { mongoose: typeof mongoose };
     db.mongoose = mongoose;
 
     const userSchemaModel = userModel(db);
+    const roleSchemaModel = roleModel(db);
     const applicationSchemaModel = applicationModel(db);
     console.info('mongoUrl', mongoUrl);
 
@@ -44,7 +47,27 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
 
     const {modifiedCount, upsertedCount, matchedCount} = await userSchemaModel.updateOne({
       username: { $eq: finalUsername },
-    }, { password: finalPassword, isAdmin: true, email: 'admin@doggy-nav.cn', isActive: true }, { upsert: true });
+    }, { password: finalPassword, email: 'admin@doggy-nav.cn', isActive: true }, { upsert: true });
+    // Seed default roles
+    const roleDocs: Record<string, { _id: string; slug: string }> = {};
+    for (const key of Object.keys(DEFAULT_ROLES)) {
+      const def = (DEFAULT_ROLES as unknown as Record<string, { slug: string; displayName: string; isSystem?: boolean; permissions: string[] }>)[key];
+      const existing = await roleSchemaModel.findOne({ slug: def.slug });
+      if (!existing) {
+        const created = await roleSchemaModel.create({ slug: def.slug, displayName: def.displayName, permissions: def.permissions, isSystem: def.isSystem });
+        roleDocs[def.slug] = created;
+      } else {
+        roleDocs[def.slug] = existing;
+      }
+    }
+
+    const sysAdminRole = roleDocs['sysadmin'] || await roleSchemaModel.findOne({ slug: 'sysadmin' });
+    if (sysAdminRole) {
+      // ensure the created/updated admin user is sysadmin
+      await userSchemaModel.updateOne({ username: finalUsername }, { $addToSet: { roles: sysAdminRole._id } });
+      console.info(`ensured ${finalUsername} has sysadmin role ✅`);
+    }
+
 
     if (modifiedCount || upsertedCount || matchedCount) {
       console.info(`create user ${finalUsername} with password ${finalPassword} success ✅`);

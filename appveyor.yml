@@ -69,17 +69,17 @@ build_script:
 test_script:
   # Lint checks
   - echo "Running lint checks..."
-  - pnpm --filter doggy-nav-server lint
-  - pnpm --filter doggy-nav-main lint
-  - pnpm --filter doggy-nav-admin lint
+  - pnpm -F doggy-nav-server lint
+  - pnpm -F doggy-nav-main lint
+  - pnpm -F doggy-nav-admin lint
 
   # Unit tests (server only for now)
   - echo "Running server tests..."
-  - pnpm --filter doggy-nav-server test-local
+  - pnpm -F doggy-nav-server test-local
 
 # After test phase
 after_test:
-  - pnpm --filter doggy-nav-server clean
+  - pnpm -F doggy-nav-server clean
 
 # Artifacts
 artifacts:

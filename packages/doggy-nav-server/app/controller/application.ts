@@ -17,7 +17,7 @@ export default class ApplicationController extends Controller {
   private async checkApplicationAccess(applicationId: string) {
     const userInfo = this.getUserInfo();
 
-    if (!userInfo.isAdmin) {
+    if (!userInfo.roles?.includes?.('sysadmin')) {
       this.error('权限不足，需要管理员权限');
       return { hasAccess: false, application: null };
     }
@@ -37,7 +37,7 @@ export default class ApplicationController extends Controller {
       if (!this.requireAuth()) return;
 
       const userInfo = this.getUserInfo();
-      if (!userInfo.isAdmin) {
+      if (!userInfo.roles?.includes?.('sysadmin')) {
         return this.error('权限不足，需要管理员权限');
       }
 
@@ -64,7 +64,7 @@ export default class ApplicationController extends Controller {
       if (!this.requireAuth()) return;
 
       const userInfo = this.getUserInfo();
-      if (!userInfo.isAdmin) {
+      if (!userInfo.roles?.includes?.('sysadmin')) {
         return this.error('权限不足，需要管理员权限');
       }
 

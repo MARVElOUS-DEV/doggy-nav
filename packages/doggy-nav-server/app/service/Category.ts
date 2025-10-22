@@ -10,7 +10,8 @@ export default class CategoryService extends Service {
   }
 
   format(firstItem, data) {
-    const secondCategory = data.filter(item => firstItem._id.toString() === item.categoryId);
+    const parentId = firstItem.id || (firstItem._id && typeof firstItem._id.toString === 'function' ? firstItem._id.toString() : firstItem._id);
+    const secondCategory = data.filter(item => parentId === item.categoryId);
     if (secondCategory.length === 0) {
       return { ...firstItem };
     }

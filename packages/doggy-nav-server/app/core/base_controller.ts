@@ -1,8 +1,8 @@
+import { buildAudienceFilter } from '../utils/audience';
 import { Controller } from 'egg';
 import { ValidationError } from './errors';
 
 export default class CommonController extends Controller {
-
   // Input sanitization function
   private sanitizeInput(input: any): any {
     if (input instanceof Date) {
@@ -26,7 +26,7 @@ export default class CommonController extends Controller {
       return sanitized;
     }
     if (Array.isArray(input)) {
-      return input.map(item => this.sanitizeInput(item));
+      return input.map((item) => this.sanitizeInput(item));
     }
     return input;
   }
@@ -78,7 +78,7 @@ export default class CommonController extends Controller {
 
     // Handle arrays
     if (Array.isArray(data)) {
-      return data.map(item => this.sanitizeResponseData(item));
+      return data.map((item) => this.sanitizeResponseData(item));
     }
 
     // Handle mongoose documents and plain objects
@@ -92,12 +92,31 @@ export default class CommonController extends Controller {
       const sanitized: any = {};
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
-          // Convert ObjectId to string if present
-          if (key === '_id' && typeof data[key] === 'object' && data[key].toString) {
-            sanitized[key] = data[key].toString();
-          } else {
-            sanitized[key] = this.sanitizeResponseData(data[key]);
+          // Skip internal version key
+          if (key === '__v') continue;
+
+          // Normalize id
+          if (key === '_id') {
+            const raw = (data as any)[key];
+            const id = raw && typeof raw.toString === 'function' ? raw.toString() : raw;
+            sanitized.id = id;
+            continue;
           }
+
+          const value = (data as any)[key];
+          // If the property is named id and is an ObjectId-like, stringify it
+          if (
+            key === 'id' &&
+            value &&
+            typeof value === 'object' &&
+            typeof (value as any).toString === 'function' &&
+            !(value instanceof Date)
+          ) {
+            sanitized[key] = (value as any).toString();
+            continue;
+          }
+
+          sanitized[key] = this.sanitizeResponseData(value);
         }
       }
 
@@ -106,7 +125,6 @@ export default class CommonController extends Controller {
 
     return data;
   }
-
 
   // 添加
   async add() {
@@ -164,14 +182,15 @@ export default class CommonController extends Controller {
     const skipNumber = pageSize * pageNumber - pageSize;
     const table = this.ctx.model[tableName];
 
-    const [ data, total ] = await Promise.all([
-      otherCMD(table.find(findObj).skip(skipNumber).limit(pageSize)
-        .sort({ _id: -1 })),
+    const [data, total] = await Promise.all([
+      otherCMD(
+        table.find(findObj).skip(skipNumber).limit(pageSize).sort({ _id: -1 }).lean().select('-__v')
+      ),
       table.find(findObj).countDocuments(),
     ]);
-
+    const mapped = data.map((d) => table.hydrate(d));
     this.success({
-      data,
+      data: mapped,
       total,
       pageNumber: Math.ceil(total / pageSize),
     });
@@ -187,17 +206,15 @@ export default class CommonController extends Controller {
 
     if (tableName === 'Nav') {
       const isAuthenticated = this.isAuthenticated();
+      const userCtx = this.ctx.state.userinfo;
       const matchQuery: any = {};
 
-      // For non-authenticated users, only show approved and non-hidden items
       if (!isAuthenticated) {
-        matchQuery.hide = { $eq: false };
         matchQuery.status = 0; // NAV_STATUS.pass
       }
 
-      if (Object.keys(matchQuery).length > 0) {
-        pipeline.push({ $match: matchQuery });
-      }
+      const finalMatch = buildAudienceFilter(matchQuery, userCtx);
+      pipeline.push({ $match: finalMatch });
     }
 
     pipeline.push({ $sample: { size: safeRandomNumber } });
@@ -206,7 +223,7 @@ export default class CommonController extends Controller {
 
     // Convert aggregation results to Mongoose documents to apply schema transformations
     const model = this.ctx.model[tableName];
-    const transformedRes = res.map(doc => {
+    const transformedRes = res.map((doc) => {
       const mongooseDoc = new model(doc);
       return mongooseDoc.toJSON();
     });

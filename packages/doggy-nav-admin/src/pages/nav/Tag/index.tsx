@@ -1,16 +1,15 @@
-import { Button, Popconfirm } from "antd";
-import request from "@/utils/request";
-import { API_TAG, API_TAG_list } from "@/services/api";
-import TableCom from "@/components/TableCom";
-import type { ActionType, ProColumns } from "@ant-design/pro-table";
-import { PlusOutlined } from "@ant-design/icons";
-import useTableComPopup from "@/components/TableCom/useTableComPopup";
-import { useRef, useState } from "react";
-import TagForm from "@/pages/nav/Tag/form";
-
+import TableCom from '@/components/TableCom';
+import useTableComPopup from '@/components/TableCom/useTableComPopup';
+import TagForm from '@/pages/nav/Tag/form';
+import { API_TAG, API_TAG_list } from '@/services/api';
+import request from '@/utils/request';
+import { PlusOutlined } from '@ant-design/icons';
+import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import { Button, Popconfirm } from 'antd';
+import { useRef, useState } from 'react';
 
 export default function NavTagListPage() {
-  const formProps = useTableComPopup()
+  const formProps = useTableComPopup();
   const tableRef = useRef<ActionType>();
   const [tagList, setTagList] = useState([]);
 
@@ -19,13 +18,12 @@ export default function NavTagListPage() {
       url: API_TAG_list,
       method: 'GET',
       data: {
-        showInMenu: false
-      }
-    })
-    setTagList(data.data)
-    return data
+        showInMenu: false,
+      },
+    });
+    setTagList(data.data);
+    return data;
   }
-
 
   async function onDelete(id: string, action: any) {
     await request({
@@ -35,34 +33,50 @@ export default function NavTagListPage() {
         id,
       },
       msg: '删除成功',
-    })
-    action.reload()
+    });
+    action.reload();
   }
 
   const columns: ProColumns[] = [
     {
       title: '标签名',
-      dataIndex: 'name'
+      dataIndex: 'name',
     },
-  ]
+  ];
   return (
-      <div>
-        <TableCom
-          actionRef={tableRef}
-          columns={columns}
-          PageContainerProps={{
-            extra: <Button type='primary' onClick={()=> formProps.show()}><PlusOutlined />添加标签</Button>
-          }}
-          search={false}
-          request={onRequestData}
-          renderOptions={(text, record, _, action)=> ([
-            <a key="edit" onClick={()=> formProps.show({type: 'edit', data: record, action})}>编辑</a>,
-            <Popconfirm key="delete" title={'确定删除吗？'} onConfirm={() => onDelete(record._id, action)}>
-              <a>删除</a>
-            </Popconfirm>,
-          ])}
-        />
-        <TagForm {...formProps} tableRef={tableRef.current} tagList={tagList} />
-      </div>
+    <div>
+      <TableCom
+        actionRef={tableRef}
+        columns={columns}
+        PageContainerProps={{
+          extra: (
+            <Button type="primary" onClick={() => formProps.show()}>
+              <PlusOutlined />
+              添加标签
+            </Button>
+          ),
+        }}
+        search={false}
+        request={onRequestData}
+        renderOptions={(text, record, _, action) => [
+          <a
+            key="edit"
+            onClick={() =>
+              formProps.show({ type: 'edit', data: record, action })
+            }
+          >
+            编辑
+          </a>,
+          <Popconfirm
+            key="delete"
+            title={'确定删除吗？'}
+            onConfirm={() => onDelete(record.id, action)}
+          >
+            <a>删除</a>
+          </Popconfirm>,
+        ]}
+      />
+      <TagForm {...formProps} tableRef={tableRef.current} tagList={tagList} />
+    </div>
   );
 }

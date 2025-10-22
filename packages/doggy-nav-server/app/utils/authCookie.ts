@@ -1,17 +1,18 @@
 import type { Context } from 'egg';
+import { getAppSource, getCookieNames } from './appSource';
 
 interface TokenPair {
   accessToken: string;
   refreshToken?: string;
 }
 
-const buildCookieOptions = (_ctx: Context) => {
+const buildCookieOptions = (_ctx: Context, path: string = '/') => {
   const options: any = {
     httpOnly: true,
     // In dev with localhost over http, force secure=false so cookies persist
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    path: '/',
+    path,
   };
 
   if (process.env.COOKIE_DOMAIN) {
@@ -22,18 +23,25 @@ const buildCookieOptions = (_ctx: Context) => {
 };
 
 export const setAuthCookies = (ctx: Context, tokens: TokenPair) => {
-  const options = buildCookieOptions(ctx);
-  ctx.cookies.set('access_token', tokens.accessToken, options);
+  const src = getAppSource(ctx);
+  const { access, refresh } = getCookieNames(src);
+
+  const accessOptions = buildCookieOptions(ctx, '/');
+  ctx.cookies.set(access, tokens.accessToken, accessOptions);
 
   if (tokens.refreshToken) {
-    ctx.cookies.set('refresh_token', tokens.refreshToken, options);
+    const refreshOptions = buildCookieOptions(ctx, '/api/auth/refresh');
+    ctx.cookies.set(refresh, tokens.refreshToken, refreshOptions);
   }
 };
 
 export const clearAuthCookies = (ctx: Context) => {
-  const options = buildCookieOptions(ctx);
-  ctx.cookies.set('access_token', '', { ...options, maxAge: 0 });
-  ctx.cookies.set('refresh_token', '', { ...options, maxAge: 0 });
+  const src = getAppSource(ctx);
+  const { access, refresh } = getCookieNames(src);
+  const accessOptions = buildCookieOptions(ctx, '/');
+  const refreshOptions = buildCookieOptions(ctx, '/api/auth/refresh');
+  ctx.cookies.set(access, '', { ...accessOptions, maxAge: 0 });
+  ctx.cookies.set(refresh, '', { ...refreshOptions, maxAge: 0 });
 };
 
 export const setStateCookie = (ctx: Context, state: string) => {

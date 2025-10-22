@@ -48,13 +48,14 @@
   },
   "lint-staged": {
     "packages/doggy-nav-server/**/*.{ts,js}": [
-      "pnpm --filter doggy-nav-server run lint:fix"
+      "pnpm -F doggy-nav-server run lint:fix"
     ],
     "packages/doggy-nav-main/**/*.{ts,tsx,js,jsx}": [
-      "pnpm --filter doggy-nav-main run lint:fix"
+      "pnpm -F doggy-nav-main run lint:fix"
     ],
     "packages/doggy-nav-admin/**/*.{ts,tsx,js,jsx}": [
-      "pnpm --filter doggy-nav-admin run lint:fix"
+      "pnpm -F doggy-nav-admin run lint:fix",
+      "prettier --write"
     ],
     "**/*.{json,md,yml,yaml}": [
       "prettier --write"

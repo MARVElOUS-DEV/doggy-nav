@@ -1,5 +1,13 @@
 import axios from './axios';
-import type { Category, NavItem, Tag, User, LoginFormValues, RegisterFormValues, OAuthProvider } from '@/types';
+import type {
+  Category,
+  NavItem,
+  Tag,
+  User,
+  LoginFormValues,
+  RegisterFormValues,
+  OAuthProvider,
+} from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
@@ -12,16 +20,14 @@ export const API_NAV_LIST = '/api/nav/list';
 
 const api = {
   // Get category list
-  getCategoryList: (): Promise<Category[]> =>
-    axios.get('/api/category/list'),
+  getCategoryList: (): Promise<Category[]> => axios.get('/api/category/list'),
 
   // Find nav by category id
   findNavByCategory: (categoryId: string): Promise<NavItem[]> =>
     axios.get(`/api/nav/find?categoryId=${categoryId}`),
 
   // Find nav by id (single item)
-  findNavById: (id: string): Promise<NavItem> =>
-    axios.get(`/api/nav?id=${id}`),
+  findNavById: (id: string): Promise<NavItem> => axios.get(`/api/nav?id=${id}`),
 
   // Get nav ranking
   getNavRanking: (): Promise<{ view: NavItem[]; star: NavItem[]; news: NavItem[] }> =>
@@ -33,7 +39,7 @@ const api = {
     page?: number;
     limit?: number;
     keyword?: string;
-  }): Promise<{data: NavItem[], total: number, pageNumber: number}> =>
+  }): Promise<{ data: NavItem[]; total: number; pageNumber: number }> =>
     axios.get(API_NAV_SEARCH, { params }),
 
   // Get full/paginated nav list (server /api/nav/list)
@@ -43,7 +49,6 @@ const api = {
     status?: number;
     categoryId?: string;
     name?: string;
-    hide?: boolean;
   }): Promise<{ data: NavItem[]; total: number; pageNumber: number }> =>
     axios.get(API_NAV_LIST, { params }),
 
@@ -52,8 +57,7 @@ const api = {
     axios.get(API_NAV_RANDOM, { params: { count } }),
 
   // Get tag list
-  getTagList: (): Promise<{data: Tag[]}> =>
-    axios.get(API_TAG_LIST),
+  getTagList: (): Promise<{ data: Tag[] }> => axios.get(API_TAG_LIST),
 
   // Add navigation (reptile)
   addNav: (data: {
@@ -61,16 +65,13 @@ const api = {
     categoryId?: string;
     name?: string;
     desc?: string;
-  }): Promise<NavItem> =>
-    axios.post(API_NAV_REPTILE, data),
+  }): Promise<NavItem> => axios.post(API_NAV_REPTILE, data),
 
   // Increment nav view count (server increments atomically)
-  updateNavView: (id: string): Promise<void> =>
-    axios.post(`/api/nav/${id}/view`),
+  updateNavView: (id: string): Promise<void> => axios.post(`/api/nav/${id}/view`),
 
   // Increment nav star count (server increments atomically)
-  updateNavStar: (id: string): Promise<void> =>
-    axios.post(`/api/nav/${id}/star`),
+  updateNavStar: (id: string): Promise<void> => axios.post(`/api/nav/${id}/star`),
 
   // Authentication APIs - using Next.js proxy routes
   login: (credentials: LoginFormValues): Promise<{ user: User; token?: string }> =>
@@ -82,24 +83,24 @@ const api = {
   getAuthConfig: (): Promise<{ requireInviteForLocalRegister: boolean }> =>
     axios.get('/api/auth/config'),
 
-  logout: (): Promise<void> =>
-    axios.post('/api/auth/logout'),
+  logout: (): Promise<void> => axios.post('/api/auth/logout'),
 
-  getCurrentUser: (): Promise<{ authenticated: boolean; user: User | null }> =>
-    axios.get('/api/auth/me'),
+  getCurrentUser: (): Promise<{
+    authenticated: boolean;
+    user: User | null;
+    accessExp: number | null;
+  }> => axios.get('/api/auth/me'),
 
   updateProfile: (data: { username?: string; email?: string; avatar?: string }): Promise<User> =>
     axios.put('/api/user/profile', data),
 
   // Favorite APIs - require authentication
-  addFavorite: (navId: string): Promise<void> =>
-    axios.post('/api/favorites', { navId }),
+  addFavorite: (navId: string): Promise<void> => axios.post('/api/favorites', { navId }),
 
   removeFavorite: (navId: string): Promise<void> =>
     axios.post('/api/favorites/remove', undefined, { params: { navId } }),
 
-  getFavoritesList: (): Promise<{data: NavItem[]}> =>
-    axios.get('/api/favorites/list'),
+  getFavoritesList: (): Promise<{ data: NavItem[] }> => axios.get('/api/favorites/list'),
 
   // Favorites structured (folders + root items)
   getFavoritesStructured: (): Promise<{ data: Array<any> }> =>
@@ -109,20 +110,23 @@ const api = {
   createFavoriteFolder: (payload: { name: string; navIds?: string[]; order?: number }) =>
     axios.post('/api/favorites/folders', payload),
 
-  updateFavoriteFolder: (id: string, payload: { name?: string; addNavIds?: string[]; removeNavIds?: string[]; order?: number }) =>
-    axios.put(`/api/favorites/folders/${id}`, payload),
+  updateFavoriteFolder: (
+    id: string,
+    payload: { name?: string; addNavIds?: string[]; removeNavIds?: string[]; order?: number }
+  ) => axios.put(`/api/favorites/folders/${id}`, payload),
 
-  deleteFavoriteFolder: (id: string) =>
-    axios.delete(`/api/favorites/folders/${id}`),
+  deleteFavoriteFolder: (id: string) => axios.delete(`/api/favorites/folders/${id}`),
 
-  updateFavoritesPlacements: (payload: { root?: Array<{ navId: string; order: number }>; folders?: Array<{ folderId: string; order: number }>; moves?: Array<{ navId: string; parentFolderId?: string | null; order: number }> }) =>
-    axios.put('/api/favorites/placements', payload),
+  updateFavoritesPlacements: (payload: {
+    root?: Array<{ navId: string; order: number }>;
+    folders?: Array<{ folderId: string; order: number }>;
+    moves?: Array<{ navId: string; parentFolderId?: string | null; order: number }>;
+  }) => axios.put('/api/favorites/placements', payload),
 
-  checkFavorite: (navId: string): Promise<{isFavorite: boolean}> =>
+  checkFavorite: (navId: string): Promise<{ isFavorite: boolean }> =>
     axios.get(`/api/favorites/check?navId=${navId}`),
 
-  getFavoritesCount: (): Promise<{count: number}> =>
-    axios.get('/api/favorites/count'),
+  getFavoritesCount: (): Promise<{ count: number }> => axios.get('/api/favorites/count'),
 
   // OAuth providers
   getAuthProviders: (): Promise<{ providers: Array<OAuthProvider> }> =>

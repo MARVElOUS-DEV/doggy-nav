@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { Message } from '@arco-design/web-react';
+import { setAccessExpEpochMs } from './session';
 
 interface ApiResponse<T = any> {
   code: number;
@@ -23,12 +24,26 @@ const instance: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
+// Ensure only one refresh runs at a time; concurrent 401s await the same promise
+let refreshPromise: Promise<void> | null = null;
+
+async function refreshTokens() {
+  const res = await axios.post('/api/auth/refresh', undefined, { withCredentials: true });
+  try {
+    const exp = (res?.data?.data?.accessExp as number) || null;
+    if (typeof exp === 'number') setAccessExpEpochMs(exp);
+  } catch {}
+}
+
 // Request interceptor
 instance.interceptors.request.use(
   (config: AxiosRequestConfig) => {
     // Add request timestamp for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.info(`🚀 Request: ${config.method?.toUpperCase()} ${config.url}`, config.data || (config as any).params);
+      console.info(
+        `🚀 Request: ${config.method?.toUpperCase()} ${config.url}`,
+        config.data || (config as any).params
+      );
     }
 
     return config;
@@ -43,7 +58,10 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
     if (process.env.NODE_ENV === 'development') {
-      console.info(`✅ Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
+      console.info(
+        `✅ Response: ${response.config.method?.toUpperCase()} ${response.config.url}`,
+        response.data
+      );
     }
 
     const { data } = response;
@@ -62,11 +80,13 @@ instance.interceptors.response.use(
     // Return raw response if not in expected format
     return response.data;
   },
-  (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<ApiError>) => {
     console.error('❌ Response Error:', error);
 
     let errorMessage = 'Network Error';
     let errorCode = 0;
+    const isLoginPage =
+      typeof window !== 'undefined' && window.location?.pathname?.startsWith('/login');
 
     if (error.response) {
       // Server responded with error status
@@ -77,13 +97,38 @@ instance.interceptors.response.use(
         case 400:
           errorMessage = data?.msg || 'Bad Request';
           break;
-        case 401:
-          errorMessage = 'Unauthorized - Please login';
-          if (typeof window !== 'undefined') {
-            const isLoginPage = window.location.pathname.includes('/login')
-            !isLoginPage && (window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        case 401: {
+          const cfg: any = { ...(error.config || {}) };
+          const failingUrl: string = (cfg.url as any) || (error as any)?.request?.responseURL || '';
+          const isRefreshEndpoint =
+            typeof failingUrl === 'string' && /\/api\/auth\/refresh\b/.test(failingUrl);
+          if (isRefreshEndpoint) {
+            errorMessage = 'Unauthorized';
+            break;
           }
-          break;
+
+          if (cfg.__isRetryRequest || isLoginPage) {
+            errorMessage = 'Unauthorized';
+            break;
+          }
+
+          try {
+            if (!refreshPromise) {
+              refreshPromise = refreshTokens().finally(() => {
+                refreshPromise = null;
+              });
+            }
+            await refreshPromise;
+            cfg.__isRetryRequest = true;
+            return instance.request(cfg);
+          } catch {
+            try {
+              await axios.post('/api/auth/logout', undefined, { withCredentials: true });
+            } catch {}
+            errorMessage = 'Unauthorized';
+            break;
+          }
+        }
         case 403:
           errorMessage = 'Forbidden - Access denied';
           break;
@@ -115,7 +160,10 @@ instance.interceptors.response.use(
 
     // Show error message to user
     if (typeof window !== 'undefined') {
-      Message.error(errorMessage);
+      // Suppress noisy auth errors on login page or plain 401s
+      if (!(errorCode === 401 || isLoginPage)) {
+        Message.error(errorMessage);
+      }
     }
 
     // Create enhanced error object

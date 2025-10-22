@@ -26,6 +26,23 @@ Doggy Nav is a comprehensive navigation and bookmark management system designed 
 - **Cloud-Based SaaS** - Multi-tenant bookmark service
 - **Enterprise Portal** - Internal company navigation system
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="docs/assets/overview.png" alt="Overview" width="45%" />
+  <img src="docs/assets/overview_dark.jpeg" alt="Overview (Dark)" width="45%" />
+  <br/>
+  <img src="docs/assets/nav_list.png" alt="Navigation List" width="45%" />
+  <img src="docs/assets/nav_detail.png" alt="Navigation Detail" width="45%" />
+  <br/>
+  <img src="docs/assets/statistic.png" alt="Statistics Dashboard" width="45%" />
+  <img src="docs/assets/timeline.png" alt="Activity Timeline" width="45%" />
+  <br/>
+  <img src="docs/assets/login_page.png" alt="Login Page" width="45%" />
+  <img src="docs/assets/login_page_dark.jpeg" alt="Login Page" width="45%" />
+  
+</p>
+
 ## ✨ Features
 
 ### 🌟 Core Features
@@ -185,12 +202,12 @@ pnpm admin:build    # Build admin panel only
 
 # Testing
 pnpm test           # Run all tests
-pnpm --filter doggy-nav-server test-local  # Backend tests only
+pnpm -F doggy-nav-server test-local  # Backend tests only
 
 # Linting
-pnpm --filter doggy-nav-server lint        # Backend linting
-pnpm --filter doggy-nav-main lint          # Frontend linting
-pnpm --filter doggy-nav-admin lint         # Admin panel linting
+pnpm -F doggy-nav-server lint        # Backend linting
+pnpm -F doggy-nav-main lint          # Frontend linting
+pnpm -F doggy-nav-admin lint         # Admin panel linting
 ```
 
 ### 🗃 Database Setup
@@ -464,21 +481,3 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - [MongoDB](https://mongodb.com/) - NoSQL database
 - [Docker](https://docker.com/) - Containerization
 - [Arco Design](https://arco.design/) - UI component library
-
-### 🎉 Sponsors
-
-[![Github Sponsors](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/bin456789)
-
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com 'Powered by DartNode - Free VPS for Open Source')
-
----
-
-<div align="center">
-
-**[⬆ Back to Top](#-doggy-nav)**
-
-Made with ❤️ by [Marvelous](https://github.com/MARVElOUS-DEV)
-
-_If you find this project helpful, please consider giving it a ⭐!_
-
-</div>

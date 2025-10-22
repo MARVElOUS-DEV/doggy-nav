@@ -50,7 +50,7 @@ jobs:
           EGG_SERVER_ENV: unittest
           MONGO_URL: mongodb://127.0.0.1:27017/navigation_test
         run: |
-          pnpm --filter doggy-nav-server test-local || true
+          pnpm -F doggy-nav-server test-local || true
           pnpm build
 
       - name: Create Pull Request

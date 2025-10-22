@@ -8,8 +8,12 @@ describe('test/app/service/User.test.js', () => {
   beforeEach(async () => {
     ctx = app.mockContext();
     mock(app.jwt, 'sign', () => 'testToken');
-    mock(ctx.model.User, 'findOne', async () => ({ username: 'test', password: '111111', isActive: true }));
+    mock(ctx.model.User, 'findOne', async () => ({ _id: 'u1', username: 'test', email: 't@t.co', password: '111111', isActive: true, roles: [], groups: [] }));
+    mock(ctx.model.User, 'findById', (_id: string) => ({
+      lean: () => ({ _id: 'u1', username: 'test', email: 't@t.co', roles: [], groups: [] }),
+    }) as any);
     app.mockService('user', 'comparePassword', async() => true);
+    app.mockService('user', 'computePermissions', async() => []);
   });
   afterEach(async () => {
     mock.restore();

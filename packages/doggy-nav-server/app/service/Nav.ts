@@ -1,25 +1,25 @@
+import { buildAudienceFilterEx } from '../utils/audience';
 import { Service } from 'egg';
 import { SortOrder } from 'mongoose';
 
 export enum NAV_STATUS {
   pass,
   wait,
-  reject
+  reject,
 }
 
-
 export default class NavService extends Service {
-  async findMaxValueList(value, isAuthenticated = false) {
-    const query: any = { status: NAV_STATUS.pass };
+  async findMaxValueList(value: string, _isAuthenticated = false) {
+    const userCtx = this.ctx.state.userinfo as { roleIds?: string[]; groupIds?: string[] };
+    const baseQuery: any = { status: NAV_STATUS.pass };
 
-    // For non-authenticated users, only show non-hidden items
-    if (!isAuthenticated) {
-      query.hide = { $eq: false };
-    }
+    // Audience filtering
+    const finalQuery = buildAudienceFilterEx(baseQuery, userCtx as any);
 
-    const docs = await this.ctx.model.Nav.find(query).sort({ [value]: -1 } as { [key: string]: SortOrder }).limit(10);
-    // Convert to JSON to ensure schema transformations are applied (id field instead of _id)
-    return docs.map(doc => doc.toJSON());
+    const docs = await this.ctx.model.Nav.find(finalQuery)
+      .sort({ [value]: -1 } as { [key: string]: SortOrder })
+      .limit(10);
+    return docs.map((doc) => doc.toJSON());
   }
 
   /**
@@ -53,21 +53,21 @@ export default class NavService extends Service {
           _id: null,
           total: { $sum: 1 },
           accessibleUrls: {
-            $sum: { $cond: [{ $eq: [ '$urlStatus', 'accessible' ] }, 1, 0 ] },
+            $sum: { $cond: [{ $eq: ['$urlStatus', 'accessible'] }, 1, 0] },
           },
           inaccessibleUrls: {
-            $sum: { $cond: [{ $eq: [ '$urlStatus', 'inaccessible' ] }, 1, 0 ] },
+            $sum: { $cond: [{ $eq: ['$urlStatus', 'inaccessible'] }, 1, 0] },
           },
           unknownUrls: {
-            $sum: { $cond: [{ $eq: [ '$urlStatus', 'unknown' ] }, 1, 0 ] },
+            $sum: { $cond: [{ $eq: ['$urlStatus', 'unknown'] }, 1, 0] },
           },
           checkingUrls: {
-            $sum: { $cond: [{ $eq: [ '$urlStatus', 'checking' ] }, 1, 0 ] },
+            $sum: { $cond: [{ $eq: ['$urlStatus', 'checking'] }, 1, 0] },
           },
           avgResponseTime: {
             $avg: {
               $cond: [
-                { $and: [{ $ne: [ '$responseTime', null ] }, { $gt: [ '$responseTime', 0 ] }] },
+                { $and: [{ $ne: ['$responseTime', null] }, { $gt: ['$responseTime', 0] }] },
                 '$responseTime',
                 null,
               ],
@@ -78,14 +78,16 @@ export default class NavService extends Service {
       },
     ]);
 
-    return stats[0] || {
-      total: 0,
-      accessibleUrls: 0,
-      inaccessibleUrls: 0,
-      unknownUrls: 0,
-      checkingUrls: 0,
-      avgResponseTime: null,
-      lastChecked: null,
-    };
+    return (
+      stats[0] || {
+        total: 0,
+        accessibleUrls: 0,
+        inaccessibleUrls: 0,
+        unknownUrls: 0,
+        checkingUrls: 0,
+        avgResponseTime: null,
+        lastChecked: null,
+      }
+    );
   }
 }

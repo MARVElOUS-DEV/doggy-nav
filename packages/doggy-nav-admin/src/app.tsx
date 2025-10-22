@@ -1,10 +1,13 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
-import type { RequestConfig } from '@umijs/max';
+import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
-import type { RunTimeLayoutConfig } from '@umijs/max';
 import React from 'react';
 import ContentHeader from './components/ContentHeader';
-import { requestConfigure } from './utils/request';
+import apiRequest, { requestConfigure } from './utils/request';
+import {
+  setAccessExpEpochMs,
+  startProactiveAuthRefresh,
+} from './utils/session';
 
 const loginPath = '/user/login';
 // const isDev = process.env.NODE_ENV === 'development';
@@ -16,39 +19,89 @@ export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
-  // With cookie-based authentication, we don't need to check tokens locally
-  // The server will handle authentication via cookies
-  return {
-    settings: {},
-  };
+  // Fetch current user info (roles included) to drive access control
+  try {
+    const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
+    const currentUser = json?.data?.user || undefined;
+    if (typeof json?.data?.accessExp === 'number')
+      setAccessExpEpochMs(json.data.accessExp);
+    const fetchUserInfo = async () => currentUser;
+    return { settings: {}, currentUser, fetchUserInfo };
+  } catch {
+    return { settings: {} };
+  }
 }
 
 // 页面标题和子标题映射
-const pageTitles: Record<string, { title: string; subtitle: string; showUserMenu?: boolean; showSearch?: boolean; actions?: React.ReactNode[] }> = {
-  '/nav/admin': { title: '仪表盘', subtitle: '系统概览', showUserMenu: true, showSearch: false,},
+const pageTitles: Record<
+  string,
+  {
+    title: string;
+    subtitle: string;
+    showUserMenu?: boolean;
+    showSearch?: boolean;
+    actions?: React.ReactNode[];
+  }
+> = {
+  '/nav/admin': {
+    title: '仪表盘',
+    subtitle: '系统概览',
+    showUserMenu: true,
+    showSearch: false,
+  },
   '/nav/list': {
     title: '导航列表',
     subtitle: '管理网站导航链接',
     showUserMenu: true,
     showSearch: false,
   },
-  '/nav/category': { title: '分类管理', subtitle: '管理网站分类', showUserMenu: true, showSearch: false,},
-  '/nav/tag': { title: '标签管理', subtitle: '管理网站标签', showUserMenu: true, showSearch: false, },
-  '/nav/audit': { title: '审核管理', subtitle: '审核网站提交', showUserMenu: true,showSearch: false, },
+  '/nav/category': {
+    title: '分类管理',
+    subtitle: '管理网站分类',
+    showUserMenu: true,
+    showSearch: false,
+  },
+  '/nav/tag': {
+    title: '标签管理',
+    subtitle: '管理网站标签',
+    showUserMenu: true,
+    showSearch: false,
+  },
+  '/nav/audit': {
+    title: '审核管理',
+    subtitle: '审核网站提交',
+    showUserMenu: true,
+    showSearch: false,
+  },
+  '/group/manage': {
+    title: '分组管理',
+    subtitle: '管理用户分组',
+    showUserMenu: true,
+    showSearch: false,
+  },
 };
 
-export const layout: RunTimeLayoutConfig = ({ initialState }) => {
+export const layout: RunTimeLayoutConfig = ({
+  initialState,
+  setInitialState,
+}) => {
+  //expose a global helper to refresh currentUser so access() re-evaluates without full reload
+  (window as any).g_updateInitialState = async () => {
+    try {
+      const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
+      const currentUser = json?.data?.user || undefined;
+      await setInitialState((s: any) => ({ ...s, currentUser }));
+    } catch {
+      await setInitialState((s: any) => ({ ...s, currentUser: undefined }));
+    }
+  };
   return {
     disableContentMargin: false,
     waterMarkProps: {
       content: initialState?.currentUser?.name,
     },
     isChildrenLayout: false,
-    onPageChange: () => {
-      // With cookie-based authentication, the server handles auth redirects
-      // No need for client-side token checks
-    },
-    menuHeaderRender: (logo)=> logo,
+    menuHeaderRender: (logo) => logo,
     headerRender: () => {
       const pathname = history.location.pathname;
       const pageInfo = pageTitles[pathname] || {
@@ -56,15 +109,17 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
         subtitle: '页面管理',
         showUserMenu: true,
         showSearch: false,
-        actions: []
+        actions: [],
       };
 
       return (
-        <div style={{
-          overflow: 'hidden',
-          maxWidth: '100%',
-          boxSizing: 'border-box'
-        }}>
+        <div
+          style={{
+            overflow: 'hidden',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
+          }}
+        >
           {pathname !== loginPath && pathname !== '/404' && (
             <ContentHeader
               title={pageInfo.title}
@@ -72,6 +127,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
               showUserMenu={pageInfo.showUserMenu}
               showSearch={pageInfo.showSearch}
               actions={pageInfo.actions}
+              currentUser={initialState?.currentUser}
             />
           )}
         </div>
@@ -85,3 +141,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
 };
 export const request: RequestConfig = requestConfigure();
 
+// kick off proactive refresh once runtime starts
+if (typeof window !== 'undefined') {
+  startProactiveAuthRefresh();
+}
