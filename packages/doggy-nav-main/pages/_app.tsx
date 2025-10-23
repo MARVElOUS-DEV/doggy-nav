@@ -1,5 +1,5 @@
 import { Provider as JotaiProvider } from 'jotai';
-import { useEffect, useLayoutEffect, type ReactElement, type ReactNode } from 'react';
+import { useEffect, type ReactElement, type ReactNode } from 'react';
 import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import RootLayout from '@/components/Layout';
@@ -30,7 +30,7 @@ export default function MyApp({
     }
   }, [router.locale, router.isReady]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     startProactiveAuthRefresh();
   }, []);
 

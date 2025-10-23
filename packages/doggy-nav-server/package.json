@@ -27,14 +27,13 @@
     "bundle:cli": "esbuild dist/bookmarkHelper-cli.ts --bundle --platform=node --outfile=dist/bookmarkHelper-cli-bundle.js --format=cjs",
     "init:categories": "ts-node utils/initCategories.ts",
     "ci": "npm run lint && npm run cov && npm run tsc",
-    "autod": "autod",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "clean": "ets clean",
     "validate-secrets": "node scripts/validate-secrets.js"
   },
   "dependencies": {
-    "axios": "^0.21.4",
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "cheerio": "1.0.0-rc.10",
     "dotenv": "^17.2.2",
@@ -66,7 +65,6 @@
     "@types/supertest": "2.0.0",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
-    "autod": "3.1.2",
     "autod-egg": "1.1.0",
     "egg-ci": "1.19.0",
     "egg-ts-helper": "^3.1.1",
