@@ -10,6 +10,7 @@ export default (appInfo: EggAppInfo) => {
   const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
   const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
   const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+  const COOKIE_DOMAIN_MODE = (process.env.COOKIE_DOMAIN_MODE || 'auto').toLowerCase();
   const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
   // Stable cookie signing key to prevent signed-cookie invalidation across restarts
@@ -87,7 +88,8 @@ export default (appInfo: EggAppInfo) => {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
   };
-  if (COOKIE_DOMAIN) {
+  // Only set a global domain when explicitly in fixed mode.
+  if (COOKIE_DOMAIN && COOKIE_DOMAIN_MODE === 'fixed') {
     cookieConfig.domain = COOKIE_DOMAIN;
   }
   config.cookies = cookieConfig;
