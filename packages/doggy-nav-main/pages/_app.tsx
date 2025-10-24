@@ -3,11 +3,14 @@ import { useEffect, type ReactElement, type ReactNode } from 'react';
 import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import RootLayout from '@/components/Layout';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { debugHydration } from '@/utils/hydrationDebug';
 import i18n from '@/i18n';
+import ReactIf from '@/components/ReactIf';
 import { useRouter } from 'next/router';
-import './global.css';
 import { startProactiveAuthRefresh } from '@/utils/session';
+
+import './global.css';
 
 export type NextPageWithLayout<P = Record<string, any>, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -38,10 +41,15 @@ export default function MyApp({
   const getLayout =
     Component.getLayout ?? ((page: ReactElement) => <RootLayout>{page}</RootLayout>);
   return (
-    <JotaiProvider>
-      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-      {/* @ts-ignore */}
-      {getLayout(<Component {...pageProps} />)}
-    </JotaiProvider>
+    <>
+      <ReactIf condition={process.env.ENABLE_VERCEL_STATISTIC === 'true'}>
+        <SpeedInsights />
+      </ReactIf>
+      <JotaiProvider>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        {getLayout(<Component {...pageProps} />)}
+      </JotaiProvider>
+    </>
   );
 }

@@ -20,6 +20,10 @@ import FolderTile from '@/features/favorites/components/FolderTile';
 import DraggableCard from '@/features/favorites/dnd/DraggableCard';
 import DroppableCard from '@/features/favorites/dnd/DroppableCard';
 import FolderOverlay from '@/features/favorites/components/FolderOverlay';
+import dynamic from 'next/dynamic';
+import AppWindow, { type WindowRect } from '@/components/Desktop/AppWindow';
+import TopMenuBar from '@/components/Desktop/TopMenuBar';
+import { Store } from 'lucide-react';
 
 // Local union type for grid entries without changing global store types
 const getNavId = (item: NavItem) =>
@@ -45,6 +49,25 @@ export default function FavoritesPage() {
     name?: string;
     items: NavItem[];
   } | null>(null);
+
+  // Desktop-like App state (multi-app ready)
+  type AppId = 'translate' | 'news';
+  type WindowState = { open: boolean; minimized: boolean; rect: WindowRect };
+  const [windows, setWindows] = useState<Record<AppId, WindowState>>({
+    translate: { open: false, minimized: false, rect: { x: 100, y: 100, width: 800, height: 560 } },
+    news: { open: false, minimized: false, rect: { x: 140, y: 140, width: 900, height: 620 } },
+  });
+  const [appsMenuOpen, setAppsMenuOpen] = useState(false);
+  const TranslationCard = dynamic(() => import('@/tools/TranslationCard'), { ssr: false, loading: () => <div className="p-6" style={{ color: 'var(--color-muted-foreground)' }}>Loading app…</div> });
+  const NewsApp = dynamic(() => import('@/apps/NewsApp'), { ssr: false, loading: () => <div className="p-6" style={{ color: 'var(--color-muted-foreground)' }}>Loading app…</div> });
+  const anyAppActive = Object.values(windows).some(w => w.open || w.minimized);
+  const openApp = (id: AppId) => {
+    setWindows(prev => ({ ...prev, [id]: { ...prev[id], open: true, minimized: false } }));
+    setAppsMenuOpen(false);
+  };
+  const minimizeApp = (id: AppId) => setWindows(prev => ({ ...prev, [id]: { ...prev[id], minimized: true } }));
+  const closeApp = (id: AppId) => setWindows(prev => ({ ...prev, [id]: { ...prev[id], open: false, minimized: false } }));
+  const setRect = (id: AppId, rect: WindowRect) => setWindows(prev => ({ ...prev, [id]: { ...prev[id], rect } }));
 
   // Load structured favorites (folders + items)
   const loadStructured = async (): Promise<GridEntry[]> => {
@@ -185,12 +208,13 @@ export default function FavoritesPage() {
   return (
     <AuthGuard redirectTo="/login">
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100">
+        <TopMenuBar onMenuClick={() => setAppsMenuOpen((s) => !s)} />
         <Head>
           <title>{t('my_favorites')} - DoggyNav</title>
           <meta name="description" content={t('my_favorite_websites')} />
         </Head>
 
-        <main className="max-w-7xl mx-auto px-6 py-10 pb-32">
+        <main className="max-w-7xl mx-auto px-6 pt-16 pb-32">
           {' '}
           {/* Add pb-32 to account for footer */}
           {error && (
@@ -288,6 +312,40 @@ export default function FavoritesPage() {
             </div>
             <span>{t('favorites')}</span>
           </Link>
+          {/* Apps dock item */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setAppsMenuOpen((s) => !s)}
+              className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              <div className="relative w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 hover:bg-white transition-colors shadow-sm">
+                <Store className="w-5 h-5" />
+                {anyAppActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-theme-primary" />
+                )}
+              </div>
+              <span>Apps</span>
+            </button>
+            {appsMenuOpen && (
+              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-black/50 backdrop-blur-xl border rounded-xl shadow-xl p-2 min-w-36" style={{ borderColor: 'var(--color-border)' }}>
+                <button
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex items-center gap-2"
+                  onClick={() => openApp('translate')}
+                >
+                  <span className="inline-flex w-6 h-6 items-center justify-center rounded bg-theme-primary text-white text-xs">Tr</span>
+                  <span>Translate</span>
+                </button>
+                <button
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex items-center gap-2"
+                  onClick={() => openApp('news')}
+                >
+                  <span className="inline-flex w-6 h-6 items-center justify-center rounded bg-theme-secondary text-white text-xs">Ns</span>
+                  <span>News</span>
+                </button>
+              </div>
+            )}
+          </div>
           <Link
             href="/timeline"
             className="flex flex-col items-center text-xs text-gray-700 hover:text-blue-600 transition-colors"
@@ -308,6 +366,39 @@ export default function FavoritesPage() {
           </Link>
         </footer>
       </div>
+      {/* Desktop App Windows */}
+      {windows.translate.open && (
+        <AppWindow
+          title="Translate"
+          open={windows.translate.open}
+          minimized={windows.translate.minimized}
+          rect={windows.translate.rect}
+          onRectChange={(r) => setRect('translate', r)}
+          onClose={() => closeApp('translate')}
+          onMinimize={() => minimizeApp('translate')}
+          zIndex={60}
+        >
+          <div className="p-4">
+            <TranslationCard />
+          </div>
+        </AppWindow>
+      )}
+      {windows.news.open && (
+        <AppWindow
+          title="News"
+          open={windows.news.open}
+          minimized={windows.news.minimized}
+          rect={windows.news.rect}
+          onRectChange={(r) => setRect('news', r)}
+          onClose={() => closeApp('news')}
+          onMinimize={() => minimizeApp('news')}
+          zIndex={61}
+        >
+          <div className="p-2">
+            <NewsApp />
+          </div>
+        </AppWindow>
+      )}
       {openFolder && (
         <FolderOverlay
           name={openFolder.name}

@@ -56,7 +56,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
   );
 
   return (
-    <header className="flex justify-between items-center bg-theme-background shadow-lg p-4 w-full sticky top-0 z-50 bg-gradient-to-r from-white to-blue-50 dark:from-neutral-900 dark:to-neutral-800 min-h-[80px] border-b border-theme-border">
+    <header className="flex justify-between items-center glass-medium shadow-lg p-4 w-full sticky top-0 z-50 min-h-[80px] border-b border-theme-border">
       <div className="flex items-center">
         {/* Menu Toggle Button (desktop only) */}
         <div className="hidden lg:block">
