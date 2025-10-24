@@ -20,6 +20,9 @@ import FolderTile from '@/features/favorites/components/FolderTile';
 import DraggableCard from '@/features/favorites/dnd/DraggableCard';
 import DroppableCard from '@/features/favorites/dnd/DroppableCard';
 import FolderOverlay from '@/features/favorites/components/FolderOverlay';
+import dynamic from 'next/dynamic';
+import { type WindowRect } from '@/apps/Desktop/AppWindow';
+import TopMenuBar from '@/apps/Desktop/TopMenuBar';
 
 // Local union type for grid entries without changing global store types
 const getNavId = (item: NavItem) =>
@@ -45,6 +48,42 @@ export default function FavoritesPage() {
     name?: string;
     items: NavItem[];
   } | null>(null);
+
+  // Desktop-like App state (multi-app ready)
+  type AppId = 'translate' | 'news';
+  type WindowState = { open: boolean; minimized: boolean; rect: WindowRect };
+  const [windows, setWindows] = useState<Record<AppId, WindowState>>({
+    translate: { open: false, minimized: false, rect: { x: 100, y: 100, width: 800, height: 560 } },
+    news: { open: false, minimized: false, rect: { x: 140, y: 140, width: 900, height: 620 } },
+  });
+  const [appsMenuOpen, setAppsMenuOpen] = useState(false);
+  const TranslationCard = dynamic(() => import('@/components/TranslationCard'), {
+    ssr: false,
+    loading: () => (
+      <div className="p-6" style={{ color: 'var(--color-muted-foreground)' }}>
+        Loading app…
+      </div>
+    ),
+  });
+  const NewsApp = dynamic(() => import('@/apps/NewsApp'), {
+    ssr: false,
+    loading: () => (
+      <div className="p-6" style={{ color: 'var(--color-muted-foreground)' }}>
+        Loading app…
+      </div>
+    ),
+  });
+  const anyAppActive = Object.values(windows).some((w) => w.open || w.minimized);
+  const openApp = (id: AppId) => {
+    setWindows((prev) => ({ ...prev, [id]: { ...prev[id], open: true, minimized: false } }));
+    setAppsMenuOpen(false);
+  };
+  const minimizeApp = (id: AppId) =>
+    setWindows((prev) => ({ ...prev, [id]: { ...prev[id], minimized: true } }));
+  const closeApp = (id: AppId) =>
+    setWindows((prev) => ({ ...prev, [id]: { ...prev[id], open: false, minimized: false } }));
+  const setRect = (id: AppId, rect: WindowRect) =>
+    setWindows((prev) => ({ ...prev, [id]: { ...prev[id], rect } }));
 
   // Load structured favorites (folders + items)
   const loadStructured = async (): Promise<GridEntry[]> => {
@@ -174,6 +213,32 @@ export default function FavoritesPage() {
     }
   };
 
+  const handleMoveOutOfFolder = async (navId: string) => {
+    if (!openFolder) return;
+    try {
+      await api.updateFavoriteFolder(openFolder.id, { removeNavIds: [navId] });
+      let entries = await loadStructured();
+      const folder = entries.find((e) => e.kind === 'folder' && e.id === openFolder.id) as
+        | Extract<GridEntry, { kind: 'folder' }>
+        | undefined;
+      if (folder && folder.items.length <= 1) {
+        if (folder.items.length === 1) {
+          const lastId = getNavObjectId(folder.items[0]);
+          if (lastId) await api.updateFavoriteFolder(folder.id, { removeNavIds: [lastId] });
+        }
+        await api.deleteFavoriteFolder(openFolder.id);
+        entries = await loadStructured();
+        setOpenFolder(null);
+      } else if (folder) {
+        setOpenFolder({ id: folder.id, name: folder.name, items: folder.items });
+      } else {
+        setOpenFolder(null);
+      }
+    } catch (e) {
+      console.error('Move out of folder failed:', e);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -185,12 +250,13 @@ export default function FavoritesPage() {
   return (
     <AuthGuard redirectTo="/login">
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100">
+        <TopMenuBar onMenuClick={() => setAppsMenuOpen((s) => !s)} />
         <Head>
           <title>{t('my_favorites')} - DoggyNav</title>
           <meta name="description" content={t('my_favorite_websites')} />
         </Head>
 
-        <main className="max-w-7xl mx-auto px-6 py-10 pb-32">
+        <main className="max-w-7xl mx-auto px-6 pt-16 pb-32">
           {' '}
           {/* Add pb-32 to account for footer */}
           {error && (
@@ -313,6 +379,7 @@ export default function FavoritesPage() {
           name={openFolder.name}
           items={openFolder.items}
           onRemove={handleRemoveFavorite}
+          onMoveOut={handleMoveOutOfFolder}
           onClose={() => setOpenFolder(null)}
         />
       )}

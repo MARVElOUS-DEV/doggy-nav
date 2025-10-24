@@ -4,40 +4,42 @@ import { useAtomValue } from 'jotai';
 import { authStateAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
 
- // Constants
-  const BULB_WIDTH = 48; // 3rem (w-12 in Tailwind)
-  const BASE_ROPE_LENGTH = 100;
-  const ROPE_Origin_Right = 32; // right-8
-  const ROPE_VIR_LEN = BASE_ROPE_LENGTH + BULB_WIDTH / 2; // Distance to bulb center
+// Constants
+const BULB_WIDTH = 48; // 3rem (w-12 in Tailwind)
+const BASE_ROPE_LENGTH = 100;
+const ROPE_Origin_Right = 32; // right-8
+const ROPE_VIR_LEN = BASE_ROPE_LENGTH + BULB_WIDTH / 2; // Distance to bulb center
 const LightbulbRope = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const authState = useAtomValue(authStateAtom);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1200
+  );
   const ropeRef = useRef<HTMLDivElement>(null);
   const startPosRef = useRef({ x: 0, y: 0 });
   const isNavigatingRef = useRef(false);
 
-  const finalBulbQuadrant  = useMemo<undefined |'lt'| 'rt' | 'lb' | 'rb'>(() => {
-    if(dragOffset.x<0 && dragOffset.y <0) return 'lt';
-    if(dragOffset.x<0 && dragOffset.y >0) return 'lb';
-    if(dragOffset.x>0 && dragOffset.y>0) return 'rb';
-    if(dragOffset.x>0 && dragOffset.y < 0) return 'rt';
+  const finalBulbQuadrant = useMemo<undefined | 'lt' | 'rt' | 'lb' | 'rb'>(() => {
+    if (dragOffset.x < 0 && dragOffset.y < 0) return 'lt';
+    if (dragOffset.x < 0 && dragOffset.y > 0) return 'lb';
+    if (dragOffset.x > 0 && dragOffset.y > 0) return 'rb';
+    if (dragOffset.x > 0 && dragOffset.y < 0) return 'rt';
     return 'lt';
   }, [dragOffset.x, dragOffset.y]);
-   // Window resize handler
+  // Window resize handler
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
 
     window.addEventListener('resize', handleResize);
-    return () => { 
+    return () => {
       isNavigatingRef.current = false;
       window.removeEventListener('resize', handleResize);
-    }
+    };
   }, []);
 
   // Set up event listeners
@@ -55,20 +57,20 @@ const LightbulbRope = () => {
         window.removeEventListener('touchend', handleEnd);
       };
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, dragOffset]);
-  
-  const isCrossingLine = dragOffset.x + startPosRef.current.x > (windowWidth - ROPE_Origin_Right)
-  const initSwayAngle = useMemo( ()=> {
-    // Only consider the initial state where the bulb is to the left of the vertical line
-      const x = windowWidth - ROPE_Origin_Right - startPosRef.current.x;
-      return Math.asin(x / ROPE_VIR_LEN)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowWidth, isDragging])
 
-  const [swayAngle, ropeLength] = useMemo(()=> {
-    if(isDragging) {
-      let x, y
+  const isCrossingLine = dragOffset.x + startPosRef.current.x > windowWidth - ROPE_Origin_Right;
+  const initSwayAngle = useMemo(() => {
+    // Only consider the initial state where the bulb is to the left of the vertical line
+    const x = windowWidth - ROPE_Origin_Right - startPosRef.current.x;
+    return Math.asin(x / ROPE_VIR_LEN);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowWidth, isDragging]);
+
+  const [swayAngle, ropeLength] = useMemo(() => {
+    if (isDragging) {
+      let x, y;
       if (finalBulbQuadrant === 'lt') {
         x = Math.sin(initSwayAngle) * ROPE_VIR_LEN + Math.abs(dragOffset.x);
         y = Math.cos(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.y);
@@ -78,19 +80,23 @@ const LightbulbRope = () => {
         y = Math.cos(initSwayAngle) * ROPE_VIR_LEN + Math.abs(dragOffset.y);
       }
       if (finalBulbQuadrant === 'rb') {
-        x = (isCrossingLine? -1 : 1) * Math.sin(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.x);
+        x =
+          (isCrossingLine ? -1 : 1) * Math.sin(initSwayAngle) * ROPE_VIR_LEN -
+          Math.abs(dragOffset.x);
         y = Math.cos(initSwayAngle) * ROPE_VIR_LEN + Math.abs(dragOffset.y);
       }
       if (finalBulbQuadrant === 'rt') {
-        x = (isCrossingLine? -1 : 1) * Math.sin(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.x);
+        x =
+          (isCrossingLine ? -1 : 1) * Math.sin(initSwayAngle) * ROPE_VIR_LEN -
+          Math.abs(dragOffset.x);
         y = Math.cos(initSwayAngle) * ROPE_VIR_LEN - Math.abs(dragOffset.y);
       }
-      return [Math.atan2(x, y), Math.sqrt(Math.pow(x, 2)+ Math.pow(y, 2)) + BULB_WIDTH/2]
+      return [Math.atan2(x, y), Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) + BULB_WIDTH / 2];
     } else {
       return [0, ROPE_VIR_LEN];
     }
-  }, [finalBulbQuadrant, dragOffset.x, initSwayAngle, dragOffset.y, isDragging, isCrossingLine])
-  
+  }, [finalBulbQuadrant, dragOffset.x, initSwayAngle, dragOffset.y, isDragging, isCrossingLine]);
+
   // Only show for authenticated users
   if (!authState.isAuthenticated) {
     return null;
@@ -145,7 +151,7 @@ const LightbulbRope = () => {
     // If dragged more than 100px downward (Y-axis), navigate to favorites
     if (dragOffset.y > 100) {
       isNavigatingRef.current = true;
-      router.push('/favorites');
+      router.push('/desktop');
     } else {
       // Animate back to original position
       setDragOffset({ x: 0, y: 0 });
@@ -155,7 +161,7 @@ const LightbulbRope = () => {
   // Calculate bulb position based on mode
   const bulbX = isDragging ? dragOffset.x : 0;
   const bulbY = isDragging ? dragOffset.y + BASE_ROPE_LENGTH : BASE_ROPE_LENGTH;
-  
+
   const ropeAngleDeg = swayAngle * (180 / Math.PI);
 
   // Rope angle from vertical: positive X = clockwise rotation
@@ -163,7 +169,10 @@ const LightbulbRope = () => {
   return (
     <div className="fixed top-0 right-8 z-50 pointer-events-none">
       {/* Swaying container - only when not dragging */}
-      <div className={`${!isDragging ? 'animate-sway' : ''}`} style={{ transformOrigin: 'center top' }}>
+      <div
+        className={`${!isDragging ? 'animate-sway' : ''}`}
+        style={{ transformOrigin: 'center top' }}
+      >
         {/* Rope - always connects from origin (0,0) to bulb position */}
         <div
           ref={ropeRef}
@@ -172,7 +181,7 @@ const LightbulbRope = () => {
             height: `${ropeLength}px`,
             transform: `translateX(-50%) rotate(${ropeAngleDeg}deg)`,
             transformOrigin: 'top center',
-            transition: isDragging ? 'none' : 'all 0.3s ease-out'
+            transition: isDragging ? 'none' : 'all 0.3s ease-out',
           }}
         >
           {/* Small rope details */}
@@ -188,23 +197,23 @@ const LightbulbRope = () => {
           style={{
             transformOrigin: 'top center',
             transform: `translate(calc(-50% + ${bulbX}px), ${bulbY}px)`,
-            transition: isDragging ? 'none' : 'transform 0.3s ease-out, scale 0.2s ease-out'
+            transition: isDragging ? 'none' : 'transform 0.3s ease-out, scale 0.2s ease-out',
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-        {/* Bulb shine effect */}
-        <div className="absolute top-2 left-3 w-3 h-3 bg-white/60 rounded-full blur-sm"></div>
+          {/* Bulb shine effect */}
+          <div className="absolute top-2 left-3 w-3 h-3 bg-white/60 rounded-full blur-sm"></div>
 
-        {/* Bulb center glow */}
-        <div className="w-6 h-6 rounded-full bg-amber-100/80 flex items-center justify-center">
-          <div className="w-3 h-3 rounded-full bg-amber-300"></div>
-        </div>
+          {/* Bulb center glow */}
+          <div className="w-6 h-6 rounded-full bg-amber-100/80 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-amber-300"></div>
+          </div>
 
-        {/* Glow effect when dragged */}
-        {dragOffset.y > 50 && (
-          <div className="absolute inset-0 rounded-full bg-amber-300/30 blur-lg animate-pulse"></div>
-        )}
+          {/* Glow effect when dragged */}
+          {dragOffset.y > 50 && (
+            <div className="absolute inset-0 rounded-full bg-amber-300/30 blur-lg animate-pulse"></div>
+          )}
         </div>
       </div>
 
@@ -216,7 +225,7 @@ const LightbulbRope = () => {
             top: `${bulbY + 60}px`,
             left: '50%',
             transform: `translateX(calc(-50% + ${bulbX}px))`,
-            transition: 'all 0.1s ease-out'
+            transition: 'all 0.1s ease-out',
           }}
         >
           {dragOffset.y > 100 ? t('release_to_go_to_favorites') : t('pull_down_to_go_to_favorites')}

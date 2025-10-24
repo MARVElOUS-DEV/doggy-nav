@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 interface ReactIfProps {
-  condition: boolean;
+  condition: boolean | (() => boolean);
   children: React.ReactNode;
 }
 
@@ -17,15 +17,13 @@ interface ReactIfElseProps extends ReactIfProps {
 }
 
 export const ReactIfElse: React.FC<ReactIfElseProps> = ({ condition, children, ...p }) => {
-  const childElements: React.ReactElement[] = React.Children.map(
-    children,
-    (child) => {
+  const childElements: React.ReactElement[] =
+    React.Children.map(children, (child) => {
       if (React.isValidElement(child)) {
         return React.cloneElement(child, { ...p });
       }
       return child as unknown as React.ReactElement;
-    }
-  ) || [];
+    }) || [];
 
   if (childElements.length !== 2) {
     return null;

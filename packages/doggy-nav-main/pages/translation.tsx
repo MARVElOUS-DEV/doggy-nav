@@ -1,6 +1,6 @@
 import { NextPage } from 'next';
 import Head from 'next/head';
-import TranslationCard from '@/tools/TranslationCard';
+import TranslationCard from '@/components/TranslationCard';
 
 /**
  * Translation Tool Demo Page
@@ -59,10 +59,7 @@ const TranslationPage: NextPage = () => {
               >
                 自动翻译
               </h3>
-              <p
-                className="text-sm"
-                style={{ color: 'var(--color-muted-foreground)' }}
-              >
+              <p className="text-sm" style={{ color: 'var(--color-muted-foreground)' }}>
                 停止输入 800ms 后自动触发翻译，无需手动点击
               </p>
             </div>
@@ -81,10 +78,7 @@ const TranslationPage: NextPage = () => {
               >
                 多语言支持
               </h3>
-              <p
-                className="text-sm"
-                style={{ color: 'var(--color-muted-foreground)' }}
-              >
+              <p className="text-sm" style={{ color: 'var(--color-muted-foreground)' }}>
                 支持中文、英语、日语、韩语、法语、德语、西班牙语
               </p>
             </div>
@@ -103,10 +97,7 @@ const TranslationPage: NextPage = () => {
               >
                 记忆偏好
               </h3>
-              <p
-                className="text-sm"
-                style={{ color: 'var(--color-muted-foreground)' }}
-              >
+              <p className="text-sm" style={{ color: 'var(--color-muted-foreground)' }}>
                 自动保存语言选择，下次使用无需重新设置
               </p>
             </div>
