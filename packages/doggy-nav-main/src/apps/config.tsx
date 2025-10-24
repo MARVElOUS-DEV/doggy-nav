@@ -2,8 +2,10 @@ import type { ReactNode } from 'react';
 import type { NextRouter } from 'next/router';
 import FavoritesWindow from './FavoritesWindow';
 import WallpapersApp from './Wallpapers';
+import NewsApp from './NewsApp';
+import TranslationApp from './TranslationApp';
 
-export type AppId = 'home' | 'favorites' | 'wallpapers' | 'launchpad';
+export type AppId = 'home' | 'favorites' | 'news' | 'translation' | 'wallpapers' | 'launchpad';
 
 export type DesktopCtx = {
   router: NextRouter;
@@ -29,10 +31,16 @@ export type DesktopAppConfig = {
   expandable?: boolean;
   render?: (ctx: DesktopCtx) => ReactNode;
   externalAction?: (ctx: DesktopCtx) => void;
-  dock_breaks_before?: boolean;
 };
 
-export const appsOrder: AppId[] = ['home', 'favorites', 'launchpad', 'wallpapers'];
+export const appsOrder: AppId[] = [
+  'home',
+  'favorites',
+  'news',
+  'translation',
+  'launchpad',
+  'wallpapers',
+];
 
 export const appsConfig: Record<AppId, DesktopAppConfig> = {
   home: {
@@ -52,6 +60,24 @@ export const appsConfig: Record<AppId, DesktopAppConfig> = {
     shouldOpenWindow: true,
     defaultRect: { x: 180, y: 140, width: 760, height: 500 },
     render: () => <FavoritesWindow />,
+  },
+  news: {
+    id: 'news',
+    open: false,
+    title: 'News',
+    icon: '/default-web.png',
+    shouldOpenWindow: true,
+    defaultRect: { x: 200, y: 120, width: 860, height: 560 },
+    render: () => <NewsApp />,
+  },
+  translation: {
+    id: 'translation',
+    open: false,
+    title: 'Translation',
+    icon: '/default-web.png',
+    shouldOpenWindow: true,
+    defaultRect: { x: 220, y: 140, width: 860, height: 560 },
+    render: () => <TranslationApp />,
   },
   launchpad: {
     id: 'launchpad',

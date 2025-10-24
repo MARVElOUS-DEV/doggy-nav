@@ -1,14 +1,19 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { NextPage } from 'next';
 import AuthGuard from '@/components/AuthGuard';
-import TopMenuBar from '@/components/Desktop/TopMenuBar';
-import AppWindow, { type WindowRect } from '@/components/Desktop/AppWindow';
-import Dock, { type DockItem } from '@/components/Desktop/Dock';
-import SystemMenu from '@/components/Desktop/SystemMenu';
-import Launchpad from '@/components/Desktop/Launchpad';
+import TopMenuBar from '@/apps/Desktop/TopMenuBar';
+import AppWindow, { type WindowRect } from '@/apps/Desktop/AppWindow';
+import Dock, { type DockItem } from '@/apps/Desktop/Dock';
+import SystemMenu from '@/apps/Desktop/SystemMenu';
+import Launchpad from '@/apps/LaunchPad';
 import { useRouter } from 'next/router';
-import { appsConfig, appsOrder, type AppId, type DesktopAppConfig } from '@/apps/config';
-import ReactIf from '@/components/ReactIf';
+import {
+  appsConfig,
+  appsOrder,
+  DesktopCtx,
+  type AppId,
+  type DesktopAppConfig,
+} from '@/apps/config';
 
 type NextPageWithLayout = NextPage & { getLayout?: (page: React.ReactNode) => React.ReactNode };
 
@@ -59,11 +64,11 @@ const DesktopPage: NextPageWithLayout = () => {
     });
 
   const dockItems: DockItem[] = useMemo(() => {
-    const ctx = {
+    const ctx: DesktopCtx = {
       router,
       openLaunchpad: () => setLpOpen(true),
       wallpapers: { items: wallpapers, current: currentWall, set: (id: string) => setWallById(id) },
-    } as any;
+    };
     return appsOrder.map((id) => {
       const cfg = appsConfig[id];
       const running = windows[id]?.open || windows[id]?.minimized;
@@ -138,7 +143,7 @@ const DesktopPage: NextPageWithLayout = () => {
           const onMinimize = () =>
             setWindows((prev) => ({ ...prev, [id]: { ...prev[id], minimized: true } }));
           const onActivate = () => bringToFront(id);
-          const ctx = {
+          const ctx: DesktopCtx = {
             router,
             openLaunchpad: () => setLpOpen(true),
             wallpapers: {
@@ -146,7 +151,7 @@ const DesktopPage: NextPageWithLayout = () => {
               current: currentWall,
               set: (id: string) => setWallById(id),
             },
-          } as any;
+          };
           return (
             <AppWindow
               key={id}
