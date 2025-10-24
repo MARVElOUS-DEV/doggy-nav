@@ -20,6 +20,8 @@ interface AppWindowProps {
   onMinimize?: () => void;
   onActivate?: () => void;
   zIndex?: number;
+  bounds?: string | HTMLElement;
+  getMaxArea?: () => WindowRect;
   children?: React.ReactNode;
 }
 
@@ -36,6 +38,8 @@ export default function AppWindow({
   onActivate,
   children,
   zIndex,
+  bounds,
+  getMaxArea,
 }: AppWindowProps) {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
@@ -88,7 +92,7 @@ export default function AppWindow({
           variants={variants}
         >
           <Rnd
-            bounds="window"
+            bounds={bounds ?? "window"}
             size={{ width: localRect.width, height: localRect.height }}
             position={{ x: localRect.x, y: localRect.y }}
             onResizeStop={onResizeStop}
@@ -124,11 +128,16 @@ export default function AppWindow({
                   onMaximize={() => {
                     if (!maximized) {
                       prevRectRef.current = { ...localRect };
-                      const margin = 20;
-                      const top = 60;
-                      const w = Math.max(320, window.innerWidth - margin * 2);
-                      const h = Math.max(200, window.innerHeight - top - margin);
-                      const next = { x: margin, y: top, width: w, height: h };
+                      let next: WindowRect;
+                      if (typeof getMaxArea === 'function') {
+                        next = getMaxArea();
+                      } else {
+                        const margin = 20;
+                        const top = 60;
+                        const w = Math.max(320, window.innerWidth - margin * 2);
+                        const h = Math.max(200, window.innerHeight - top - margin);
+                        next = { x: margin, y: top, width: w, height: h };
+                      }
                       setLocalRect(next);
                       onRectChange?.(next);
                       setMaximized(true);

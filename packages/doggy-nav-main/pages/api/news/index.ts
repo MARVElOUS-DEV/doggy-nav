@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import axios from '@/utils/axios';
+import axios from 'axios';
 
 type Item = {
   id: string;
@@ -31,9 +31,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Use HN Algolia Front Page as a stable public source; can be swapped later via env.
     const source =
       process.env.NEWS_SOURCE_URL || 'https://hn.algolia.com/api/v1/search?tags=front_page';
-    const { data } = await axios.get(source, {
+    const resp = await axios.get(source, {
       timeout: process.env.NODE_ENV === 'development' ? 0 : 12000,
     });
+    const data = resp.data as Record<string, any>;
     const hits = Array.isArray(data?.hits) ? data.hits : [];
     const items: Item[] = hits.map((h: any) => {
       const url: string | null = h.url || null;

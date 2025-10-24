@@ -15,7 +15,7 @@ type GridEntry =
 // Paging
 const perPage = 6 * 4; // 24 icons per page
 
-export default function Launchpad({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function Launchpad({ open, onClose, withinArea = true }: { open: boolean; onClose: () => void; withinArea?: boolean }) {
   const [entries, setEntries] = useState<GridEntry[]>([]);
   const [page, setPage] = useState(0);
   const [folderOpen, setFolderOpen] = useState<null | {
@@ -173,9 +173,10 @@ export default function Launchpad({ open, onClose }: { open: boolean; onClose: (
   };
 
   if (!open) return null;
+  const rootClass = withinArea ? 'absolute inset-0 z-[85]' : 'fixed inset-0 z-[85]';
 
   return (
-    <div className="fixed inset-0 z-[85]">
+    <div className={rootClass}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-xl" onClick={onClose} />
 

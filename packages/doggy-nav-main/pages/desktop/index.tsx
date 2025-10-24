@@ -124,8 +124,14 @@ const DesktopPage: NextPageWithLayout = () => {
           }}
         />
 
-        {/* Launchpad overlay */}
-        <Launchpad open={lpOpen} onClose={() => setLpOpen(false)} />
+        {/* Windows Area wrapper between top bar and dock */}
+        <div
+          id="windows-area"
+          className={`fixed left-0 right-0 top-10 bottom-24 z-[55] ${lpOpen ? '' : 'pointer-events-none'}`}
+        >
+          {/* Launchpad overlay anchored to WindowsArea so it doesn't cover the top bar */}
+          <Launchpad open={lpOpen} onClose={() => setLpOpen(false)} withinArea />
+        </div>
 
         {/* Windows generated from config */}
         {appsOrder.map((id) => {
@@ -164,6 +170,22 @@ const DesktopPage: NextPageWithLayout = () => {
               onMinimize={onMinimize}
               onActivate={onActivate}
               zIndex={win.z}
+              bounds="#windows-area"
+              getMaxArea={() => {
+                if (typeof document !== 'undefined') {
+                  const el = document.getElementById('windows-area');
+                  if (el) {
+                    const r = el.getBoundingClientRect();
+                    return { x: r.left, y: r.top, width: r.width, height: r.height };
+                  }
+                }
+                // Fallback approximately below top bar and above dock
+                const margin = 20;
+                const top = 60;
+                const w = Math.max(320, window.innerWidth - margin * 2);
+                const h = Math.max(200, window.innerHeight - top - margin);
+                return { x: margin, y: top, width: w, height: h };
+              }}
             >
               {cfg.render?.(ctx)}
             </AppWindow>

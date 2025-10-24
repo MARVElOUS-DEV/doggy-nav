@@ -96,6 +96,8 @@ export default function NewsApp() {
                       alt=""
                       className="w-6 h-6"
                       loading="lazy"
+                      width={24}
+                      height={24}
                     />
                   ) : (
                     <span className="text-xs" style={{ color: 'var(--color-muted-foreground)' }}>
