@@ -132,21 +132,34 @@ const DesktopContext = createContext<DesktopContextValue | undefined>(undefined)
 export function DesktopProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const wallpapersList = useMemo(
-    () => [
-      { id: 'ventura', name: 'Ventura', src: '/wallpapers/ventura-1.webp' },
-      { id: 'big-sur', name: 'Big Sur Graphic', src: '/wallpapers/big-sur-graphic-1.jpg' },
-    ],
-    []
-  );
+  const wallpapersList = useMemo(() => {
+    const core = [
+      { id: 'ventura-1.webp', name: 'Ventura', src: '/wallpapers/ventura-1.webp' },
+      {
+        id: 'big-sur-graphic-1.jpg',
+        name: 'Big Sur Graphic',
+        src: '/wallpapers/big-sur-graphic-1.jpg',
+      },
+    ];
+    const extras = Array.from({ length: 64 - 38 + 1 }, (_, i) => 38 + i).map((n) => ({
+      id: `${n}.jpg`,
+      name: `Wallpaper ${n}`,
+      src: `/wallpapers/${n}.jpg`,
+    }));
+    return [...core, ...extras];
+  }, []);
 
-  const currentWallId = useMemo(
-    () => (state.wallpaper.includes('ventura') ? 'ventura' : 'big-sur'),
-    [state.wallpaper]
-  );
+  const currentWallId = useMemo(() => {
+    const id = state.wallpaper.split('/').pop() || '';
+    const found = wallpapersList.find((w) => w.id === id)?.id;
+    return found || wallpapersList[0]?.id || '';
+  }, [state.wallpaper, wallpapersList]);
 
-  const setWallpaperById = (id: string) =>
-    dispatch({ type: 'set_wallpaper', payload: id === 'ventura' ? '/wallpapers/ventura-1.webp' : '/wallpapers/big-sur-graphic-1.jpg' });
+  const setWallpaperById = (id: string) => {
+    const found = wallpapersList.find((w) => w.id === id);
+    if (!found) return;
+    dispatch({ type: 'set_wallpaper', payload: found.src });
+  };
 
   const value: DesktopContextValue = {
     state,

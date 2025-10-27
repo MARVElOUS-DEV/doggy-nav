@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { Menu } from 'lucide-react';
-
+import MacMenuIcon from '../../../public/app-icons/mac-top-menu.svg';
 interface TopMenuBarProps {
   onMenuClick?: () => void;
 }
@@ -19,7 +18,7 @@ export default function TopMenuBar({ onMenuClick }: TopMenuBarProps) {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[70] pointer-events-none">
-      <div className="pointer-events-auto h-10 w-full bg-glass-light backdrop-blur-glass-lg backdrop-saturate-150 border-b border-glass-border select-none">
+      <div className="pointer-events-auto h-8 w-full glass-dark border-t-0 border-l-0 border-r-0 select-none">
         <div className="flex items-center justify-between h-full px-3 sm:px-4">
           {/* Left area (placeholder for future menus) */}
           <div className="flex items-center gap-2">
@@ -34,9 +33,9 @@ export default function TopMenuBar({ onMenuClick }: TopMenuBarProps) {
               className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
               title="Menu"
             >
-              <Menu className="w-4 h-4" />
+              <MacMenuIcon className="w-3 h-3 md:w-4 md:h-4 text-theme-foreground fill-current" />
             </button>
-            <div className="text-xs" style={{ color: 'var(--color-muted)' }}>
+            <div className="text-xs" style={{ color: 'var(--color-foreground)' }}>
               {now.format('ddd MMM D HH:mm')}
             </div>
           </div>

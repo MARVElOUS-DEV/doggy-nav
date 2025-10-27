@@ -45,10 +45,18 @@ export default function SystemMenu({
     };
   }, [open, onClose]);
 
-  const currentName = useMemo(
-    () => wallpapers.find((w) => w.id === current)?.name ?? 'Wallpaper',
+  const currentWp = useMemo(
+    () => wallpapers.find((w) => w.id === current) || wallpapers[0],
     [current, wallpapers]
   );
+  const currentName = currentWp?.name || 'Wallpaper';
+  const featured = useMemo(() => {
+    // Show a small curated set to avoid rendering dozens in the quick menu
+    const idx = wallpapers.findIndex((w) => w.id === current);
+    const around = wallpapers.slice(Math.max(0, idx - 4), idx).concat(wallpapers.slice(idx + 1, idx + 7));
+    const base = around.length >= 8 ? around.slice(0, 8) : wallpapers.slice(0, 8);
+    return base;
+  }, [wallpapers, current]);
 
   if (!open) return null;
 
@@ -73,42 +81,59 @@ export default function SystemMenu({
           </button>
         </div>
 
-        {/* Wallpaper picker */}
+        {/* Wallpaper quick section - condensed cards */}
         <div className="px-3 py-2 border-b border-theme-border">
           <div className="text-sm mb-2" style={{ color: 'var(--color-foreground)' }}>
-            Wallpaper
+            Wallpapers
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {wallpapers.map((w) => (
+          {/* Current wallpaper card */}
+          <button
+            type="button"
+            onClick={() => (onOpenWallpapers ? onOpenWallpapers() : onPick(current))}
+            className="w-full rounded-xl border border-theme-border glass-light dark:glass-dark p-2 flex items-center gap-3 hover:bg-black/5 dark:hover:bg-white/10 transition-colors mb-3"
+            title={currentName}
+          >
+            {currentWp && (
+              <Image
+                src={currentWp.src}
+                alt={currentName}
+                width={72}
+                height={48}
+                className="h-14 w-24 object-cover rounded-md"
+              />
+            )}
+            <div className="min-w-0">
+              <div className="text-sm truncate" style={{ color: 'var(--color-foreground)' }}>
+                {currentName}
+              </div>
+              <div className="text-[11px]" style={{ color: 'var(--color-muted-foreground)' }}>
+                Current wallpaper
+              </div>
+            </div>
+          </button>
+
+          {/* Featured strip */}
+          <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-2">
+            {featured.map((w) => (
               <button
                 key={w.id}
                 type="button"
                 onClick={() => onPick(w.id)}
-                className="relative rounded-lg overflow-hidden group"
+                className="relative rounded-lg overflow-hidden flex-shrink-0 group border border-theme-border my-0.5"
+                style={{ width: 90, height: 56 }}
                 title={w.name}
               >
-                <Image
-                  src={w.src}
-                  alt={w.name}
-                  width="100"
-                  height={'64'}
-                  className="h-16 w-full object-cover"
-                />
+                <Image src={w.src} alt={w.name} width={90} height={56} className="object-cover" />
                 {current === w.id && (
                   <span
                     className="absolute inset-0 border-2 rounded-lg"
                     style={{ borderColor: 'var(--color-primary)' }}
                   />
                 )}
-                <span className="absolute bottom-0 left-0 right-0 text-[10px] p-1 bg-black/30 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                  {w.name}
-                </span>
               </button>
             ))}
           </div>
-          <div className="mt-2 text-xs" style={{ color: 'var(--color-muted-foreground)' }}>
-            Current: {currentName}
-          </div>
+
           {onOpenWallpapers && (
             <div className="mt-2 text-right">
               <button

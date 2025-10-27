@@ -47,7 +47,7 @@ export default function Dock({ items }: { items: DockItem[] }) {
         ref={containerRef}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
-        className="pointer-events-auto glass-dark border border-theme-border rounded-2xl px-3 py-2 shadow-xl flex gap-2"
+        className="pointer-events-auto glass-dark rounded-2xl px-3 py-2 shadow-xl flex gap-2"
         style={{
           transform: `scale(${barScaleX}, ${barScaleY})`,
           transformOrigin: 'bottom center',
@@ -108,7 +108,7 @@ function DockButton({ item, mouseX }: { item: DockItem; mouseX: number | null })
         {/* Tooltip */}
         <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
           <div
-            className="px-2 py-1 rounded-md border border-theme-border shadow-xl glass-light dark:glass-dark text-xs whitespace-nowrap"
+            className="px-2 py-1 rounded-md shadow-xl glass-light dark:glass-dark text-xs whitespace-nowrap"
             style={{ color: 'var(--color-foreground)' }}
           >
             {item.label}

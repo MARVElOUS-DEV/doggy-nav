@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { Message } from '@arco-design/web-react';
-import { setAccessExpEpochMs } from './session';
+import { requestCrossTabRefresh } from './session';
 
 interface ApiResponse<T = any> {
   code: number;
@@ -24,16 +24,8 @@ const instance: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Ensure only one refresh runs at a time; concurrent 401s await the same promise
+// Ensure only one refresh runs per tab; cross-tab coordination is handled by session.ts
 let refreshPromise: Promise<void> | null = null;
-
-async function refreshTokens() {
-  const res = await axios.post('/api/auth/refresh', undefined, { withCredentials: true });
-  try {
-    const exp = (res?.data?.data?.accessExp as number) || null;
-    if (typeof exp === 'number') setAccessExpEpochMs(exp);
-  } catch {}
-}
 
 // Request interceptor
 instance.interceptors.request.use(
@@ -114,7 +106,7 @@ instance.interceptors.response.use(
 
           try {
             if (!refreshPromise) {
-              refreshPromise = refreshTokens().finally(() => {
+              refreshPromise = requestCrossTabRefresh().finally(() => {
                 refreshPromise = null;
               });
             }
