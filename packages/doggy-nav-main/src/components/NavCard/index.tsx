@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip, Grid, Button, Space } from '@arco-design/web-react';
@@ -18,7 +18,12 @@ interface AppNavItemProps {
   onHandleFavorite?: (data: NavItem, callback: (isFavorite: boolean) => void) => void;
 }
 
-export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, onHandleFavorite }: AppNavItemProps) {
+export default function AppNavItem({
+  data,
+  onHandleNavClick,
+  onHandleNavStar,
+  onHandleFavorite,
+}: AppNavItemProps) {
   const { t } = useTranslation();
   const [isStar, setIsStar] = useState(false);
   const [isFavorite, setIsFavorite] = useState(data.isFavorite || false);
@@ -26,6 +31,8 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
   const [viewCount, setViewCount] = useState<number>(data.view || 0);
   const [intersectionRef, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const urlStatus = useUrlStatus(data.href, isVisible);
+  const authorRef = useRef<HTMLSpanElement>(null);
+  const [authorOverflow, setAuthorOverflow] = useState(false);
 
   // Check if item is in favorites on mount
   useEffect(() => {
@@ -34,7 +41,8 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
         const storedFavorites = localStorage.getItem('favorites');
         if (storedFavorites) {
           const favorites = JSON.parse(storedFavorites);
-          const isFavorited = Array.isArray(favorites) && favorites.some((item: NavItem) => item.id === data.id);
+          const isFavorited =
+            Array.isArray(favorites) && favorites.some((item: NavItem) => item.id === data.id);
           setIsStar(isFavorited);
         }
       } catch (err) {
@@ -42,6 +50,15 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
       }
     }
   }, [data.id]);
+
+  useEffect(() => {
+    const el = authorRef.current;
+    if (!el) return;
+    const check = () => setAuthorOverflow(el.scrollWidth > el.clientWidth);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, [data.authorName]);
 
   const handleLogoError = () => {
     setLogoSrc('/default-web.png');
@@ -62,7 +79,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
   };
 
   const getStatusIndicator = () => {
-    const baseClasses = "absolute top-4 right-4 w-3 h-3 rounded-full z-10";
+    const baseClasses = 'absolute top-4 right-4 w-3 h-3 rounded-full z-10';
     const baseStyle = {
       border: '2px solid var(--color-card)',
     } as const;
@@ -76,7 +93,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
               style={{
                 ...baseStyle,
                 backgroundColor: 'color-mix(in srgb, var(--color-secondary) 55%, transparent)',
-                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-secondary) 15%, transparent)'
+                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-secondary) 15%, transparent)',
               }}
             />
           </Tooltip>
@@ -89,12 +106,14 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
               style={{
                 ...baseStyle,
                 backgroundColor: 'color-mix(in srgb, var(--color-primary) 75%, transparent)',
-                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-primary) 18%, transparent)'
+                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-primary) 18%, transparent)',
               }}
             >
               <div
                 className="w-full h-full rounded-full animate-ping opacity-75"
-                style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 90%, transparent)' }}
+                style={{
+                  backgroundColor: 'color-mix(in srgb, var(--color-primary) 90%, transparent)',
+                }}
               />
             </div>
           </Tooltip>
@@ -107,7 +126,8 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
               style={{
                 ...baseStyle,
                 backgroundColor: 'color-mix(in srgb, var(--color-destructive) 75%, transparent)',
-                boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-destructive) 18%, transparent)'
+                boxShadow:
+                  '0 0 0 4px color-mix(in srgb, var(--color-destructive) 18%, transparent)',
               }}
             />
           </Tooltip>
@@ -118,14 +138,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
   };
 
   return (
-    <Col
-      xs={24}
-      sm={12}
-      md={8}
-      lg={6}
-      xl={6}
-      className="website-item"
-    >
+    <Col xs={24} sm={12} md={8} lg={6} xl={6} className="website-item">
       <div
         ref={intersectionRef}
         className="group relative h-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border overflow-hidden bg-theme-background text-theme-foreground border-theme-border flex flex-col"
@@ -137,10 +150,7 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
         {getStatusIndicator()}
 
         {/* Main Content */}
-        <Link
-          href={`/nav/${data.id}`}
-          className="p-6 flex flex-col flex-1"
-        >
+        <Link href={`/nav/${data.id}`} className="px-6 pt-6 pb-2 flex flex-col flex-1">
           <div className="flex items-center space-x-4 mb-4">
             <div className="logo-container flex-shrink-0">
               <Image
@@ -156,56 +166,85 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
               <h3
                 className="title text-lg font-bold transition-colors duration-200 truncate group-hover:text-theme-primary"
                 style={{ color: 'var(--color-foreground)' }}
-                title={((typeof data.highlightedName  === 'string')? data.highlightedName : data.name? data.name : undefined) }
+                title={
+                  typeof data.highlightedName === 'string'
+                    ? data.highlightedName
+                    : data.name
+                      ? data.name
+                      : undefined
+                }
               >
                 {data.highlightedName || data.name}
               </h3>
               <p
                 className="desc text-sm transition-colors duration-200 line-clamp-2 h-[40px] overflow-hidden group-hover:text-theme-foreground"
                 style={{ color: 'var(--color-muted-foreground)' }}
-                title={typeof (data.highlightedDesc)  === 'string' ? data.highlightedDesc: data.desc? data.desc: t('no_description') }
+                title={
+                  typeof data.highlightedDesc === 'string'
+                    ? data.highlightedDesc
+                    : data.desc
+                      ? data.desc
+                      : t('no_description')
+                }
               >
                 {data.highlightedDesc || data.desc || t('no_description')}
               </p>
             </div>
           </div>
 
-          {/* Tags */}
-          {data.tags && data.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-4">
-              {data.tags.slice(0, 3).map((tag, index) => (
-                <span
-                  key={index}
-                  className="text-xs px-2 py-1 rounded-full"
-                  style={{
-                    backgroundColor: 'color-mix(in srgb, var(--color-primary) 20%, transparent)',
-                    color: 'var(--color-primary)'
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-              {data.tags.length > 3 && (
-                <span
-                  className="text-xs px-2 py-1 rounded-full"
-                  style={{
-                    backgroundColor: 'color-mix(in srgb, var(--color-muted) 85%, transparent)',
-                    color: 'var(--color-muted-foreground)'
-                  }}
-                >
-                  +{data.tags.length - 3}
-                </span>
+          {/* Meta: one line for tags + author, fixed height for equal cards */}
+          <div className="h-6 flex items-center gap-2 overflow-hidden">
+            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
+              {data.tags && data.tags.length > 0 && (
+                <div className="flex items-center gap-1 overflow-hidden">
+                  {data.tags.slice(0, 3).map((tag, index) => (
+                    <span
+                      key={index}
+                      className="text-xs px-2 py-1 rounded-full whitespace-nowrap"
+                      style={{
+                        backgroundColor:
+                          'color-mix(in srgb, var(--color-primary) 20%, transparent)',
+                        color: 'var(--color-primary)',
+                      }}
+                      title={typeof tag === 'string' ? tag : undefined}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {data.tags.length > 3 && (
+                    <span
+                      className="text-xs px-2 py-1 rounded-full whitespace-nowrap"
+                      style={{
+                        backgroundColor: 'color-mix(in srgb, var(--color-muted) 85%, transparent)',
+                        color: 'var(--color-muted-foreground)',
+                      }}
+                    >
+                      +{data.tags.length - 3}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
-          )}
 
-          {/* Author Info */}
-          {data.authorName && (
-            <div className="flex items-center text-xs text-theme-muted-foreground mb-4">
-              <span className="mr-1">👤</span>
-              <span>{data.authorName}</span>
-            </div>
-          )}
+            {data.authorName &&
+              (authorOverflow ? (
+                <Tooltip content={data.authorName}>
+                  <div className="flex items-center text-xs text-theme-muted-foreground flex-shrink-0 max-w-[50%]">
+                    <span className="mr-1">👤</span>
+                    <span ref={authorRef} className="truncate">
+                      {data.authorName}
+                    </span>
+                  </div>
+                </Tooltip>
+              ) : (
+                <div className="flex items-center text-xs text-theme-muted-foreground flex-shrink-0 max-w-[50%]">
+                  <span className="mr-1">👤</span>
+                  <span ref={authorRef} className="truncate">
+                    {data.authorName}
+                  </span>
+                </div>
+              ))}
+          </div>
         </Link>
 
         {/* Footer */}
@@ -213,12 +252,12 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
           className="mt-auto border-t px-6 py-4"
           style={{
             borderColor: 'var(--color-border)',
-            backgroundColor: 'color-mix(in srgb, var(--color-muted) 80%, transparent)'
+            backgroundColor: 'color-mix(in srgb, var(--color-muted) 80%, transparent)',
           }}
         >
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between lg:flex-col lg:gap-3 xl:flex-row xl:items-center xl:justify-between">
             <Button
-              type='primary'
+              type="primary"
               onClick={async () => {
                 try {
                   await Promise.resolve(onHandleNavClick(data));
@@ -231,7 +270,10 @@ export default function AppNavItem({ data, onHandleNavClick, onHandleNavStar, on
             >
               {t('go_direct')}
             </Button>
-            <Space size="mini" className="flex w-full md:w-auto lg:w-full xl:w-auto items-center justify-end md:justify-start lg:justify-center xl:justify-start space-x-4">
+            <Space
+              size="mini"
+              className="flex w-full md:w-auto lg:w-full xl:w-auto items-center justify-end md:justify-start lg:justify-center xl:justify-start space-x-4"
+            >
               <FavoriteButton
                 isFavorite={isFavorite}
                 onToggle={handleFavorite}
