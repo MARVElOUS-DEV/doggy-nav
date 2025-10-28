@@ -37,6 +37,7 @@
     "@eslint/eslintrc": "^3",
     "@next/bundle-analyzer": "^15.5.3",
     "@next/eslint-plugin-next": "^15.5.4",
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "npm:types-react@19.0.0-rc.1",

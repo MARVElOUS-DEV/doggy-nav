@@ -42,7 +42,7 @@ export default function MyApp({
     Component.getLayout ?? ((page: ReactElement) => <RootLayout>{page}</RootLayout>);
   return (
     <>
-      <ReactIf condition={process.env.ENABLE_VERCEL_STATISTIC === 'true'}>
+      <ReactIf condition={process.env.NEXT_PUBLIC_ENABLE_VERCEL_STATISTIC === 'true'}>
         <SpeedInsights />
       </ReactIf>
       <JotaiProvider>

@@ -42,6 +42,30 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    // Enable importing SVGs as React components
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: { and: [/\.(js|ts)x?$/] },
+      use: [
+        {
+          loader: '@svgr/webpack',
+          options: {
+            titleProp: true,
+            svgo: true,
+            // Make SVGs color-themable by CSS (optional, safe for icons)
+            svgoConfig: {
+              plugins: [
+                { name: 'preset-default' },
+                { name: 'removeAttrs', params: { attrs: '(fill|stroke)' } },
+              ],
+            },
+          },
+        },
+      ],
+    });
+    return config;
+  },
   // async rewrites() {
   //   // 只在开发环境启用代理
   //   if (process.env.NODE_ENV === 'development') {

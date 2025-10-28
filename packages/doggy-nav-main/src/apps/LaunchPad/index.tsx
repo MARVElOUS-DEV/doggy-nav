@@ -173,7 +173,10 @@ export default function Launchpad({ open, onClose, withinArea = true }: { open: 
   };
 
   if (!open) return null;
-  const rootClass = withinArea ? 'absolute inset-0 z-[85]' : 'fixed inset-0 z-[85]';
+  // When not withinArea, cover header bar and windows area, but leave dock clickable (bottom-24)
+  const rootClass = withinArea
+    ? 'absolute inset-0 z-[85]'
+    : 'fixed left-0 right-0 top-0 bottom-24 z-[85]';
 
   return (
     <div className={rootClass}>

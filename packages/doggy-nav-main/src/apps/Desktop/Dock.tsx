@@ -47,7 +47,7 @@ export default function Dock({ items }: { items: DockItem[] }) {
         ref={containerRef}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
-        className="pointer-events-auto glass-dark border border-theme-border rounded-2xl px-3 py-2 shadow-xl flex gap-2"
+        className="pointer-events-auto glass-dark rounded-2xl px-3 py-2 shadow-xl flex gap-2"
         style={{
           transform: `scale(${barScaleX}, ${barScaleY})`,
           transformOrigin: 'bottom center',
@@ -73,8 +73,7 @@ function DockButton({ item, mouseX }: { item: DockItem; mouseX: number | null })
   const base = 36; // px
   const { scale, lift } = useMemo(() => {
     const limit = base * 6;
-    if (!ref.current || mouseX == null)
-      return { scale: 1, lift: 0 };
+    if (!ref.current || mouseX == null) return { scale: 1, lift: 0 };
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const dx = mouseX - centerX; // >0 mouse on right side
@@ -91,7 +90,7 @@ function DockButton({ item, mouseX }: { item: DockItem; mouseX: number | null })
       type="button"
       aria-label={`Open ${item.label}`}
       onClick={item.onClick}
-      className="group relative inline-flex flex-col items-center gap-1 px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+      className="group relative inline-flex flex-col items-center gap-0 px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
       style={{ zIndex }}
     >
       <div
@@ -107,21 +106,22 @@ function DockButton({ item, mouseX }: { item: DockItem; mouseX: number | null })
         }}
       >
         {/* Tooltip */}
-        <div
-          className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <div className="px-2 py-1 rounded-md border border-theme-border shadow-xl glass-light dark:glass-dark text-xs whitespace-nowrap" style={{ color: 'var(--color-foreground)' }}>
+        <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div
+            className="px-2 py-1 rounded-md shadow-xl glass-light dark:glass-dark text-xs whitespace-nowrap"
+            style={{ color: 'var(--color-foreground)' }}
+          >
             {item.label}
           </div>
         </div>
         <Image src={item.iconSrc} alt={item.label} fill className="object-contain" />
+        {item.running && (
+          <span
+            className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+            style={{ backgroundColor: 'var(--color-foreground)', opacity: 0.85 }}
+          />
+        )}
       </div>
-      {item.running && (
-        <span
-          className="mt-0.5 block w-1.5 h-1.5 rounded-full"
-          style={{ backgroundColor: 'var(--color-foreground)', opacity: 0.85 }}
-        />
-      )}
     </button>
   );
 }

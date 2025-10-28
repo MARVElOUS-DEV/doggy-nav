@@ -6,7 +6,7 @@
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px) saturate(150%);
   -webkit-backdrop-filter: blur(10px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  /* border: 1px solid rgba(255, 255, 255, 0.3); */
 }
 
 .glass-medium {
@@ -20,7 +20,7 @@
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(15px) saturate(150%);
   -webkit-backdrop-filter: blur(15px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  /* border: 1px solid rgba(255, 255, 255, 0.3); */
 }
 
 .glass-card {
@@ -37,7 +37,7 @@
 /* Dark Mode Glassmorphism */
 .dark .glass-light {
   background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* border: 1px solid rgba(255, 255, 255, 0.1); */
 }
 
 .dark .glass-medium {
@@ -47,7 +47,7 @@
 
 .dark .glass-dark {
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* border: 1px solid rgba(255, 255, 255, 0.1); */
 }
 
 /* Color Utilities */
