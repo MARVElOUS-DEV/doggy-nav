@@ -31,7 +31,7 @@ export default () => {
     if (permission.require?.level === 'optional') {
       // In admin source, treat optional as authenticated + admin/sysadmin role
       if (ctx.state.requestSource === 'admin') {
-        const authResult = await authenticateWithRefresh(ctx);
+        const authResult = await accessTokenVerify(ctx);
         if (!authResult.authenticated) return respond(ctx, 401, authResult.error || '需要身份验证');
         const user = ctx.state.userinfo as AuthUserContext | undefined;
         const eff =
@@ -45,12 +45,12 @@ export default () => {
         }
         return await next();
       }
-      await authenticateWithRefresh(ctx); // best-effort for main
+      await accessTokenVerify(ctx);
       return await next();
     }
 
     // 5.authenticated/admin
-    const authResult = await authenticateWithRefresh(ctx);
+    const authResult = await accessTokenVerify(ctx);
     if (!hasAccess(permission, ctx.state.userinfo as AuthUserContext | undefined)) {
       if (authResult.authenticated) return respond(ctx, 403, '权限不足');
       return respond(ctx, 401, authResult.error || '需要身份验证');
@@ -109,7 +109,7 @@ function matchesBypass(url: string, routes: string[]) {
   });
 }
 
-async function authenticateWithRefresh(ctx: any) {
+async function accessTokenVerify(ctx: any) {
   const bearer = ctx.headers.authorization ? ctx.headers.authorization : '';
   let token: string | null = null;
   if (bearer && bearer.startsWith('Bearer ')) token = bearer.substring(7);
@@ -140,7 +140,5 @@ async function authenticateWithRefresh(ctx: any) {
       ctx.logger.debug('JWT auth (access) error:', err);
     }
   }
-
-  // Do not auto-refresh here anymore; use explicit /api/auth/refresh endpoint
   return { authenticated: false, error: token ? 'token失效或解析错误' : '未提供认证信息' };
 }

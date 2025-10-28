@@ -70,7 +70,19 @@ export default class AuthController extends CommonController {
       return;
     }
 
-    const user = ctx.user;
+    // egg-passport may attach the authenticated user on ctx.user, ctx.state.user, or ctx.req.user when session=false
+    /**
+     *  Session true vs false (trade-offs)
+    •  session: true
+    •  Pros: Passport auto-populates ctx.user across middleware/handlers.
+    •  Cons: Introduces server-side state (needs session store/sticky sessions), more cookies/CSRF surface, subdomain/domain
+        config headaches, duplicates your JWT flow and can create conflicting auth sources.
+    •  session: false
+    •  Pros: Stateless (easier to scale), matches your JWT-based design (setAuthCookies, X-App-Source), one source of truth.
+    •  Cons: User only lives on req.user during callback, so you must read ctx.req.user (we added fallbacks).
+     */
+    // if session is set false, passport will not serialize user into session, so we need to get user from ctx.req.user
+    const user = (ctx as any).user || (ctx as any).state?.user || (ctx as any).req?.user;
     if (!user) {
       ctx.logger.warn('[oauth/callback] no user on context after passport', {
         provider: ctx.params.provider,

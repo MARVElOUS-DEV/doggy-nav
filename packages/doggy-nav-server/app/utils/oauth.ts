@@ -29,13 +29,20 @@ export function listProviders(app: Application): ProviderSpec[] {
       name: 'github',
       Strategy: GitHubStrategy,
       config: oauthConfig?.github,
-      enabled: !!(oauthConfig?.github?.clientID && oauthConfig?.github?.clientSecret && oauthConfig?.github?.callbackURL),
+      enabled: !!(
+        oauthConfig?.github?.clientID &&
+        oauthConfig?.github?.clientSecret &&
+        oauthConfig?.github?.callbackURL
+      ),
       mapProfile: (profile) => ({
         provider: 'github',
         providerId: profile.id,
         username: profile.username,
         displayName: profile.displayName,
-        emails: (profile.emails || []).map((e: any) => ({ value: e?.value, verified: e?.verified })),
+        emails: (profile.emails || []).map((e: any) => ({
+          value: e?.value,
+          verified: e?.verified,
+        })),
         avatar: profile.photos?.[0]?.value,
         raw: profile,
       }),
@@ -44,13 +51,20 @@ export function listProviders(app: Application): ProviderSpec[] {
       name: 'google',
       Strategy: GoogleStrategy,
       config: oauthConfig?.google,
-      enabled: !!(oauthConfig?.google?.clientID && oauthConfig?.google?.clientSecret && oauthConfig?.google?.callbackURL),
+      enabled: !!(
+        oauthConfig?.google?.clientID &&
+        oauthConfig?.google?.clientSecret &&
+        oauthConfig?.google?.callbackURL
+      ),
       mapProfile: (profile) => ({
         provider: 'google',
         providerId: profile.id,
         username: profile.displayName,
         displayName: profile.displayName,
-        emails: (profile.emails || []).map((e: any) => ({ value: e?.value, verified: e?.verified })),
+        emails: (profile.emails || []).map((e: any) => ({
+          value: e?.value,
+          verified: e?.verified,
+        })),
         avatar: profile.photos?.[0]?.value,
         raw: profile,
       }),
@@ -59,18 +73,23 @@ export function listProviders(app: Application): ProviderSpec[] {
       name: 'linuxdo',
       Strategy: LinuxDoStrategy,
       config: oauthConfig?.linuxdo,
-      enabled: !!(oauthConfig?.linuxdo?.clientID &&
+      enabled: !!(
+        oauthConfig?.linuxdo?.clientID &&
         oauthConfig?.linuxdo?.clientSecret &&
         oauthConfig?.linuxdo?.callbackURL &&
         oauthConfig?.linuxdo?.authorizationURL &&
         oauthConfig?.linuxdo?.tokenURL &&
-        oauthConfig?.linuxdo?.userProfileURL),
+        oauthConfig?.linuxdo?.userProfileURL
+      ),
       mapProfile: (profile) => ({
         provider: 'linuxdo',
         providerId: profile.id,
         username: profile.username ?? profile.displayName ?? 'linuxdo',
         displayName: profile.displayName ?? profile.username ?? 'LinuxDo User',
-        emails: (profile.emails || []).map((e: any) => ({ value: e?.value, verified: e?.verified })),
+        emails: (profile.emails || []).map((e: any) => ({
+          value: e?.value,
+          verified: e?.verified,
+        })),
         avatar: profile.photos?.[0]?.value,
         raw: profile._json ?? profile,
       }),
@@ -79,7 +98,9 @@ export function listProviders(app: Application): ProviderSpec[] {
 }
 
 export function getEnabledProviders(app: Application): ProviderName[] {
-  return listProviders(app).filter(p => p.enabled).map(p => p.name);
+  return listProviders(app)
+    .filter((p) => p.enabled)
+    .map((p) => p.name);
 }
 
 export function isProviderEnabled(app: Application, provider: string): provider is ProviderName {
@@ -100,24 +121,29 @@ export function registerOAuthStrategies(app: Application) {
       continue;
     }
 
-    passport.use(new p.Strategy(p.config, async (
-      _accessToken: string,
-      _refreshToken: string,
-      profile: any,
-      done: (err: any, user?: any, info?: any) => void,
-    ) => {
-      try {
-        const ctx = app.createAnonymousContext();
-        const user = await ctx.service.user.findOrCreateFromProvider(p.mapProfile(profile));
-        return done(null, user);
-      } catch (error) {
-        if (error instanceof ConflictError) {
-          return done(null, false, { message: (error as Error).message, code: 'conflict' });
+    passport.use(
+      new p.Strategy(
+        p.config,
+        async (
+          _accessToken: string,
+          _refreshToken: string,
+          profile: any,
+          done: (err: any, user?: any, info?: any) => void
+        ) => {
+          try {
+            const ctx = app.createAnonymousContext();
+            const user = await ctx.service.user.findOrCreateFromProvider(p.mapProfile(profile));
+            return done(null, user);
+          } catch (error) {
+            if (error instanceof ConflictError) {
+              return done(null, false, { message: (error as Error).message, code: 'conflict' });
+            }
+            logger.error(`[oauth:${p.name}] Failed to process profile`, error);
+            return done(error as Error);
+          }
         }
-        logger.error(`[oauth:${p.name}] Failed to process profile`, error);
-        return done(error as Error);
-      }
-    }));
+      )
+    );
   }
 
   passport.verify(async (_ctx: any, user: any) => user);
