@@ -1,18 +1,35 @@
-import type { ReactNode } from 'react';
-import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import request from '@/utils/request';
+import {
+  CheckOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+} from '@ant-design/icons';
+import { PageContainer, PageContainerProps } from '@ant-design/pro-layout';
 import type { ProColumns, ProTableProps } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { PageContainer, PageContainerProps } from '@ant-design/pro-layout';
-import { Dropdown, Menu, Tooltip, Button } from 'antd';
-import { EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, MoreOutlined } from '@ant-design/icons';
-import request from "@/utils/request";
+import { Button, Dropdown, Menu, Tooltip } from 'antd';
+import type { ReactNode } from 'react';
+import React, {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 interface TableComProps extends ProTableProps<any, any> {
   showPageHeader?: boolean;
   PageContainerProps?: PageContainerProps;
   requestParams?: any;
-  defaultRequestData?: object
-  renderOptions?: (text: ReactNode, record: any, _: any, action: any) => ReactNode[];
+  defaultRequestData?: object;
+  renderOptions?: (
+    text: ReactNode,
+    record: any,
+    _: any,
+    action: any,
+  ) => ReactNode[];
 }
 
 function TableCom(props: TableComProps, ref: any) {
@@ -35,11 +52,13 @@ function TableCom(props: TableComProps, ref: any) {
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   async function onRequest(
-    params: any
+    params: any,
   ): Promise<Partial<{ data: any[]; total: number; success: boolean }>> {
     if (mountedRef.current) setLoading(true);
     try {
@@ -94,11 +113,22 @@ function TableCom(props: TableComProps, ref: any) {
             // Detect common operation texts and assign appropriate icons
             if (children.includes('编辑') || children.includes('Edit')) {
               icon = <EditOutlined />;
-            } else if (children.includes('删除') || children.includes('Delete')) {
+            } else if (
+              children.includes('删除') ||
+              children.includes('Delete')
+            ) {
               icon = <DeleteOutlined />;
-            } else if (children.includes('通过') || children.includes('Approve') || children.includes('Yes')) {
+            } else if (
+              children.includes('通过') ||
+              children.includes('Approve') ||
+              children.includes('Yes')
+            ) {
               icon = <CheckOutlined />;
-            } else if (children.includes('拒绝') || children.includes('Reject') || children.includes('No')) {
+            } else if (
+              children.includes('拒绝') ||
+              children.includes('Reject') ||
+              children.includes('No')
+            ) {
               icon = <CloseOutlined />;
             } else {
               // If no specific icon detected, return original element
@@ -118,13 +148,13 @@ function TableCom(props: TableComProps, ref: any) {
 
             // Return the original wrapper (like Popconfirm) with the new button as children
             return React.cloneElement(element, {
-              children: buttonElement
+              children: buttonElement,
             });
           }
           // If children is also a React element, recursively process it
           else if (React.isValidElement(children)) {
             return React.cloneElement(element, {
-              children: convertToIconButton(children)
+              children: convertToIconButton(children),
             });
           }
         }
@@ -140,9 +170,17 @@ function TableCom(props: TableComProps, ref: any) {
           icon = <EditOutlined />;
         } else if (option.includes('删除') || option.includes('Delete')) {
           icon = <DeleteOutlined />;
-        } else if (option.includes('通过') || option.includes('Approve') || option.includes('Yes')) {
+        } else if (
+          option.includes('通过') ||
+          option.includes('Approve') ||
+          option.includes('Yes')
+        ) {
           icon = <CheckOutlined />;
-        } else if (option.includes('拒绝') || option.includes('Reject') || option.includes('No')) {
+        } else if (
+          option.includes('拒绝') ||
+          option.includes('Reject') ||
+          option.includes('No')
+        ) {
           icon = <CloseOutlined />;
         } else {
           // If no specific icon detected, return as a simple text button
@@ -175,7 +213,7 @@ function TableCom(props: TableComProps, ref: any) {
     };
 
     if (options.length >= maxCount) {
-      const moreOptions = options.splice(maxCount-1);
+      const moreOptions = options.splice(maxCount - 1);
 
       return [
         ...options.map((option, index) => (
@@ -213,20 +251,31 @@ function TableCom(props: TableComProps, ref: any) {
     ));
   }
 
-  const realColumns  = useMemo<ProColumns[]>(() => {
+  const realColumns = useMemo<ProColumns[]>(() => {
     // Process columns to add height restrictions, ellipsis, and optimized widths
     const processedColumns = columns.map((column: ProColumns) => {
       // Determine optimized width based on column type
       let optimizedWidth = column.width;
       if (!optimizedWidth) {
         // Set default widths based on common column types
-        if (column.dataIndex === 'createTime' || column.dataIndex === 'updateTime' || column.valueType === 'dateTime' || column.valueType === 'date') {
+        if (
+          column.dataIndex === 'createTime' ||
+          column.dataIndex === 'updateTime' ||
+          column.valueType === 'dateTime' ||
+          column.valueType === 'date'
+        ) {
           optimizedWidth = 180; // DateTime columns need more space
         } else if (column.dataIndex === 'status') {
           optimizedWidth = 100; // Status columns are usually compact
-        } else if (column.dataIndex === 'name' || column.dataIndex === 'title') {
+        } else if (
+          column.dataIndex === 'name' ||
+          column.dataIndex === 'title'
+        ) {
           optimizedWidth = 200; // Name columns often need moderate space
-        } else if (column.dataIndex === 'desc' || column.dataIndex === 'description') {
+        } else if (
+          column.dataIndex === 'desc' ||
+          column.dataIndex === 'description'
+        ) {
           optimizedWidth = 300; // Description columns need more space but will be truncated
         } else {
           optimizedWidth = 150; // Default width for most columns
@@ -234,23 +283,39 @@ function TableCom(props: TableComProps, ref: any) {
       }
 
       // Only apply height restriction to text-based columns
-      if (!column.valueType || ['text', 'textarea', 'select', undefined].includes(column.valueType as string)) {
+      if (
+        !column.valueType ||
+        ['text', 'textarea', 'select', undefined].includes(
+          column.valueType as string,
+        )
+      ) {
         return {
           ...column,
           width: optimizedWidth,
           ellipsis: column.ellipsis ?? true,
-          render: (dom: any, record: any, index: number, action: any, schema: any) => {
+          render: (
+            dom: any,
+            record: any,
+            index: number,
+            action: any,
+            schema: any,
+          ) => {
             // Original render function if exists
-            const originalRender = typeof column.render === 'function'
-              ? column.render(dom, record, index, action, schema)
-              : dom;
+            const originalRender =
+              typeof column.render === 'function'
+                ? column.render(dom, record, index, action, schema)
+                : dom;
 
             // If it's a string or number and needs ellipsis (but not for specific value types like progress bars)
-            if ((typeof originalRender === 'string' || typeof originalRender === 'number') &&
-                column.valueType !== 'progress' &&
-                column.valueType !== 'image' &&
-                column.valueType !== 'avatar' &&
-                !column.render) { // Only apply to default renders, not custom ones
+            if (
+              (typeof originalRender === 'string' ||
+                typeof originalRender === 'number') &&
+              column.valueType !== 'progress' &&
+              column.valueType !== 'image' &&
+              column.valueType !== 'avatar' &&
+              !column.render
+            ) {
+              // Only apply to default renders, not custom ones
               const content = String(originalRender);
               // Create a div with max-height and overflow to restrict to 2 lines
               return (
@@ -263,7 +328,7 @@ function TableCom(props: TableComProps, ref: any) {
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
-                      lineHeight: '20px'
+                      lineHeight: '20px',
                     }}
                   >
                     {content}
@@ -272,13 +337,13 @@ function TableCom(props: TableComProps, ref: any) {
               );
             }
             return originalRender;
-          }
+          },
         };
       } else {
         // For non-text columns, just set optimized width
         return {
           ...column,
-          width: optimizedWidth
+          width: optimizedWidth,
         };
       }
     });
@@ -291,9 +356,10 @@ function TableCom(props: TableComProps, ref: any) {
           valueType: 'option',
           width: 150,
           fixed: 'right',
-          render: (text, record, _, action)=> formatOptions(renderOptions(text, record, _, action))
-        }
-      ]
+          render: (text, record, _, action) =>
+            formatOptions(renderOptions(text, record, _, action)),
+        },
+      ];
     }
     return processedColumns;
   }, [renderOptions, columns]);
@@ -315,18 +381,18 @@ function TableCom(props: TableComProps, ref: any) {
       formRef={from}
       request={mergedTableProps.request || onRequest}
       rowSelection={{ type: 'checkbox' }}
-      rowKey={'_id'}
+      rowKey={'id'}
       {...mergedTableProps}
     />
   );
 
   if (!showPageHeader) {
     return (
-    <>
-      {proTable}
-      {children}
-    </>
-  );
+      <>
+        {proTable}
+        {children}
+      </>
+    );
   }
 
   return (

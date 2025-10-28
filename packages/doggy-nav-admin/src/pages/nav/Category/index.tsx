@@ -1,5 +1,6 @@
 import TableCom from '@/components/TableCom';
 import useTableComPopup from '@/components/TableCom/useTableComPopup';
+import { GLOBAL_CATEGORY_ID, GLOBAL_CATEGORY_NAME } from '@/constants';
 import CategoryForm from '@/pages/nav/Category/CategoryForm';
 import { API_CATEGORY, API_CATEGORY_LIST } from '@/services/api';
 import { CategoryModel } from '@/types/api';
@@ -37,7 +38,15 @@ export default function NavAuditListPage() {
       method: 'GET',
     });
     const data = transformCategoryList(res.data);
-    setCategoryList(data);
+    const allCates = [
+      {
+        key: GLOBAL_CATEGORY_ID,
+        id: GLOBAL_CATEGORY_ID,
+        name: GLOBAL_CATEGORY_NAME,
+        value: GLOBAL_CATEGORY_ID,
+      },
+    ].concat(data);
+    setCategoryList(allCates);
     return {
       data,
     };

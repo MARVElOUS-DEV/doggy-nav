@@ -74,6 +74,7 @@ export default function CategoryForm(props: CategoryFormProps) {
     name: 'categoryId',
     label: '父级分类',
     width: 'sm',
+    required: true,
   });
   const categoryIconProps = useProFormItem({
     name: 'icon',
@@ -125,11 +126,7 @@ export default function CategoryForm(props: CategoryFormProps) {
           [],
         )}
       />
-      <ProFormItem
-        name="icon"
-        label={categoryIconProps.label}
-        rules={[{ required: categoryIconProps.required }]}
-      >
+      <ProFormItem {...categoryIconProps}>
         <IconPicker placeholder="选择分类图标" />
       </ProFormItem>
       <ProFormSwitch {...showMenuProps} />

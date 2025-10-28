@@ -21,7 +21,12 @@ export default class LinuxDoStrategy extends OAuth2Strategy {
 
   constructor(
     options: LinuxDoStrategyOptions,
-    verify: (accessToken: string, refreshToken: string, profile: any, done: OAuthVerifyCallback) => void,
+    verify: (
+      accessToken: string,
+      refreshToken: string,
+      profile: any,
+      done: OAuthVerifyCallback
+    ) => void
   ) {
     const { userProfileURL, ...rest } = options;
     super(rest, verify as any);
@@ -41,11 +46,12 @@ export default class LinuxDoStrategy extends OAuth2Strategy {
       }
 
       try {
-        const json: LinuxDoProfile = typeof body === 'string' ? JSON.parse(body) : JSON.parse(body.toString());
+        const json: LinuxDoProfile =
+          typeof body === 'string' ? JSON.parse(body) : JSON.parse(body.toString());
         const profile: any = {
           provider: 'linuxdo',
-          id: json.id ?? json.user_id ?? json.uid ?? null,
-          username: json.username ?? json.login ?? json.name ?? null,
+          id: json.id ?? null,
+          username: json.username ?? json.name ?? null,
           displayName: json.name ?? json.username ?? null,
           emails: Array.isArray(json.emails)
             ? json.emails
