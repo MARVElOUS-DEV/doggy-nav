@@ -90,28 +90,34 @@ doggy-nav/
 │   └── doggy-nav-admin/    # UmiJS admin panel
 ├── deploy/                 # Deployment configurations
 ├── scripts/                # Build and deployment scripts
-├── .github/workflows/      # GitHub Actions CI/CD
 └── docs/                   # Documentation
 ```
 
 ## 📦 Quick Start
 
-### ⚡ One-Click Docker Deployment
+### ⚡ Quick Start with Docker (CI images — recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/MARVElOUS-DEV/doggy-nav.git
 cd doggy-nav
 
-# Start with Docker Compose
-cp .env.docker.example .env
-docker-compose up -d
+# Use prebuilt images from CI (defaults: ghcr.io/MARVElOUS-DEV, tag=latest)
+cp deploy/.env.example deploy/.env   # optional, edit to customize
+docker compose up -d
 
 # Access the applications
 echo "🎉 Doggy Nav is running!"
 echo "Frontend: http://localhost:3001"
 echo "Backend API: http://localhost:3002"
 echo "Admin Panel: http://localhost:8080"
+```
+
+Alternative: build images locally
+
+```bash
+cp .env.docker.example .env
+docker compose -f deploy/docker-compose-init-prod.yml up -d --build
 ```
 
 ### 🛠 Development Setup
@@ -151,6 +157,25 @@ pnpm admin:dev     # Admin Panel (Terminal 3)
 - **Admin Panel**: http://localhost:3000 (UmiJS default)
 
 ## 🐳 Docker Deployment
+
+### ⚡ One‑key deploy (prebuilt CI images)
+
+Use the prebuilt images published by CI to GHCR.
+
+```bash
+# From repo root (uses ghcr.io/MARVElOUS-DEV images, tag=latest by default)
+docker compose up -d
+
+# Pin to a specific release tag or SHA (recommended for production)
+IMAGE_TAG=v1.2.3 docker compose up -d
+IMAGE_TAG=sha-<shortsha> docker compose up -d
+```
+
+Notes:
+
+- Default tag is `latest` (tracks default branch builds). For production, pin to release tags (e.g., `v1.2.3`) or `sha-...`.
+- To customize registry/namespace: set `IMAGE_REGISTRY`, `IMAGE_NAMESPACE`, `IMAGE_TAG` envs.
+- Backend secrets: set `JWT_SECRET` (>=32 chars). See `deploy/.env.example` for all knobs.
 
 ### 🎯 Production Deployment
 
@@ -216,11 +241,11 @@ The application uses MongoDB with automatic initialization:
 
 ```bash
 # Using Docker (Recommended)
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f deploy/docker-compose-db.yml up -d
 
 # Manual MongoDB setup
 mongosh
-use doggy_nav
+use navigation
 # Database will be initialized automatically on first run
 ```
 
@@ -326,7 +351,7 @@ vercel --prod
 
 ```bash
 # Deploy to any Docker-compatible platform
-docker-compose up -d
+docker compose -f deploy/docker-compose-init-prod.yml up -d --build
 
 # Or use our deployment script
 ./scripts/deploy.sh docker
