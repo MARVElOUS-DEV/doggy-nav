@@ -32,8 +32,20 @@ print_header() {
 # Configuration
 DEPLOYMENT_TYPE=${1:-"staging"}
 BUILD_DIR="./build"
+# Registry settings (align with compose files)
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-"ghcr.io"}
-IMAGE_TAG=${GITHUB_SHA:-$(git rev-parse --short HEAD)}
+IMAGE_NAMESPACE=${IMAGE_NAMESPACE:-"MARVElOUS-DEV"}
+IMAGE_TAG=${IMAGE_TAG:-"latest"}
+
+# Detect compose command (docker compose preferred)
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE_CMD="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE_CMD="docker-compose"
+else
+  print_error "Docker Compose not found (need docker compose or docker-compose)"
+  exit 1
+fi
 
 print_header "Starting deployment for: $DEPLOYMENT_TYPE"
 
@@ -58,28 +70,17 @@ validate_environment() {
     esac
 }
 
-# Build applications
-build_applications() {
-    print_status "Building applications..."
-
-    # Install dependencies
-    print_status "Installing dependencies..."
-    pnpm install --frozen-lockfile
-
-    # Build all packages
-    print_status "Building all packages..."
-    pnpm build
-
-    print_status "✅ Build completed successfully"
+# Local build helper (only for docker mode)
+build_local_images() {
+    print_status "Building Docker images locally..."
+    bash scripts/docker-build.sh
 }
 
 # Deploy to staging
 deploy_staging() {
     print_header "Deploying to staging environment"
 
-    # Build Docker images
-    print_status "Building Docker images..."
-    docker-compose -f docker-compose.yml build
+    # Pull and start Compose stack (local or remote)
 
     # Deploy to staging server
     print_status "Deploying to staging server..."
@@ -89,21 +90,39 @@ deploy_staging() {
         # Using docker-compose on remote server
         print_status "Deploying via docker-compose to $STAGING_SERVER"
 
-        # Copy docker-compose files
-        scp docker-compose.yml .env.docker.example $STAGING_SERVER:/opt/doggy-nav/
+        # Ensure remote directory exists
+        ssh $STAGING_SERVER 'mkdir -p /opt/doggy-nav'
+
+        # Copy compose and env files (compose uses registry images)
+        scp deploy/docker-compose-prod.yml $STAGING_SERVER:/opt/doggy-nav/docker-compose.yml
+        if [[ -f deploy/.env ]]; then
+          scp deploy/.env $STAGING_SERVER:/opt/doggy-nav/.env
+        else
+          scp deploy/.env.example $STAGING_SERVER:/opt/doggy-nav/.env.example
+        fi
 
         # Deploy on remote server
         ssh $STAGING_SERVER << 'EOF'
+            set -e
             cd /opt/doggy-nav
-            cp .env.docker.example .env
-            docker-compose pull
-            docker-compose up -d
-            docker-compose ps
+            if command -v docker compose >/dev/null 2>&1; then C="docker compose"; else C="docker-compose"; fi
+            # Use provided .env or fallback to example
+            if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
+            $C pull
+            $C up -d
+            $C ps
+            # Initialize categories (idempotent)
+            set +e
+            $C exec -T server node utils/initCategories.js || true
 EOF
     else
         print_warning "STAGING_SERVER not configured, running locally"
-        cp .env.docker.example .env
-        docker-compose up -d
+        $COMPOSE_CMD pull || true
+        $COMPOSE_CMD up -d
+        # Initialize categories locally (idempotent)
+        set +e
+        $COMPOSE_CMD exec -T server node utils/initCategories.js || print_warning "Category init skipped or already done"
+        set -e
     fi
 
     print_status "✅ Staging deployment completed"
@@ -113,56 +132,55 @@ EOF
 deploy_production() {
     print_header "Deploying to production environment"
 
-    # Additional validation for production
     if [[ -z "$PRODUCTION_SERVER" ]]; then
         print_error "PRODUCTION_SERVER environment variable not set"
         exit 1
     fi
 
-    # Build and tag Docker images for production
-    print_status "Building production Docker images..."
-
-    docker build -f Dockerfile-Main -t $DOCKER_REGISTRY/doggy-nav-frontend:$IMAGE_TAG .
-    docker build -f Dockerfile-Server -t $DOCKER_REGISTRY/doggy-nav-backend:$IMAGE_TAG .
-    docker build -f Dockerfile-Admin -t $DOCKER_REGISTRY/doggy-nav-admin:$IMAGE_TAG .
-
-    # Push images to registry
-    if [[ -n "$DOCKER_REGISTRY" ]]; then
-        print_status "Pushing images to registry..."
-        docker push $DOCKER_REGISTRY/doggy-nav-frontend:$IMAGE_TAG
-        docker push $DOCKER_REGISTRY/doggy-nav-backend:$IMAGE_TAG
-        docker push $DOCKER_REGISTRY/doggy-nav-admin:$IMAGE_TAG
-    fi
-
-    # Deploy to production server
     print_status "Deploying to production server: $PRODUCTION_SERVER"
 
     # Create deployment script for remote execution
     cat > deploy-remote.sh << EOF
 #!/bin/bash
 cd /opt/doggy-nav
-export IMAGE_TAG=$IMAGE_TAG
-export DOCKER_REGISTRY=$DOCKER_REGISTRY
+set -e
+export IMAGE_TAG="$IMAGE_TAG"
+export IMAGE_REGISTRY="$DOCKER_REGISTRY"
+export IMAGE_NAMESPACE="$IMAGE_NAMESPACE"
 
-# Pull latest images
-docker pull \$DOCKER_REGISTRY/doggy-nav-frontend:\$IMAGE_TAG
-docker pull \$DOCKER_REGISTRY/doggy-nav-backend:\$IMAGE_TAG
-docker pull \$DOCKER_REGISTRY/doggy-nav-admin:\$IMAGE_TAG
+if command -v docker compose >/dev/null 2>&1; then C="docker compose"; else C="docker-compose"; fi
 
-# Update docker-compose with new image tags
-sed -i "s|image: .*doggy-nav-frontend.*|image: \$DOCKER_REGISTRY/doggy-nav-frontend:\$IMAGE_TAG|g" docker-compose.yml
-sed -i "s|image: .*doggy-nav-backend.*|image: \$DOCKER_REGISTRY/doggy-nav-backend:\$IMAGE_TAG|g" docker-compose.yml
-sed -i "s|image: .*doggy-nav-admin.*|image: \$DOCKER_REGISTRY/doggy-nav-admin:\$IMAGE_TAG|g" docker-compose.yml
+# Ensure compose and env files exist
+if [ ! -f docker-compose.yml ]; then
+  echo "docker-compose.yml not found" >&2
+  exit 1
+fi
+if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
 
-# Rolling update
-docker-compose up -d
-docker-compose ps
-docker system prune -f
+# Pull and roll out
+\$C pull
+\$C up -d
+\$C ps
+docker system prune -f || true
+
+# Initialize categories (idempotent)
+set +e
+\$C exec -T server node utils/initCategories.js || true
+set -e
 
 echo "Production deployment completed successfully"
 EOF
 
     # Copy and execute deployment script
+    # Ensure remote dir and base files
+    ssh $PRODUCTION_SERVER 'mkdir -p /opt/doggy-nav'
+    scp deploy/docker-compose-prod.yml $PRODUCTION_SERVER:/opt/doggy-nav/docker-compose.yml
+    if [[ -f deploy/.env ]]; then
+      scp deploy/.env $PRODUCTION_SERVER:/opt/doggy-nav/.env
+    else
+      scp deploy/.env.example $PRODUCTION_SERVER:/opt/doggy-nav/.env.example
+    fi
+
     scp deploy-remote.sh $PRODUCTION_SERVER:/tmp/
     ssh $PRODUCTION_SERVER "chmod +x /tmp/deploy-remote.sh && /tmp/deploy-remote.sh"
 
@@ -176,14 +194,13 @@ EOF
 deploy_docker() {
     print_header "Docker deployment"
 
-    # Build images
-    print_status "Building Docker images..."
-    bash scripts/docker-build.sh
+    # Build images via compose (uses Dockerfiles in repo)
+    print_status "Building and starting stack via compose..."
 
     # Start services
     print_status "Starting Docker services..."
     cp .env.docker.example .env
-    docker-compose up -d
+    $COMPOSE_CMD -f deploy/docker-compose-init-prod.yml up -d --build
 
     # Wait for services to be ready
     print_status "Waiting for services to be ready..."
@@ -213,6 +230,11 @@ deploy_docker() {
         print_error "❌ Admin panel health check failed"
     fi
 
+    # Initialize categories locally (idempotent)
+    set +e
+    $COMPOSE_CMD -f deploy/docker-compose-init-prod.yml exec -T server node utils/initCategories.js || print_warning "Category init skipped or already done"
+    set -e
+
     print_status "✅ Docker deployment completed"
     print_status "Access URLs:"
     print_status "  Frontend: http://localhost:3001"
@@ -236,7 +258,6 @@ rollback() {
 # Main deployment flow
 main() {
     validate_environment
-    build_applications
 
     case $DEPLOYMENT_TYPE in
         "staging")
@@ -264,8 +285,9 @@ case "${1:-}" in
         echo "Environment variables:"
         echo "  STAGING_SERVER    - Staging server hostname"
         echo "  PRODUCTION_SERVER - Production server hostname"
-        echo "  DOCKER_REGISTRY   - Docker registry URL"
-        echo "  IMAGE_TAG         - Docker image tag (default: git SHA)"
+        echo "  DOCKER_REGISTRY   - Docker registry URL (default: ghcr.io)"
+        echo "  IMAGE_NAMESPACE   - Registry namespace (default: MARVElOUS-DEV)"
+        echo "  IMAGE_TAG         - Docker image tag (default: latest)"
         exit 0
         ;;
     *)

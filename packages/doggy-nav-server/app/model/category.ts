@@ -35,7 +35,7 @@ export default function (app: any) {
         default: true,
       },
       audience: {
-        visibility: { type: String, enum: ['public', 'authenticated', 'cate'], default: 'public' },
+        visibility: { type: String, enum: ['public', 'authenticated', 'restricted'], default: 'public' },
         allowRoles: [{ type: Schema.Types.ObjectId, ref: 'Role', default: [] }],
         allowGroups: [{ type: Schema.Types.ObjectId, ref: 'Group', default: [] }],
       },
