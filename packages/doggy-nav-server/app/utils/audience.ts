@@ -123,10 +123,17 @@ export function buildAudienceFilterEx(
         ? ctxUser!.roles!
         : [];
   const source = (ctxUser as any)?.source === 'admin' ? 'admin' : 'main';
+  // sysadmin can access everything (including visibility='hide')
   if (roles.includes('sysadmin')) return base && Object.keys(base).length ? base : {};
+
+  // For non-sysadmin, always exclude visibility='hide'
+  const notHide = { [`${fieldPath}.visibility`]: { $ne: 'hide' } } as Record<string, any>;
+
   if (source === 'main' && roles.includes('viewer')) {
     const open = openPublicOnly(fieldPath);
-    return Object.keys(base).length ? { $and: [base, open] } : open;
+    const q = Object.keys(base).length ? { $and: [base, open] } : open;
+    return { $and: [q, notHide] };
   }
-  return buildAudienceFilter(base, ctxUser);
+  const q = buildAudienceFilter(base, ctxUser);
+  return { $and: [q, notHide] };
 }

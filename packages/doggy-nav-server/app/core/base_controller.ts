@@ -1,4 +1,4 @@
-import { buildAudienceFilter } from '../utils/audience';
+import { buildAudienceFilterEx } from '../utils/audience';
 import { Controller } from 'egg';
 import { ValidationError } from './errors';
 
@@ -201,7 +201,7 @@ export default class CommonController extends Controller {
     const tableName = this.tableName();
     const safeRandomNumber = Math.min(Math.max(Number(randomNumber) || 10, 1), 50);
 
-    // Add filtering based on authentication and hide field for Nav model
+    // Add filtering based on authentication and audience visibility for Nav model
     const pipeline: any[] = [];
 
     if (tableName === 'Nav') {
@@ -213,7 +213,7 @@ export default class CommonController extends Controller {
         matchQuery.status = 0; // NAV_STATUS.pass
       }
 
-      const finalMatch = buildAudienceFilter(matchQuery, userCtx);
+      const finalMatch = buildAudienceFilterEx(matchQuery, userCtx);
       pipeline.push({ $match: finalMatch });
     }
 

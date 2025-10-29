@@ -148,6 +148,7 @@ export default function NavListForm(props: NavListFormProps) {
           public: '公开',
           authenticated: '登录可见',
           restricted: '受限（指定角色/用户组）',
+          hide: '隐藏（任何端不展示）',
         }}
         initialValue={'public'}
       />

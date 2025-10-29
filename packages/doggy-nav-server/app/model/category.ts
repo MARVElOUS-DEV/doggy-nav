@@ -10,11 +10,6 @@ export default function (app: any) {
       categoryId: String,
       description: String,
       createAt: Number, // Chrome time number
-      // Whether to hide in the navigation contents
-      hide: {
-        type: Boolean,
-        default: false,
-      },
       icon: {
         type: String,
         default: '',
@@ -35,7 +30,7 @@ export default function (app: any) {
         default: true,
       },
       audience: {
-        visibility: { type: String, enum: ['public', 'authenticated', 'restricted'], default: 'public' },
+        visibility: { type: String, enum: ['public', 'authenticated', 'restricted', 'hide'], default: 'public' },
         allowRoles: [{ type: Schema.Types.ObjectId, ref: 'Role', default: [] }],
         allowGroups: [{ type: Schema.Types.ObjectId, ref: 'Group', default: [] }],
       },
