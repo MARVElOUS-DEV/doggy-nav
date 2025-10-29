@@ -176,6 +176,7 @@
   "website_description": "📄 Website Description",
   "enter_website_description": "Brief website description, within 15 words",
   "website_category": "📂 Website Category",
+  "website_group": "👥 Group",
   "select": "Please select",
   "website_tags": "🏷️ Website tags",
   "enter_website_tags": "Enter website tags, up to 5",

@@ -1,60 +1,93 @@
-'use client'
-import { useState } from 'react'
-import {
-  Form,
-  Input,
-  Select,
-  Button,
-  Message,
-  Spin,
-} from '@arco-design/web-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import axios from '@/utils/axios'
-import { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api'
-import { useAtomValue } from 'jotai'
-import { RecommendFormValues } from '@/types'
-import { categoriesAtom, tagsAtom } from '@/store/store'
-import { useTranslation } from 'react-i18next'
+'use client';
+import { useEffect, useState } from 'react';
+import { Form, Input, Select, Button, Message, Spin } from '@arco-design/web-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import axios from '@/utils/axios';
+import { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api';
+import { useAtomValue } from 'jotai';
+import { RecommendFormValues } from '@/types';
+import { categoriesAtom, tagsAtom, isAuthenticatedAtom } from '@/store/store';
+import { useTranslation } from 'react-i18next';
+import { OVERVIEW } from '@/utils/localCategories';
 
-const FormItem = Form.Item
+const FormItem = Form.Item;
 
 export default function Recommend() {
-  const [loading, setLoading] = useState(false)
-  const [formLoading, setFormLoading] = useState(false)
-  const categories = useAtomValue(categoriesAtom)
-  const tags = useAtomValue(tagsAtom)
-  const [form] = Form.useForm()
-  const { t } = useTranslation('translation')
+  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const categories = useAtomValue(categoriesAtom);
+  const tags = useAtomValue(tagsAtom);
+  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const [groups, setGroups] = useState<Array<{ id: string; slug: string; displayName?: string }>>(
+    []
+  );
+  const [form] = Form.useForm();
+  const { t } = useTranslation('translation');
 
   const addNav = async (values: RecommendFormValues) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      await axios.post(API_NAV_ADD, values)
-      Message.success(t('thank_you_support'))
-      form.resetFields()
+      await axios.post(API_NAV_ADD, values);
+      Message.success(t('thank_you_support'));
+      form.resetFields();
     } catch (error) {
-      Message.error(`${error}`)
+      Message.error(`${error}`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getNavInfo = async () => {
-    const url = form.getFieldValue('href')
-    if (!url) return
-    setFormLoading(true)
+    const url = form.getFieldValue('href');
+    if (!url) return;
+    setFormLoading(true);
     try {
-      const {logo, name, desc} = await axios.get<{logo?:string,name:string,desc:string}>(`${API_NAV_REPTILE}?url=${url}`)as any;
+      const { logo, name, desc } = (await axios.get<{ logo?: string; name: string; desc: string }>(
+        `${API_NAV_REPTILE}?url=${url}`
+      )) as any;
       form.setFieldsValue({
-        logo: logo??`https://www.google.com/s2/favicons?domain=${url}`,
+        logo: logo ?? `https://www.google.com/s2/favicons?domain=${url}`,
         name,
-        desc
-      })
+        desc,
+      });
     } catch (e) {
-      Message.error(t('request_timeout'))
+      Message.error(t('request_timeout'));
     }
-    setFormLoading(false)
-  }
+    setFormLoading(false);
+  };
+
+  // Load user's groups when authenticated
+  useEffect(() => {
+    let mounted = true;
+    const loadGroups = async () => {
+      if (!isAuthenticated) return;
+      try {
+        const res = (await axios.get('/api/groups')) as any;
+        const list = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res?.data?.data)
+            ? res.data.data
+            : Array.isArray(res)
+              ? res
+              : [];
+        if (!mounted) return;
+        setGroups(list);
+        // Set default selection if not set yet
+        const current = form.getFieldValue('audience.allowGroups');
+        if (
+          (!current || (Array.isArray(current) && current.length === 0)) &&
+          Array.isArray(list) &&
+          list.length > 0
+        ) {
+          form.setFieldsValue({ audience: { allowGroups: [list[0].id] } });
+        }
+      } catch {}
+    };
+    loadGroups();
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const rules = {
     href: [
@@ -83,7 +116,7 @@ export default function Recommend() {
         message: t('author_name_2_6_chars'),
       },
     ],
-  }
+  };
 
   return (
     <div className="p-8">
@@ -103,7 +136,9 @@ export default function Recommend() {
             <h1 className="my-0 text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
               {t('recommend_website')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">{t('share_quality_websites')}</p>
+            <p className="text-gray-600 dark:text-gray-300 text-lg">
+              {t('share_quality_websites')}
+            </p>
           </motion.div>
 
           <motion.div
@@ -189,23 +224,58 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
                 >
-                  <FormItem label={t('website_category')} field="categoryId" rules={rules.categoryId}>
+                  <FormItem
+                    label={t('website_category')}
+                    field="categoryId"
+                    rules={rules.categoryId}
+                  >
                     <Select
                       placeholder={t('select')}
                       showSearch
                       className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-indigo-200 dark:focus:ring-indigo-800 rounded-xl transition-all duration-300 category-select bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                        {renderCategories(categories)}
-                      </Select>
+                      {renderCategories(categories, t)}
+                    </Select>
                   </FormItem>
                 </motion.div>
+
+                {groups.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.55 }}
+                  >
+                    <FormItem
+                      label={t('website_group', { defaultValue: '👥 Group' })}
+                      field={'audience.allowGroups'}
+                      className="pt-[1em]"
+                    >
+                      <Select
+                        mode="multiple"
+                        placeholder={t('select')}
+                        className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-indigo-200 dark:focus:ring-indigo-800 rounded-xl transition-all duration-300 category-select bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        {groups.map((g) => (
+                          <Select.Option key={g.id} value={g.id}>
+                            {g.displayName || g.slug}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </FormItem>
+                  </motion.div>
+                )}
 
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
                 >
-                  <FormItem label={t('website_tags')} field="tags" rules={rules.tags} className="pt-[1em]">
+                  <FormItem
+                    label={t('website_tags')}
+                    field="tags"
+                    rules={rules.tags}
+                    className={groups.length > 0 ? undefined : 'pt-[1em]'}
+                  >
                     <Select
                       mode="multiple"
                       showSearch
@@ -213,12 +283,12 @@ export default function Recommend() {
                       placeholder={t('enter_website_tags')}
                       className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-200 dark:focus:ring-green-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                        {tags.map((item) => (
-                          <Select.Option key={item.name} value={item.name}>
-                            {item.label}
-                          </Select.Option>
-                        ))}
-                      </Select>
+                      {tags.map((item) => (
+                        <Select.Option key={item.name} value={item.name}>
+                          {item.label}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </FormItem>
                 </motion.div>
 
@@ -227,7 +297,11 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.7 }}
                 >
-                  <FormItem label={t('recommender_name')} field="authorName" rules={rules.authorName}>
+                  <FormItem
+                    label={t('recommender_name')}
+                    field="authorName"
+                    rules={rules.authorName}
+                  >
                     <Input
                       placeholder={t('enter_recommender_name')}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-purple-200 dark:focus:ring-purple-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -240,7 +314,11 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.8 }}
                 >
-                  <FormItem label={t('recommender_website')} field="authorUrl" rules={rules.authorUrl}>
+                  <FormItem
+                    label={t('recommender_website')}
+                    field="authorUrl"
+                    rules={rules.authorUrl}
+                  >
                     <Input
                       placeholder={t('enter_recommender_url')}
                       className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-blue-200 dark:focus:ring-blue-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -296,34 +374,46 @@ export default function Recommend() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
 
-const renderCategories = (categories) => {
-  const defaultLists: React.ReactNode[] = []
-  const list = categories.map((group) => {
-    if (!group.children || group.children.length === 0) {
-      defaultLists.push((
-      <Select.Option key={group.id} value={group.id}>
-            {group.name}
-        </Select.Option>))
-      return  null
-    }else {
-      return (
-        <Select.OptGroup key={group.id} label={group.name}>
-          {group.children?.map((item) => (
-            <Select.Option key={item.id} value={item.id}>
-              {item.name}
+const renderCategories = (categories, t) => {
+  const filtered = (categories || []).filter((c) => c?.id !== OVERVIEW.id);
+  const defaultLists: React.ReactNode[] = [];
+  const list = filtered
+    .map((group) => {
+      if (!group.children || group.children.length === 0) {
+        defaultLists.push(
+          <Select.Option key={group.id} value={group.id} disabled={group.hasNav === false}>
+            {t(group.name, { defaultValue: group.name })}
+          </Select.Option>
+        );
+        return null;
+      } else {
+        return (
+          <Select.OptGroup key={group.id} label={t(group.name, { defaultValue: group.name })}>
+            {/* Parent selectable only if it has own navs; otherwise disabled */}
+            <Select.Option
+              key={`${group.id}__parent`}
+              value={group.id}
+              disabled={group.hasNav === false}
+            >
+              {t(group.name, { defaultValue: group.name })}
             </Select.Option>
-          ))}
-        </Select.OptGroup>
-      )
-    }
-  }
-).filter(Boolean);
+            {group.children?.map((item) => (
+              <Select.Option key={item.id} value={item.id}>
+                {t(item.name, { defaultValue: item.name })}
+              </Select.Option>
+            ))}
+          </Select.OptGroup>
+        );
+      }
+    })
+    .filter(Boolean);
   return [
-  (<Select.OptGroup key='default-list-key' label={"default"}>
+    <Select.OptGroup key="default-list-key" label={t('categories', { defaultValue: 'Categories' })}>
       {defaultLists}
-  </Select.OptGroup>),
-  ...list]
-}
+    </Select.OptGroup>,
+    ...list,
+  ];
+};

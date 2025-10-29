@@ -16,10 +16,6 @@ export default function (app: any) {
       authorUrl: String,
       auditTime: Date,
       createTime: Number, // Chrome time number
-      hide: {
-        type: Boolean,
-        default: false,
-      },
       tags: {
         type: Array,
         default: [],
@@ -59,7 +55,7 @@ export default function (app: any) {
       audience: {
         visibility: {
           type: String,
-          enum: ['public', 'authenticated', 'restricted'],
+          enum: ['public', 'authenticated', 'restricted', 'hide'],
           default: 'public',
         },
         allowRoles: [{ type: Schema.Types.ObjectId, ref: 'Role', default: [] }],

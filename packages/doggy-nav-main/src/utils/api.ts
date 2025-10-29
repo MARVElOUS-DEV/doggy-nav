@@ -59,6 +59,9 @@ const api = {
   // Get tag list
   getTagList: (): Promise<{ data: Tag[] }> => axios.get(API_TAG_LIST),
 
+  // Get current user's groups (if authenticated)
+  getGroups: (): Promise<{ data: Array<{ id: string; slug: string; displayName?: string }>; total: number; pageNumber: number }> => axios.get('/api/groups'),
+
   // Add navigation (reptile)
   addNav: (data: {
     url: string;

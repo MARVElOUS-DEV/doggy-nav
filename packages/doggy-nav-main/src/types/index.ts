@@ -7,6 +7,8 @@ export interface Category {
   children?: Category[];
   showInMenu: boolean;
   href?: string;
+  hasNav?: boolean;
+  navCount?: number;
 }
 
 export interface NavItem {
@@ -49,6 +51,11 @@ export interface RecommendFormValues {
   authorName?: string;
   authorUrl?: string;
   detail?: string;
+  audience?: {
+    visibility?: 'public' | 'authenticated' | 'restricted' | 'hide';
+    allowRoles?: string[];
+    allowGroups?: string[];
+  };
 }
 export type OAuthProvider = 'github' | 'google' | 'linuxdo';
 export interface User {

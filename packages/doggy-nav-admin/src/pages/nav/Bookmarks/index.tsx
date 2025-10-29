@@ -392,7 +392,11 @@ export default function BookmarksImportPage() {
       const res = await request({
         url: API_CATEGORY,
         method: 'POST',
-        data: { name: c.name, categoryId: parentId, hide: true },
+        data: {
+          name: c.name,
+          categoryId: parentId,
+          audience: { visibility: 'hide' },
+        },
       });
       const id = res?.data?.id || res?.id || res?.id;
       if (id) {

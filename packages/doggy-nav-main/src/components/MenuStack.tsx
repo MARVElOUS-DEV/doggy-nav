@@ -96,7 +96,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
           if (hasChildren) {
             return (
               <Menu.SubMenu
-                key={category.id}
+                key={`${category.id}__group`}
                 className={"doggy-menu transition-all duration-200 hover:bg-theme-muted hover:shadow-sm"}
                 title={
                   collapse ? (
@@ -116,6 +116,21 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                   )
                 }
               >
+                {/* Parent category as a clickable item only when it has own nav items */}
+                {category.hasNav && (
+                  <Menu.Item
+                    key={category.id}
+                    onClick={() => onHandleSubMenuClick(category, category.id)}
+                  >
+                    <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 hover:bg-theme-muted rounded-xl">
+                      {renderMenuIcon(category, 16)}
+                      <span className="text-sm text-theme-muted-foreground group-hover:text-theme-foreground transition-colors font-medium">
+                        {t(category.name, { defaultValue: category.name })}
+                      </span>
+                      <div className="ml-auto w-2 h-2 rounded-full bg-theme-background opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                  </Menu.Item>
+                )}
                 {category.children
                   ?.filter(child => child.showInMenu)
                   .map((child) => (

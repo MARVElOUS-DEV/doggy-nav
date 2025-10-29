@@ -233,11 +233,11 @@ async function initializeCategories() {
       name: cat.name,
       categoryId: globalRootCategoryId, // First-stage categories are children of virtual root
       createAt: currentTime + index, // Slightly offset to maintain order
-      hide: false,
       icon: cat.icon,
       children: [],
       showInMenu: true,
       description: cat.description,
+      audience: { visibility: 'public', allowRoles: [], allowGroups: [] },
     }));
 
     await CategorySchema.insertMany(categoriesToInsert);
@@ -258,7 +258,6 @@ async function initializeCategories() {
           desc: site.desc,
           logo: site.logo,
           createTime: currentTime + 1000 + index, // Offset time to avoid conflicts
-          hide: false,
           tags: [],
           view: 0,
           star: 0,
@@ -267,6 +266,7 @@ async function initializeCategories() {
           urlStatus: 'unknown',
           lastUrlCheck: null,
           responseTime: null,
+          audience: { visibility: 'public', allowRoles: [], allowGroups: [] },
         }));
 
         await NavSchema.insertMany(websitesToInsert);

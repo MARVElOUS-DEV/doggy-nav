@@ -80,9 +80,9 @@ async function recursive(children, parentId) {
           categoryId: parentId,
           name: firstName,
           createAt: el.date_added ?? dateToChromeTime(new Date()),
-          hide: true,
           icon: '',
           description: '',
+          audience: { visibility: 'hide', allowRoles: [], allowGroups: [] },
         });
         secondCategoryId = _id;
       }
@@ -95,7 +95,7 @@ async function recursive(children, parentId) {
         href,
         desc: name,
         createTime: el.date_added,
-        hide: true,
+        audience: { visibility: 'hide', allowRoles: [], allowGroups: [] },
         logo: await getLogo(href),
       });
     }
@@ -107,10 +107,10 @@ async function transform(roots) {
     name: privateCategoryName,
     categoryId: globalRootCategoryId,
     icon: 'type:emoji_🐶',
-    hide: true,
     createAt: dateToChromeTime(new Date()),
     showInMenu: true,
     description: 'private bookmarks',
+    audience: { visibility: 'hide', allowRoles: [], allowGroups: [] },
   };
   const categoryDataRes = await categorySchema.create(categoryData);
   const firstStage = roots.bookmark_bar.children;
