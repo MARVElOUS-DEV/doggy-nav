@@ -1,4 +1,6 @@
 import Controller from '../core/base_controller';
+import { Types } from 'mongoose';
+import { globalRootCategoryId } from '../../constants';
 import { buildAudienceFilterEx } from '../utils/audience';
 import type { AuthUserContext } from '../../types/rbac';
 
@@ -67,15 +69,13 @@ export default class CategoryController extends Controller {
     const { ctx } = this;
     const body = this.getSanitizedBody();
     const { categoryId, audience } = body || {};
-    if (categoryId) {
+    if (categoryId && categoryId !== globalRootCategoryId && Types.ObjectId.isValid(categoryId)) {
       const parent = await ctx.model.Category.findOne({ _id: categoryId });
-      if (!parent) {
-        this.error('Parent category not found');
-        return;
-      }
-      if (!this.isAudienceNarrowerOrEqual(parent.audience, audience)) {
-        this.error('Child category audience must be same or narrower than parent');
-        return;
+      if (parent) {
+        if (!this.isAudienceNarrowerOrEqual(parent.audience, audience)) {
+          this.error('Child category audience must be same or narrower than parent');
+          return;
+        }
       }
     }
     await super.add();
@@ -90,15 +90,17 @@ export default class CategoryController extends Controller {
       if (current) {
         const effectiveAudience = body.audience ?? current.audience;
         const effectiveParentId = body.categoryId ?? current.categoryId;
-        if (effectiveParentId) {
+        if (
+          effectiveParentId &&
+          effectiveParentId !== globalRootCategoryId &&
+          Types.ObjectId.isValid(effectiveParentId)
+        ) {
           const parent = await ctx.model.Category.findOne({ _id: effectiveParentId });
-          if (!parent) {
-            this.error('Parent category not found');
-            return;
-          }
-          if (!this.isAudienceNarrowerOrEqual(parent.audience, effectiveAudience)) {
-            this.error('Child category audience must be same or narrower than parent');
-            return;
+          if (parent) {
+            if (!this.isAudienceNarrowerOrEqual(parent.audience, effectiveAudience)) {
+              this.error('Child category audience must be same or narrower than parent');
+              return;
+            }
           }
         }
       }
