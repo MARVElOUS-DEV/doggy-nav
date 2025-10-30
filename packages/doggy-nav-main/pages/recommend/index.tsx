@@ -384,7 +384,7 @@ const renderCategories = (categories, t) => {
     .map((group) => {
       if (!group.children || group.children.length === 0) {
         defaultLists.push(
-          <Select.Option key={group.id} value={group.id} disabled={group.hasNav === false}>
+          <Select.Option key={group.id} value={group.id} disabled={group.onlyFolder === true}>
             {t(group.name, { defaultValue: group.name })}
           </Select.Option>
         );
@@ -396,7 +396,7 @@ const renderCategories = (categories, t) => {
             <Select.Option
               key={`${group.id}__parent`}
               value={group.id}
-              disabled={group.hasNav === false}
+              disabled={group.onlyFolder === true}
             >
               {t(group.name, { defaultValue: group.name })}
             </Select.Option>

@@ -86,6 +86,12 @@ export default function CategoryForm(props: CategoryFormProps) {
     label: '显示到菜单',
     width: 'sm',
   });
+  const onlyFolderProps = useProFormItem({
+    name: 'onlyFolder',
+    label: '仅作为文件夹',
+    width: 'sm',
+    tooltip: '开启后，该分类仅作为分组文件夹使用，不能直接包含网址',
+  });
 
   async function onFinish(values: any) {
     const audience = values?.audience || {};
@@ -130,6 +136,7 @@ export default function CategoryForm(props: CategoryFormProps) {
         <IconPicker placeholder="选择分类图标" />
       </ProFormItem>
       <ProFormSwitch {...showMenuProps} />
+      <ProFormSwitch {...onlyFolderProps} />
       <ProFormSelect
         name={['audience', 'visibility']}
         label="可见性"

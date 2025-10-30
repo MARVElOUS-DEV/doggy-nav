@@ -1,4 +1,5 @@
 import type { AuthUserContext } from '../../types/rbac';
+import { Types } from 'mongoose';
 
 export interface UserContextLike {
   roleIds?: string[];
@@ -13,57 +14,35 @@ export function buildAudienceOrFor(
   const fp = (key: string) => `${fieldPath}.${key}`;
   const or: any[] = [];
 
-  // Allow public when allow lists are empty; also allow missing audience
-  or.push({
-    $and: [
-      { [fp('visibility')]: 'public' },
-      {
-        $or: [
-          { [fp('allowRoles')]: { $exists: false } },
-          { [fp('allowRoles.0')]: { $exists: false } },
-        ],
-      },
-      {
-        $or: [
-          { [fp('allowGroups')]: { $exists: false } },
-          { [fp('allowGroups.0')]: { $exists: false } },
-        ],
-      },
-    ],
-  });
-  or.push({ [fp('visibility')]: { $exists: false } });
+  // Allow public (ignore allowRoles/allowGroups when not restricted)
+  or.push({ [fp('visibility')]: 'public' });
 
   if (userCtx) {
     const isValidObjectIdString = (v: unknown): v is string =>
       typeof v === 'string' && /^[a-fA-F0-9]{24}$/.test(v);
     const toIdString = (v: unknown) =>
       typeof v === 'string' ? v : ((v as any)?.toString?.() ?? '');
-    const roleIds = (Array.isArray((userCtx as any).roleIds) ? (userCtx as any).roleIds : [])
+    const roleIdsStr = (Array.isArray((userCtx as any).roleIds) ? (userCtx as any).roleIds : [])
       .map(toIdString)
       .filter(isValidObjectIdString);
-    const groupIds = (Array.isArray((userCtx as any).groupIds) ? (userCtx as any).groupIds : [])
+    const groupIdsStr = (Array.isArray((userCtx as any).groupIds) ? (userCtx as any).groupIds : [])
       .map(toIdString)
       .filter(isValidObjectIdString);
+    const roleIds = roleIdsStr.map((id) => new Types.ObjectId(id));
+    const groupIds = groupIdsStr.map((id) => new Types.ObjectId(id));
 
-    // Authenticated users also see "authenticated"
+    // Authenticated users see "authenticated" (ignore allow lists)
     or.push({ [fp('visibility')]: 'authenticated' });
 
+    // Restricted requires membership by roles or groups
     const membershipOr: any[] = [];
     if (roleIds.length > 0) membershipOr.push({ [fp('allowRoles')]: { $in: roleIds } });
     if (groupIds.length > 0) membershipOr.push({ [fp('allowGroups')]: { $in: groupIds } });
     if (membershipOr.length > 0) {
-      or.push({
-        $and: [
-          {
-            $or: [
-              { [fp('visibility')]: 'restricted' },
-              { [fp('allowRoles.0')]: { $exists: true } },
-              { [fp('allowGroups.0')]: { $exists: true } },
-            ],
-          },
-          { $or: membershipOr },
-        ],
-      });
+      or.push({ $and: [{ [fp('visibility')]: 'restricted' }, { $or: membershipOr }] });
+    } else {
+      // If no roles/groups in context, restricted should not match anything for this user
+      or.push({ $and: [{ [fp('visibility')]: 'restricted' }, { _id: { $exists: false } }] });
     }
   }
 
@@ -88,26 +67,7 @@ export function buildAudienceFilter(
 function openPublicOnly(fieldPath = 'audience') {
   const fp = (key: string) => `${fieldPath}.${key}`;
   return {
-    $or: [
-      { [fp('visibility')]: { $exists: false } },
-      {
-        $and: [
-          { [fp('visibility')]: 'public' },
-          {
-            $or: [
-              { [fp('allowRoles')]: { $exists: false } },
-              { [fp('allowRoles.0')]: { $exists: false } },
-            ],
-          },
-          {
-            $or: [
-              { [fp('allowGroups')]: { $exists: false } },
-              { [fp('allowGroups.0')]: { $exists: false } },
-            ],
-          },
-        ],
-      },
-    ],
+    $or: [{ [fp('visibility')]: 'public' }],
   } as any;
 }
 
@@ -122,7 +82,7 @@ export function buildAudienceFilterEx(
       : Array.isArray(ctxUser?.roles)
         ? ctxUser!.roles!
         : [];
-  const source = (ctxUser as any)?.source === 'admin' ? 'admin' : 'main';
+  const source = ctxUser?.source === 'admin' ? 'admin' : 'main';
   // sysadmin can access everything (including visibility='hide')
   if (roles.includes('sysadmin')) return base && Object.keys(base).length ? base : {};
 
