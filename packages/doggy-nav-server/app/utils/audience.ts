@@ -1,4 +1,5 @@
 import type { AuthUserContext } from '../../types/rbac';
+import { Types } from 'mongoose';
 
 export interface UserContextLike {
   roleIds?: string[];
@@ -13,20 +14,22 @@ export function buildAudienceOrFor(
   const fp = (key: string) => `${fieldPath}.${key}`;
   const or: any[] = [];
 
-  // Allow public (ignore allowRoles/allowGroups when not restricted) and allow missing audience
+  // Allow public (ignore allowRoles/allowGroups when not restricted)
   or.push({ [fp('visibility')]: 'public' });
-  or.push({ [fp('visibility')]: { $exists: false } });
 
   if (userCtx) {
     const isValidObjectIdString = (v: unknown): v is string =>
       typeof v === 'string' && /^[a-fA-F0-9]{24}$/.test(v);
-    const toIdString = (v: unknown) => (typeof v === 'string' ? v : (v as any)?.toString?.() ?? '');
-    const roleIds = (Array.isArray((userCtx as any).roleIds) ? (userCtx as any).roleIds : [])
+    const toIdString = (v: unknown) =>
+      typeof v === 'string' ? v : ((v as any)?.toString?.() ?? '');
+    const roleIdsStr = (Array.isArray((userCtx as any).roleIds) ? (userCtx as any).roleIds : [])
       .map(toIdString)
       .filter(isValidObjectIdString);
-    const groupIds = (Array.isArray((userCtx as any).groupIds) ? (userCtx as any).groupIds : [])
+    const groupIdsStr = (Array.isArray((userCtx as any).groupIds) ? (userCtx as any).groupIds : [])
       .map(toIdString)
       .filter(isValidObjectIdString);
+    const roleIds = roleIdsStr.map((id) => new Types.ObjectId(id));
+    const groupIds = groupIdsStr.map((id) => new Types.ObjectId(id));
 
     // Authenticated users see "authenticated" (ignore allow lists)
     or.push({ [fp('visibility')]: 'authenticated' });
@@ -64,10 +67,7 @@ export function buildAudienceFilter(
 function openPublicOnly(fieldPath = 'audience') {
   const fp = (key: string) => `${fieldPath}.${key}`;
   return {
-    $or: [
-      { [fp('visibility')]: { $exists: false } },
-      { [fp('visibility')]: 'public' },
-    ],
+    $or: [{ [fp('visibility')]: 'public' }],
   } as any;
 }
 

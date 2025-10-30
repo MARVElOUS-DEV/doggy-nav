@@ -325,20 +325,35 @@ export default class NavController extends Controller {
         name: { $regex: reg },
       };
 
-      // For non-authenticated users, filter by status
+      // Align status filtering with list() and enforce audience rules
       const isAuthenticated = this.isAuthenticated();
-      if (!isAuthenticated) {
-        searchQuery.status = NAV_STATUS.pass; // Only show approved items
+      if (isAuthenticated) {
+        searchQuery.$or = [{ status: { $exists: false } }, { status: NAV_STATUS.pass }];
+      } else {
+        searchQuery.status = NAV_STATUS.pass;
+      }
+
+      const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
+      let findParam: any = buildAudienceFilterEx(searchQuery, userCtx);
+
+      // Also enforce category visibility: nav must be in allowed categories OR have no category
+      try {
+        const allowedCategoryFilter = buildAudienceFilterEx({}, userCtx);
+        const allowedCategories =
+          await ctx.model.Category.find(allowedCategoryFilter).select('_id');
+        const allowedCategoryIds = allowedCategories.map((c: any) => c._id.toString());
+        const categoryVisibilityOr = [{ categoryId: { $in: allowedCategoryIds } }];
+        findParam = { $and: [findParam, { $or: categoryVisibilityOr }] };
+      } catch {
+        // Fallback to nav-only filtering if category check fails
       }
 
       if (isAuthenticated) {
-        // Use aggregation pipeline to include favorite status for authenticated users
-        await this.getSearchWithFavorites(searchQuery, skipNumber, pageSize);
+        await this.getSearchWithFavorites(findParam, skipNumber, pageSize);
       } else {
-        // Use simple query for non-authenticated users
         const [navs, total] = await Promise.all([
-          ctx.model.Nav.find(searchQuery).skip(skipNumber).limit(pageSize).sort({ _id: -1 }),
-          ctx.model.Nav.find(searchQuery).countDocuments(),
+          ctx.model.Nav.find(findParam).skip(skipNumber).limit(pageSize).sort({ _id: -1 }),
+          ctx.model.Nav.find(findParam).countDocuments(),
         ]);
 
         const navsWithCategory = await Promise.all(
@@ -365,13 +380,13 @@ export default class NavController extends Controller {
   }
 
   // Helper method for search with favorite status
-  private async getSearchWithFavorites(searchQuery: any, skipNumber: number, pageSize: number) {
+  private async getSearchWithFavorites(findParam: any, skipNumber: number, pageSize: number) {
     const { ctx } = this;
     const userInfo = this.getUserInfo();
 
     try {
       const pipeline: PipelineStage[] = [
-        { $match: searchQuery },
+        { $match: findParam },
         {
           $lookup: {
             from: 'favorite',
@@ -416,7 +431,7 @@ export default class NavController extends Controller {
         { $limit: pageSize },
       ];
 
-      const countPipeline = [{ $match: searchQuery }, { $count: 'total' }];
+      const countPipeline = [{ $match: findParam }, { $count: 'total' }];
 
       const [data, countResult] = await Promise.all([
         ctx.model.Nav.aggregate(pipeline),

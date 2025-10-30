@@ -10,13 +10,24 @@ export enum NAV_STATUS {
 
 export default class NavService extends Service {
   async findMaxValueList(value: string, _isAuthenticated = false) {
-    const userCtx = this.ctx.state.userinfo as { roleIds?: string[]; groupIds?: string[] };
+    const { ctx } = this;
+    const userCtx = ctx.state.userinfo as { roleIds?: string[]; groupIds?: string[] };
     const baseQuery: any = { status: NAV_STATUS.pass };
 
-    // Audience filtering
-    const finalQuery = buildAudienceFilterEx(baseQuery, userCtx as any);
+    // Audience filtering (nav-level)
+    let finalQuery: any = buildAudienceFilterEx(baseQuery, userCtx as any);
 
-    const docs = await this.ctx.model.Nav.find(finalQuery)
+    // Enforce category audience rules: only include navs whose category is visible to this user
+    try {
+      const allowedCategoryFilter = buildAudienceFilterEx({}, userCtx as any);
+      const allowedCategories = await ctx.model.Category.find(allowedCategoryFilter).select('_id');
+      const allowedCategoryIds = allowedCategories.map((c: any) => c._id.toString());
+      finalQuery = { $and: [finalQuery, { categoryId: { $in: allowedCategoryIds } }] };
+    } catch {
+      // fall back to nav-only visibility if category check fails
+    }
+
+    const docs = await ctx.model.Nav.find(finalQuery)
       .sort({ [value]: -1 } as { [key: string]: SortOrder })
       .limit(10);
     return docs.map((doc) => doc.toJSON());
