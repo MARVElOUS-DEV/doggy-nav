@@ -58,6 +58,21 @@ export default class NavController extends Controller {
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
     findParam = buildAudienceFilterEx(findParam, userCtx);
 
+    // Enforce category audience rules when a nav item is linked to a category
+    // Navs without a category continue to use only the nav item's own rules
+    try {
+      const allowedCategoryFilter = buildAudienceFilterEx({}, userCtx);
+      const allowedCategories = await ctx.model.Category.find(allowedCategoryFilter).select('_id');
+      const allowedCategoryIds = allowedCategories.map((c: any) => c._id.toString());
+
+      const categoryVisibilityOr = [{ categoryId: { $in: allowedCategoryIds } }];
+
+      findParam = { $and: [findParam, { $or: categoryVisibilityOr }] };
+    } catch {
+      // If category visibility evaluation fails, fall back to nav-only filtering
+      // to avoid breaking the endpoint
+    }
+
     // If user is authenticated, include favorite status
     if (isAuthenticated) {
       await this.getListWithFavorites(findParam);
