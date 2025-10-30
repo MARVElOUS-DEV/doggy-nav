@@ -21,33 +21,8 @@ export default class CategoryController extends Controller {
       const filter = buildAudienceFilterEx(params, userCtx);
 
       const data = await ctx.model.Category.find(filter).limit(100000);
-
-      // Compute visible nav counts per category for current user (exclude visibility='hide' via buildAudienceFilterEx)
-      const isAuthenticated = this.isAuthenticated();
-      let navBase: any = {};
-      if (!isAuthenticated) {
-        navBase.status = 0; // NAV_STATUS.pass
-      } else {
-        navBase = { $or: [{ status: { $exists: false } }, { status: 0 }] };
-      }
-      const navMatch = buildAudienceFilterEx(navBase, userCtx);
-      const counts = await ctx.model.Nav.aggregate([
-        { $match: navMatch },
-        { $group: { _id: '$categoryId', count: { $sum: 1 } } },
-      ]);
-      const navCountMap = new Map<string, number>(counts.map((c: any) => [String(c._id), c.count]));
-
-      const newData = ctx.service.category.formatCategoryList(data);
-
-      // Attach hasNav flag (and navCount) recursively
-      const attachFlags = (node: any): any => {
-        const id = String(node.id || node._id || '');
-        const count = navCountMap.get(id) || 0;
-        const children = Array.isArray(node.children) ? node.children.map(attachFlags) : node.children;
-        return { ...node, hasNav: count > 0, navCount: count, children };
-      };
-      const enriched = Array.isArray(newData) ? newData.map(attachFlags) : newData;
-      this.success(enriched);
+      const tree = ctx.service.category.formatCategoryList(data);
+      this.success(tree);
     } catch (error: any) {
       this.error(error.message);
     }

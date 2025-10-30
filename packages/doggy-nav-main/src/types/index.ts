@@ -6,9 +6,8 @@ export interface Category {
   icon?: string;
   children?: Category[];
   showInMenu: boolean;
+  onlyFolder?: boolean;
   href?: string;
-  hasNav?: boolean;
-  navCount?: number;
 }
 
 export interface NavItem {

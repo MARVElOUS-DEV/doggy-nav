@@ -10,6 +10,11 @@ export default function (app: any) {
       categoryId: String,
       description: String,
       createAt: Number, // Chrome time number
+      // When true, this category acts as a folder only and should not contain its own nav items
+      onlyFolder: {
+        type: Boolean,
+        default: false,
+      },
       icon: {
         type: String,
         default: '',

@@ -116,8 +116,8 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                   )
                 }
               >
-                {/* Parent category as a clickable item only when it has own nav items */}
-                {category.hasNav && (
+                {/* Parent category clickable unless marked as folder-only */}
+                {category.onlyFolder !== true && (
                   <Menu.Item
                     key={category.id}
                     onClick={() => onHandleSubMenuClick(category, category.id)}
