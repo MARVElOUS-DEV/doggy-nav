@@ -61,13 +61,20 @@ jobs:
           flavor: |
             latest=auto
 
+      - name: Set latest tag (main branch only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "LATEST_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.image }}:latest" >> $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.LATEST_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
