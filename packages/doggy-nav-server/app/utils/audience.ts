@@ -13,31 +13,14 @@ export function buildAudienceOrFor(
   const fp = (key: string) => `${fieldPath}.${key}`;
   const or: any[] = [];
 
-  // Allow public when allow lists are empty; also allow missing audience
-  or.push({
-    $and: [
-      { [fp('visibility')]: 'public' },
-      {
-        $or: [
-          { [fp('allowRoles')]: { $exists: false } },
-          { [fp('allowRoles.0')]: { $exists: false } },
-        ],
-      },
-      {
-        $or: [
-          { [fp('allowGroups')]: { $exists: false } },
-          { [fp('allowGroups.0')]: { $exists: false } },
-        ],
-      },
-    ],
-  });
+  // Allow public (ignore allowRoles/allowGroups when not restricted) and allow missing audience
+  or.push({ [fp('visibility')]: 'public' });
   or.push({ [fp('visibility')]: { $exists: false } });
 
   if (userCtx) {
     const isValidObjectIdString = (v: unknown): v is string =>
       typeof v === 'string' && /^[a-fA-F0-9]{24}$/.test(v);
-    const toIdString = (v: unknown) =>
-      typeof v === 'string' ? v : ((v as any)?.toString?.() ?? '');
+    const toIdString = (v: unknown) => (typeof v === 'string' ? v : (v as any)?.toString?.() ?? '');
     const roleIds = (Array.isArray((userCtx as any).roleIds) ? (userCtx as any).roleIds : [])
       .map(toIdString)
       .filter(isValidObjectIdString);
@@ -45,25 +28,18 @@ export function buildAudienceOrFor(
       .map(toIdString)
       .filter(isValidObjectIdString);
 
-    // Authenticated users also see "authenticated"
+    // Authenticated users see "authenticated" (ignore allow lists)
     or.push({ [fp('visibility')]: 'authenticated' });
 
+    // Restricted requires membership by roles or groups
     const membershipOr: any[] = [];
     if (roleIds.length > 0) membershipOr.push({ [fp('allowRoles')]: { $in: roleIds } });
     if (groupIds.length > 0) membershipOr.push({ [fp('allowGroups')]: { $in: groupIds } });
     if (membershipOr.length > 0) {
-      or.push({
-        $and: [
-          {
-            $or: [
-              { [fp('visibility')]: 'restricted' },
-              { [fp('allowRoles.0')]: { $exists: true } },
-              { [fp('allowGroups.0')]: { $exists: true } },
-            ],
-          },
-          { $or: membershipOr },
-        ],
-      });
+      or.push({ $and: [{ [fp('visibility')]: 'restricted' }, { $or: membershipOr }] });
+    } else {
+      // If no roles/groups in context, restricted should not match anything for this user
+      or.push({ $and: [{ [fp('visibility')]: 'restricted' }, { _id: { $exists: false } }] });
     }
   }
 
@@ -90,23 +66,7 @@ function openPublicOnly(fieldPath = 'audience') {
   return {
     $or: [
       { [fp('visibility')]: { $exists: false } },
-      {
-        $and: [
-          { [fp('visibility')]: 'public' },
-          {
-            $or: [
-              { [fp('allowRoles')]: { $exists: false } },
-              { [fp('allowRoles.0')]: { $exists: false } },
-            ],
-          },
-          {
-            $or: [
-              { [fp('allowGroups')]: { $exists: false } },
-              { [fp('allowGroups.0')]: { $exists: false } },
-            ],
-          },
-        ],
-      },
+      { [fp('visibility')]: 'public' },
     ],
   } as any;
 }
@@ -122,7 +82,7 @@ export function buildAudienceFilterEx(
       : Array.isArray(ctxUser?.roles)
         ? ctxUser!.roles!
         : [];
-  const source = (ctxUser as any)?.source === 'admin' ? 'admin' : 'main';
+  const source = ctxUser?.source === 'admin' ? 'admin' : 'main';
   // sysadmin can access everything (including visibility='hide')
   if (roles.includes('sysadmin')) return base && Object.keys(base).length ? base : {};
 
