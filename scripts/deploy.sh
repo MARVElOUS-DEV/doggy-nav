@@ -34,7 +34,7 @@ DEPLOYMENT_TYPE=${1:-"staging"}
 BUILD_DIR="./build"
 # Registry settings (align with compose files)
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-"ghcr.io"}
-IMAGE_NAMESPACE=${IMAGE_NAMESPACE:-"MARVElOUS-DEV"}
+IMAGE_NAMESPACE=${IMAGE_NAMESPACE:-"marvelous-dev"}
 IMAGE_TAG=${IMAGE_TAG:-"latest"}
 
 # Detect compose command (docker compose preferred)
@@ -286,7 +286,7 @@ case "${1:-}" in
         echo "  STAGING_SERVER    - Staging server hostname"
         echo "  PRODUCTION_SERVER - Production server hostname"
         echo "  DOCKER_REGISTRY   - Docker registry URL (default: ghcr.io)"
-        echo "  IMAGE_NAMESPACE   - Registry namespace (default: MARVElOUS-DEV)"
+        echo "  IMAGE_NAMESPACE   - Registry namespace (default: marvelous-dev)"
         echo "  IMAGE_TAG         - Docker image tag (default: latest)"
         exit 0
         ;;

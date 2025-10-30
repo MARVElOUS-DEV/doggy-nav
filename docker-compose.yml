@@ -1,7 +1,7 @@
 version: '3.8'
 
 # One‑key deploy using prebuilt images (built/pushed by CI)
-# Defaults target ghcr.io/MARVElOUS-DEV with :latest tag.
+# Defaults target ghcr.io/marvelous-dev with :latest tag.
 # Override via environment when needed:
 #   IMAGE_REGISTRY=ghcr.io IMAGE_NAMESPACE=YOUR_ORG IMAGE_TAG=sha-or-tag \
 #   JWT_SECRET=change-me docker compose up -d
@@ -18,7 +18,7 @@ services:
       - doggy-nav
 
   server:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-MARVElOUS-DEV}/doggy-nav-backend:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-server:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -38,7 +38,7 @@ services:
       - doggy-nav
 
   frontend:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-MARVElOUS-DEV}/doggy-nav-frontend:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -52,7 +52,7 @@ services:
       - doggy-nav
 
   admin:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-MARVElOUS-DEV}/doggy-nav-admin:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-admin:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       DOGGY_SERVER: http://server:3002

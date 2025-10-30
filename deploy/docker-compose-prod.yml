@@ -1,7 +1,7 @@
 version: '3.8'
 
 # Production docker-compose using CI-built images from a container registry.
-# Defaults target ghcr.io/MARVElOUS-DEV and :latest tag.
+# Defaults target ghcr.io/marvelous-dev and :latest tag.
 # Override with .env or environment when running compose.
 
 services:
@@ -17,7 +17,7 @@ services:
       - doggy-nav
 
   server:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-MARVElOUS-DEV}/doggy-nav-backend:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-server:${IMAGE_TAG:-latest}
     container_name: doggy-nav-server
     restart: unless-stopped
     environment:
@@ -37,7 +37,7 @@ services:
       - doggy-nav
 
   frontend:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-MARVElOUS-DEV}/doggy-nav-frontend:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-frontend:${IMAGE_TAG:-latest}
     container_name: doggy-nav-frontend
     restart: unless-stopped
     environment:
@@ -52,7 +52,7 @@ services:
       - doggy-nav
 
   admin:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-MARVElOUS-DEV}/doggy-nav-admin:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-admin:${IMAGE_TAG:-latest}
     container_name: doggy-nav-admin
     restart: unless-stopped
     environment:
