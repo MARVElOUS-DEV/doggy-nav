@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 import type { NextRouter } from 'next/router';
-import FavoritesWindow from './FavoritesWindow';
 import WallpapersApp from './Wallpapers';
 import NewsApp from './NewsApp';
 import TranslationApp from './TranslationApp';
+import IframeContainer from '@/components/IframeContainer';
+import SettingsApp from './Settings';
 
-export type AppId = 'home' | 'favorites' | 'news' | 'translation' | 'wallpapers' | 'launchpad';
+export type AppId = string;
 
 export type DesktopCtx = {
   router: NextRouter;
@@ -14,6 +15,12 @@ export type DesktopCtx = {
     items: { id: string; name: string; src: string }[];
     current: string;
     set: (id: string) => void;
+  };
+  actions: {
+    addApp: (config: DesktopAppConfig) => void;
+    updateApp: (id: string, patch: Partial<DesktopAppConfig>) => void;
+    openWindow: (id: AppId) => void;
+    activateWindow: (id: AppId) => void;
   };
 };
 
@@ -29,37 +36,30 @@ export type DesktopAppConfig = {
   openByDefault?: boolean;
   defaultRect?: { x: number; y: number; width: number; height: number };
   expandable?: boolean;
+  // If true, window stays mounted when minimized (useful for iframes/media)
+  keepAliveOnMinimize?: boolean;
   render?: (ctx: DesktopCtx) => ReactNode;
   externalAction?: (ctx: DesktopCtx) => void;
 };
 
 export const appsOrder: AppId[] = [
-  'home',
-  'favorites',
+  'settings',
   'news',
   'translation',
+  'music',
   'launchpad',
   'wallpapers',
 ];
 
 export const appsConfig: Record<AppId, DesktopAppConfig> = {
-  home: {
-    id: 'home',
-    title: 'DoggyNav',
+  settings: {
+    id: 'settings',
     open: false,
-    minimized: false,
-    icon: '/logo-icon.png',
-    shouldOpenWindow: false,
-    externalAction: (ctx) => ctx.router.push('/'),
-  },
-  favorites: {
-    id: 'favorites',
-    open: false,
-    title: 'Favorites',
-    icon: '/default-web.png',
+    title: 'Settings',
+    icon: '/app-icons/settings.png',
     shouldOpenWindow: true,
-    defaultRect: { x: 180, y: 140, width: 760, height: 500 },
-    render: () => <FavoritesWindow />,
+    defaultRect: { x: 220, y: 120, width: 780, height: 560 },
+    render: (ctx) => <SettingsApp ctx={ctx} />,
   },
   news: {
     id: 'news',
@@ -78,6 +78,16 @@ export const appsConfig: Record<AppId, DesktopAppConfig> = {
     shouldOpenWindow: true,
     defaultRect: { x: 220, y: 140, width: 860, height: 560 },
     render: () => <TranslationApp />,
+  },
+  music: {
+    id: 'music',
+    open: false,
+    title: 'Music',
+    icon: '/app-icons/music.png',
+    shouldOpenWindow: true,
+    keepAliveOnMinimize: true,
+    defaultRect: { x: 240, y: 120, width: 960, height: 640 },
+    render: () => <IframeContainer src={'https://y.qq.com/'} title="music" />,
   },
   launchpad: {
     id: 'launchpad',

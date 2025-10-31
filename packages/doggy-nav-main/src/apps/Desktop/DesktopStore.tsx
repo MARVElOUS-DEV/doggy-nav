@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useMemo, useReducer, useEffect } from 'react';
 import type { AppId, DesktopAppConfig } from '@/apps/config';
 import { appsConfig, appsOrder } from '@/apps/config';
+import IframeContainer from '@/components/IframeContainer';
+import { getSetting } from '@/utils/idb';
 
 export type WindowRect = { x: number; y: number; width: number; height: number };
 
@@ -9,6 +11,7 @@ type DesktopState = {
   sysOpen: boolean;
   lpOpen: boolean;
   zCounter: number;
+  order: string[];
   windows: Record<AppId, DesktopAppConfig>;
 };
 
@@ -22,13 +25,16 @@ type DesktopAction =
   | { type: 'close_window'; id: AppId }
   | { type: 'minimize_window'; id: AppId }
   | { type: 'activate_window'; id: AppId }
-  | { type: 'set_rect'; id: AppId; rect: WindowRect };
+  | { type: 'set_rect'; id: AppId; rect: WindowRect }
+  | { type: 'add_app'; id: string; config: DesktopAppConfig; appendToOrder?: boolean }
+  | { type: 'update_app'; id: string; patch: Partial<DesktopAppConfig> };
 
 function buildInitialWindows(): Record<AppId, DesktopAppConfig> {
   const init: Record<AppId, DesktopAppConfig> = {} as any;
   let z = 50;
   appsOrder.forEach((id) => {
     const cfg = appsConfig[id];
+    if (!cfg) return; // skip unknown ids to avoid SSR crashes
     init[id] = {
       ...cfg,
       open: cfg.shouldOpenWindow && !!cfg.openByDefault,
@@ -45,6 +51,7 @@ const initialState: DesktopState = {
   sysOpen: false,
   lpOpen: false,
   zCounter: 50,
+  order: appsOrder.slice(),
   windows: buildInitialWindows(),
 };
 
@@ -102,6 +109,26 @@ function reducer(state: DesktopState, action: DesktopAction): DesktopState {
         windows: { ...state.windows, [id]: { ...prev, rect: action.rect } },
       };
     }
+    case 'add_app': {
+      const { id, config } = action;
+      const exists = !!state.windows[id];
+      const order = exists
+        ? state.order
+        : [...state.order, id];
+      return {
+        ...state,
+        order,
+        windows: { ...state.windows, [id]: { ...config } },
+      };
+    }
+    case 'update_app': {
+      const prev = state.windows[action.id];
+      if (!prev) return state;
+      return {
+        ...state,
+        windows: { ...state.windows, [action.id]: { ...prev, ...action.patch } },
+      };
+    }
     default:
       return state;
   }
@@ -124,6 +151,8 @@ type DesktopContextValue = {
     minimizeWindow: (id: AppId) => void;
     activateWindow: (id: AppId) => void;
     setWindowRect: (id: AppId, rect: WindowRect) => void;
+    addApp: (config: DesktopAppConfig) => void;
+    updateApp: (id: string, patch: Partial<DesktopAppConfig>) => void;
   };
 };
 
@@ -177,6 +206,20 @@ export function DesktopProvider({ children }: { children: React.ReactNode }) {
           dispatch({ type: 'set_wallpaper', payload: found.src });
         }
       }
+      // Hydrate music app url from IndexedDB if present
+      getSetting<string>('music.url')
+        .then((url) => {
+          if (!url) return;
+          dispatch({
+            type: 'update_app',
+            id: 'music',
+            patch: {
+              keepAliveOnMinimize: true,
+              render: () => <IframeContainer src={url} title="music" />,
+            },
+          });
+        })
+        .catch(() => {});
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -198,6 +241,11 @@ export function DesktopProvider({ children }: { children: React.ReactNode }) {
       minimizeWindow: (id: AppId) => dispatch({ type: 'minimize_window', id }),
       activateWindow: (id: AppId) => dispatch({ type: 'activate_window', id }),
       setWindowRect: (id: AppId, rect: WindowRect) => dispatch({ type: 'set_rect', id, rect }),
+      // Runtime extension APIs
+      addApp: (config: DesktopAppConfig) => {
+        dispatch({ type: 'add_app', id: config.id, config, appendToOrder: true });
+      },
+      updateApp: (id: string, patch: Partial<DesktopAppConfig>) => dispatch({ type: 'update_app', id, patch }),
     },
   };
 

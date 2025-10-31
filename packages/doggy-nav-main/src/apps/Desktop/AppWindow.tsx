@@ -15,6 +15,7 @@ interface AppWindowProps {
   title?: string;
   open: boolean;
   minimized?: boolean;
+  keepAliveIfMinimized?: boolean;
   rect: WindowRect;
   onRectChange?: (rect: WindowRect) => void;
   onClose?: () => void;
@@ -32,6 +33,7 @@ export default function AppWindow({
   title = 'App',
   open,
   minimized = false,
+  keepAliveIfMinimized = false,
   rect,
   onRectChange,
   onClose,
@@ -81,12 +83,15 @@ export default function AppWindow({
 
   if (!isClient) return null;
 
+  const shouldRender = open && (keepAliveIfMinimized ? true : !minimized);
+  const hidden = minimized && keepAliveIfMinimized;
+
   return (
     <AnimatePresence>
-      {open && !minimized && (
+      {shouldRender && (
         <motion.div
           className="fixed inset-0 pointer-events-none"
-          style={{ zIndex: zIndex ?? undefined }}
+          style={{ zIndex: zIndex ?? undefined, display: hidden ? 'none' : undefined }}
           initial="hidden"
           animate="visible"
           exit="exit"

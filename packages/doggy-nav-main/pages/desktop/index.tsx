@@ -7,12 +7,7 @@ import Dock, { type DockItem } from '@/apps/Desktop/Dock';
 import SystemMenu from '@/apps/Desktop/SystemMenu';
 import Launchpad from '@/apps/LaunchPad';
 import { useRouter } from 'next/router';
-import {
-  appsConfig,
-  appsOrder,
-  DesktopCtx,
-  type AppId,
-} from '@/apps/config';
+import { DesktopCtx, type AppId } from '@/apps/config';
 import { DesktopProvider, useDesktop } from '@/apps/Desktop/DesktopStore';
 
 type NextPageWithLayout = NextPage & { getLayout?: (page: React.ReactNode) => React.ReactNode };
@@ -22,6 +17,7 @@ function DesktopInner() {
   const { state, actions, wallpapers } = useDesktop();
   const [dockOffset, setDockOffset] = useState(0);
   const [topbarHeight, setTopbarHeight] = useState(32);
+  const isClient = typeof window !== 'undefined';
 
   useEffect(() => {
     const measure = () => {
@@ -43,6 +39,7 @@ function DesktopInner() {
   }, []);
 
   const dockItems: DockItem[] = useMemo(() => {
+    if (!isClient) return [];
     const ctx: DesktopCtx = {
       router,
       openLaunchpad: () => actions.openLaunchpad(),
@@ -51,32 +48,49 @@ function DesktopInner() {
         current: wallpapers.current,
         set: (id: string) => wallpapers.setById(id),
       },
+      actions: {
+        addApp: (cfg) => actions.addApp(cfg),
+        updateApp: (id, patch) => actions.updateApp(id, patch),
+        openWindow: (id) => actions.openWindow(id),
+        activateWindow: (id) => actions.activateWindow(id),
+      },
     };
-    return appsOrder.map((id) => {
-      const cfg = appsConfig[id];
-      const running = state.windows[id]?.open || state.windows[id]?.minimized;
-      return {
-        key: id,
-        label: cfg.title ?? id,
-        iconSrc: cfg.icon,
-        running,
-        onClick: () => {
-          if (id === 'launchpad') {
-            state.lpOpen ? actions.closeLaunchpad() : actions.openLaunchpad();
-            return;
-          }
-          actions.closeLaunchpad();
-          if (cfg.shouldOpenWindow) {
-            actions.openWindow(id);
-            actions.activateWindow(id);
-          } else {
-            cfg.externalAction?.(ctx);
-          }
-        },
-      };
-    });
+    return state.order
+      .map((id) => {
+        const cfg = state.windows[id];
+        if (!cfg) return null as any;
+        const running = cfg.open || cfg.minimized;
+        return {
+          key: id,
+          label: cfg.title || id,
+          iconSrc: cfg.icon,
+          running,
+          onClick: () => {
+            if (id === 'launchpad') {
+              state.lpOpen ? actions.closeLaunchpad() : actions.openLaunchpad();
+              return;
+            }
+            actions.closeLaunchpad();
+            if (cfg.shouldOpenWindow) {
+              actions.openWindow(id);
+              actions.activateWindow(id);
+            } else {
+              cfg.externalAction?.(ctx);
+            }
+          },
+        };
+      })
+      .filter(Boolean);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.windows, state.lpOpen, wallpapers.current, wallpapers.items, router]);
+  }, [
+    isClient,
+    state.order,
+    state.windows,
+    state.lpOpen,
+    wallpapers.current,
+    wallpapers.items,
+    router,
+  ]);
 
   const onMenuClick = useCallback(() => actions.toggleSys(), [actions]);
 
@@ -116,61 +130,73 @@ function DesktopInner() {
         style={{ top: topbarHeight, bottom: dockOffset }}
       >
         {/* Launchpad should cover header bar and windows area (full-screen overlay) */}
-        <Launchpad open={lpOpen} onClose={() => actions.closeLaunchpad()} withinArea={false} dockOffset={dockOffset} />
+        <Launchpad
+          open={lpOpen}
+          onClose={() => actions.closeLaunchpad()}
+          withinArea={false}
+          dockOffset={dockOffset}
+        />
       </div>
 
       {/* Windows generated from config */}
-      {appsOrder.map((id) => {
-        const cfg = appsConfig[id];
-        if (!cfg.shouldOpenWindow) return null;
-        const win = state.windows[id];
-        if (!win) return null;
-        const onRectChange = (r: WindowRect) => actions.setWindowRect(id as AppId, r);
-        const onClose = () => actions.closeWindow(id as AppId);
-        const onMinimize = () => actions.minimizeWindow(id as AppId);
-        const onActivate = () => actions.activateWindow(id as AppId);
-        const ctx: DesktopCtx = {
-          router,
-          openLaunchpad: () => actions.openLaunchpad(),
-          wallpapers: {
-            items: wallpapers.items,
-            current: wallpapers.current,
-            set: (wid: string) => wallpapers.setById(wid),
-          },
-        };
-        return (
-          <AppWindow
-            key={id}
-            title={win.title}
-            open={!!win.open}
-            minimized={!!win.minimized}
-            rect={(win.rect as WindowRect) ?? { x: 120, y: 90, width: 860, height: 520 }}
-            onRectChange={onRectChange}
-            onClose={onClose}
-            onMinimize={onMinimize}
-            onActivate={onActivate}
-            zIndex={win.z}
-            bounds="#windows-area"
-            getMaxArea={() => {
-              if (typeof document !== 'undefined') {
-                const el = document.getElementById('windows-area');
-                if (el) {
-                  const r = el.getBoundingClientRect();
-                  return { x: r.left, y: r.top, width: r.width, height: r.height };
+      {isClient &&
+        state.order.map((id) => {
+          const win = state.windows[id];
+          if (!win) return null;
+          if (!win.shouldOpenWindow) return null;
+          const onRectChange = (r: WindowRect) => actions.setWindowRect(id as AppId, r);
+          const onClose = () => actions.closeWindow(id as AppId);
+          const onMinimize = () => actions.minimizeWindow(id as AppId);
+          const onActivate = () => actions.activateWindow(id as AppId);
+          const ctx: DesktopCtx = {
+            router,
+            openLaunchpad: () => actions.openLaunchpad(),
+            wallpapers: {
+              items: wallpapers.items,
+              current: wallpapers.current,
+              set: (wid: string) => wallpapers.setById(wid),
+            },
+            actions: {
+              addApp: (cfg) => actions.addApp(cfg),
+              updateApp: (id, patch) => actions.updateApp(id, patch),
+              openWindow: (id) => actions.openWindow(id),
+              activateWindow: (id) => actions.activateWindow(id),
+            },
+          };
+          return (
+            <AppWindow
+              key={id}
+              title={win.title}
+              open={!!win.open}
+              minimized={!!win.minimized}
+              keepAliveIfMinimized={!!win.keepAliveOnMinimize}
+              rect={(win.rect as WindowRect) ?? { x: 120, y: 90, width: 860, height: 520 }}
+              onRectChange={onRectChange}
+              onClose={onClose}
+              onMinimize={onMinimize}
+              onActivate={onActivate}
+              zIndex={win.z}
+              bounds="#windows-area"
+              getMaxArea={() => {
+                if (typeof document !== 'undefined') {
+                  const el = document.getElementById('windows-area');
+                  if (el) {
+                    const r = el.getBoundingClientRect();
+                    return { x: r.left, y: r.top, width: r.width, height: r.height };
+                  }
                 }
-              }
-              // Fallback approximately below top bar and above dock
-              const margin = 20;
-              const top = 60;
-              const w = Math.max(320, window.innerWidth - margin * 2);
-              const h = Math.max(200, window.innerHeight - top - margin);
-              return { x: margin, y: top, width: w, height: h };
-            }}
-          >
-            {cfg.render?.(ctx)}
-          </AppWindow>
-        );
-      })}
+                // Fallback approximately below top bar and above dock
+                const margin = 20;
+                const top = 60;
+                const w = Math.max(320, window.innerWidth - margin * 2);
+                const h = Math.max(200, window.innerHeight - top - margin);
+                return { x: margin, y: top, width: w, height: h };
+              }}
+            >
+              {typeof win.render === 'function' ? win.render(ctx) : null}
+            </AppWindow>
+          );
+        })}
 
       {/* Dock */}
       <Dock items={dockItems} />
