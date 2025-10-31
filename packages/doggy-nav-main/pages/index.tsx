@@ -8,7 +8,7 @@ import api from '@/utils/api';
 import { createTimelineData } from '@/utils/timelineData';
 import { chromeMicroToISO } from '@/utils/time';
 import { useAtom, useAtomValue } from 'jotai';
-import { categoriesAtom, navRankingAtom } from '@/store/store';
+import { categoriesAtom, navRankingAtom, isAuthenticatedAtom } from '@/store/store';
 import Link from 'next/link';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,13 @@ export default function HomePage() {
   const [currentYearData, setCurrentYearData] = useState<any>(null);
   const currentYear = new Date().getFullYear();
   const categories = useAtomValue(categoriesAtom);
+  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const handleTryGotoDesktop = () => {
+    // Trigger driver hint on LightbulbRope
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('lightbulbrope:hint'));
+    }
+  };
   const [selectedItem, setSelectedItem] = useState<TimelineItemType | undefined>();
   const [totalNavCount, setTotalNavCount] = useState(0);
   const [totalViews, setTotalViews] = useState(0);
@@ -116,15 +123,25 @@ export default function HomePage() {
                 </h1>
                 <p className="text-xl opacity-90 mb-8">{t('discover_quality_websites')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    href="/login"
-                    className="bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
-                  >
-                    {t('login_explore')}
-                  </Link>
+                  {isAuthenticated ? (
+                    <button
+                      type="button"
+                      onClick={handleTryGotoDesktop}
+                      className="cursor-pointer bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                    >
+                      {t('try_goto_desktop')}
+                    </button>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                    >
+                      {t('login_explore')}
+                    </Link>
+                  )}
                   <Link
                     href="/search"
-                    className="bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary-foreground font-semibold py-3 px-6 rounded-lg transition-all duration-300"
+                    className="bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300"
                   >
                     {t('search_websites')}
                   </Link>

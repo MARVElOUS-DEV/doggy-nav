@@ -15,7 +15,7 @@ type GridEntry =
 // Paging
 const perPage = 6 * 4; // 24 icons per page
 
-export default function Launchpad({ open, onClose, withinArea = true }: { open: boolean; onClose: () => void; withinArea?: boolean }) {
+export default function Launchpad({ open, onClose, withinArea = true, dockOffset = 0 }: { open: boolean; onClose: () => void; withinArea?: boolean; dockOffset?: number }) {
   const [entries, setEntries] = useState<GridEntry[]>([]);
   const [page, setPage] = useState(0);
   const [folderOpen, setFolderOpen] = useState<null | {
@@ -173,13 +173,12 @@ export default function Launchpad({ open, onClose, withinArea = true }: { open: 
   };
 
   if (!open) return null;
-  // When not withinArea, cover header bar and windows area, but leave dock clickable (bottom-24)
-  const rootClass = withinArea
-    ? 'absolute inset-0 z-[85]'
-    : 'fixed left-0 right-0 top-0 bottom-24 z-[85]';
+  // When not withinArea, cover header bar and windows area, but leave dock clickable (computed bottom)
+  const rootClass = withinArea ? 'absolute inset-0 z-[85]' : 'fixed left-0 right-0 top-0 z-[85]';
+  const rootStyle = withinArea ? undefined : ({ bottom: dockOffset } as React.CSSProperties);
 
   return (
-    <div className={rootClass}>
+    <div className={rootClass} style={rootStyle}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-xl" onClick={onClose} />
 
@@ -233,7 +232,7 @@ export default function Launchpad({ open, onClose, withinArea = true }: { open: 
         </div>
 
         {/* Dots paginator */}
-        <div className="absolute bottom-24 flex items-center gap-2">
+        <div className="absolute flex items-center gap-2" style={{ bottom: dockOffset }}>
           {pages.map((_, i) => (
             <button
               key={i}

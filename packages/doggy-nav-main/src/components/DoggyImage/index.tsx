@@ -1,21 +1,32 @@
-import { useState } from "react";
+import { useState } from 'react';
 import Image from 'next/image';
-import dynamic from "next/dynamic";
-import React from "react";
+import dynamic from 'next/dynamic';
+import React from 'react';
+import { getRandomFallbackIcon } from '@/utils/fallbackIcons';
 
 interface DoggyImageProps {
   logo?: string;
   name?: string;
   width?: number;
   height?: number;
-  className?: string
-  fallbackSrc?: string
+  className?: string;
+  fallbackSrc?: string;
+  [key: string]: any;
 }
 
-export default function DoggyImage({logo="/default-web.png", name="logo", width=20, height=20 ,className, fallbackSrc}: DoggyImageProps) {
+export default function DoggyImage({
+  logo = getRandomFallbackIcon(),
+  name = 'logo',
+  width = 20,
+  height = 20,
+  className,
+  fallbackSrc,
+  ...rest
+}: DoggyImageProps) {
   const [logoSrc, setLogoSrc] = useState(logo);
+
   const handleLogoError = () => {
-    setLogoSrc(fallbackSrc??'/default-web.png');
+    setLogoSrc(fallbackSrc ?? getRandomFallbackIcon());
   };
   return (
     <Image
@@ -23,10 +34,12 @@ export default function DoggyImage({logo="/default-web.png", name="logo", width=
       alt={name}
       width={width}
       height={height}
-      className={className??`rounded-full mr-2 flex-shrink-0 w-[${width}px] h-[${height}px] object-cover`}
+      className={className ?? `rounded-full mr-2 flex-shrink-0 object-cover`}
+      style={{ width: `${width}px`, height: `${height}px` }}
       onError={handleLogoError}
+      {...rest}
     />
-  )
+  );
 }
 
 interface DynamicIconProps {
@@ -34,24 +47,36 @@ interface DynamicIconProps {
   fontSize?: number;
 }
 
-export const DynamicIcon = ({iconName, fontSize=14}: DynamicIconProps): JSX.Element | null => {
-    if (!iconName) return null;
-    if (iconName.startsWith('type:emoji_')) {
-      const emoji = iconName.replace('type:emoji_', '');
-      return <span style= {{ fontSize: `${fontSize}px` }}>{emoji}</span>;
-    }
-    if (iconName.startsWith('type:arco_')) {
-      const IconComponent = dynamic(() => import(`@arco-design/web-react/icon`).then((module: any) => {
+export const DynamicIcon = ({ iconName, fontSize = 14 }: DynamicIconProps): JSX.Element | null => {
+  if (!iconName) return null;
+  if (iconName.startsWith('type:emoji_')) {
+    const emoji = iconName.replace('type:emoji_', '');
+    return <span style={{ fontSize: `${fontSize}px` }}>{emoji}</span>;
+  }
+  if (iconName.startsWith('type:arco_')) {
+    const IconComponent = dynamic(
+      () =>
+        import(`@arco-design/web-react/icon`).then((module: any) => {
           if (module[iconName]) {
             return { default: module[iconName] };
           }
           throw new Error(`Icon ${iconName} not found`);
-        }), { ssr: false }) as unknown as React.JSX.ElementType
-      return (
-        <React.Suspense fallback ='...'>
-          <IconComponent style={{fontSize}}/>
-        </React.Suspense>
-      )
-    }
-    return <Image style={{ fontSize: `${fontSize}px` }} height={fontSize} width={fontSize} src={iconName} alt="" />;
-}
+        }),
+      { ssr: false }
+    ) as unknown as React.JSX.ElementType;
+    return (
+      <React.Suspense fallback="...">
+        <IconComponent style={{ fontSize }} />
+      </React.Suspense>
+    );
+  }
+  return (
+    <Image
+      style={{ fontSize: `${fontSize}px` }}
+      height={fontSize}
+      width={fontSize}
+      src={iconName}
+      alt=""
+    />
+  );
+};
