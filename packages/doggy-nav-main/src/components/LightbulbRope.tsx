@@ -21,6 +21,8 @@ const LightbulbRope = () => {
   const ropeRef = useRef<HTMLDivElement>(null);
   const startPosRef = useRef({ x: 0, y: 0 });
   const isNavigatingRef = useRef(false);
+  const [showHint, setShowHint] = useState(false);
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const finalBulbQuadrant = useMemo<undefined | 'lt' | 'rt' | 'lb' | 'rb'>(() => {
     if (dragOffset.x < 0 && dragOffset.y < 0) return 'lt';
@@ -59,6 +61,20 @@ const LightbulbRope = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, dragOffset]);
+
+  // External driver: show a temporary hint/highlight when event dispatched
+  useEffect(() => {
+    const handleHint = () => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      setShowHint(true);
+      hintTimerRef.current = setTimeout(() => setShowHint(false), 3000);
+    };
+    window.addEventListener('lightbulbrope:hint', handleHint);
+    return () => {
+      window.removeEventListener('lightbulbrope:hint', handleHint);
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    };
+  }, []);
 
   const isCrossingLine = dragOffset.x + startPosRef.current.x > windowWidth - ROPE_Origin_Right;
   const initSwayAngle = useMemo(() => {
@@ -202,6 +218,10 @@ const LightbulbRope = () => {
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
+          {/* Driver ring highlight */}
+          {!isDragging && showHint && (
+            <div className="absolute -inset-2 rounded-full ring-4 ring-amber-300/60 animate-pulse" />
+          )}
           {/* Bulb shine effect */}
           <div className="absolute top-2 left-3 w-3 h-3 bg-white/60 rounded-full blur-sm"></div>
 
@@ -218,19 +238,23 @@ const LightbulbRope = () => {
       </div>
 
       {/* Instruction text when dragging */}
-      {isDragging && dragOffset.y > 30 && (
+      {(isDragging && dragOffset.y > 30) || showHint ? (
         <div
           className="absolute text-amber-700 text-sm font-medium whitespace-nowrap animate-fade-in-simple"
           style={{
-            top: `${bulbY + 60}px`,
+            top: `${(isDragging ? bulbY : BASE_ROPE_LENGTH) + 60}px`,
             left: '50%',
-            transform: `translateX(calc(-50% + ${bulbX}px))`,
+            transform: `translateX(calc(-50% + ${(isDragging ? bulbX : 0)}px))`,
             transition: 'all 0.1s ease-out',
           }}
         >
-          {dragOffset.y > 100 ? t('release_to_go_to_favorites') : t('pull_down_to_go_to_favorites')}
+          {isDragging
+            ? dragOffset.y > 100
+              ? t('release_to_go_to_favorites')
+              : t('pull_down_to_go_to_favorites')
+            : t('pull_down_to_go_to_favorites')}
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

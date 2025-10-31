@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Grid, Tooltip, Spin, Message } from '@arco-design/web-react';
+import { Grid, Tooltip, Message } from '@arco-design/web-react';
 import api from '@/utils/api';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,28 +13,36 @@ import { useTranslation } from 'react-i18next';
 
 const { Row, Col } = Grid
 
+// Lightweight skeletons using tailwind and design-system tokens
+function BoxSkeleton({ className = '' }: { className?: string }) {
+  return (
+    <div className={`animate-pulse bg-theme-muted rounded-md ${className}`} />
+  );
+}
+
+function RandomListSkeleton({ count = 8 }: { count?: number }) {
+  return (
+    <Row gutter={[16, 16]}>
+      {Array.from({ length: count }).map((_, i) => (
+        <Col span={12} sm={8} md={6} key={i}>
+          <div className="flex items-center p-3 border rounded-lg bg-theme-background border-theme-border">
+            <BoxSkeleton className="w-6 h-6 mr-3" />
+            <BoxSkeleton className="h-4 w-24" />
+          </div>
+        </Col>
+      ))}
+    </Row>
+  );
+}
+
 export default function NavDetail() {
   const router = useRouter();
   const { id } = router.query;
   const { t } = useTranslation('translation');
-  const [loading, setLoading] = useState(false)
-  const [detail, setDetail] = useState<NavItem>({
-    id: '',
-    categoryId: "",
-    name: "detail",
-    href: "/",
-    desc: "this is description",
-    logo: "https://img.alicdn.com/imgextra/i1/O1CN014dDq4L1Zc3guRwcse_!!6000000003214-2-tps-1600-941.png",
-    authorName: "doggy-nav",
-    authorUrl: "/admin",
-    auditTime: new Date().toLocaleString(),
-    createTime: new Date().toLocaleString(),
-    tags: ["private"],
-    view: 1,
-    star: 1,
-    status: 1,
-  })
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [detail, setDetail] = useState<NavItem | null>(null);
   const [randomNavList, setRandomNavList] = useState<NavItem[]>([])
+  const [randomLoading, setRandomLoading] = useState(false)
   const [isStar, setIsStar] = useState(false)
   const [isFavorite, setIsFavorite] = useState<boolean>(false)
   const [, favoritesActions] = useAtom(favoritesActionsAtom);
@@ -42,22 +50,22 @@ export default function NavDetail() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
+      setInitialLoading(true)
       try {
-        const [detail, randomNavList] = await Promise.all([
+        const [detailRes, randomRes] = await Promise.all([
           api.findNavById(id as string),
           api.getRandomNav(),
         ])
-        setDetail(detail || { tags: [] })
-        setIsFavorite(!!detail?.isFavorite)
-        setRandomNavList(randomNavList || [])
+        setDetail(detailRes || null)
+        setIsFavorite(!!detailRes?.isFavorite)
+        setRandomNavList(randomRes || [])
       } catch (error) {
         console.error('Failed to fetch data', error)
       } finally {
-        setLoading(false)
+        setInitialLoading(false)
       }
     }
-    id && typeof id === 'string' && fetchData()
+    if (id && typeof id === 'string') fetchData()
   }, [id])
 
   const handleNavStarFn = async () => {
@@ -104,24 +112,77 @@ export default function NavDetail() {
   }
 
   const getRandomNavList = async () => {
-    setLoading(true)
+    setRandomLoading(true)
     try {
-      const randomNavList = await api.getRandomNav()
-      setRandomNavList(randomNavList || [])
+      const res = await api.getRandomNav()
+      setRandomNavList(res || [])
     } catch (error) {
       console.error('Failed to get random nav list', error)
     } finally {
-      setLoading(false)
+      setRandomLoading(false)
     }
   }
 
-  if (!detail) {
-    return <Spin />
+  if (initialLoading || !detail) {
+    return (
+      <div className="container p-4 mx-auto max-w-7xl text-theme-foreground transition-colors">
+        <Row gutter={32} className="site-info mt-8">
+          <Col md={8} xs={24} className="item">
+            <div className="rounded-xl shadow-lg p-4 border border-theme-border bg-theme-background">
+              <div className="h-40 md:h-44 flex items-center justify-center bg-theme-muted border border-theme-border rounded-lg">
+                <BoxSkeleton className="w-20 h-20 md:w-24 md:h-24" />
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-3 md:gap-4 px-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <BoxSkeleton key={i} className="w-12 h-12 rounded-full" />
+                ))}
+              </div>
+            </div>
+          </Col>
+          <Col md={16} xs={24} className="item">
+            <div className="content">
+              <BoxSkeleton className="h-8 w-2/3 mb-4" />
+              <BoxSkeleton className="h-5 w-full mb-2" />
+              <BoxSkeleton className="h-5 w-5/6 mb-6" />
+              <div className="mb-6 flex gap-2 flex-wrap">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <BoxSkeleton key={i} className="h-6 w-16 rounded-full" />
+                ))}
+              </div>
+              <BoxSkeleton className="h-10 w-40 rounded-lg" />
+            </div>
+          </Col>
+        </Row>
+
+        <Row gutter={32} className="random-section mt-12">
+          <Col span={24}>
+            <div className="rounded-xl shadow-lg border border-theme-border overflow-hidden bg-theme-background">
+              <div className="flex justify-between items-center p-6 border-b border-theme-border">
+                <BoxSkeleton className="h-6 w-48" />
+                <BoxSkeleton className="h-6 w-6 rounded-full" />
+              </div>
+              <div className="p-6">
+                <RandomListSkeleton />
+              </div>
+            </div>
+          </Col>
+        </Row>
+
+        <Row gutter={32} className="site-detail mt-12 mb-12">
+          <Col span={24}>
+            <div className="rounded-xl shadow-lg p-8 border border-theme-border bg-theme-background">
+              <BoxSkeleton className="h-7 w-40 mb-4" />
+              <BoxSkeleton className="h-5 w-full mb-2" />
+              <BoxSkeleton className="h-5 w-11/12" />
+            </div>
+          </Col>
+        </Row>
+      </div>
+    )
   }
 
   return (
     <div className="container p-4 mx-auto max-w-7xl text-theme-foreground transition-colors">
-      {loading && <Spin />}
       <Row gutter={32} className="site-info mt-8">
         <Col md={8} xs={24} className="item">
           <div className="shiny left rounded-xl shadow-lg p-4 relative border border-theme-border bg-theme-background transition-colors">
@@ -251,24 +312,28 @@ export default function NavDetail() {
               </div>
             </div>
             <div className="app-card-content p-6">
-              <Row gutter={[16, 16]}>
-                {randomNavList.map((item) => (
-                  <Col span={12} sm={8} md={6} key={item.id}>
-                    <Link
-                      href={`/nav/${item.id}`}
-                      className="nav-block flex items-center p-3 border rounded-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5"
-                      style={{
-                        backgroundColor: 'color-mix(in srgb, var(--color-muted) 85%, transparent)',
-                        borderColor: 'var(--color-border)',
-                        color: 'var(--color-muted-foreground)'
-                      }}
-                    >
-                      <Image src={item.logo} alt={item.name} className="nav-logo w-6 h-6 mr-3 rounded" width={24} height={24}/>
-                      <h4 className="nav-name m-0 truncate text-sm font-medium">{item.name}</h4>
-                    </Link>
-                  </Col>
-                ))}
-              </Row>
+              {randomLoading ? (
+                <RandomListSkeleton />
+              ) : (
+                <Row gutter={[16, 16]}>
+                  {randomNavList.map((item) => (
+                    <Col span={12} sm={8} md={6} key={item.id}>
+                      <Link
+                        href={`/nav/${item.id}`}
+                        className="nav-block flex items-center p-3 border rounded-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5"
+                        style={{
+                          backgroundColor: 'color-mix(in srgb, var(--color-muted) 85%, transparent)',
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-muted-foreground)'
+                        }}
+                      >
+                        <Image src={item.logo} alt={item.name} className="nav-logo w-6 h-6 mr-3 rounded" width={24} height={24}/>
+                        <h4 className="nav-name m-0 truncate text-sm font-medium">{item.name}</h4>
+                      </Link>
+                    </Col>
+                  ))}
+                </Row>
+              )}
             </div>
           </div>
         </Col>

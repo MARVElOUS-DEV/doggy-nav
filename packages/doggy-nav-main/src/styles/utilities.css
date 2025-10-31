@@ -369,6 +369,16 @@
   color: var(--color-primary);
 }
 
+.text-theme-primary-foreground {
+  color: var(--color-primary-foreground);
+}
+
+/* Hover variants for theme-aware utilities (fallback for custom tokens) */
+.hover\:bg-theme-primary:hover { background-color: var(--color-primary); }
+.hover\:text-theme-primary-foreground:hover { color: var(--color-primary-foreground); }
+.hover\:text-theme-primary:hover { color: var(--color-primary); }
+.hover\:bg-theme-muted:hover { background-color: var(--color-muted); }
+
 .text-theme-sidebar {
   color: var(--color-sidebar-foreground);
 }
