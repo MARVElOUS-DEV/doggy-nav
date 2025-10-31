@@ -21,6 +21,7 @@ export type DesktopCtx = {
     updateApp: (id: string, patch: Partial<DesktopAppConfig>) => void;
     openWindow: (id: AppId) => void;
     activateWindow: (id: AppId) => void;
+    removeApp: (id: AppId) => void;
   };
 };
 
@@ -38,6 +39,9 @@ export type DesktopAppConfig = {
   expandable?: boolean;
   // If true, window stays mounted when minimized (useful for iframes/media)
   keepAliveOnMinimize?: boolean;
+  // Runtime webview metadata for user-created apps
+  userApp?: boolean;
+  webviewUrl?: string;
   render?: (ctx: DesktopCtx) => ReactNode;
   externalAction?: (ctx: DesktopCtx) => void;
 };

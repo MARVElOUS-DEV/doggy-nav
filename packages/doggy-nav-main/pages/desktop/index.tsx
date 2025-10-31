@@ -53,6 +53,7 @@ function DesktopInner() {
         updateApp: (id, patch) => actions.updateApp(id, patch),
         openWindow: (id) => actions.openWindow(id),
         activateWindow: (id) => actions.activateWindow(id),
+        removeApp: (id) => actions.removeApp(id),
       },
     };
     return state.order
@@ -161,6 +162,7 @@ function DesktopInner() {
               updateApp: (id, patch) => actions.updateApp(id, patch),
               openWindow: (id) => actions.openWindow(id),
               activateWindow: (id) => actions.activateWindow(id),
+              removeApp: (id) => actions.removeApp(id),
             },
           };
           return (

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo, useReducer, useEffect } from
 import type { AppId, DesktopAppConfig } from '@/apps/config';
 import { appsConfig, appsOrder } from '@/apps/config';
 import IframeContainer from '@/components/IframeContainer';
-import { getSetting } from '@/utils/idb';
+import { getSetting, setSetting } from '@/utils/idb';
 
 export type WindowRect = { x: number; y: number; width: number; height: number };
 
@@ -27,7 +27,8 @@ type DesktopAction =
   | { type: 'activate_window'; id: AppId }
   | { type: 'set_rect'; id: AppId; rect: WindowRect }
   | { type: 'add_app'; id: string; config: DesktopAppConfig; appendToOrder?: boolean }
-  | { type: 'update_app'; id: string; patch: Partial<DesktopAppConfig> };
+  | { type: 'update_app'; id: string; patch: Partial<DesktopAppConfig> }
+  | { type: 'remove_app'; id: AppId };
 
 function buildInitialWindows(): Record<AppId, DesktopAppConfig> {
   const init: Record<AppId, DesktopAppConfig> = {} as any;
@@ -129,6 +130,17 @@ function reducer(state: DesktopState, action: DesktopAction): DesktopState {
         windows: { ...state.windows, [action.id]: { ...prev, ...action.patch } },
       };
     }
+    case 'remove_app': {
+      const id = action.id;
+      const prev = state.windows[id];
+      if (!prev || !prev.userApp) return state; // only remove user apps
+      const { [id]: _omit, ...rest } = state.windows;
+      return {
+        ...state,
+        order: state.order.filter((x) => x !== id),
+        windows: rest,
+      };
+    }
     default:
       return state;
   }
@@ -153,6 +165,7 @@ type DesktopContextValue = {
     setWindowRect: (id: AppId, rect: WindowRect) => void;
     addApp: (config: DesktopAppConfig) => void;
     updateApp: (id: string, patch: Partial<DesktopAppConfig>) => void;
+    removeApp: (id: AppId) => void;
   };
 };
 
@@ -195,7 +208,7 @@ export function DesktopProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Hydrate wallpaper from localStorage on first mount (client-side only)
+  // Hydrate wallpaper and custom apps on first mount (client-side only)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -221,9 +234,52 @@ export function DesktopProvider({ children }: { children: React.ReactNode }) {
         })
         .catch(() => {});
     } catch {}
+      // Hydrate user apps list from IndexedDB
+      getSetting<{ id: string; title: string; icon: string; webviewUrl: string; keepAlive?: boolean; rect?: WindowRect }[]>(
+        'customApps'
+      )
+        .then((arr) => {
+          if (!arr || !Array.isArray(arr)) return;
+          arr.forEach((it) => {
+            const cfg: DesktopAppConfig = {
+              id: it.id as AppId,
+              title: it.title,
+              icon: it.icon || '/default-web.png',
+              shouldOpenWindow: true,
+              userApp: true,
+              webviewUrl: it.webviewUrl,
+              keepAliveOnMinimize: !!it.keepAlive,
+              open: false,
+              minimized: false,
+              defaultRect: it.rect || { x: 220, y: 120, width: 900, height: 600 },
+              rect: it.rect || { x: 220, y: 120, width: 900, height: 600 },
+              z: undefined,
+              render: () => <IframeContainer src={it.webviewUrl} title={it.title} />,
+            };
+            dispatch({ type: 'add_app', id: cfg.id, config: cfg, appendToOrder: true });
+          });
+        })
+        .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+
+  // Persist user apps to IndexedDB whenever windows/order change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const list = state.order
+      .map((id) => state.windows[id])
+      .filter((w): w is DesktopAppConfig => !!w && !!w.userApp)
+      .map((w) => ({
+        id: w.id,
+        title: w.title,
+        icon: w.icon,
+        webviewUrl: w.webviewUrl || '',
+        keepAlive: !!w.keepAliveOnMinimize,
+        rect: (w.rect || w.defaultRect) as WindowRect | undefined,
+      }));
+    setSetting('customApps', list).catch(() => {});
+  }, [state.order, state.windows]);
   const value: DesktopContextValue = {
     state,
     wallpapers: {
@@ -243,9 +299,11 @@ export function DesktopProvider({ children }: { children: React.ReactNode }) {
       setWindowRect: (id: AppId, rect: WindowRect) => dispatch({ type: 'set_rect', id, rect }),
       // Runtime extension APIs
       addApp: (config: DesktopAppConfig) => {
-        dispatch({ type: 'add_app', id: config.id, config, appendToOrder: true });
+        const merged = { userApp: true, ...config } as DesktopAppConfig;
+        dispatch({ type: 'add_app', id: merged.id, config: merged, appendToOrder: true });
       },
       updateApp: (id: string, patch: Partial<DesktopAppConfig>) => dispatch({ type: 'update_app', id, patch }),
+      removeApp: (id: AppId) => dispatch({ type: 'remove_app', id }),
     },
   };
 

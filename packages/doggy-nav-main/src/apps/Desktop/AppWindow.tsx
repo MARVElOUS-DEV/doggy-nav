@@ -115,9 +115,8 @@ export default function AppWindow({
               bottomLeft: true,
               topLeft: true,
             }}
-            className="pointer-events-auto shadow-2xl border rounded-2xl backdrop-blur-xl"
+            className="pointer-events-auto shadow-2xl border rounded-2xl backdrop-blur-xl glass-dark"
             style={{
-              backgroundColor: 'var(--color-card)',
               borderColor: 'var(--color-border)',
               color: 'var(--color-card-foreground)',
             }}
@@ -125,7 +124,11 @@ export default function AppWindow({
             {/* Title bar */}
             <div
               className="app-window-title flex items-center justify-between px-3 py-2 border-b rounded-t-2xl select-none"
-              style={{ borderColor: 'var(--color-border)', touchAction: 'none' }}
+              style={{
+                borderColor: 'var(--color-border)',
+                touchAction: 'none',
+                backgroundColor: 'inherit'
+              }}
               onPointerDown={onActivate}
             >
               <div className="flex items-center gap-3">
