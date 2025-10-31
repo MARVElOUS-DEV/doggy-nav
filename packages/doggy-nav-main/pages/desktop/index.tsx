@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NextPage } from 'next';
 import AuthGuard from '@/components/AuthGuard';
 import TopMenuBar from '@/apps/Desktop/TopMenuBar';
@@ -20,6 +20,27 @@ type NextPageWithLayout = NextPage & { getLayout?: (page: React.ReactNode) => Re
 function DesktopInner() {
   const router = useRouter();
   const { state, actions, wallpapers } = useDesktop();
+  const [dockOffset, setDockOffset] = useState(0);
+  const [topbarHeight, setTopbarHeight] = useState(32);
+
+  useEffect(() => {
+    const measure = () => {
+      if (typeof window === 'undefined') return;
+      const dock = document.getElementById('desktop-dock');
+      const topbar = document.getElementById('desktop-topbar');
+      if (topbar) setTopbarHeight(Math.round(topbar.getBoundingClientRect().height));
+      if (dock) {
+        const rect = dock.getBoundingClientRect();
+        const offset = Math.max(0, window.innerHeight - rect.top);
+        setDockOffset(Math.round(offset));
+      } else {
+        setDockOffset(0);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
   const dockItems: DockItem[] = useMemo(() => {
     const ctx: DesktopCtx = {
@@ -91,10 +112,11 @@ function DesktopInner() {
       {/* Windows Area wrapper between top bar and dock */}
       <div
         id="windows-area"
-        className={`fixed left-0 right-0 top-10 bottom-24 z-[55] ${lpOpen ? '' : 'pointer-events-none'}`}
+        className={`fixed left-0 right-0 z-[55] ${lpOpen ? '' : 'pointer-events-none'}`}
+        style={{ top: topbarHeight, bottom: dockOffset }}
       >
         {/* Launchpad should cover header bar and windows area (full-screen overlay) */}
-        <Launchpad open={lpOpen} onClose={() => actions.closeLaunchpad()} withinArea={false} />
+        <Launchpad open={lpOpen} onClose={() => actions.closeLaunchpad()} withinArea={false} dockOffset={dockOffset} />
       </div>
 
       {/* Windows generated from config */}

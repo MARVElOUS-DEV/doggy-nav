@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Rnd, RndResizeCallback, RndDragCallback } from 'react-rnd';
 import { AnimatePresence, motion } from 'framer-motion';
 import TrafficLights from './TrafficLights';
+import { IconDragDotVertical } from '@arco-design/web-react/icon';
 
 export interface WindowRect {
   x: number;
@@ -92,7 +93,7 @@ export default function AppWindow({
           variants={variants}
         >
           <Rnd
-            bounds={bounds ?? "window"}
+            bounds={bounds ?? 'window'}
             size={{ width: localRect.width, height: localRect.height }}
             position={{ x: localRect.x, y: localRect.y }}
             onResizeStop={onResizeStop}
@@ -125,33 +126,33 @@ export default function AppWindow({
               <div className="flex items-center gap-3">
                 <div className="no-drag">
                   <TrafficLights
-                  onClose={onClose}
-                  onMinimize={onMinimize}
-                  onMaximize={() => {
-                    if (!maximized) {
-                      prevRectRef.current = { ...localRect };
-                      let next: WindowRect;
-                      if (typeof getMaxArea === 'function') {
-                        next = getMaxArea();
+                    onClose={onClose}
+                    onMinimize={onMinimize}
+                    onMaximize={() => {
+                      if (!maximized) {
+                        prevRectRef.current = { ...localRect };
+                        let next: WindowRect;
+                        if (typeof getMaxArea === 'function') {
+                          next = getMaxArea();
+                        } else {
+                          const margin = 20;
+                          const top = 60;
+                          const w = Math.max(320, window.innerWidth - margin * 2);
+                          const h = Math.max(200, window.innerHeight - top - margin);
+                          next = { x: margin, y: top, width: w, height: h };
+                        }
+                        setLocalRect(next);
+                        onRectChange?.(next);
+                        setMaximized(true);
                       } else {
-                        const margin = 20;
-                        const top = 60;
-                        const w = Math.max(320, window.innerWidth - margin * 2);
-                        const h = Math.max(200, window.innerHeight - top - margin);
-                        next = { x: margin, y: top, width: w, height: h };
+                        const prev = prevRectRef.current;
+                        if (prev) {
+                          setLocalRect(prev);
+                          onRectChange?.(prev);
+                        }
+                        setMaximized(false);
                       }
-                      setLocalRect(next);
-                      onRectChange?.(next);
-                      setMaximized(true);
-                    } else {
-                      const prev = prevRectRef.current;
-                      if (prev) {
-                        setLocalRect(prev);
-                        onRectChange?.(prev);
-                      }
-                      setMaximized(false);
-                    }
-                  }}
+                    }}
                   />
                 </div>
                 <div
@@ -161,8 +162,12 @@ export default function AppWindow({
                   {title}
                 </div>
               </div>
-              <div className="text-xs px-1" style={{ color: 'var(--color-muted-foreground)' }}>
-                Drag the bar to move
+              <div
+                className="text-xs px-1 flex items-center"
+                style={{ color: 'var(--color-muted-foreground)' }}
+              >
+                <IconDragDotVertical className="mr-1" />
+                <span>Drag window</span>
               </div>
             </div>
 
