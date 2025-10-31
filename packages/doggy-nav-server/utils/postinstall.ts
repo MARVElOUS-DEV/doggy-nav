@@ -7,6 +7,7 @@ import mongoCfg from '../config/mongodb';
 import applicationModel from '../app/model/application';
 import * as crypto from 'crypto';
 import { DEFAULT_ROLES } from '../app/permissions';
+import groupModel from '../app/model/group';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -36,6 +37,7 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
 
     const userSchemaModel = userModel(db);
     const roleSchemaModel = roleModel(db);
+    const groupSchemaModel = groupModel(db);
     const applicationSchemaModel = applicationModel(db);
     console.info('mongoUrl', mongoUrl);
 
@@ -66,6 +68,15 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
       // ensure the created/updated admin user is sysadmin
       await userSchemaModel.updateOne({ username: finalUsername }, { $addToSet: { roles: sysAdminRole._id } });
       console.info(`ensured ${finalUsername} has sysadmin role ✅`);
+    }
+
+    // Ensure default linuxdo group exists
+    const linuxdo = await groupSchemaModel.findOne({ slug: 'linuxdo' });
+    if (!linuxdo) {
+      await groupSchemaModel.create({ slug: 'linuxdo', displayName: 'LinuxDo', description: 'Users authenticated via LinuxDo' });
+      console.info('created default group "linuxdo" ✅');
+    } else {
+      console.info('default group "linuxdo" exists ✅');
     }
 
 
