@@ -98,6 +98,7 @@ export default function AppWindow({
             onResizeStop={onResizeStop}
             onDragStop={onDragStop}
             dragHandleClassName="app-window-title"
+            cancel=".no-drag, button"
             enableResizing={{
               top: true,
               right: true,
@@ -118,11 +119,12 @@ export default function AppWindow({
             {/* Title bar */}
             <div
               className="app-window-title flex items-center justify-between px-3 py-2 border-b rounded-t-2xl select-none"
-              style={{ borderColor: 'var(--color-border)' }}
-              onMouseDown={onActivate}
+              style={{ borderColor: 'var(--color-border)', touchAction: 'none' }}
+              onPointerDown={onActivate}
             >
               <div className="flex items-center gap-3">
-                <TrafficLights
+                <div className="no-drag">
+                  <TrafficLights
                   onClose={onClose}
                   onMinimize={onMinimize}
                   onMaximize={() => {
@@ -150,7 +152,8 @@ export default function AppWindow({
                       setMaximized(false);
                     }
                   }}
-                />
+                  />
+                </div>
                 <div
                   className="ml-1 font-medium text-sm"
                   style={{ color: 'var(--color-muted-foreground)' }}
@@ -164,7 +167,7 @@ export default function AppWindow({
             </div>
 
             {/* Content */}
-            <div className="w-full h-[calc(100%-40px)] overflow-auto" onMouseDown={onActivate}>
+            <div className="w-full h-[calc(100%-40px)] overflow-auto" onPointerDown={onActivate}>
               {children}
             </div>
           </Rnd>

@@ -33,15 +33,15 @@ export default function SystemMenu({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    const onDocClick = (e: MouseEvent) => {
+    const onDocPointer = (e: PointerEvent) => {
       if (!containerRef.current) return;
       if (!containerRef.current.contains(e.target as Node)) onClose();
     };
     document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('pointerdown', onDocPointer);
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('pointerdown', onDocPointer);
     };
   }, [open, onClose]);
 

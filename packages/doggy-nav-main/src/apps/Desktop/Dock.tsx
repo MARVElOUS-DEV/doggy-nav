@@ -14,14 +14,14 @@ export default function Dock({ items }: { items: DockItem[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mouseX, setMouseX] = useState<number | null>(null);
 
-  const onMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
+  const onMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
     setMouseX(e.clientX);
   };
   const onLeave = () => setMouseX(null);
 
   // Global listener limited strictly to inside the dock container bounds
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: PointerEvent) => {
       const el = containerRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -32,8 +32,8 @@ export default function Dock({ items }: { items: DockItem[] }) {
         e.clientY <= rect.bottom;
       setMouseX(inside ? e.clientX : null);
     };
-    window.addEventListener('mousemove', handler);
-    return () => window.removeEventListener('mousemove', handler);
+    window.addEventListener('pointermove', handler);
+    return () => window.removeEventListener('pointermove', handler);
   }, []);
 
   const hoverIntensity = mouseX == null ? 0 : 1; // simple presence-based intensity
@@ -45,8 +45,8 @@ export default function Dock({ items }: { items: DockItem[] }) {
     <div className="pointer-events-none fixed left-0 right-0 bottom-4 z-[60] flex justify-center">
       <div
         ref={containerRef}
-        onMouseMove={onMove}
-        onMouseLeave={onLeave}
+        onPointerMove={onMove}
+        onPointerLeave={onLeave}
         className="pointer-events-auto glass-dark rounded-2xl px-3 py-2 shadow-xl flex gap-2"
         style={{
           transform: `scale(${barScaleX}, ${barScaleY})`,

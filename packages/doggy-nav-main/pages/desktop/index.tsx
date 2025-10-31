@@ -40,6 +40,10 @@ function DesktopInner() {
         iconSrc: cfg.icon,
         running,
         onClick: () => {
+          if (id === 'launchpad') {
+            state.lpOpen ? actions.closeLaunchpad() : actions.openLaunchpad();
+            return;
+          }
           actions.closeLaunchpad();
           if (cfg.shouldOpenWindow) {
             actions.openWindow(id);
@@ -51,7 +55,7 @@ function DesktopInner() {
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.windows, wallpapers.current, wallpapers.items, router]);
+  }, [state.windows, state.lpOpen, wallpapers.current, wallpapers.items, router]);
 
   const onMenuClick = useCallback(() => actions.toggleSys(), [actions]);
 
