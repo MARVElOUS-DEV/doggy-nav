@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useReducer } from 'react';
+import React, { createContext, useContext, useMemo, useReducer, useEffect } from 'react';
 import type { AppId, DesktopAppConfig } from '@/apps/config';
 import { appsConfig, appsOrder } from '@/apps/config';
 
@@ -159,7 +159,27 @@ export function DesktopProvider({ children }: { children: React.ReactNode }) {
     const found = wallpapersList.find((w) => w.id === id);
     if (!found) return;
     dispatch({ type: 'set_wallpaper', payload: found.src });
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('desktop:wallpaper', id);
+      } catch {}
+    }
   };
+
+  // Hydrate wallpaper from localStorage on first mount (client-side only)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedId = window.localStorage.getItem('desktop:wallpaper');
+      if (savedId) {
+        const found = wallpapersList.find((w) => w.id === savedId);
+        if (found) {
+          dispatch({ type: 'set_wallpaper', payload: found.src });
+        }
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const value: DesktopContextValue = {
     state,

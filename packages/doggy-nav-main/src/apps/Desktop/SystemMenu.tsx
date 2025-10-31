@@ -27,6 +27,33 @@ export default function SystemMenu({
     () => setTheme(theme === 'light' ? 'dark' : 'light'),
     [theme, setTheme]
   );
+  // FIXME: avoid duplicate code with TopMenuBar.tsx
+  // Initialize theme on Desktop route (since Desktop bypasses RootLayout)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = window.localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'light' || saved === 'dark') {
+      setTheme(saved);
+    } else {
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Apply theme to DOM and persist
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      document.body.setAttribute('arco-theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      document.body.removeAttribute('arco-theme');
+    }
+    window.localStorage.setItem('theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!open) return;
@@ -53,7 +80,9 @@ export default function SystemMenu({
   const featured = useMemo(() => {
     // Show a small curated set to avoid rendering dozens in the quick menu
     const idx = wallpapers.findIndex((w) => w.id === current);
-    const around = wallpapers.slice(Math.max(0, idx - 4), idx).concat(wallpapers.slice(idx + 1, idx + 7));
+    const around = wallpapers
+      .slice(Math.max(0, idx - 4), idx)
+      .concat(wallpapers.slice(idx + 1, idx + 7));
     const base = around.length >= 8 ? around.slice(0, 8) : wallpapers.slice(0, 8);
     return base;
   }, [wallpapers, current]);

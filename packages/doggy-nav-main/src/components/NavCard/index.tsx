@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Tooltip, Grid, Button, Space } from '@arco-design/web-react';
 import { NavItem } from '@/types';
 import { useUrlStatus } from '@/utils/urlStatus';
@@ -8,6 +7,7 @@ import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconRightCircle } from '@arco-design/web-react/icon';
 import { FavoriteButton, StarButton, ViewCounter } from '../Buttons';
 import { useTranslation } from 'react-i18next';
+import DoggyImage from '../DoggyImage';
 
 const { Col } = Grid;
 
@@ -27,7 +27,6 @@ export default function AppNavItem({
   const { t } = useTranslation();
   const [isStar, setIsStar] = useState(false);
   const [isFavorite, setIsFavorite] = useState(data.isFavorite || false);
-  const [logoSrc, setLogoSrc] = useState(data.logo);
   const [viewCount, setViewCount] = useState<number>(data.view || 0);
   const [intersectionRef, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const urlStatus = useUrlStatus(data.href, isVisible);
@@ -59,10 +58,6 @@ export default function AppNavItem({
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, [data.authorName]);
-
-  const handleLogoError = () => {
-    setLogoSrc('/default-web.png');
-  };
 
   const handleNavStar = () => {
     onHandleNavStar(data, () => {
@@ -153,13 +148,12 @@ export default function AppNavItem({
         <Link href={`/nav/${data.id}`} className="px-6 pt-6 pb-2 flex flex-col flex-1">
           <div className="flex items-center space-x-4 mb-4">
             <div className="logo-container flex-shrink-0">
-              <Image
-                src={logoSrc}
+              <DoggyImage
+                logo={data.logo}
                 alt={data.name}
                 width={48}
                 height={48}
                 className="logo w-12 h-12 rounded-xl shadow-md transition-transform duration-300 group-hover:scale-110"
-                onError={handleLogoError}
               />
             </div>
             <div className="flex-1 min-w-0">

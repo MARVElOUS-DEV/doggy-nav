@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react';
 import { Grid, Tooltip, Message } from '@arco-design/web-react';
 import api from '@/utils/api';
 import Link from 'next/link';
-import Image from 'next/image';
 import { NavItem } from '@/types';
 import { useRouter } from 'next/router';
 import { IconHeartFill } from '@arco-design/web-react/icon';
 import { useAtom } from 'jotai';
 import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
+import DoggyImage from '@/components/DoggyImage';
 
 const { Row, Col } = Grid
 
@@ -188,9 +188,9 @@ export default function NavDetail() {
           <div className="shiny left rounded-xl shadow-lg p-4 relative border border-theme-border bg-theme-background transition-colors">
             <div className="img-wrap h-40 md:h-44 flex items-center justify-center bg-theme-muted border border-theme-border rounded-lg transition-colors">
               <Link href={detail.href} target="_blank" rel="noopener noreferrer">
-                <Image
-                  src={detail.logo}
-                  alt={detail.name}
+                <DoggyImage
+                  logo={detail.logo}
+                  name={detail.name}
                   width={80}
                   height={80}
                   className="object-contain rounded-lg shadow-sm max-w-20 max-h-20 md:max-w-24 md:max-h-24"
@@ -327,7 +327,7 @@ export default function NavDetail() {
                           color: 'var(--color-muted-foreground)'
                         }}
                       >
-                        <Image src={item.logo} alt={item.name} className="nav-logo w-6 h-6 mr-3 rounded" width={24} height={24}/>
+                        <DoggyImage logo={item.logo} name={item.name} className="nav-logo w-6 h-6 mr-3 rounded" width={24} height={24}/>
                         <h4 className="nav-name m-0 truncate text-sm font-medium">{item.name}</h4>
                       </Link>
                     </Col>
