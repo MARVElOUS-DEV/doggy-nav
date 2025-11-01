@@ -216,6 +216,7 @@ export default class UserService extends Service {
     }
 
     const user = await this.createUserFromProvider(params);
+    await this.ensureProviderGroup(user._id, params.provider);
 
     await ctx.model.UserProvider.create({
       userId: user._id,
@@ -227,6 +228,27 @@ export default class UserService extends Service {
     });
 
     return user;
+  }
+
+  private async ensureProviderGroup(
+    userId: any,
+    provider: 'github' | 'google' | 'linuxdo'
+  ) {
+    const { ctx } = this;
+    let slug: string | null = null;
+    if (provider === 'linuxdo') slug = 'linuxdo';
+    if (!slug) return;
+
+    try {
+      const group = (await ctx.model.Group
+        .findOne({ slug }, { _id: 1 })
+        .lean()) as any;
+      if (group?._id) {
+        await ctx.model.User.updateOne({ _id: userId }, { $addToSet: { groups: group._id } });
+      }
+    } catch (e) {
+      ctx.logger.warn(`[oauth:${provider}] failed to ensure group membership`, e);
+    }
   }
 
   validateUserInput(username: string, email: string, password: string) {

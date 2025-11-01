@@ -86,7 +86,18 @@ export default function SearchResultsPage() {
 
   return (
     <div className="main p-4 rounded-xl bg-theme-background text-theme-foreground transition-colors">
-      {loading && <Spin />}
+      {/* Optimized Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-column items-center gap-4 p-6 glass-medium rounded-xl border border-theme-border animate-fade-in-simple">
+            <Spin size={32} />
+            <span className="text-theme-foreground text-lg font-medium">
+              {t('loading')}
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="website-wrapper">
         <div className="mb-6">
           <Title heading={3} style={{ color: 'var(--color-foreground)' }}>

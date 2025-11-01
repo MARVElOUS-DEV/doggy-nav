@@ -4,7 +4,7 @@ import createOAuthCallback from './middleware/oauthCallback';
 export default (app: Application) => {
   const { controller, router } = app;
   const oauthCallback = createOAuthCallback();
-  
+
   router.post('/api/auth/logout', controller.auth.logout);
   router.get('/api/auth/providers', controller.auth.providers);
   router.get('/api/auth/me', controller.auth.me);
@@ -99,4 +99,10 @@ export default (app: Application) => {
 
   // Translation routes
   router.post('/api/translate', controller.translate.translate);
+
+  // Email settings routes
+  router.get('/api/email-settings', controller.emailSettings.get);
+  router.put('/api/email-settings', controller.emailSettings.update);
+  router.post('/api/email-settings/test', controller.emailSettings.test);
+  router.get('/api/email-settings/health', controller.emailSettings.health);
 };

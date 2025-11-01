@@ -54,19 +54,20 @@ export const DynamicIcon = ({ iconName, fontSize = 14 }: DynamicIconProps): JSX.
     return <span style={{ fontSize: `${fontSize}px` }}>{emoji}</span>;
   }
   if (iconName.startsWith('type:arco_')) {
+    const arcoIconName = iconName.replace('type:arco_', '');
     const IconComponent = dynamic(
       () =>
         import(`@arco-design/web-react/icon`).then((module: any) => {
-          if (module[iconName]) {
-            return { default: module[iconName] };
+          if (module[arcoIconName]) {
+            return { default: module[arcoIconName] };
           }
-          throw new Error(`Icon ${iconName} not found`);
+          throw new Error(`Icon ${arcoIconName} not found`);
         }),
       { ssr: false }
     ) as unknown as React.JSX.ElementType;
     return (
       <React.Suspense fallback="...">
-        <IconComponent style={{ fontSize }} />
+        <IconComponent style={{ fontSize, height: 40 }} />
       </React.Suspense>
     );
   }
