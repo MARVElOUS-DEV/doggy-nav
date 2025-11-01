@@ -13,10 +13,18 @@
   background-color: transparent;
 }
 
+.arco-menu-dark .arco-menu-inline-header,
+.arco-menu-dark .arco-menu-inline-header {
+  background-color: inherit;
+  color: inherit;
+}
+
 .arco-menu-light .arco-menu-item:hover,
 .arco-menu-light .arco-menu-submenu-title:hover,
+.arco-menu-light .arco-menu-inline-header:hover,
 .arco-menu-dark .arco-menu-item:hover,
-.arco-menu-dark .arco-menu-submenu-title:hover {
+.arco-menu-dark .arco-menu-submenu-title:hover,
+.arco-menu-dark .arco-menu-inline-header:hover {
   color: var(--color-foreground);
   background-color: var(--color-muted);
 }
