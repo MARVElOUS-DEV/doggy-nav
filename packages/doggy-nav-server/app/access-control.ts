@@ -472,6 +472,31 @@ export const routePermissions: RoutePermission[] = [
     require: { level: 'authenticated' },
     description: 'translate tools',
   },
+  // Email settings (sysadmin only)
+  {
+    method: 'GET',
+    path: '/api/email-settings',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Get email settings',
+  },
+  {
+    method: 'PUT',
+    path: '/api/email-settings',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Update email settings',
+  },
+  {
+    method: 'POST',
+    path: '/api/email-settings/test',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Test email settings',
+  },
+  {
+    method: 'GET',
+    path: '/api/email-settings/health',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Email service health check',
+  },
 ];
 
 // Helper function to find route permission

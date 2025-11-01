@@ -13,12 +13,38 @@ export const API_INVITE_CODES_LIST = '/api/invite-codes/list';
 export const API_ROLES = '/api/roles';
 export const API_GROUPS = '/api/groups';
 export const API_GROUP_MEMBERS = (id: string) => `/api/groups/${id}/members`;
+export const API_EMAIL_SETTINGS = '/api/email-settings';
 
 export async function login(data: { username: string; password: string }) {
   return request({
     url: API_LOGIN,
     method: 'POST',
     data,
+  });
+}
+
+export async function getEmailSettings() {
+  return request({
+    url: API_EMAIL_SETTINGS,
+    method: 'GET',
+  });
+}
+
+export async function updateEmailSettings(data: any) {
+  return request({
+    url: API_EMAIL_SETTINGS,
+    method: 'PUT',
+    data,
+    msg: 'Email settings updated successfully',
+  });
+}
+
+export async function testEmailSettings(data: any) {
+  return request({
+    url: `${API_EMAIL_SETTINGS}/test`,
+    method: 'POST',
+    data,
+    msg: 'Test email sent successfully',
   });
 }
 

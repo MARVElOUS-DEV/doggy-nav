@@ -154,7 +154,40 @@ export default class NavController extends Controller {
   async add() {
     this.ctx.request.body.status = NAV_STATUS.wait;
     this.ctx.request.body.createTime = nowToChromeTime();
-    await super.add();
+
+    try {
+      await super.add();
+
+      // Send notifications after successful submission
+      const { name: navItemName, submitterEmail, submitterName } = this.ctx.request.body;
+      if (navItemName && submitterEmail) {
+        await this.sendSubmissionNotifications(navItemName, submitterEmail, submitterName);
+      }
+    } catch (error: any) {
+      this.ctx.logger.error('Failed to add nav item:', error);
+      throw error;
+    }
+  }
+
+  // Helper method to send submission notifications
+  private async sendSubmissionNotifications(navItemName: string, submitterEmail: string, submitterName?: string) {
+    try {
+      const emailService = this.ctx.service.email;
+
+      // Send notification to submitter
+      await emailService.sendSubmissionNotification(submitterEmail, navItemName);
+
+      // Send notification to admins
+      const settings = await emailService.getSettings();
+      if (settings?.adminEmails && settings.adminEmails.length > 0) {
+        await emailService.sendAdminNotification(settings.adminEmails, navItemName, submitterName);
+      }
+
+      this.ctx.logger.info(`Submission notifications sent for ${navItemName}`);
+    } catch (error: any) {
+      // Log email errors but don't fail the submission process
+      this.ctx.logger.error('Failed to send submission notifications:', error);
+    }
   }
 
   async reptile() {
@@ -184,16 +217,57 @@ export default class NavController extends Controller {
   async audit() {
     this.ctx.request.body.auditTime = new Date();
 
-    const { status, id } = this.ctx.request.body;
+    const { status, id, reason } = this.ctx.request.body;
 
-    const navItem = await this.ctx.model.Nav.findOne({ _id: id });
-    const { tags } = navItem;
+    try {
+      const navItem = await this.ctx.model.Nav.findOne({ _id: id });
+      if (!navItem) {
+        this.error('Nav item not found');
+        return;
+      }
 
-    if (status === NAV_STATUS.pass) {
-      // 批量添加tag
-      await this.ctx.service.tag.addMultiTag(tags);
+      const { tags } = navItem;
+
+      // Send notifications based on audit result
+      await this.sendAuditNotifications(navItem, status, reason);
+
+      if (status === NAV_STATUS.pass) {
+        // 批量添加tag
+        await this.ctx.service.tag.addMultiTag(tags);
+      }
+
+      await super.update();
+    } catch (error: any) {
+      this.ctx.logger.error('Audit failed:', error);
+      this.error(error.message || 'Audit failed');
     }
-    await super.update();
+  }
+
+  // Helper method to send audit notifications
+  private async sendAuditNotifications(navItem: any, status: number, reason?: string) {
+    try {
+      const { name: navItemName, submitterEmail } = navItem;
+
+      // Don't send notifications if submitter email is not available
+      if (!submitterEmail) {
+        this.ctx.logger.warn(`No submitter email for nav item ${navItem._id}, skipping notifications`);
+        return;
+      }
+
+      const emailService = this.ctx.service.email;
+
+      // Send notification to submitter based on audit result
+      if (status === NAV_STATUS.pass) {
+        await emailService.sendApprovalNotification(submitterEmail, navItemName);
+      } else if (status === NAV_STATUS.refuse) {
+        await emailService.sendRejectionNotification(submitterEmail, navItemName, reason);
+      }
+
+      this.ctx.logger.info(`Audit notifications sent for nav item ${navItem._id}`);
+    } catch (error: any) {
+      // Log email errors but don't fail the audit process
+      this.ctx.logger.error('Failed to send audit notifications:', error);
+    }
   }
 
   /**
