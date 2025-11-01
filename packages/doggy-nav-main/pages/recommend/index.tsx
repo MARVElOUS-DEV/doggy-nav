@@ -27,6 +27,11 @@ export default function Recommend() {
   const addNav = async (values: RecommendFormValues) => {
     setLoading(true);
     try {
+      // 如果选择了用户组，自动将visibility设置为restricted
+      if (values.audience?.allowGroups && values.audience.allowGroups.length > 0) {
+        values.audience.visibility = 'restricted';
+      }
+
       await axios.post(API_NAV_ADD, values);
       Message.success(t('thank_you_support'));
       form.resetFields();
