@@ -3,6 +3,7 @@ import { createAuthMiddleware, requirePermission } from '../middleware/auth';
 import { JWTUtils } from '../utils/jwtUtils';
 import { D1UserRepository } from '../adapters/d1UserRepository';
 import { responses } from '../index';
+import { getUser } from '../ioc/helpers';
 import bcrypt from 'bcryptjs';
 
 const authRoutes = new Hono<{ Bindings: { DB: D1Database; JWT_SECRET?: string } }>();
@@ -257,7 +258,7 @@ authRoutes.post('/logout', async (c) => {
 // Protected routes (require authentication)
 authRoutes.get('/me', createAuthMiddleware({ required: true }), async (c) => {
   try {
-    const user = c.get('user');
+    const user = getUser(c)!;
 
     return c.json(responses.ok({
       user,
@@ -271,7 +272,7 @@ authRoutes.get('/me', createAuthMiddleware({ required: true }), async (c) => {
 
 authRoutes.put('/me', createAuthMiddleware({ required: true }), async (c) => {
   try {
-    const user = c.get('user');
+    const user = getUser(c)!;
     const body = await c.req.json();
 
     const userRepository = new D1UserRepository(c.env.DB);
@@ -307,7 +308,7 @@ authRoutes.put('/me', createAuthMiddleware({ required: true }), async (c) => {
 
 authRoutes.post('/change-password', createAuthMiddleware({ required: true }), async (c) => {
   try {
-    const user = c.get('user');
+    const user = getUser(c)!;
     const body = await c.req.json();
     const { currentPassword, newPassword } = body;
 

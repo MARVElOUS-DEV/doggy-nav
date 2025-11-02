@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { createAuthMiddleware, requirePermission } from '../middleware/auth';
-import { D1RoleRepository } from '../adapters/d1RoleRepository';
+import { TOKENS } from '../ioc/tokens';
+import { getDI } from '../ioc/helpers';
 import { responses } from '../index';
 
 const roleRoutes = new Hono<{ Bindings: { DB: D1Database; JWT_SECRET?: string } }>();
@@ -12,7 +13,7 @@ roleRoutes.get('/', createAuthMiddleware({ required: true }), requirePermission(
     const search = c.req.query('search') || '';
     const isSystem = c.req.query('isSystem');
 
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
 
     const options: any = {
       pageSize: limit,
@@ -44,7 +45,7 @@ roleRoutes.get('/', createAuthMiddleware({ required: true }), requirePermission(
 roleRoutes.get('/:id', createAuthMiddleware({ required: true }), requirePermission('role:read'), async (c) => {
   try {
     const { id } = c.req.param();
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
     const role = await roleRepository.getById(id);
 
     if (!role) {
@@ -64,7 +65,7 @@ roleRoutes.get('/:id', createAuthMiddleware({ required: true }), requirePermissi
 roleRoutes.get('/slug/:slug', createAuthMiddleware({ required: true }), requirePermission('role:read'), async (c) => {
   try {
     const { slug } = c.req.param();
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
     const role = await roleRepository.getBySlug(slug);
 
     if (!role) {
@@ -90,7 +91,7 @@ roleRoutes.post('/', createAuthMiddleware({ required: true }), requirePermission
       return c.json(responses.badRequest('Slug and display name are required'), 400);
     }
 
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
 
     // Check if role already exists
     const existingRole = await roleRepository.getBySlug(slug);
@@ -121,7 +122,7 @@ roleRoutes.put('/:id', createAuthMiddleware({ required: true }), requirePermissi
     const { id } = c.req.param();
     const body = await c.req.json();
 
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
 
     // Check if role exists
     const existingRole = await roleRepository.getById(id);
@@ -156,7 +157,7 @@ roleRoutes.put('/:id', createAuthMiddleware({ required: true }), requirePermissi
 roleRoutes.delete('/:id', createAuthMiddleware({ required: true }), requirePermission('role:delete'), async (c) => {
   try {
     const { id } = c.req.param();
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
 
     // Check if role exists
     const existingRole = await roleRepository.getById(id);
@@ -185,7 +186,7 @@ roleRoutes.delete('/:id', createAuthMiddleware({ required: true }), requirePermi
 roleRoutes.get('/:id/permissions', createAuthMiddleware({ required: true }), requirePermission('role:read'), async (c) => {
   try {
     const { id } = c.req.param();
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
 
     // Check if role exists
     const role = await roleRepository.getById(id);
@@ -215,7 +216,7 @@ roleRoutes.put('/:id/permissions', createAuthMiddleware({ required: true }), req
       return c.json(responses.badRequest('permissions must be an array'), 400);
     }
 
-    const roleRepository = new D1RoleRepository(c.env.DB);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
 
     // Check if role exists
     const role = await roleRepository.getById(id);

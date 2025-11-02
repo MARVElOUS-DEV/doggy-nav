@@ -1,7 +1,6 @@
 import CommonController from '../core/base_controller';
 import { ValidationError } from '../core/errors';
-import { InviteCodeService } from 'doggy-nav-core';
-import MongooseInviteCodeRepository from '../../adapters/inviteCodeRepository';
+import { TOKENS } from '../core/ioc';
 import { randomBytes } from 'crypto';
 
 export default class InviteCodeController extends CommonController {
@@ -16,8 +15,7 @@ export default class InviteCodeController extends CommonController {
     let { pageSize = 10, pageNumber = 1 } = query;
     pageSize = Math.min(Math.max(Number(pageSize) || 10, 1), 100);
     pageNumber = Math.max(Number(pageNumber) || 1, 1);
-    const repo = new MongooseInviteCodeRepository(ctx);
-    const service = new InviteCodeService(repo);
+    const service = ctx.di.resolve(TOKENS.InviteCodeService);
     const filter: any = {};
     if (rawQuery.active !== undefined && rawQuery.active !== '' && rawQuery.active !== 'undefined') {
       filter.active = String(query.active) === 'true';
@@ -47,8 +45,7 @@ export default class InviteCodeController extends CommonController {
     const note = body.note || '';
     const allowedEmailDomain = body.allowedEmailDomain ? String(body.allowedEmailDomain).toLowerCase().replace(/^@/, '') : null;
 
-    const repo = new MongooseInviteCodeRepository(ctx);
-    const service = new InviteCodeService(repo);
+    const service = ctx.di.resolve(TOKENS.InviteCodeService);
     const codeLength = Number(ctx.app.config?.invite?.codeLength || 12);
     const gen = (len: number) => randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len).toUpperCase();
     const res = await service.createBulkByCount({
@@ -71,8 +68,7 @@ export default class InviteCodeController extends CommonController {
       return;
     }
     const body = this.getSanitizedBody();
-    const repo = new MongooseInviteCodeRepository(ctx);
-    const service = new InviteCodeService(repo);
+    const service = ctx.di.resolve(TOKENS.InviteCodeService);
     const patch: any = {};
     if (body.active !== undefined) patch.active = !!body.active;
     if (body.usageLimit !== undefined) patch.usageLimit = Number(body.usageLimit);

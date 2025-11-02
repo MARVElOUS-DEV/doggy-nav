@@ -1,6 +1,5 @@
 import Controller from '../core/base_controller';
-import { ApplicationService } from 'doggy-nav-core';
-import MongooseApplicationRepository from '../../adapters/applicationRepository';
+import { TOKENS } from '../core/ioc';
 
 export default class ApplicationController extends Controller {
   tableName(): string {
@@ -49,7 +48,7 @@ export default class ApplicationController extends Controller {
         return this.error('应用名称不能为空');
       }
 
-      const service = new ApplicationService(new MongooseApplicationRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.ApplicationService);
       const application = await service.create(name, description, allowedOrigins);
       this.success(application);
     } catch (e: any) {
@@ -68,7 +67,7 @@ export default class ApplicationController extends Controller {
       }
 
       const { page = 1, limit = 10 } = ctx.query as any;
-      const service = new ApplicationService(new MongooseApplicationRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.ApplicationService);
       const res = await service.list({ pageNumber: Number(page), pageSize: Number(limit) });
       this.success(res);
     } catch (e: any) {
@@ -87,7 +86,7 @@ export default class ApplicationController extends Controller {
       const { hasAccess } = await this.checkApplicationAccess(id);
       if (!hasAccess) return;
 
-      const service = new ApplicationService(new MongooseApplicationRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.ApplicationService);
       const updated = await service.update(id, updates);
       this.success(updated);
     } catch (e: any) {
@@ -105,7 +104,7 @@ export default class ApplicationController extends Controller {
       const { hasAccess } = await this.checkApplicationAccess(id);
       if (!hasAccess) return;
 
-      const service = new ApplicationService(new MongooseApplicationRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.ApplicationService);
       const newSecret = await service.regenerateClientSecret(id);
       this.success({ clientSecret: newSecret });
     } catch (e: any) {
@@ -123,7 +122,7 @@ export default class ApplicationController extends Controller {
       const { hasAccess } = await this.checkApplicationAccess(id);
       if (!hasAccess) return;
 
-      const service = new ApplicationService(new MongooseApplicationRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.ApplicationService);
       const ok = await service.revoke(id);
       if (ok) this.success({ message: '应用已撤销' }); else this.error('撤销失败');
     } catch (e: any) {
@@ -138,7 +137,7 @@ export default class ApplicationController extends Controller {
       if (!clientSecret) {
         return this.error('Client secret is required');
       }
-      const service = new ApplicationService(new MongooseApplicationRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.ApplicationService);
       const isValid = await service.verifyClientSecret(clientSecret);
       this.success({ valid: isValid });
     } catch (e: any) {

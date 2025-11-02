@@ -1,4 +1,4 @@
-import type { Role, RoleListOptions } from 'doggy-nav-core';
+import type { Role } from 'doggy-nav-core';
 
 function rowToRole(row: any): Role {
   return {
@@ -8,9 +8,7 @@ function rowToRole(row: any): Role {
     description: row.description ?? '',
     permissions: JSON.parse(row.permissions || '[]'),
     isSystem: Boolean(row.is_system),
-    createdAt: row.created_at ? new Date(row.created_at) : undefined,
-    updatedAt: row.updated_at ? new Date(row.updated_at) : undefined,
-  };
+  } as Role;
 }
 
 export class D1RoleRepository {
@@ -34,9 +32,11 @@ export class D1RoleRepository {
     return row ? rowToRole(row) : null;
   }
 
-  async list(options: RoleListOptions) {
-    const { pageSize, pageNumber, filter } = options;
+  async list(options: any) {
+    const pageSize = Number(options?.pageSize ?? options?.page?.pageSize ?? 50);
+    const pageNumber = Number(options?.pageNumber ?? options?.page?.pageNumber ?? 1);
     const offset = pageSize * pageNumber - pageSize;
+    const filter = options?.filter || {};
 
     const conds: string[] = [];
     const params: any[] = [];
@@ -47,6 +47,7 @@ export class D1RoleRepository {
       params.push(...filter.slugs);
     }
 
+    // optional isSystem filter
     if (filter?.isSystem !== undefined) {
       conds.push(`is_system = ?`);
       params.push(filter.isSystem ? 1 : 0);
@@ -54,7 +55,7 @@ export class D1RoleRepository {
 
     const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
 
-    const rows = await this.db
+    const result = await this.db
       .prepare(
         `SELECT id, slug, display_name, description, permissions, is_system, created_at, updated_at
          FROM roles ${where}
@@ -63,6 +64,7 @@ export class D1RoleRepository {
       )
       .bind(...params, pageSize, offset)
       .all<any>();
+    const rows = (result?.results ?? []) as any[];
 
     const countRow = await this.db
       .prepare(`SELECT COUNT(1) as cnt FROM roles ${where}`)
@@ -71,7 +73,7 @@ export class D1RoleRepository {
 
     const total = Number(countRow?.cnt || 0);
     return {
-      data: (rows?.results || rows as any[]).map(rowToRole),
+      data: rows.map(rowToRole),
       total,
       pageNumber: Math.ceil(total / pageSize),
     };
@@ -102,7 +104,7 @@ export class D1RoleRepository {
       roleData.isSystem ? 1 : 0
     ).run();
 
-    return await this.getById(id)!;
+    return (await this.getById(id))!;
   }
 
   async update(id: string, updates: Partial<{

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { createAuthMiddleware, requirePermission, requireRole } from '../middleware/auth';
 import { D1UserRepository } from '../adapters/d1UserRepository';
 import { responses } from '../index';
+import { getUser } from '../ioc/helpers';
 import { JWTUtils } from '../utils/jwtUtils';
 
 const userRoutes = new Hono<{ Bindings: { DB: D1Database; JWT_SECRET?: string } }>();
@@ -56,7 +57,7 @@ userRoutes.get('/:id', createAuthMiddleware({ required: true }), async (c) => {
     }
 
     // Only allow users to view their own profile or require permission
-    const currentUser = c.get('user');
+    const currentUser = getUser(c)!;
     if (currentUser.id !== id && !JWTUtils.hasPermission({ permissions: currentUser.permissions } as any, 'user:read')) {
       return c.json(responses.err('Insufficient permissions'), 403);
     }
@@ -204,7 +205,7 @@ userRoutes.delete('/:id', createAuthMiddleware({ required: true }), requirePermi
     }
 
     // Don't allow deletion of self
-    const currentUser = c.get('user');
+    const currentUser = getUser(c)!;
     if (currentUser.id === id) {
       return c.json(responses.badRequest('Cannot delete your own account'), 400);
     }

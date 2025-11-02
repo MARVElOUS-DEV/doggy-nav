@@ -1,7 +1,6 @@
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
-import { RoleService } from 'doggy-nav-core';
-import MongooseRoleRepository from '../../adapters/roleRepository';
+import { TOKENS } from '../core/ioc';
 
 export default class RoleController extends Controller {
   tableName(): string { return 'Role'; }
@@ -21,7 +20,7 @@ export default class RoleController extends Controller {
           source: (user?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
         }
       : undefined;
-    const service = new RoleService(new MongooseRoleRepository(ctx));
+    const service = ctx.di.resolve(TOKENS.RoleService);
     const res = await service.list({ pageSize: query.pageSize as any, pageNumber: query.pageNumber as any } as any, auth);
     this.success(res);
   }

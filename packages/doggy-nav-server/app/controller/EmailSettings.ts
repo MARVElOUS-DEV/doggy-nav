@@ -1,7 +1,6 @@
 import Controller from '../core/base_controller';
 import { ValidationError } from '../core/errors';
-import { EmailSettingsService } from 'doggy-nav-core';
-import MongooseEmailSettingsRepository from '../../adapters/emailSettingsRepository';
+import { TOKENS } from '../core/ioc';
 
 export default class EmailSettingsController extends Controller {
   tableName(): string {
@@ -10,8 +9,7 @@ export default class EmailSettingsController extends Controller {
 
   async get() {
     try {
-      const repo = new MongooseEmailSettingsRepository(this.ctx);
-      const service = new EmailSettingsService(repo);
+      const service = this.ctx.di.resolve(TOKENS.EmailSettingsService);
       const settings = await service.get();
       this.success(settings);
     } catch (error: any) {
@@ -23,8 +21,7 @@ export default class EmailSettingsController extends Controller {
   async update() {
     try {
       const body = this.getSanitizedBody();
-      const repo = new MongooseEmailSettingsRepository(this.ctx);
-      const service = new EmailSettingsService(repo);
+      const service = this.ctx.di.resolve(TOKENS.EmailSettingsService);
       const updated = await service.update(body);
       this.success(updated);
     } catch (error: any) {

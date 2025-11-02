@@ -4,9 +4,7 @@ import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
 import { buildAudienceFilterEx } from '../utils/audience';
-import { NavService } from 'doggy-nav-core';
-import MongooseNavRepository from '../../adapters/navRepository';
-import MongooseCategoryRepository from '../../adapters/categoryRepository';
+import { TOKENS } from '../core/ioc';
 
 enum NAV_STATUS {
   pass,
@@ -39,9 +37,7 @@ export default class NavController extends Controller {
           source: (userCtx?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
         }
       : undefined;
-    const repo = new MongooseNavRepository(ctx);
-    const catRepo = new MongooseCategoryRepository(ctx);
-    const service = new NavService(repo, catRepo);
+    const service = ctx.di.resolve(TOKENS.NavService);
     const res = await service.list(
       page,
       {

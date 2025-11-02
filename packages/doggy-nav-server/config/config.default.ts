@@ -67,7 +67,7 @@ export default (appInfo: EggAppInfo) => {
     },
   };
 
-  config.middleware = ['error', 'auth'];
+  config.middleware = ['error', 'ioc', 'auth'];
 
   config.jwt = {
     secret: JWT_SECRET,

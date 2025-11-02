@@ -1,7 +1,6 @@
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
-import { GroupService } from 'doggy-nav-core';
-import MongooseGroupRepository from '../../adapters/groupRepository';
+import { TOKENS } from '../core/ioc';
 
 export default class GroupController extends Controller {
   tableName(): string { return 'Group'; }
@@ -9,7 +8,7 @@ export default class GroupController extends Controller {
   async getOne() {
     const { ctx } = this;
     const { id } = ctx.params;
-    const service = new GroupService(new MongooseGroupRepository(ctx));
+    const service = ctx.di.resolve(TOKENS.GroupService);
     const group = await service.getOne(id);
     if (!group) {
       this.ctx.status = 404;
@@ -23,7 +22,7 @@ export default class GroupController extends Controller {
     const query = this.getSanitizedQuery();
     const { pageSize = 50, pageNumber = 1 } = query as any;
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-    const service = new GroupService(new MongooseGroupRepository(ctx));
+    const service = ctx.di.resolve(TOKENS.GroupService);
     const res = await service.list({ pageSize: Number(pageSize), pageNumber: Number(pageNumber) }, {
       roles: userCtx?.roles,
       groups: userCtx?.groups,

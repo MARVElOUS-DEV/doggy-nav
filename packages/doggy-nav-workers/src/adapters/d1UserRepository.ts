@@ -1,4 +1,28 @@
-import type { User, UserListOptions } from 'doggy-nav-core';
+// Local types for worker auth/user data
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  isActive: boolean;
+  nickName?: string;
+  phone?: string;
+  avatar?: string | null;
+  passwordHash?: string;
+  extraPermissions: string[];
+  lastLoginAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface UserListOptions {
+  pageSize: number;
+  pageNumber: number;
+  filter?: {
+    emails?: string[];
+    usernames?: string[];
+    isActive?: boolean;
+  };
+}
 
 function rowToUser(row: any): User {
   return {
@@ -75,7 +99,7 @@ export class D1UserRepository {
 
     const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
 
-    const rows = await this.db
+    const result = await this.db
       .prepare(
         `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
                 last_login_at, created_at, updated_at, avatar
@@ -85,6 +109,7 @@ export class D1UserRepository {
       )
       .bind(...params, pageSize, offset)
       .all<any>();
+    const rows = (result?.results ?? []) as any[];
 
     const countRow = await this.db
       .prepare(`SELECT COUNT(1) as cnt FROM users ${where}`)
@@ -93,7 +118,7 @@ export class D1UserRepository {
 
     const total = Number(countRow?.cnt || 0);
     return {
-      data: (rows?.results || rows as any[]).map(rowToUser),
+      data: rows.map(rowToUser),
       total,
       pageNumber: Math.ceil(total / pageSize),
     };
@@ -126,7 +151,7 @@ export class D1UserRepository {
       userData.avatar || null
     ).run();
 
-    return await this.getById(id)!;
+    return (await this.getById(id))!;
   }
 
   async update(id: string, updates: Partial<{
@@ -208,8 +233,9 @@ export class D1UserRepository {
       JOIN user_roles ur ON r.id = ur.role_id
       WHERE ur.user_id = ?
     `);
-    const rows = await stmt.bind(userId).all<any>();
-    return (rows?.results || rows as any[]).map(row => row.id);
+    const result = await stmt.bind(userId).all<any>();
+    const rows = (result?.results ?? []) as any[];
+    return rows.map(row => row.id);
   }
 
   async getUserGroups(userId: string): Promise<string[]> {
@@ -218,8 +244,9 @@ export class D1UserRepository {
       JOIN user_groups ug ON g.id = ug.group_id
       WHERE ug.user_id = ?
     `);
-    const rows = await stmt.bind(userId).all<any>();
-    return (rows?.results || rows as any[]).map(row => row.id);
+    const result = await stmt.bind(userId).all<any>();
+    const rows = (result?.results ?? []) as any[];
+    return rows.map(row => row.id);
   }
 
   async setUserRoles(userId: string, roleIds: string[]): Promise<void> {

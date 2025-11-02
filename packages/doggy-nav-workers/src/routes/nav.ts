@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
-import { NavService, CategoryService } from 'doggy-nav-core';
-import D1NavRepository from '../adapters/d1NavRepository';
-import D1CategoryRepository from '../adapters/d1CategoryRepository';
+import { TOKENS } from '../ioc/tokens';
+import { getDI } from '../ioc/helpers';
 import { responses } from '../index';
 
 export const navRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
@@ -14,9 +13,7 @@ navRoutes.get('/list', async (c) => {
     const name = c.req.query('name') || undefined;
     const categoryId = c.req.query('categoryId') || undefined;
 
-    const navRepo = new D1NavRepository(c.env.DB);
-    const catRepo = new D1CategoryRepository(c.env.DB);
-    const svc = new NavService(navRepo, catRepo);
+    const svc = getDI(c).resolve(TOKENS.NavService);
 
     const res = await svc.list({ pageSize, pageNumber }, {
       ...(status !== undefined ? { status: Number(status) } : {}),

@@ -29,3 +29,4 @@ export * from './repositories/AuthRepository';
 export * from './services/UserAuthService';
 export * from './repositories/UserRepository';
 export * from './services/UserService';
+export * from './ioc';

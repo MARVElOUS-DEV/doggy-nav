@@ -4,8 +4,7 @@ import { logger } from 'hono/logger';
 import { timing } from 'hono/timing';
 import { secureHeaders } from 'hono/secure-headers';
 import { createAuthMiddleware, requireRole } from './middleware/auth';
-import { GroupService } from 'doggy-nav-core';
-import D1GroupRepository from './adapters/d1GroupRepository';
+import { getDI } from './ioc/helpers';
 import { DataMigration } from './utils/dataMigration';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
@@ -15,6 +14,7 @@ import { navRoutes } from './routes/nav';
 import { tagRoutes } from './routes/tags';
 import { inviteCodeRoutes } from './routes/inviteCode';
 import { favoriteRoutes } from './routes/favorite';
+import { createWorkerContainer } from './ioc/worker';
 
 type Env = {
   DB: D1Database;
@@ -29,6 +29,11 @@ const app = new Hono<{ Bindings: Env }>();
 app.use('*', logger());
 app.use('*', timing());
 app.use('*', secureHeaders());
+app.use('*', async (c, next) => {
+  const di = createWorkerContainer({ DB: c.env.DB });
+  c.set('di', di);
+  await next();
+});
 
 // CORS configuration (env-driven allowlist); if origin not allowed, do not set ACAO
 app.use('/api/*', async (c, next) => {
@@ -69,7 +74,7 @@ groupRoutes.get('/', async (c) => {
     const pageSize = Math.min(Math.max(Number(c.req.query('pageSize') ?? 50), 1), 100);
     const pageNumber = Math.max(Number(c.req.query('pageNumber') ?? 1), 1);
 
-    const service = new GroupService(new D1GroupRepository(c.env.DB));
+    const service = getDI(c).resolve((await import('./ioc/tokens')).TOKENS.GroupService);
     const result = await service.list({ pageSize, pageNumber });
 
     return c.json(responses.ok(result));
@@ -82,7 +87,7 @@ groupRoutes.get('/', async (c) => {
 groupRoutes.get('/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const service = new GroupService(new D1GroupRepository(c.env.DB));
+    const service = getDI(c).resolve((await import('./ioc/tokens')).TOKENS.GroupService);
     const data = await service.getOne(id);
 
     if (!data) {
@@ -101,7 +106,7 @@ groupRoutes.post('/', createAuthMiddleware({ required: true }), requireRole('sys
     const body = await c.req.json();
     const { slug, displayName, description } = body || {};
     if (!slug || !displayName) return c.json(responses.badRequest('slug and displayName are required'), 400);
-    const repo = new D1GroupRepository(c.env.DB);
+    const repo = getDI(c).resolve((await import('./ioc/tokens')).TOKENS.GroupRepo) as any;
     const created = await (repo as any).create({ slug, displayName, description });
     return c.json(responses.ok({ data: created }), 201);
   } catch (error) {
@@ -114,7 +119,7 @@ groupRoutes.put('/:id', createAuthMiddleware({ required: true }), requireRole('s
   try {
     const { id } = c.req.param();
     const body = await c.req.json();
-    const repo = new D1GroupRepository(c.env.DB);
+    const repo = getDI(c).resolve((await import('./ioc/tokens')).TOKENS.GroupRepo) as any;
     const updated = await (repo as any).update(id, {
       slug: body.slug,
       displayName: body.displayName,
@@ -131,7 +136,7 @@ groupRoutes.put('/:id', createAuthMiddleware({ required: true }), requireRole('s
 groupRoutes.delete('/:id', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
   try {
     const { id } = c.req.param();
-    const repo = new D1GroupRepository(c.env.DB);
+    const repo = getDI(c).resolve((await import('./ioc/tokens')).TOKENS.GroupRepo) as any;
     const ok = await (repo as any).delete(id);
     if (!ok) return c.json(responses.notFound('Group not found'), 404);
     return c.json(responses.ok({}));
@@ -147,7 +152,7 @@ groupRoutes.post('/:id/users', createAuthMiddleware({ required: true }), require
     const body = await c.req.json();
     const userIds: string[] = Array.isArray(body?.userIds) ? body.userIds : [];
     if (!userIds.length) return c.json(responses.badRequest('userIds must be a non-empty array'), 400);
-    const repo = new D1GroupRepository(c.env.DB);
+    const repo = getDI(c).resolve((await import('./ioc/tokens')).TOKENS.GroupRepo) as any;
     await (repo as any).setGroupUsers(id, userIds);
     return c.json(responses.ok({ modified: userIds.length }));
   } catch (error) {

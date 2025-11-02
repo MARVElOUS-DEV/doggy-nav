@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { InviteCodeService } from 'doggy-nav-core';
-import D1InviteCodeRepository from '../adapters/d1InviteCodeRepository';
+import { TOKENS } from '../ioc/tokens';
+import { getDI } from '../ioc/helpers';
 import { responses } from '../index';
 import { createAuthMiddleware, requireRole } from '../middleware/auth';
 
@@ -13,7 +13,7 @@ inviteCodeRoutes.get('/list', createAuthMiddleware({ required: true }), requireR
     const active = c.req.query('active');
     const code = c.req.query('code') || '';
 
-    const svc = new InviteCodeService(new D1InviteCodeRepository(c.env.DB));
+    const svc = getDI(c).resolve(TOKENS.InviteCodeService);
     const res = await svc.list({ pageSize, pageNumber }, {
       active: active !== undefined ? active === 'true' : undefined,
       codeSearch: code || undefined,
@@ -29,7 +29,7 @@ inviteCodeRoutes.post('/create', createAuthMiddleware({ required: true }), requi
   try {
     const body = await c.req.json();
     const { count, usageLimit, expiresAt, note, allowedEmailDomain } = body || {};
-    const svc = new InviteCodeService(new D1InviteCodeRepository(c.env.DB));
+    const svc = getDI(c).resolve(TOKENS.InviteCodeService);
     const res = await svc.createBulkByCount({ count, usageLimit, expiresAt, note, allowedEmailDomain });
     return c.json(responses.ok(res));
   } catch (err: any) {
@@ -43,7 +43,7 @@ inviteCodeRoutes.put('/:id', createAuthMiddleware({ required: true }), requireRo
   try {
     const { id } = c.req.param();
     const patch = await c.req.json();
-    const svc = new InviteCodeService(new D1InviteCodeRepository(c.env.DB));
+    const svc = getDI(c).resolve(TOKENS.InviteCodeService);
     const updated = await svc.update(id, patch);
     if (!updated) return c.json(responses.notFound('Invite code not found'), 404);
     return c.json(responses.ok(updated));
@@ -57,7 +57,7 @@ inviteCodeRoutes.put('/:id', createAuthMiddleware({ required: true }), requireRo
 inviteCodeRoutes.post('/:id/revoke', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
   try {
     const { id } = c.req.param();
-    const svc = new InviteCodeService(new D1InviteCodeRepository(c.env.DB));
+    const svc = getDI(c).resolve(TOKENS.InviteCodeService);
     const updated = await svc.update(id, { active: false });
     if (!updated) return c.json(responses.notFound('Invite code not found'), 404);
     return c.json(responses.ok(updated));

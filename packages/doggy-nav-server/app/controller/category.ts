@@ -2,8 +2,7 @@ import Controller from '../core/base_controller';
 import { Types } from 'mongoose';
 import { globalRootCategoryId } from '../../constants';
 import type { AuthUserContext } from '../../types/rbac';
-import { CategoryService } from 'doggy-nav-core';
-import MongooseCategoryRepository from '../../adapters/categoryRepository';
+import { TOKENS } from '../core/ioc';
 
 export default class CategoryController extends Controller {
   tableName(): string {
@@ -64,8 +63,7 @@ export default class CategoryController extends Controller {
             source: (user?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
           }
         : undefined;
-      const repo = new MongooseCategoryRepository(ctx);
-      const service = new CategoryService(repo);
+      const service = ctx.di.resolve(TOKENS.CategoryService);
       const tree = await service.listTree(auth, {
         showInMenu: showInMenu ? showInMenu !== 'false' : undefined,
         rootId: globalRootCategoryId,

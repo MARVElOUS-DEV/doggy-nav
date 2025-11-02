@@ -32,8 +32,8 @@ export class JWTUtils {
    */
   async generateTokenPair(payload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<TokenPair> {
     const now = Math.floor(Date.now() / 1000);
-    const accessTokenExpiry = now + Math.floor(this.ACCESS_TOKEN_EXPIRY / 1000);
-    const refreshTokenExpiry = now + Math.floor(this.REFRESH_TOKEN_EXPIRY / 1000);
+    const accessTokenExpiry = now + Math.floor(JWTUtils.ACCESS_TOKEN_EXPIRY / 1000);
+    const refreshTokenExpiry = now + Math.floor(JWTUtils.REFRESH_TOKEN_EXPIRY / 1000);
 
     // Generate access token
     const accessToken = await new SignJWT({
@@ -61,7 +61,7 @@ export class JWTUtils {
     return {
       accessToken,
       refreshToken,
-      expiresIn: this.ACCESS_TOKEN_EXPIRY,
+      expiresIn: JWTUtils.ACCESS_TOKEN_EXPIRY,
     };
   }
 

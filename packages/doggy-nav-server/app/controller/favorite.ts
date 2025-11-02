@@ -1,9 +1,5 @@
 import Controller from '../core/base_controller';
-import { FavoriteService, FavoriteCommandService } from 'doggy-nav-core';
-import MongooseFavoriteRepository from '../../adapters/favoriteRepository';
-import MongooseFavoriteCommandRepository from '../../adapters/favoriteCommandRepository';
-import { FavoriteFolderService } from 'doggy-nav-core';
-import MongooseFavoriteFolderRepository from '../../adapters/favoriteFolderRepository';
+import { TOKENS } from '../core/ioc';
 
 export default class FavoriteController extends Controller {
   tableName(): string {
@@ -31,7 +27,7 @@ export default class FavoriteController extends Controller {
     }
 
     try {
-      const cmd = new FavoriteCommandService(new MongooseFavoriteCommandRepository(ctx));
+      const cmd = ctx.di.resolve(TOKENS.FavoriteCommandService);
       const created = await cmd.add(String(userInfo.userId), String(navId));
       this.success(created);
     } catch (error: any) {
@@ -54,8 +50,7 @@ export default class FavoriteController extends Controller {
     const userInfo = this.getUserInfo();
 
     try {
-      const repo = new MongooseFavoriteRepository(ctx);
-      const service = new FavoriteService(repo);
+      const service = ctx.di.resolve(TOKENS.FavoriteService);
       const res = await service.structured(String(userInfo.userId));
       this.success(res);
     } catch (error: any) {
@@ -80,7 +75,7 @@ export default class FavoriteController extends Controller {
       return;
     }
     try {
-      const service = new FavoriteFolderService(new MongooseFavoriteFolderRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.FavoriteFolderService);
       const res = await service.createFolder(String(userInfo.userId), { name, navIds, order });
       this.success(res);
     } catch (error: any) {
@@ -106,7 +101,7 @@ export default class FavoriteController extends Controller {
       return;
     }
     try {
-      const service = new FavoriteFolderService(new MongooseFavoriteFolderRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.FavoriteFolderService);
       const res = await service.updateFolder(String(userInfo.userId), String(id), { name, order, addNavIds, removeNavIds });
       this.success(res);
     } catch (error: any) {
@@ -131,7 +126,7 @@ export default class FavoriteController extends Controller {
       return;
     }
     try {
-      const service = new FavoriteFolderService(new MongooseFavoriteFolderRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.FavoriteFolderService);
       const res = await service.deleteFolder(String(userInfo.userId), String(id));
       this.success(res);
     } catch (error: any) {
@@ -153,7 +148,7 @@ export default class FavoriteController extends Controller {
     const { root = [], folders = [], moves = [] } = this.getSanitizedBody();
 
     try {
-      const service = new FavoriteFolderService(new MongooseFavoriteFolderRepository(ctx));
+      const service = ctx.di.resolve(TOKENS.FavoriteFolderService);
       const res = await service.placements(String(userInfo.userId), { root, folders, moves });
       this.success(res);
     } catch (error: any) {
@@ -183,7 +178,7 @@ export default class FavoriteController extends Controller {
     }
 
     try {
-      const cmd = new FavoriteCommandService(new MongooseFavoriteCommandRepository(ctx));
+      const cmd = ctx.di.resolve(TOKENS.FavoriteCommandService);
       const res = await cmd.remove(String(userInfo.userId), String(navId));
       if (!res.ok) return this.error('收藏不存在');
       this.success({ message: '取消收藏成功' });
@@ -209,8 +204,7 @@ export default class FavoriteController extends Controller {
     const query = this.getSanitizedQuery();
 
     try {
-      const repo = new MongooseFavoriteRepository(ctx);
-      const service = new FavoriteService(repo);
+      const service = ctx.di.resolve(TOKENS.FavoriteService);
       const res = await service.list(String(userInfo.userId), {
         pageSize: query.pageSize,
         pageNumber: query.pageNumber,
@@ -243,8 +237,7 @@ export default class FavoriteController extends Controller {
     }
 
     try {
-      const repo = new MongooseFavoriteRepository(ctx);
-      const service = new FavoriteService(repo);
+      const service = ctx.di.resolve(TOKENS.FavoriteService);
       const res = await service.check(String(userInfo.userId), String(navId));
       this.success(res);
     } catch (error: any) {
@@ -268,8 +261,7 @@ export default class FavoriteController extends Controller {
     const userInfo = this.getUserInfo();
 
     try {
-      const repo = new MongooseFavoriteRepository(ctx);
-      const service = new FavoriteService(repo);
+      const service = ctx.di.resolve(TOKENS.FavoriteService);
       const res = await service.count(String(userInfo.userId));
       this.success(res);
     } catch (error: any) {

@@ -1,6 +1,5 @@
 import Controller from '../core/base_controller';
-import { TagService } from 'doggy-nav-core';
-import MongooseTagRepository from '../../adapters/tagRepository';
+import { TOKENS } from '../core/ioc';
 
 export default class CategoryController extends Controller {
   tableName(): string {
@@ -9,8 +8,7 @@ export default class CategoryController extends Controller {
 
   async getList() {
     const query = this.getSanitizedQuery();
-    const repo = new MongooseTagRepository(this.ctx);
-    const service = new TagService(repo);
+    const service = this.ctx.di.resolve(TOKENS.TagService);
     const res = await service.list({ pageSize: query.pageSize, pageNumber: query.pageNumber } as any);
     this.success(res);
   }

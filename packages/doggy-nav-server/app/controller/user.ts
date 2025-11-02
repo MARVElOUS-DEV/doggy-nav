@@ -1,9 +1,9 @@
 import CommonController from '../core/base_controller';
 import { AuthenticationError } from '../core/errors';
 import { EnforceAdminOnAdminSource } from '../utils/decorators';
-import { UserAuthService, UserService } from 'doggy-nav-core';
+import { UserAuthService } from 'doggy-nav-core';
+import { TOKENS } from '../core/ioc';
 import MongooseAuthRepository from '../../adapters/authRepository';
-import MongooseUserRepository from '../../adapters/userRepository';
 
 export default class UserController extends CommonController {
   tableName(): string {
@@ -28,9 +28,19 @@ export default class UserController extends CommonController {
     const repo = new MongooseAuthRepository(ctx);
     const service = new UserAuthService(repo);
     const issueTokens = async (payload: any) => {
-      const jwtConfig = ctx.app.config.jwt as { accessExpiresIn?: string; refreshExpiresIn?: string; secret: string };
-      const accessToken = ctx.app.jwt.sign(payload, jwtConfig.secret, { expiresIn: jwtConfig?.accessExpiresIn || '15m' });
-      const refreshToken = ctx.app.jwt.sign({ sub: payload.userId, typ: 'refresh' }, jwtConfig.secret, { expiresIn: jwtConfig?.refreshExpiresIn || '7d' });
+      const jwtConfig = ctx.app.config.jwt as {
+        accessExpiresIn?: string;
+        refreshExpiresIn?: string;
+        secret: string;
+      };
+      const accessToken = ctx.app.jwt.sign(payload, jwtConfig.secret, {
+        expiresIn: jwtConfig?.accessExpiresIn || '15m',
+      });
+      const refreshToken = ctx.app.jwt.sign(
+        { sub: payload.userId, typ: 'refresh' },
+        jwtConfig.secret,
+        { expiresIn: jwtConfig?.refreshExpiresIn || '7d' }
+      );
       return { accessToken, refreshToken };
     };
     const res = await service.login(String(username || ''), String(password || ''), issueTokens);
@@ -44,7 +54,7 @@ export default class UserController extends CommonController {
     if (!userId) {
       throw new AuthenticationError('用户未认证');
     }
-    const res = await new UserService(new MongooseUserRepository(ctx)).getProfile(String(userId));
+    const res = await ctx.di.resolve(TOKENS.UserService).getProfile(String(userId));
     this.success(res);
   }
 
@@ -55,7 +65,9 @@ export default class UserController extends CommonController {
       throw new AuthenticationError('用户未认证');
     }
     const body = this.getSanitizedBody();
-    const res = await new UserService(new MongooseUserRepository(ctx)).updateProfile(String(userId), { email: body.email, avatar: body.avatar });
+    const res = await ctx.di
+      .resolve(TOKENS.UserService)
+      .updateProfile(String(userId), { email: body.email, avatar: body.avatar });
     this.success(res);
   }
 
@@ -70,23 +82,28 @@ export default class UserController extends CommonController {
     const filter = {
       account: query.account as any,
       email: query.email as any,
-      status: (query.status !== undefined && query.status !== '') ? (String(query.status) === '1' || String(query.status) === 'true') : undefined,
+      status:
+        query.status !== undefined && query.status !== ''
+          ? String(query.status) === '1' || String(query.status) === 'true'
+          : undefined,
     };
-    const res = await new UserService(new MongooseUserRepository(ctx)).adminList(filter, { pageSize, pageNumber: current });
+    const res = await ctx.di
+      .resolve(TOKENS.UserService)
+      .adminList(filter, { pageSize, pageNumber: current });
     this.success(res);
   }
 
   public async adminGetOne() {
     const { ctx } = this;
     const { id } = ctx.params;
-    const res = await new UserService(new MongooseUserRepository(ctx)).adminGetOne(String(id));
+    const res = await ctx.di.resolve(TOKENS.UserService).adminGetOne(String(id));
     this.success(res);
   }
 
   public async adminCreate() {
     const { ctx } = this;
     const body = this.getSanitizedBody();
-    const service = new UserService(new MongooseUserRepository(ctx));
+    const service = ctx.di.resolve(TOKENS.UserService);
     try {
       const created = await service.adminCreate({
         account: String(body.account || ''),
@@ -109,7 +126,7 @@ export default class UserController extends CommonController {
     const { ctx } = this;
     const { id } = ctx.params;
     const body = this.getSanitizedBody();
-    const service = new UserService(new MongooseUserRepository(ctx));
+    const service = ctx.di.resolve(TOKENS.UserService);
     try {
       const ok = await service.adminUpdate(String(id), {
         account: body.account,
@@ -131,7 +148,7 @@ export default class UserController extends CommonController {
   public async adminDelete() {
     const { ctx } = this;
     const ids: string[] = Array.isArray(ctx.request.body?.ids) ? ctx.request.body.ids : [];
-    const ok = await new UserService(new MongooseUserRepository(ctx)).adminDelete(ids);
+    const ok = await ctx.di.resolve(TOKENS.UserService).adminDelete(ids);
     if (!ok) return this.error('删除失败');
     this.success(true);
   }

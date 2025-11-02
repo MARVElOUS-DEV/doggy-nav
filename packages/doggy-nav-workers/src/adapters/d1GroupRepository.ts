@@ -41,7 +41,7 @@ export class D1GroupRepository implements GroupRepository {
 
     const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
 
-    const rows = await this.db
+    const result = await this.db
       .prepare(
         `SELECT id, slug, display_name, description, created_at, updated_at
          FROM groups ${where}
@@ -50,6 +50,7 @@ export class D1GroupRepository implements GroupRepository {
       )
       .bind(...params, pageSize, offset)
       .all<any>();
+    const rows = (result?.results ?? []) as any[];
 
     const countRow = await this.db
       .prepare(`SELECT COUNT(1) as cnt FROM groups ${where}`)
@@ -58,7 +59,7 @@ export class D1GroupRepository implements GroupRepository {
 
     const total = Number(countRow?.cnt || 0);
     return {
-      data: (rows?.results || rows as any[]).map(rowToGroup),
+      data: rows.map(rowToGroup),
       total,
       pageNumber: Math.ceil(total / pageSize),
     };
