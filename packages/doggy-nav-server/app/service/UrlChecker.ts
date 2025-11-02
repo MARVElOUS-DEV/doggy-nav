@@ -1,5 +1,6 @@
 import { Service } from 'egg';
-import axios from 'axios';
+import { UrlCheckerService } from 'doggy-nav-core';
+import AxiosUrlHeadClient from '../../adapters/urlHeadClient';
 
 /**
  * URL Accessibility Checker Service
@@ -11,54 +12,8 @@ export default class UrlChecker extends Service {
    * @param url - The URL to check
    */
   async checkUrlAccessibility(url: string): Promise<{ status: string; responseTime: number; error?: string }> {
-    const startTime = Date.now();
-
-    try {
-      const response = await axios.head(url, {
-        timeout: 5000, // 5 second timeout
-        headers: {
-          'User-Agent': 'DoggyNav-UrlChecker/1.0',
-        },
-      });
-
-      const responseTime = Date.now() - startTime;
-
-      this.logger.debug(`URL check successful for ${url}: ${response.status} (${responseTime}ms)`);
-
-      return {
-        status: 'accessible',
-        responseTime,
-      };
-    } catch (error: any) {
-      const responseTime = Date.now() - startTime;
-
-      // Check if it's a network error or HTTP error
-      if (error.response) {
-        // HTTP error (4xx, 5xx)
-        this.logger.debug(`URL check failed for ${url}: HTTP ${error.response.status} (${responseTime}ms)`);
-        return {
-          status: 'inaccessible',
-          responseTime,
-          error: `HTTP ${error.response.status}`,
-        };
-      } else if (error.request) {
-        // Network error (timeout, DNS, etc.)
-        this.logger.debug(`URL check failed for ${url}: ${error.message} (${responseTime}ms)`);
-        return {
-          status: 'inaccessible',
-          responseTime,
-          error: error.message,
-        };
-      }
-      // Other error
-      this.logger.debug(`URL check failed for ${url}: ${error.message} (${responseTime}ms)`);
-      return {
-        status: 'inaccessible',
-        responseTime,
-        error: error.message,
-      };
-
-    }
+    const svc = new UrlCheckerService(new AxiosUrlHeadClient());
+    return svc.check(url, { timeoutMs: 5000, headers: { 'User-Agent': 'DoggyNav-UrlChecker/1.0' } });
   }
 
   /**

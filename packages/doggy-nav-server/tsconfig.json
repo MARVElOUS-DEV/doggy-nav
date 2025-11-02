@@ -25,5 +25,5 @@
     "outDir": "./dist",
     "sourceMap": false
   },
-  "exclude": ["app/public", "app/views", "node_modules*", "**/*.js"]
+  "exclude": ["app/public", "app/views", "node_modules", "scripts", "**/*.js"]
 }

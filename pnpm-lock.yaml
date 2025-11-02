@@ -126,6 +126,12 @@ importers:
         specifier: ^5.101.3
         version: 5.101.3
 
+  packages/doggy-nav-core:
+    devDependencies:
+      typescript:
+        specifier: ^5
+        version: 5.9.2
+
   packages/doggy-nav-main:
     dependencies:
       '@arco-design/web-react':
@@ -264,6 +270,9 @@ importers:
       cheerio:
         specifier: 1.0.0-rc.10
         version: 1.0.0-rc.10
+      doggy-nav-core:
+        specifier: workspace:*
+        version: link:../doggy-nav-core
       dotenv:
         specifier: ^17.2.2
         version: 17.2.2
@@ -375,6 +384,22 @@ importers:
         version: 10.9.2(@types/node@7.0.12)(typescript@5.9.2)
       typescript:
         specifier: ^5.9.2
+        version: 5.9.2
+
+  packages/doggy-nav-worker:
+    dependencies:
+      doggy-nav-core:
+        specifier: workspace:*
+        version: link:../doggy-nav-core
+      hono:
+        specifier: ^4.6.10
+        version: 4.10.4
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241022.0
+        version: 4.20251014.0
+      typescript:
+        specifier: ^5
         version: 5.9.2
 
 packages:
@@ -1272,6 +1297,9 @@ packages:
     resolution: {integrity: sha512-obzSy26cb7Pm7OprWyVpgMpIlrZpZ0B7vbrU0RMbvRg0YAI890S5Xy02Aj1Nhl4+KTbi1lVYHt6HQP8Hm9s+1w==}
     peerDependencies:
       react: '>=16.12.0'
+
+  '@cloudflare/workers-types@4.20251014.0':
+    resolution: {integrity: sha512-tEW98J/kOa0TdylIUOrLKRdwkUw0rvvYVlo+Ce0mqRH3c8kSoxLzUH9gfCvwLe0M89z1RkzFovSKAW2Nwtyn3w==}
 
   '@commitlint/config-validator@19.8.1':
     resolution: {integrity: sha512-0jvJ4u+eqGPBIzzSdqKNX1rvdbSU1lPNYlfQQRIFnBgLy26BtC0cFnr7c/AyuzExMxWsMOte6MkTi9I3SQ3iGQ==}
@@ -6107,6 +6135,10 @@ packages:
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
+
+  hono@4.10.4:
+    resolution: {integrity: sha512-YG/fo7zlU3KwrBL5vDpWKisLYiM+nVstBQqfr7gCPbSYURnNEP9BDxEMz8KfsDR9JX0lJWDRNc6nXX31v7ZEyg==}
+    engines: {node: '>=16.9.0'}
 
   hosted-git-info@2.8.9:
     resolution: {integrity: sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==}
@@ -12106,6 +12138,8 @@ snapshots:
       react: 17.0.2
       reactcss: 1.2.3(react@17.0.2)
       tinycolor2: 1.6.0
+
+  '@cloudflare/workers-types@4.20251014.0': {}
 
   '@commitlint/config-validator@19.8.1':
     dependencies:
@@ -18227,6 +18261,8 @@ snapshots:
   homedir-polyfill@1.0.3:
     dependencies:
       parse-passwd: 1.0.0
+
+  hono@4.10.4: {}
 
   hosted-git-info@2.8.9: {}
 

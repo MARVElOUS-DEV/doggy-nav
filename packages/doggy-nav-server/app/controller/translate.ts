@@ -1,4 +1,6 @@
 import { Controller } from 'egg';
+import { TranslateService } from 'doggy-nav-core';
+import GoogleTranslateProvider from '../../adapters/translateProvider';
 
 /**
  * Translation Controller
@@ -34,12 +36,8 @@ export default class TranslateController extends Controller {
     }
 
     try {
-      // Call translation service
-      const translatedText = await ctx.service.translate.translateText(
-        text,
-        sourceLang,
-        targetLang
-      );
+      const service = new TranslateService(new GoogleTranslateProvider());
+      const translatedText = await service.translateText(text, sourceLang, targetLang);
 
       ctx.status = 200;
       ctx.body = {

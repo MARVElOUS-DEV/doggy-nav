@@ -1,5 +1,7 @@
 import Controller from '../core/base_controller';
 import { ValidationError } from '../core/errors';
+import { EmailSettingsService } from 'doggy-nav-core';
+import MongooseEmailSettingsRepository from '../../adapters/emailSettingsRepository';
 
 export default class EmailSettingsController extends Controller {
   tableName(): string {
@@ -8,14 +10,10 @@ export default class EmailSettingsController extends Controller {
 
   async get() {
     try {
-      const settings = await this.ctx.service.email.getSettings();
-      if (settings) {
-        const obj = settings.toObject();
-        delete (obj as any).smtpPass;
-        this.success(obj);
-      } else {
-        this.success(null);
-      }
+      const repo = new MongooseEmailSettingsRepository(this.ctx);
+      const service = new EmailSettingsService(repo);
+      const settings = await service.get();
+      this.success(settings);
     } catch (error: any) {
       this.ctx.logger.error('Failed to get email settings:', error);
       this.error('Failed to get email settings');
@@ -25,17 +23,10 @@ export default class EmailSettingsController extends Controller {
   async update() {
     try {
       const body = this.getSanitizedBody();
-
-      // Validate required fields
-      if (!body.smtpHost || !body.smtpUser || !body.fromAddress) {
-        throw new ValidationError('Missing required fields: smtpHost, smtpUser, fromAddress');
-      }
-
-      // Update with sensitive data included
-      const settings = await this.ctx.service.email.updateSettings(body);
-      const obj = (settings?.toObject?.() || settings || {}) as any;
-      delete obj.smtpPass;
-      this.success(obj);
+      const repo = new MongooseEmailSettingsRepository(this.ctx);
+      const service = new EmailSettingsService(repo);
+      const updated = await service.update(body);
+      this.success(updated);
     } catch (error: any) {
       if (error instanceof ValidationError) {
         this.error(error.message);

@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "test": "pnpm -r test",
+    "server:check": "pnpm -F doggy-nav-server run static-check",
     "commit": "cz",
     "commit:help": "echo 'Use: pnpm commit or pnpm run commit to start interactive conventional commit'",
     "lint": "pnpm -r run lint",
@@ -47,7 +48,16 @@
     }
   },
   "lint-staged": {
-    "packages/doggy-nav-server/**/*.{ts,js}": [
+    "packages/doggy-nav-server/app/**/*.{ts,js}": [
+      "pnpm -F doggy-nav-server run lint:fix"
+    ],
+    "packages/doggy-nav-server/test/**/*.{ts,js}": [
+      "pnpm -F doggy-nav-server run lint:fix"
+    ],
+    "packages/doggy-nav-server/typings/**/*.{ts,js}": [
+      "pnpm -F doggy-nav-server run lint:fix"
+    ],
+    "packages/doggy-nav-server/adapters/**/*.{ts,js}": [
       "pnpm -F doggy-nav-server run lint:fix"
     ],
     "packages/doggy-nav-main/**/*.{ts,tsx,js,jsx}": [

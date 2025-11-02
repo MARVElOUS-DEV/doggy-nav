@@ -4,6 +4,9 @@ import { nowToChromeTime } from '../../utils/timeUtil';
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
 import { buildAudienceFilterEx } from '../utils/audience';
+import { NavService } from 'doggy-nav-core';
+import MongooseNavRepository from '../../adapters/navRepository';
+import MongooseCategoryRepository from '../../adapters/categoryRepository';
 
 enum NAV_STATUS {
   pass,
@@ -19,69 +22,39 @@ export default class NavController extends Controller {
   async list() {
     const { ctx } = this;
     const { status = 0, categoryId, name } = ctx.query;
-
-    let findParam: any = {};
-
-    const isAuthenticated = this.isAuthenticated();
-
-    // Handle status filter
-    if (isAuthenticated) {
-      // Authenticated users can filter by status
-      if (status !== undefined && status !== '') {
-        findParam.status = Number(status);
-      } else {
-        // Default for authenticated users: show approved or legacy items without status
-        findParam = {
-          $or: [{ status: { $exists: false } }, { status: 0 }],
-        };
-      }
-    } else {
-      // Non-authenticated users can only see approved items
-      findParam.status = NAV_STATUS.pass;
-    }
-
-    // Audience-based visibility is handled below; legacy `hide` is no longer used for filtering
-
-    if (categoryId) {
-      findParam.categoryId = {
-        $eq: categoryId,
-      };
-    }
-    if (name) {
-      const reg = new RegExp(name, 'i');
-      findParam.name = {
-        $regex: reg,
-      };
-    }
-
-    // Audience filtering (+ legacy hide compatibility)
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-    findParam = buildAudienceFilterEx(findParam, userCtx);
-
-    // Enforce category audience rules when a nav item is linked to a category
-    // Navs without a category continue to use only the nav item's own rules
-    try {
-      const allowedCategoryFilter = buildAudienceFilterEx({}, userCtx);
-      const allowedCategories = await ctx.model.Category.find(allowedCategoryFilter).select('_id');
-      const allowedCategoryIds = allowedCategories.map((c: any) => c._id.toString());
-
-      const categoryVisibilityOr = [{ categoryId: { $in: allowedCategoryIds } }];
-
-      findParam = { $and: [findParam, { $or: categoryVisibilityOr }] };
-    } catch {
-      // If category visibility evaluation fails, fall back to nav-only filtering
-      // to avoid breaking the endpoint
-    }
-
-    // If user is authenticated, include favorite status
-    if (isAuthenticated) {
-      await this.getListWithFavorites(findParam);
-    } else {
-      await super.getList(findParam);
-    }
+    const query = this.getSanitizedQuery();
+    const page = { pageSize: query.pageSize, pageNumber: query.pageNumber } as any;
+    const auth = userCtx
+      ? {
+          roles:
+            Array.isArray(userCtx?.effectiveRoles) && userCtx!.effectiveRoles!.length > 0
+              ? userCtx!.effectiveRoles!
+              : Array.isArray(userCtx?.roles)
+                ? userCtx!.roles!
+                : [],
+          groups: Array.isArray(userCtx?.groups) ? userCtx!.groups! : [],
+          roleIds: Array.isArray((userCtx as any)?.roleIds) ? (userCtx as any).roleIds : [],
+          groupIds: Array.isArray((userCtx as any)?.groupIds) ? (userCtx as any).groupIds : [],
+          source: (userCtx?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
+        }
+      : undefined;
+    const repo = new MongooseNavRepository(ctx);
+    const catRepo = new MongooseCategoryRepository(ctx);
+    const service = new NavService(repo, catRepo);
+    const res = await service.list(
+      page,
+      {
+        status: status !== undefined && status !== '' ? Number(status) : undefined,
+        categoryId: categoryId ? String(categoryId) : undefined,
+        name: name ? String(name) : undefined,
+      },
+      auth
+    );
+    this.success(res);
   }
 
-  // Helper method to get list with favorite status for authenticated users
+  // Helper method to get list with favorite status for authenticated users (legacy; retained for other endpoints)
   private async getListWithFavorites(findParam: any) {
     const { ctx } = this;
     const userInfo = this.getUserInfo();

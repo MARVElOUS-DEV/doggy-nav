@@ -1,0 +1,26 @@
+name = "doggy-nav-worker"
+main = "src/index.ts"
+compatibility_date = "2024-09-30"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "doggy_nav"
+database_id = "${D1_DATABASE_ID}"
+
+[vars]
+# Reserved for future JWT/CORS config
+
+[observability]
+enabled = true
+
+[[migrations]]
+tag = "v1"
+new_sql = [
+  "migrations/001_init.sql"
+]
+
+[[migrations]]
+tag = "v2"
+new_sql = [
+  "migrations/002_schema_design.sql"
+]
