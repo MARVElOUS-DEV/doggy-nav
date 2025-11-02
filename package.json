@@ -13,6 +13,7 @@
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
     "server:dev": "pnpm -F doggy-nav-server dev",
+    "workers:dev": "pnpm -F doggy-nav-workers dev",
     "web:dev": "pnpm -F doggy-nav-main dev",
     "web:start": "pnpm -F doggy-nav-main -F doggy-nav-server start",
     "admin:dev": "pnpm -F doggy-nav-admin dev",

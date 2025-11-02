@@ -115,7 +115,10 @@ export class JWTUtils {
   /**
    * Refresh access token using refresh token
    */
-  async refreshAccessToken(refreshToken: string, userPayload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<TokenPair | null> {
+  async refreshAccessToken(
+    refreshToken: string,
+    userPayload: Omit<JWTPayload, 'iat' | 'exp'>
+  ): Promise<TokenPair | null> {
     const refreshPayload = await this.verifyRefreshToken(refreshToken);
     if (!refreshPayload || refreshPayload.userId !== userPayload.userId) {
       return null;

@@ -9,6 +9,12 @@ export default defineConfig({
     include: ['src/tests/**/*.test.ts'],
     exclude: ['node_modules', 'dist'],
     reporters: ['verbose'],
+    server: {
+      deps: { inline: ['hono'] }
+    },
+    deps: {
+      optimizer: { ssr: { include: ['hono'] } }
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

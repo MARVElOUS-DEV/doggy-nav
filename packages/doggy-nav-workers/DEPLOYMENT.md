@@ -116,7 +116,7 @@ curl https://your-worker.workers.dev/api/health
 ### wrangler.toml
 
 ```toml
-name = "doggy-nav-worker"
+name = "doggy-nav-workers"
 main = "src/index.ts"
 compatibility_date = "2024-09-30"
 

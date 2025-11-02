@@ -47,6 +47,9 @@ const PasswordUtils = {
 // Public routes (no authentication required)
 authRoutes.post('/register', async (c) => {
   try {
+    if (!c.env.JWT_SECRET) {
+      return c.json(responses.serverError('Server misconfigured: missing JWT secret'), 500);
+    }
     const body = await c.req.json();
     const { username, email, password, nickName } = body;
 
@@ -125,6 +128,9 @@ authRoutes.post('/register', async (c) => {
 
 authRoutes.post('/login', async (c) => {
   try {
+    if (!c.env.JWT_SECRET) {
+      return c.json(responses.serverError('Server misconfigured: missing JWT secret'), 500);
+    }
     const body = await c.req.json();
     const { email, password, rememberMe } = body;
 
@@ -186,6 +192,9 @@ authRoutes.post('/login', async (c) => {
 
 authRoutes.post('/refresh', async (c) => {
   try {
+    if (!c.env.JWT_SECRET) {
+      return c.json(responses.serverError('Server misconfigured: missing JWT secret'), 500);
+    }
     const body = await c.req.json();
     const { refreshToken } = body;
 

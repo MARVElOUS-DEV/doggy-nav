@@ -1,4 +1,4 @@
-name = "doggy-nav-worker"
+name = "doggy-nav-workers"
 main = "src/index.ts"
 compatibility_date = "2024-09-30"
 
@@ -8,7 +8,8 @@ database_name = "doggy_nav"
 database_id = "${D1_DATABASE_ID}"
 
 [vars]
-# Reserved for future JWT/CORS config
+# JWT/CORS config
+ALLOWED_ORIGINS = "http://localhost:3001,http://localhost:3000"
 
 [observability]
 enabled = true
@@ -22,5 +23,5 @@ new_sql = [
 [[migrations]]
 tag = "v2"
 new_sql = [
-  "migrations/002_schema_design.sql"
+  "migrations/002_invite_codes_extension.sql"
 ]

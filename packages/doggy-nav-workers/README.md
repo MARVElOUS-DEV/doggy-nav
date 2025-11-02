@@ -49,7 +49,7 @@ The worker uses a normalized SQL schema converted from MongoDB collections:
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd packages/doggy-nav-worker
+cd packages/doggy-nav-workers
 
 # Install dependencies
 pnpm install

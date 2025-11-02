@@ -84,8 +84,8 @@ export class D1RoleRepository {
     permissions?: string[];
     isSystem?: boolean;
   }): Promise<Role> {
-    const id = Math.random().toString(36).substring(2, 15) +
-               Math.random().toString(36).substring(2, 15);
+    const id = (globalThis.crypto?.randomUUID?.() as string) ||
+               (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
 
     const stmt = this.db.prepare(`
       INSERT INTO roles (

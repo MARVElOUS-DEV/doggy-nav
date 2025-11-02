@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createApp } from '../index';
+import { createApp } from '../testApp';
 import { MemoryDB } from '../utils/memoryDB';
 
 // Mock D1Database for testing
@@ -267,7 +267,7 @@ describe('Password Utilities', () => {
     expect(isInvalid).toBe(false);
   });
 
-  it('should validate password strength', () => {
+  it('should validate password strength', async () => {
     const { PasswordUtils } = await import('../routes/auth');
 
     // Valid password
