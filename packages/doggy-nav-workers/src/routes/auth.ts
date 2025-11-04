@@ -3,7 +3,7 @@ import { createAuthMiddleware } from '../middleware/auth';
 import { JWTUtils } from '../utils/jwtUtils';
 import { D1UserRepository } from '../adapters/d1UserRepository';
 import { responses } from '../utils/responses';
-import { getUser } from '../ioc/helpers';
+import { getDI, getUser } from '../ioc/helpers';
 import {
   setAuthCookies,
   clearAuthCookies,
@@ -15,6 +15,8 @@ import {
 import { D1OAuthRepository, type OAuthProvider } from '../adapters/d1OAuthRepository';
 import { PasswordUtils } from '../utils/passwordUtils';
 import { getUserAccessContext } from '../utils/userContext';
+import { TOKENS } from '../ioc/tokens';
+import type { UserAuthService } from 'doggy-nav-core';
 
 const authRoutes = new Hono<{
   Bindings: {
@@ -144,78 +146,33 @@ authRoutes.post('/login', async (c) => {
       return c.json(responses.badRequest('Username/email and password are required'), 400);
     }
 
-    const userRepository = new D1UserRepository(c.env.DB);
-    type AuthRow = {
-      id: string;
-      username: string;
-      email: string;
-      isActive: boolean;
-      passwordHash: string;
-    };
-    // Fetch auth row with password hash
-    let authRow: AuthRow | null = null;
-    if (email || id.includes('@')) authRow = await userRepository.getAuthByEmail(id.toLowerCase());
-    if (!authRow) authRow = await userRepository.getAuthByUsername(id);
-
-    if (!authRow) {
-      return c.json(responses.badRequest('Invalid credentials'), 401);
-    }
-    if (!authRow.isActive) {
-      return c.json(responses.badRequest('Account is deactivated'), 401);
-    }
-    const ok = await PasswordUtils.verifyPassword(password, authRow.passwordHash || '');
-    if (!ok) return c.json(responses.badRequest('Invalid credentials'), 401);
-
-    const userCtx = await getUserAccessContext(c.env.DB, userRepository, authRow.id);
-    if (!userCtx) return c.json(responses.serverError('User not found'), 500);
-    const fullUser = userCtx.user;
-    const roles = userCtx.roles;
-    const groups = userCtx.groups;
+    const svc = getDI(c).resolve(TOKENS.AuthService) as UserAuthService;
+    const jwtUtils = new JWTUtils(c.env.JWT_SECRET!);
+    const result = await svc.login(id, password, async (payload) => {
+      const tokens = await jwtUtils.generateTokenPair(
+        JWTUtils.createPayload({
+          id: payload.userId,
+          email: '',
+          username: payload.username,
+          roles: payload.roles,
+          groups: payload.groups,
+          permissions: payload.permissions,
+        })
+      );
+      return tokens;
+    });
+    if (!result) return c.json(responses.badRequest('Invalid credentials'), 401);
 
     // Enforce admin access for admin app source
     const src = (c.req.header('X-App-Source') || '').toLowerCase();
     if (src === 'admin') {
-      const roleSet = new Set(roles);
+      const roleSet = new Set(result.user.roles);
       if (!(roleSet.has('admin') || roleSet.has('sysadmin'))) {
         return c.json(responses.err('权限不足'), 403);
       }
     }
-
-    await userRepository.update(authRow.id, { lastLoginAt: new Date() });
-
-    const permissions: string[] = userCtx.permissions;
-
-    const jwtUtils = new JWTUtils(c.env.JWT_SECRET!);
-    const userPayload = JWTUtils.createPayload({
-      id: authRow.id,
-      email: fullUser.email,
-      username: fullUser.username,
-      roles,
-      groups,
-      permissions,
-    });
-    const tokens = await jwtUtils.generateTokenPair(userPayload);
-    setAuthCookies(c as any, tokens);
-
-    return c.json(
-      responses.ok(
-        {
-          token: 'Bearer ' + tokens.accessToken,
-          tokens,
-          user: {
-            id: fullUser.id,
-            username: fullUser.username,
-            email: fullUser.email,
-            nickName: fullUser.nickName,
-            roles,
-            groups,
-            permissions: userPayload.permissions,
-            avatar: fullUser.avatar,
-          },
-        },
-        'Login successful'
-      )
-    );
+    setAuthCookies(c as any, result.tokens);
+    return c.json(responses.ok(result, 'Login successful'));
   } catch (error) {
     console.error('Login error:', error);
     return c.json(responses.serverError(), 500);

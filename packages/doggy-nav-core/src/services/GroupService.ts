@@ -25,4 +25,39 @@ export class GroupService {
 
     return this.repo.list({ pageSize, pageNumber, filter });
   }
+
+  async create(input: { slug: string; displayName: string; description?: string }): Promise<Group> {
+    if (!input.slug || !input.displayName) {
+      const err = new Error('slug and displayName are required');
+      (err as any).name = 'ValidationError';
+      throw err;
+    }
+    const dup = await this.repo.getBySlug(input.slug);
+    if (dup) {
+      const err = new Error('Group already exists');
+      (err as any).name = 'ValidationError';
+      throw err;
+    }
+    return this.repo.create(input);
+  }
+
+  async update(id: string, patch: Partial<{ slug: string; displayName: string; description: string }>): Promise<Group | null> {
+    if (patch.slug) {
+      const dup = await this.repo.getBySlug(patch.slug);
+      if (dup && dup.id !== id) {
+        const err = new Error('Group already exists');
+        (err as any).name = 'ValidationError';
+        throw err;
+      }
+    }
+    return this.repo.update(id, patch);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    return this.repo.delete(id);
+  }
+
+  async setUsers(groupId: string, userIds: string[]): Promise<void> {
+    await this.repo.setGroupUsers(groupId, Array.isArray(userIds) ? userIds : []);
+  }
 }

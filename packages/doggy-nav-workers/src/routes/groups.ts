@@ -3,6 +3,7 @@ import { createAuthMiddleware, requireRole } from '../middleware/auth';
 import { getDI } from '../ioc/helpers';
 import { TOKENS } from '../ioc/tokens';
 import { responses } from '../utils/responses';
+import type { GroupService } from 'doggy-nav-core';
 
 type Env = { DB: D1Database };
 
@@ -44,10 +45,14 @@ groupRoutes.post('/', createAuthMiddleware({ required: true }), requireRole('sys
   try {
     const body = await c.req.json();
     const { slug, displayName, description } = body || {};
-    if (!slug || !displayName) return c.json(responses.badRequest('slug and displayName are required'), 400);
-    const repo = getDI(c).resolve(TOKENS.GroupRepo) as any;
-    const created = await (repo as any).create({ slug, displayName, description });
-    return c.json(responses.ok({ data: created }), 201);
+    const svc = getDI(c).resolve(TOKENS.GroupService) as GroupService;
+    try {
+      const created = await svc.create({ slug, displayName, description });
+      return c.json(responses.ok({ data: created }), 201);
+    } catch (e: any) {
+      if (e?.name === 'ValidationError') return c.json(responses.badRequest(e.message), 400);
+      throw e;
+    }
   } catch (error) {
     console.error('Group create error:', error);
     return c.json(responses.serverError(), 500);
@@ -58,14 +63,19 @@ groupRoutes.put('/:id', createAuthMiddleware({ required: true }), requireRole('s
   try {
     const { id } = c.req.param();
     const body = await c.req.json();
-    const repo = getDI(c).resolve(TOKENS.GroupRepo) as any;
-    const updated = await (repo as any).update(id, {
-      slug: body.slug,
-      displayName: body.displayName,
-      description: body.description,
-    });
-    if (!updated) return c.json(responses.notFound('Group not found'), 404);
-    return c.json(responses.ok({ data: updated }));
+    const svc = getDI(c).resolve(TOKENS.GroupService) as GroupService;
+    try {
+      const updated = await (svc as any).update(id, {
+        slug: body.slug,
+        displayName: body.displayName,
+        description: body.description,
+      });
+      if (!updated) return c.json(responses.notFound('Group not found'), 404);
+      return c.json(responses.ok({ data: updated }));
+    } catch (e: any) {
+      if (e?.name === 'ValidationError') return c.json(responses.badRequest(e.message), 400);
+      throw e;
+    }
   } catch (error) {
     console.error('Group update error:', error);
     return c.json(responses.serverError(), 500);
@@ -78,10 +88,15 @@ groupRoutes.put('/', createAuthMiddleware({ required: true }), requireRole('sysa
     const body = await c.req.json();
     const { id, slug, displayName, description } = body || {};
     if (!id) return c.json(responses.badRequest('id required'), 400);
-    const repo = getDI(c).resolve(TOKENS.GroupRepo) as any;
-    const updated = await (repo as any).update(id, { slug, displayName, description });
-    if (!updated) return c.json(responses.notFound('Group not found'), 404);
-    return c.json(responses.ok({ data: updated }));
+    const svc = getDI(c).resolve(TOKENS.GroupService) as GroupService;
+    try {
+      const updated = await (svc as any).update(id, { slug, displayName, description });
+      if (!updated) return c.json(responses.notFound('Group not found'), 404);
+      return c.json(responses.ok({ data: updated }));
+    } catch (e: any) {
+      if (e?.name === 'ValidationError') return c.json(responses.badRequest(e.message), 400);
+      throw e;
+    }
   } catch (error) {
     console.error('Group update (compat) error:', error);
     return c.json(responses.serverError(), 500);
@@ -91,8 +106,8 @@ groupRoutes.put('/', createAuthMiddleware({ required: true }), requireRole('sysa
 groupRoutes.delete('/:id', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
   try {
     const { id } = c.req.param();
-    const repo = getDI(c).resolve(TOKENS.GroupRepo) as any;
-    const ok = await (repo as any).delete(id);
+    const svc = getDI(c).resolve(TOKENS.GroupService) as GroupService;
+    const ok = await (svc as any).delete(id);
     if (!ok) return c.json(responses.notFound('Group not found'), 404);
     return c.json(responses.ok({}));
   } catch (error) {
@@ -107,10 +122,10 @@ groupRoutes.delete('/', createAuthMiddleware({ required: true }), requireRole('s
     const body = await c.req.json().catch(() => ({}));
     const ids: string[] = Array.isArray(body?.ids) ? body.ids : [];
     if (!ids.length) return c.json(responses.badRequest('ids required'), 400);
-    const repo = getDI(c).resolve(TOKENS.GroupRepo) as any;
+    const svc = getDI(c).resolve(TOKENS.GroupService) as GroupService;
     let ok = true;
     for (const id of ids) {
-      const del = await (repo as any).delete(id);
+      const del = await (svc as any).delete(id);
       ok = ok && del;
     }
     return c.json(ok ? responses.ok({}) : responses.serverError('Failed to delete some groups'), ok ? 200 : 500);
@@ -126,8 +141,8 @@ groupRoutes.post('/:id/users', createAuthMiddleware({ required: true }), require
     const body = await c.req.json();
     const userIds: string[] = Array.isArray(body?.userIds) ? body.userIds : [];
     if (!userIds.length) return c.json(responses.badRequest('userIds must be a non-empty array'), 400);
-    const repo = getDI(c).resolve(TOKENS.GroupRepo) as any;
-    await (repo as any).setGroupUsers(id, userIds);
+    const svc = getDI(c).resolve(TOKENS.GroupService) as GroupService;
+    await (svc as any).setUsers(id, userIds);
     return c.json(responses.ok({ modified: userIds.length }));
   } catch (error) {
     console.error('Group members update error:', error);
@@ -142,8 +157,8 @@ groupRoutes.post('/:id/members', createAuthMiddleware({ required: true }), requi
     const body = await c.req.json();
     const userIds: string[] = Array.isArray(body?.userIds) ? body.userIds : [];
     if (!userIds.length) return c.json(responses.badRequest('userIds must be a non-empty array'), 400);
-    const repo = getDI(c).resolve(TOKENS.GroupRepo) as any;
-    await (repo as any).setGroupUsers(id, userIds);
+    const svc = getDI(c).resolve(TOKENS.GroupService) as GroupService;
+    await (svc as any).setUsers(id, userIds);
     return c.json(responses.ok({ modified: userIds.length }));
   } catch (error) {
     console.error('Group members update error:', error);

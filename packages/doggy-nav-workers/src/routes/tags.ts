@@ -3,6 +3,7 @@ import { TOKENS } from '../ioc/tokens';
 import { getDI } from '../ioc/helpers';
 import { responses } from '../utils/responses';
 import { createAuthMiddleware, requireRole } from '../middleware/auth';
+import type { TagService } from 'doggy-nav-core';
 
 export const tagRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -24,20 +25,18 @@ tagRoutes.post('/', createAuthMiddleware({ required: true }), requireRole('admin
   try {
     const body = await c.req.json();
     const name = String(body?.name || '').trim();
-    if (!name) return c.json(responses.badRequest('name required'), 400);
-    const slug = toSlug(name);
-    // ensure unique
-    const exists = await c.env.DB
-      .prepare(`SELECT id FROM tags WHERE slug = ? OR name = ? LIMIT 1`)
-      .bind(slug, name)
-      .first<any>();
-    if (exists) return c.json(responses.badRequest('Tag already exists'), 409);
-    const id = (globalThis.crypto?.randomUUID?.() as string) || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    await c.env.DB
-      .prepare(`INSERT INTO tags (id, name, slug, description) VALUES (?, ?, ?, '')`)
-      .bind(id, name, slug)
-      .run();
-    return c.json(responses.ok({ id, name }));
+    const svc = getDI(c).resolve(TOKENS.TagService) as TagService;
+    try {
+      const tag = await (svc as any).create(name);
+      return c.json(responses.ok({ id: tag.id, name: tag.name }));
+    } catch (e: any) {
+      if (e?.name === 'ValidationError') {
+        const msg = String(e.message || 'Invalid');
+        const code = /exists/i.test(msg) ? 409 : 400;
+        return c.json(code === 400 ? responses.badRequest(msg) : responses.badRequest(msg), code);
+      }
+      throw e;
+    }
   } catch (err) {
     console.error('Tag create error:', err);
     return c.json(responses.serverError(), 500);
@@ -50,8 +49,9 @@ tagRoutes.delete('/', createAuthMiddleware({ required: true }), requireRole('adm
     const body = await c.req.json().catch(() => ({}));
     const id = body?.id;
     if (!id) return c.json(responses.badRequest('id required'), 400);
-    const res = await c.env.DB.prepare(`DELETE FROM tags WHERE id = ?`).bind(id).run();
-    if ((res.meta?.rows_written ?? 0) === 0) return c.json(responses.notFound('Tag not found'), 404);
+    const svc = getDI(c).resolve(TOKENS.TagService) as TagService;
+    const ok = await (svc as any).delete(id);
+    if (!ok) return c.json(responses.notFound('Tag not found'), 404);
     return c.json(responses.ok(true));
   } catch (err) {
     console.error('Tag delete error:', err);
@@ -66,32 +66,23 @@ tagRoutes.put('/', createAuthMiddleware({ required: true }), requireRole('admin'
     const id = String(body?.id || '');
     const name = body?.name !== undefined ? String(body.name) : undefined;
     if (!id) return c.json(responses.badRequest('id required'), 400);
-    if (name !== undefined) {
-      const slug = toSlug(name);
-      const dup = await c.env.DB
-        .prepare(`SELECT id FROM tags WHERE (slug = ? OR name = ?) AND id != ? LIMIT 1`)
-        .bind(slug, name, id)
-        .first<any>();
-      if (dup) return c.json(responses.badRequest('Tag already exists'), 409);
-      await c.env.DB
-        .prepare(`UPDATE tags SET name = ?, slug = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`)
-        .bind(name, slug, id)
-        .run();
+    if (name === undefined) return c.json(responses.badRequest('name required'), 400);
+    const svc = getDI(c).resolve(TOKENS.TagService) as TagService;
+    try {
+      await (svc as any).update(id, name);
+      return c.json(responses.ok({ id, name }));
+    } catch (e: any) {
+      if (e?.name === 'ValidationError') {
+        const msg = String(e.message || 'Invalid');
+        const code = /exists/i.test(msg) ? 409 : 400;
+        return c.json(code === 400 ? responses.badRequest(msg) : responses.badRequest(msg), code);
+      }
+      throw e;
     }
-    return c.json(responses.ok({ id, name }));
   } catch (err) {
     console.error('Tag update error:', err);
     return c.json(responses.serverError(), 500);
   }
 });
 
-function toSlug(s: string): string {
-  const base = s
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-  return base || 'tag';
-}
+// slug generation moved to adapter; core enforces name uniqueness

@@ -41,6 +41,52 @@ export class MongooseGroupRepository implements GroupRepository {
       pageNumber: Math.ceil(total / pageSize),
     };
   }
+
+  async getBySlug(slug: string) {
+    const doc = await this.model.findOne({ slug }).lean().select('-__v');
+    return doc ? mapDocToGroup(doc) : null;
+  }
+
+  async create(input: { slug: string; displayName: string; description?: string }) {
+    const doc = await this.model.create({
+      slug: input.slug,
+      displayName: input.displayName,
+      description: input.description ?? '',
+    });
+    return mapDocToGroup(doc.toObject ? doc.toObject() : doc);
+  }
+
+  async update(
+    id: string,
+    patch: Partial<{ slug: string; displayName: string; description: string }>
+  ) {
+    const doc = await this.model
+      .findByIdAndUpdate(
+        id,
+        {
+          ...(patch.slug !== undefined ? { slug: patch.slug } : {}),
+          ...(patch.displayName !== undefined ? { displayName: patch.displayName } : {}),
+          ...(patch.description !== undefined ? { description: patch.description } : {}),
+        },
+        { new: true }
+      )
+      .lean()
+      .select('-__v');
+    return doc ? mapDocToGroup(doc) : null;
+  }
+
+  async delete(id: string) {
+    const res = await this.model.findByIdAndDelete(id);
+    return !!res;
+  }
+
+  async setGroupUsers(groupId: string, userIds: string[]) {
+    const User = this.ctx.model.User;
+    await User.updateMany({ groups: groupId }, { $pull: { groups: groupId } }).exec();
+    if (Array.isArray(userIds) && userIds.length) {
+      await User.updateMany({ _id: { $in: userIds } }, { $addToSet: { groups: groupId } }).exec();
+    }
+  }
 }
 
 export default MongooseGroupRepository;

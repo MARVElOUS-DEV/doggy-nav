@@ -23,6 +23,14 @@ export class D1GroupRepository implements GroupRepository {
     return row ? rowToGroup(row) : null;
   }
 
+  async getBySlug(slug: string): Promise<Group | null> {
+    const stmt = this.db.prepare(
+      `SELECT id, slug, display_name, description, created_at, updated_at FROM groups WHERE slug = ? LIMIT 1`
+    );
+    const row = await stmt.bind(slug).first<any>();
+    return row ? rowToGroup(row) : null;
+  }
+
   async list(options: GroupListOptions) {
     const { pageSize, pageNumber, filter } = options;
     const offset = pageSize * pageNumber - pageSize;

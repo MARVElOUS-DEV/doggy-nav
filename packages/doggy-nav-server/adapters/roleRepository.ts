@@ -26,6 +26,59 @@ export class MongooseRoleRepository implements RoleRepository {
     ]);
     return { data: rows.map(mapDocToRole), total, pageNumber: Math.ceil(total / page.pageSize) };
   }
+
+  async getById(id: string): Promise<Role | null> {
+    const doc = await this.model.findById(id).lean().select('-__v');
+    return doc ? mapDocToRole(doc) : null;
+  }
+
+  async getBySlug(slug: string): Promise<Role | null> {
+    const doc = await this.model.findOne({ slug }).lean().select('-__v');
+    return doc ? mapDocToRole(doc) : null;
+  }
+
+  async create(input: { slug: string; displayName: string; description?: string; permissions?: string[]; isSystem?: boolean }): Promise<Role> {
+    const doc = await this.model.create({
+      slug: input.slug,
+      displayName: input.displayName,
+      description: input.description ?? '',
+      permissions: Array.isArray(input.permissions) ? input.permissions : [],
+      isSystem: !!input.isSystem,
+    });
+    return mapDocToRole(doc.toObject ? doc.toObject() : doc);
+  }
+
+  async update(id: string, patch: Partial<{ slug: string; displayName: string; description: string; permissions: string[]; isSystem: boolean }>): Promise<Role | null> {
+    const doc = await this.model
+      .findByIdAndUpdate(
+        id,
+        {
+          ...(patch.slug !== undefined ? { slug: patch.slug } : {}),
+          ...(patch.displayName !== undefined ? { displayName: patch.displayName } : {}),
+          ...(patch.description !== undefined ? { description: patch.description } : {}),
+          ...(patch.permissions !== undefined ? { permissions: patch.permissions } : {}),
+          ...(patch.isSystem !== undefined ? { isSystem: patch.isSystem } : {}),
+        },
+        { new: true }
+      )
+      .lean()
+      .select('-__v');
+    return doc ? mapDocToRole(doc) : null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const res = await this.model.findByIdAndDelete(id);
+    return !!res;
+  }
+
+  async getRolePermissions(id: string): Promise<string[]> {
+    const doc = await this.model.findById(id).lean().select('permissions');
+    return Array.isArray(doc?.permissions) ? doc!.permissions : [];
+  }
+
+  async setRolePermissions(id: string, permissions: string[]): Promise<void> {
+    await this.model.updateOne({ _id: id }, { $set: { permissions: Array.isArray(permissions) ? permissions : [] } }).exec();
+  }
 }
 
 export default MongooseRoleRepository;

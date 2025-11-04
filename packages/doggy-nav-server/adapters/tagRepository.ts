@@ -26,6 +26,31 @@ export class MongooseTagRepository implements TagRepository {
     ]);
     return { data: rows.map(mapDocToTag), total, pageNumber: Math.ceil(total / pageSize) };
   }
+
+  async getById(id: string) {
+    const doc = await this.model.findById(id).lean().select('-__v');
+    return doc ? mapDocToTag(doc) : null;
+  }
+
+  async getByName(name: string) {
+    const doc = await this.model.findOne({ name }).lean().select('-__v');
+    return doc ? mapDocToTag(doc) : null;
+  }
+
+  async create(name: string) {
+    const doc = await this.model.create({ name });
+    return mapDocToTag(doc.toObject ? doc.toObject() : doc);
+  }
+
+  async update(id: string, name: string) {
+    const doc = await this.model.findByIdAndUpdate(id, { name }, { new: true }).lean().select('-__v');
+    return doc ? mapDocToTag(doc) : null;
+  }
+
+  async delete(id: string) {
+    const res = await this.model.findByIdAndDelete(id);
+    return !!res;
+  }
 }
 
 export default MongooseTagRepository;

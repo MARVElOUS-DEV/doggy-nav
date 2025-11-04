@@ -9,6 +9,12 @@ import {
   InviteCodeService,
   TagService,
   TranslateService,
+  UserService,
+  UserAuthService,
+  RoleService,
+  EmailSettingsService,
+  ApplicationService,
+  NavAdminService,
 } from 'doggy-nav-core';
 import D1GroupRepository from '../adapters/d1GroupRepository';
 import D1CategoryRepository from '../adapters/d1CategoryRepository';
@@ -21,6 +27,11 @@ import D1TagRepository from '../adapters/d1TagRepository';
 import FetchTranslateProvider from '../adapters/translateProvider';
 import { D1RoleRepository } from '../adapters/d1RoleRepository';
 import { D1UserRepository } from '../adapters/d1UserRepository';
+import D1UserRepositoryAdapter from '../adapters/d1UserRepositoryAdapter';
+import D1AuthRepositoryAdapter from '../adapters/d1AuthRepositoryAdapter';
+import D1EmailSettingsRepositoryAdapter from '../adapters/d1EmailSettingsRepositoryAdapter';
+import D1ApplicationRepositoryAdapter from '../adapters/d1ApplicationRepositoryAdapter';
+import D1NavAdminRepository from '../adapters/d1NavAdminRepository';
 import { TOKENS } from './tokens';
 
 type Env = { DB: D1Database };
@@ -56,5 +67,11 @@ export function createWorkerContainer(env: Env) {
   );
   c.register(TOKENS.TagService, () => new TagService(new D1TagRepository(env.DB)));
   c.register(TOKENS.TranslateService, () => new TranslateService(new FetchTranslateProvider()));
+  c.register(TOKENS.UserService, () => new UserService(new D1UserRepositoryAdapter(env.DB)));
+  c.register(TOKENS.AuthService, () => new UserAuthService(new D1AuthRepositoryAdapter(env.DB)));
+  c.register(TOKENS.RoleService, () => new RoleService(new D1RoleRepository(env.DB)));
+  c.register(TOKENS.EmailSettingsService, () => new EmailSettingsService(new D1EmailSettingsRepositoryAdapter(env.DB)));
+  c.register(TOKENS.ApplicationService, () => new ApplicationService(new D1ApplicationRepositoryAdapter(env.DB)));
+  c.register(TOKENS.NavAdminService, () => new NavAdminService(new D1NavAdminRepository(env.DB)));
   return c;
 }

@@ -3,6 +3,7 @@ import { TOKENS } from '../ioc/tokens';
 import { getDI } from '../ioc/helpers';
 import { responses } from '../utils/responses';
 import { publicRoute, createAuthMiddleware, requireRole } from '../middleware/auth';
+import type { NavAdminService } from 'doggy-nav-core';
 
 export const navRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -446,13 +447,9 @@ navRoutes.put('/audit', createAuthMiddleware({ required: true }), requireRole('a
     const body = await c.req.json();
     const { id, status, reason } = body || {};
     if (!id || typeof status !== 'number') return c.json(responses.badRequest('id and status required'), 400);
-    await c.env.DB
-      .prepare(
-        `UPDATE bookmarks SET status = ?, audit_time = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`
-      )
-      .bind(status, id)
-      .run();
-    // Reason is not stored in D1 schema; ignore for now.
+    const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
+    const ok = await (svc as any).audit(String(id), Number(status), reason);
+    if (!ok) return c.json(responses.notFound('Nav item not found'), 404);
     return c.json(responses.ok({ id, status }));
   } catch (err) {
     console.error('Worker nav audit error:', err);
@@ -536,50 +533,24 @@ navRoutes.post('/', publicRoute(), async (c) => {
   try {
     const body = await c.req.json();
     const { name, href, desc, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
-    if (!name || !href) return c.json(responses.badRequest('name and href are required'), 400);
-    const id = (globalThis.crypto?.randomUUID?.() as string) || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    const createTime = Date.now();
-    const vis = (audience?.visibility as string) || 'public';
-    const tagsJson = JSON.stringify(Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s) => s.trim()).filter(Boolean) : []);
-
-    await c.env.DB
-      .prepare(
-        `INSERT INTO bookmarks (id, category_id, name, href, description, logo, author_name, author_url, create_time, tags, audience_visibility)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        id,
-        categoryId || null,
-        String(name),
-        String(href),
-        desc || '',
-        logo || '',
-        authorName || '',
-        authorUrl || '',
-        createTime,
-        tagsJson,
-        vis
-      )
-      .run();
-
-    if (vis === 'restricted') {
-      const allowRoles: string[] = Array.isArray(audience?.allowRoles) ? audience.allowRoles : [];
-      const allowGroups: string[] = Array.isArray(audience?.allowGroups) ? audience.allowGroups : [];
-      for (const rid of allowRoles) {
-        await c.env.DB
-          .prepare(`INSERT INTO bookmark_role_permissions (bookmark_id, role_id) VALUES (?, ?)`)
-          .bind(id, rid)
-          .run();
-      }
-      for (const gid of allowGroups) {
-        await c.env.DB
-          .prepare(`INSERT INTO bookmark_group_permissions (bookmark_id, group_id) VALUES (?, ?)`)
-          .bind(id, gid)
-          .run();
-      }
+    const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
+    try {
+      const res = await (svc as any).create({
+        name,
+        href,
+        desc,
+        logo,
+        categoryId,
+        tags: Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined,
+        authorName,
+        authorUrl,
+        audience,
+      });
+      return c.json(responses.ok({ id: res.id }));
+    } catch (e: any) {
+      if (e?.name === 'ValidationError') return c.json(responses.badRequest(e.message), 400);
+      throw e;
     }
-
-    return c.json(responses.ok({ id }));
   } catch (err) {
     console.error('Worker nav create error:', err);
     return c.json(responses.serverError(), 500);
@@ -592,47 +563,20 @@ navRoutes.put('/', createAuthMiddleware({ required: true }), async (c) => {
     const body = await c.req.json();
     const { id, name, href, desc, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
     if (!id) return c.json(responses.badRequest('id required'), 400);
-    const fields: string[] = [];
-    const params: any[] = [];
-    if (name !== undefined) { fields.push('name = ?'); params.push(String(name)); }
-    if (href !== undefined) { fields.push('href = ?'); params.push(String(href)); }
-    if (desc !== undefined) { fields.push('description = ?'); params.push(desc || ''); }
-    if (logo !== undefined) { fields.push('logo = ?'); params.push(logo || ''); }
-    if (categoryId !== undefined) { fields.push('category_id = ?'); params.push(categoryId || null); }
-    if (authorName !== undefined) { fields.push('author_name = ?'); params.push(authorName || ''); }
-    if (authorUrl !== undefined) { fields.push('author_url = ?'); params.push(authorUrl || ''); }
-    if (tags !== undefined) {
-      const tagsJson = JSON.stringify(Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s) => s.trim()).filter(Boolean) : []);
-      fields.push('tags = ?');
-      params.push(tagsJson);
-    }
-    let vis: string | undefined;
-    if (audience && audience.visibility !== undefined) {
-      vis = String(audience.visibility || 'public');
-      fields.push('audience_visibility = ?');
-      params.push(vis);
-    }
-    if (fields.length) {
-      const sql = `UPDATE bookmarks SET ${fields.join(', ')} WHERE id = ?`;
-      await c.env.DB.prepare(sql).bind(...params, id).run();
-    }
-
-    if (audience) {
-      await c.env.DB.prepare('DELETE FROM bookmark_role_permissions WHERE bookmark_id = ?').bind(id).run();
-      await c.env.DB.prepare('DELETE FROM bookmark_group_permissions WHERE bookmark_id = ?').bind(id).run();
-      if ((audience.visibility || vis) === 'restricted') {
-        const allowRoles: string[] = Array.isArray(audience.allowRoles) ? audience.allowRoles : [];
-        const allowGroups: string[] = Array.isArray(audience.allowGroups) ? audience.allowGroups : [];
-        for (const rid of allowRoles) {
-          await c.env.DB.prepare('INSERT INTO bookmark_role_permissions (bookmark_id, role_id) VALUES (?, ?)').bind(id, rid).run();
-        }
-        for (const gid of allowGroups) {
-          await c.env.DB.prepare('INSERT INTO bookmark_group_permissions (bookmark_id, group_id) VALUES (?, ?)').bind(id, gid).run();
-        }
-      }
-    }
-
-    return c.json(responses.ok({ id }));
+    const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
+    const res = await (svc as any).update(String(id), {
+      name,
+      href,
+      desc,
+      logo,
+      categoryId,
+      tags: Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined,
+      authorName,
+      authorUrl,
+      audience,
+    });
+    if (!res) return c.json(responses.notFound('Nav item not found'), 404);
+    return c.json(responses.ok({ id: res.id }));
   } catch (err) {
     console.error('Worker nav update error:', err);
     return c.json(responses.serverError(), 500);
@@ -645,8 +589,9 @@ navRoutes.delete('/', createAuthMiddleware({ required: true }), requireRole('adm
     const body = await c.req.json().catch(() => ({}));
     const id = body?.id;
     if (!id) return c.json(responses.badRequest('id required'), 400);
-    const res = await c.env.DB.prepare('DELETE FROM bookmarks WHERE id = ?').bind(id).run();
-    if ((res.meta?.rows_written ?? 0) === 0) return c.json(responses.notFound('Nav item not found'), 404);
+    const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
+    const ok = await (svc as any).delete(String(id));
+    if (!ok) return c.json(responses.notFound('Nav item not found'), 404);
     return c.json(responses.ok(true));
   } catch (err) {
     console.error('Worker nav delete error:', err);
