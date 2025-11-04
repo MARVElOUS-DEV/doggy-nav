@@ -14,6 +14,7 @@ import {
 } from '../utils/cookieAuth';
 import { D1OAuthRepository, type OAuthProvider } from '../adapters/d1OAuthRepository';
 import { PasswordUtils } from '../utils/passwordUtils';
+import { getUserAccessContext } from '../utils/userContext';
 
 const authRoutes = new Hono<{
   Bindings: {
@@ -165,15 +166,11 @@ authRoutes.post('/login', async (c) => {
     const ok = await PasswordUtils.verifyPassword(password, authRow.passwordHash || '');
     if (!ok) return c.json(responses.badRequest('Invalid credentials'), 401);
 
-    // Load full user and role/group slugs
-    const [fullUser, roles, groups] = await Promise.all<
-      [ReturnType<typeof userRepository.getById>, Promise<string[]>, Promise<string[]>]
-    >([
-      userRepository.getById(authRow.id),
-      userRepository.getUserRoles(authRow.id),
-      userRepository.getUserGroups(authRow.id),
-    ]);
-    if (!fullUser) return c.json(responses.serverError('User not found'), 500);
+    const userCtx = await getUserAccessContext(c.env.DB, userRepository, authRow.id);
+    if (!userCtx) return c.json(responses.serverError('User not found'), 500);
+    const fullUser = userCtx.user;
+    const roles = userCtx.roles;
+    const groups = userCtx.groups;
 
     // Enforce admin access for admin app source
     const src = (c.req.header('X-App-Source') || '').toLowerCase();
@@ -186,6 +183,8 @@ authRoutes.post('/login', async (c) => {
 
     await userRepository.update(authRow.id, { lastLoginAt: new Date() });
 
+    const permissions: string[] = userCtx.permissions;
+
     const jwtUtils = new JWTUtils(c.env.JWT_SECRET!);
     const userPayload = JWTUtils.createPayload({
       id: authRow.id,
@@ -193,7 +192,7 @@ authRoutes.post('/login', async (c) => {
       username: fullUser.username,
       roles,
       groups,
-      permissions: fullUser.extraPermissions,
+      permissions,
     });
     const tokens = await jwtUtils.generateTokenPair(userPayload);
     setAuthCookies(c as any, tokens);
@@ -246,18 +245,20 @@ authRoutes.post('/refresh', async (c) => {
       return c.json(responses.err('refresh token 类型错误'));
     }
 
-    const user = await userRepository.getById(refreshPayload.userId);
-    if (!user || !user.isActive) {
-      return c.json(responses.err('用户不存在或已禁用'));
-    }
+    const ctx2 = await getUserAccessContext(c.env.DB, userRepository, refreshPayload.userId);
+    if (!ctx2) return c.json(responses.err('用户不存在或已禁用'));
+    const user = ctx2.user;
+    const roles = ctx2.roles;
+    const groups = ctx2.groups;
+    const permissions = ctx2.permissions;
 
     const userPayload = JWTUtils.createPayload({
       id: user.id,
       email: user.email,
       username: user.username,
-      roles: await userRepository.getUserRoles(user.id),
-      groups: await userRepository.getUserGroups(user.id),
-      permissions: user.extraPermissions,
+      roles,
+      groups,
+      permissions,
     });
 
     const newTokens = await jwtUtils.refreshAccessToken(refreshToken, userPayload);
@@ -311,15 +312,28 @@ authRoutes.get('/me', async (c) => {
       return c.json(responses.ok({ authenticated: false, user: null, accessExp: null }));
     }
 
-    const userRepo = new D1UserRepository(c.env.DB);
-    const user = await userRepo.getById(payload.userId);
-    if (!user || !user.isActive) {
+    const ctxUser = await getUserAccessContext(c.env.DB, new D1UserRepository(c.env.DB), payload.userId);
+    if (!ctxUser) {
       return c.json(responses.ok({ authenticated: false, user: null, accessExp: null }));
     }
+    const respUser = {
+      id: ctxUser.user.id,
+      username: ctxUser.user.username,
+      email: ctxUser.user.email,
+      nickName: ctxUser.user.nickName,
+      phone: ctxUser.user.phone,
+      avatar: ctxUser.user.avatar,
+      roles: ctxUser.roles,
+      groups: ctxUser.groups,
+      permissions: ctxUser.permissions,
+    } as const;
 
     const accessExp = payload.exp ? Number(payload.exp) * 1000 : null;
     return c.json(
-      responses.ok({ authenticated: true, user, accessExp }, 'User profile retrieved successfully')
+      responses.ok(
+        { authenticated: true, user: respUser, accessExp },
+        'User profile retrieved successfully'
+      )
     );
   } catch (error) {
     console.error('Profile error:', error);
@@ -821,14 +835,15 @@ authRoutes.get('/:provider/callback', async (c) => {
     // Generate JWT and set cookies
     if (!c.env.JWT_SECRET) return c.json(responses.serverError('Missing JWT secret'), 500);
     const userRepository = new D1UserRepository(c.env.DB);
+    const ctx = await getUserAccessContext(c.env.DB, userRepository, user.id);
     const jwtUtils = new JWTUtils(c.env.JWT_SECRET);
     const payload = JWTUtils.createPayload({
       id: user.id,
       email: user.email,
       username: user.username,
-      roles: await userRepository.getUserRoles(user.id),
-      groups: await userRepository.getUserGroups(user.id),
-      permissions: user.extraPermissions,
+      roles: ctx?.roles || [],
+      groups: ctx?.groups || [],
+      permissions: ctx?.permissions || [],
     });
     const tokens = await jwtUtils.generateTokenPair(payload);
     await userRepository.update(user.id, { lastLoginAt: new Date() });

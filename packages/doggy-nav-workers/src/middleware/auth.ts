@@ -3,6 +3,7 @@ import { JWTUtils } from '../utils/jwtUtils';
 import { getAccessTokenFromCookies } from '../utils/cookieAuth';
 import { D1UserRepository } from '../adapters/d1UserRepository';
 import { responses } from '../utils/responses';
+import { getUserAccessContext } from '../utils/userContext';
 
 interface AuthContext {
   user?: {
@@ -57,22 +58,17 @@ export function createAuthMiddleware(options: { required?: boolean } = {}) {
         return c.json(responses.err('Token expired'), 401);
       }
 
-      // Fetch fresh user data to ensure user is still active
+      // Load user access context centrally
       const userRepository = new D1UserRepository(c.env.DB);
-      const user = await userRepository.getById(payload.userId);
-
-      if (!user || !user.isActive) {
-        return c.json(responses.err('User not found or inactive'), 401);
-      }
-
-      // Attach user context
+      const ctx = await getUserAccessContext(c.env.DB, userRepository, payload.userId);
+      if (!ctx) return c.json(responses.err('User not found or inactive'), 401);
       c.set('user', {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        roles: payload.roles,
-        groups: payload.groups,
-        permissions: payload.permissions,
+        id: ctx.user.id,
+        email: ctx.user.email,
+        username: ctx.user.username,
+        roles: ctx.roles,
+        groups: ctx.groups,
+        permissions: ctx.permissions,
       });
 
       await next();

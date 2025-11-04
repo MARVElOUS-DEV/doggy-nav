@@ -1,6 +1,6 @@
 import request from '@/utils/request';
 
-export const API_LOGIN = '/api/login';
+export const API_LOGIN = '/api/auth/login';
 export const API_NAV_LIST = '/api/nav/list';
 export const API_NAV = '/api/nav';
 export const API_NAV_AUDIT = '/api/nav/audit';

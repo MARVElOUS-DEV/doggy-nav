@@ -8,6 +8,7 @@ import { createWorkerContainer } from './ioc/worker';
 // Response helpers
 import { responses } from './utils/responses';
 import { rateLimit } from './middleware/rateLimit';
+import { sourceGuard } from './middleware/sourceGuard';
 
 type Env = RouteEnv;
 const app = new Hono<{ Bindings: RouteEnv }>();
@@ -36,6 +37,9 @@ app.use('/api/*', async (c, next) => {
 
 // Basic rate limit
 app.use('/api/*', rateLimit());
+
+// Enforce source header and admin-source auth gating (server parity)
+app.use('/api/*', sourceGuard());
 
 // Error handling middleware
 app.onError((err, c) => {
