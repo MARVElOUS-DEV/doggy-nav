@@ -6,6 +6,7 @@ import * as Core from 'doggy-nav-core';
 const WORKER_DIR = new URL('..', import.meta.url).pathname;
 const USE_REMOTE =
   process.argv.includes('--remote') || process.env.D1_REMOTE === '1' || process.env.REMOTE === '1';
+const FORCE = process.argv.includes('--force') || process.env.FORCE === '1';
 
 const DEFAULT_ADMIN = {
   username: process.env.ADMIN_USERNAME || 'admin',
@@ -56,6 +57,37 @@ function execFile(filePath) {
 
 function escapeSql(s) {
   return String(s).replaceAll("'", "''");
+}
+
+// --- meta helpers (idempotency markers) ---
+function ensureSystemMetaTable() {
+  execSql(
+    `CREATE TABLE IF NOT EXISTS system_meta (
+      meta_key TEXT PRIMARY KEY,
+      meta_value TEXT NOT NULL,
+      created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+      updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+    )`
+  );
+}
+
+function getMeta(key) {
+  const out = execSql(
+    `SELECT meta_value FROM system_meta WHERE meta_key='${escapeSql(key)}' LIMIT 1`,
+    { json: true }
+  );
+  return out?.[0]?.results?.[0]?.meta_value ?? null;
+}
+
+function setMeta(key, value) {
+  execSql(
+    `INSERT INTO system_meta (meta_key, meta_value) VALUES ('${escapeSql(key)}','${escapeSql(value)}')
+    ON CONFLICT(meta_key) DO UPDATE SET meta_value=excluded.meta_value, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')`
+  );
+}
+
+function hasMeta(key) {
+  return getMeta(key) !== null;
 }
 
 async function ensureRole(role) {
@@ -132,6 +164,20 @@ async function main() {
     log('Schema not found. Applying migrations SQL files locally…');
     execFile('./migrations/001_init.sql');
     execFile('./migrations/002_invite_codes_extension.sql');
+    try {
+      execFile('./migrations/003_client_applications.sql');
+    } catch {}
+    try {
+      execFile('./migrations/004_email_settings.sql');
+    } catch {}
+  }
+
+  // Ensure system_meta exists for idempotent seeding markers
+  ensureSystemMetaTable();
+
+  if (!FORCE && hasMeta('seed:defaults')) {
+    warn('Defaults already seeded. Use --force to re-run.');
+    return;
   }
 
   const passwordHash = await bcrypt.hash(DEFAULT_ADMIN.password, 12);
@@ -159,6 +205,8 @@ async function main() {
     nickName: DEFAULT_ADMIN.nickName,
   });
   log('Defaults seeded.');
+
+  setMeta('seed:defaults', new Date().toISOString());
 
   log('Done.');
 }
