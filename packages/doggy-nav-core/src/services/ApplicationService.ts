@@ -1,6 +1,9 @@
-import type { Application } from '../domain/application';
+import type { Application } from '../types/application';
 import type { PageQuery } from '../dto/pagination';
-import type { ApplicationRepository, ApplicationUpdateInput } from '../repositories/ApplicationRepository';
+import type {
+  ApplicationRepository,
+  ApplicationUpdateInput,
+} from '../repositories/ApplicationRepository';
 
 function normalizePage(page: PageQuery) {
   const pageSize = Math.min(Math.max(Number(page.pageSize) || 10, 1), 100);
@@ -18,7 +21,11 @@ export class ApplicationService {
     return out;
   }
 
-  async create(name: string, description?: string, allowedOrigins?: string[]): Promise<Application> {
+  async create(
+    name: string,
+    description?: string,
+    allowedOrigins?: string[]
+  ): Promise<Application> {
     const clientSecret = this.generateClientSecret();
     return this.repo.create({ name, description, clientSecret, allowedOrigins });
   }

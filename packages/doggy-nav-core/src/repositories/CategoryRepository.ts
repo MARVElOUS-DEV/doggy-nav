@@ -1,4 +1,4 @@
-import type { Category } from '../domain/types';
+import type { Category } from '../types/types';
 
 export interface CategoryListOptions {
   showInMenu?: boolean;

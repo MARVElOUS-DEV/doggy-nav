@@ -1,6 +1,6 @@
-import type { AuthContext, NavItem, Audience, Visibility } from '../domain/types';
+import type { AuthContext, NavItem, Audience, Visibility } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
-import type { NavRepository, NavListOptions, NavListFilter } from '../repositories/NavRepository';
+import type { NavRepository, NavListFilter } from '../repositories/NavRepository';
 import type { CategoryRepository } from '../repositories/CategoryRepository';
 
 function isSysAdmin(roles?: string[]) {
@@ -43,7 +43,11 @@ export class NavService {
     private readonly categories: CategoryRepository
   ) {}
 
-  async list(page: PageQuery, filter: NavListFilter | undefined, user?: AuthContext): Promise<PageResult<NavItem>> {
+  async list(
+    page: PageQuery,
+    filter: NavListFilter | undefined,
+    user?: AuthContext
+  ): Promise<PageResult<NavItem>> {
     const { pageSize, pageNumber } = normalizePage(page);
     const roles = Array.isArray(user?.roles) ? user!.roles! : [];
     const isAuthenticated = !!user;
@@ -67,7 +71,11 @@ export class NavService {
       // if categories fail, proceed without narrowing which may include more items
     }
 
-    const res = await this.repo.list({ page: { pageSize, pageNumber }, filter: effFilter, userIdForFavorites: null });
+    const res = await this.repo.list({
+      page: { pageSize, pageNumber },
+      filter: effFilter,
+      userIdForFavorites: null,
+    });
 
     // Apply audience + category visibility post-filter
     const filtered = admin
@@ -77,7 +85,11 @@ export class NavService {
           if (n.categoryId && !allowedCategoryIds.has(String(n.categoryId))) return false;
           if (isAuthenticated) {
             // if no explicit status provided, emulate legacy: allow status undefined or 0
-            if (effFilter.status === undefined && !(n.status === 0 || n.status === undefined || n.status === null)) return false;
+            if (
+              effFilter.status === undefined &&
+              !(n.status === 0 || n.status === undefined || n.status === null)
+            )
+              return false;
           }
           return true;
         });

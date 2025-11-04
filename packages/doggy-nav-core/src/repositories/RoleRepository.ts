@@ -1,4 +1,4 @@
-import type { Role } from '../domain/types';
+import type { Role } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
 
 export interface RoleListOptions {

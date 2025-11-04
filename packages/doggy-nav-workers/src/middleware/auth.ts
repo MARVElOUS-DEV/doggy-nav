@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { JWTUtils } from '../utils/jwtUtils';
+import { getAccessTokenFromCookies } from '../utils/cookieAuth';
 import { D1UserRepository } from '../adapters/d1UserRepository';
-import { responses } from '../index';
+import { responses } from '../utils/responses';
 
 interface AuthContext {
   user?: {
@@ -30,7 +31,11 @@ function getJWTUtils(env: { JWT_SECRET?: string }): JWTUtils {
 export function createAuthMiddleware(options: { required?: boolean } = {}) {
   return async (c: any, next: () => Promise<void>) => {
     const authHeader = c.req.header('Authorization');
-    const token = JWTUtils.extractTokenFromHeader(authHeader);
+    let token = JWTUtils.extractTokenFromHeader(authHeader);
+    if (!token) {
+      const cookieToken = getAccessTokenFromCookies(c);
+      if (cookieToken) token = cookieToken.startsWith('Bearer ') ? cookieToken.slice(7) : cookieToken;
+    }
 
     if (!token) {
       if (options.required) {
@@ -166,7 +171,11 @@ export function publicRoute() {
   return async (c: any, next: () => Promise<void>) => {
     // Public routes can still have optional authentication
     const authHeader = c.req.header('Authorization');
-    const token = JWTUtils.extractTokenFromHeader(authHeader);
+    let token = JWTUtils.extractTokenFromHeader(authHeader);
+    if (!token) {
+      const cookieToken = getAccessTokenFromCookies(c);
+      if (cookieToken) token = cookieToken.startsWith('Bearer ') ? cookieToken.slice(7) : cookieToken;
+    }
 
     if (token) {
       try {

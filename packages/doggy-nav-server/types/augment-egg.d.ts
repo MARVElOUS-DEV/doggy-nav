@@ -1,6 +1,7 @@
 import 'egg';
 import 'egg-mongoose';
 import { Mongoose, Types, ConnectOptions } from 'mongoose';
+import type { Container } from 'doggy-nav-core';
 
 // Global lightweight passport typings suitable for egg-passport usage
 declare global {
@@ -47,6 +48,7 @@ declare module 'egg' {
 
   interface Context {
     model: any;
+    di: Container;
   }
 }
 

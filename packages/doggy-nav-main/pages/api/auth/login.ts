@@ -2,5 +2,5 @@ import { createApiHandler } from '../../../lib/apiHandler';
 
 export default createApiHandler({
   method: 'POST',
-  endpoint: '/api/login'
+  endpoint: '/api/auth/login',
 });

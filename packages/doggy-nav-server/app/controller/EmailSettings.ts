@@ -1,16 +1,20 @@
 import Controller from '../core/base_controller';
 import { ValidationError } from '../core/errors';
 import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { EmailSettingsService } from 'doggy-nav-core';
 
 export default class EmailSettingsController extends Controller {
+  @Inject(TOKENS.EmailSettingsService)
+  private emailSettingsService!: EmailSettingsService;
+
   tableName(): string {
     return 'EmailNotificationSettings';
   }
 
   async get() {
     try {
-      const service = this.ctx.di.resolve(TOKENS.EmailSettingsService);
-      const settings = await service.get();
+      const settings = await this.emailSettingsService.get();
       this.success(settings);
     } catch (error: any) {
       this.ctx.logger.error('Failed to get email settings:', error);
@@ -21,8 +25,7 @@ export default class EmailSettingsController extends Controller {
   async update() {
     try {
       const body = this.getSanitizedBody();
-      const service = this.ctx.di.resolve(TOKENS.EmailSettingsService);
-      const updated = await service.update(body);
+      const updated = await this.emailSettingsService.update(body);
       this.success(updated);
     } catch (error: any) {
       if (error instanceof ValidationError) {

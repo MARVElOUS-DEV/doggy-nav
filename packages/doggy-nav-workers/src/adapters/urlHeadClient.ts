@@ -2,8 +2,10 @@ import type { UrlHeadClient } from 'doggy-nav-core';
 
 export class FetchUrlHeadClient implements UrlHeadClient {
   constructor(private readonly opts?: { allowedHosts?: string[] }) {}
-  async head(url: string, options?: { timeoutMs?: number; headers?: Record<string, string> }): Promise<{ ok: boolean; status?: number }>
-  {
+  async head(
+    url: string,
+    options?: { timeoutMs?: number; headers?: Record<string, string> }
+  ): Promise<{ ok: boolean; status?: number }> {
     try {
       // Basic SSRF protections: only http/https, disallow private IP literals
       const u = new URL(url);
@@ -17,7 +19,11 @@ export class FetchUrlHeadClient implements UrlHeadClient {
       }
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), options?.timeoutMs ?? 5000);
-      const res = await fetch(url, { method: 'HEAD', headers: options?.headers, signal: controller.signal });
+      const res = await fetch(url, {
+        method: 'HEAD',
+        headers: options?.headers,
+        signal: controller.signal,
+      });
       clearTimeout(timeout);
       return { ok: res.status >= 200 && res.status < 400, status: res.status };
     } catch (e: any) {
@@ -35,7 +41,7 @@ function isPrivateHost(host: string): boolean {
   const m = host.match(/^\d+\.\d+\.\d+\.\d+$/);
   if (!m) return false;
   const parts = host.split('.').map((x) => Number(x));
-  const [a,b] = parts;
+  const [a, b] = parts;
   if (a === 10) return true; // 10.0.0.0/8
   if (a === 127) return true; // loopback
   if (a === 169 && b === 254) return true; // link-local

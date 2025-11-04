@@ -12,8 +12,11 @@ export default class D1CategoryRepository implements CategoryRepository {
       params.push(showInMenu ? 1 : 0);
     }
     const sql = `SELECT id, name, category_id, description, only_folder, icon, show_in_menu, audience_visibility
-                 FROM categories ${where.length ? 'WHERE ' + where.join(' AND ') : ''}`;
-    const rs = await this.db.prepare(sql).bind(...params).all<any>();
+                FROM categories ${where.length ? 'WHERE ' + where.join(' AND ') : ''}`;
+    const rs = await this.db
+      .prepare(sql)
+      .bind(...params)
+      .all<any>();
     const rows: any[] = rs.results || [];
     return rows.map((r) => ({
       id: String(r.id),

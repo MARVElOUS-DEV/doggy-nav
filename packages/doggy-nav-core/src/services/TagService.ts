@@ -1,5 +1,5 @@
 import type { PageQuery, PageResult } from '../dto/pagination';
-import type { Tag } from '../domain/types';
+import type { Tag } from '../types/types';
 import type { TagRepository } from '../repositories/TagRepository';
 
 function normalizePage(page: PageQuery) {

@@ -1,4 +1,4 @@
-import type { EmailSettings } from '../domain/types';
+import type { EmailSettings } from '../types/types';
 
 export interface EmailSettingsUpsertInput extends EmailSettings {
   smtpPass: string;

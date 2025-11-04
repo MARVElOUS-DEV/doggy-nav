@@ -4,8 +4,10 @@ import type {
   NavService,
   FavoriteService,
   FavoriteCommandService,
+  FavoriteFolderService,
   InviteCodeService,
   TagService,
+  TranslateService,
   Token,
 } from 'doggy-nav-core';
 
@@ -15,8 +17,10 @@ export const TOKENS = {
   NavService: Symbol('NavService') as Token<NavService>,
   FavoriteService: Symbol('FavoriteService') as Token<FavoriteService>,
   FavoriteCommandService: Symbol('FavoriteCommandService') as Token<FavoriteCommandService>,
+  FavoriteFolderService: Symbol('FavoriteFolderService') as Token<FavoriteFolderService>,
   InviteCodeService: Symbol('InviteCodeService') as Token<InviteCodeService>,
   TagService: Symbol('TagService') as Token<TagService>,
+  TranslateService: Symbol('TranslateService') as Token<TranslateService>,
   UserRepo: Symbol('UserRepo') as Token<any>,
   RoleRepo: Symbol('RoleRepo') as Token<any>,
   CategoryRepo: Symbol('CategoryRepo') as Token<any>,

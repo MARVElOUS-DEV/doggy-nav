@@ -1,4 +1,4 @@
-import type { InviteCode } from '../domain/types';
+import type { InviteCode } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
 
 export interface InviteCodeListOptions {

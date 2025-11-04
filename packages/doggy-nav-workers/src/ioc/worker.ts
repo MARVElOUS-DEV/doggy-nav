@@ -1,11 +1,24 @@
-import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, InviteCodeService, TagService } from 'doggy-nav-core';
+import {
+  Container,
+  GroupService,
+  CategoryService,
+  NavService,
+  FavoriteService,
+  FavoriteCommandService,
+  FavoriteFolderService,
+  InviteCodeService,
+  TagService,
+  TranslateService,
+} from 'doggy-nav-core';
 import D1GroupRepository from '../adapters/d1GroupRepository';
 import D1CategoryRepository from '../adapters/d1CategoryRepository';
 import D1NavRepository from '../adapters/d1NavRepository';
 import D1FavoriteRepository from '../adapters/d1FavoriteRepository';
 import D1FavoriteCommandRepository from '../adapters/d1FavoriteCommandRepository';
+import D1FavoriteFolderRepository from '../adapters/d1FavoriteFolderRepository';
 import D1InviteCodeRepository from '../adapters/d1InviteCodeRepository';
 import D1TagRepository from '../adapters/d1TagRepository';
+import FetchTranslateProvider from '../adapters/translateProvider';
 import { D1RoleRepository } from '../adapters/d1RoleRepository';
 import { D1UserRepository } from '../adapters/d1UserRepository';
 import { TOKENS } from './tokens';
@@ -24,10 +37,24 @@ export function createWorkerContainer(env: Env) {
   // Services
   c.register(TOKENS.GroupService, () => new GroupService(new D1GroupRepository(env.DB)));
   c.register(TOKENS.CategoryService, () => new CategoryService(new D1CategoryRepository(env.DB)));
-  c.register(TOKENS.NavService, () => new NavService(new D1NavRepository(env.DB), new D1CategoryRepository(env.DB)));
+  c.register(
+    TOKENS.NavService,
+    () => new NavService(new D1NavRepository(env.DB), new D1CategoryRepository(env.DB))
+  );
   c.register(TOKENS.FavoriteService, () => new FavoriteService(new D1FavoriteRepository(env.DB)));
-  c.register(TOKENS.FavoriteCommandService, () => new FavoriteCommandService(new D1FavoriteCommandRepository(env.DB)));
-  c.register(TOKENS.InviteCodeService, () => new InviteCodeService(new D1InviteCodeRepository(env.DB)));
+  c.register(
+    TOKENS.FavoriteCommandService,
+    () => new FavoriteCommandService(new D1FavoriteCommandRepository(env.DB))
+  );
+  c.register(
+    TOKENS.FavoriteFolderService,
+    () => new FavoriteFolderService(new D1FavoriteFolderRepository(env.DB))
+  );
+  c.register(
+    TOKENS.InviteCodeService,
+    () => new InviteCodeService(new D1InviteCodeRepository(env.DB))
+  );
   c.register(TOKENS.TagService, () => new TagService(new D1TagRepository(env.DB)));
+  c.register(TOKENS.TranslateService, () => new TranslateService(new FetchTranslateProvider()));
   return c;
 }

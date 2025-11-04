@@ -44,9 +44,9 @@ export class D1GroupRepository implements GroupRepository {
     const result = await this.db
       .prepare(
         `SELECT id, slug, display_name, description, created_at, updated_at
-         FROM groups ${where}
-         ORDER BY created_at DESC
-         LIMIT ? OFFSET ?`
+        FROM groups ${where}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?`
       )
       .bind(...params, pageSize, offset)
       .all<any>();
@@ -68,23 +68,36 @@ export class D1GroupRepository implements GroupRepository {
   async create(data: { slug: string; displayName: string; description?: string }): Promise<Group> {
     const id = (globalThis.crypto?.randomUUID?.() as string) || cryptoRandomId();
     await this.db
-      .prepare(
-        `INSERT INTO groups (id, slug, display_name, description) VALUES (?, ?, ?, ?)`
-      )
+      .prepare(`INSERT INTO groups (id, slug, display_name, description) VALUES (?, ?, ?, ?)`)
       .bind(id, data.slug, data.displayName, data.description ?? '')
       .run();
     return (await this.getById(id))!;
   }
 
-  async update(id: string, patch: Partial<{ slug: string; displayName: string; description: string }>): Promise<Group | null> {
+  async update(
+    id: string,
+    patch: Partial<{ slug: string; displayName: string; description: string }>
+  ): Promise<Group | null> {
     const fields: string[] = [];
     const params: any[] = [];
-    if (patch.slug !== undefined) { fields.push('slug = ?'); params.push(patch.slug); }
-    if (patch.displayName !== undefined) { fields.push('display_name = ?'); params.push(patch.displayName); }
-    if (patch.description !== undefined) { fields.push('description = ?'); params.push(patch.description); }
+    if (patch.slug !== undefined) {
+      fields.push('slug = ?');
+      params.push(patch.slug);
+    }
+    if (patch.displayName !== undefined) {
+      fields.push('display_name = ?');
+      params.push(patch.displayName);
+    }
+    if (patch.description !== undefined) {
+      fields.push('description = ?');
+      params.push(patch.description);
+    }
     if (!fields.length) return this.getById(id);
     fields.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')");
-    await this.db.prepare(`UPDATE groups SET ${fields.join(', ')} WHERE id = ?`).bind(...params, id).run();
+    await this.db
+      .prepare(`UPDATE groups SET ${fields.join(', ')} WHERE id = ?`)
+      .bind(...params, id)
+      .run();
     return this.getById(id);
   }
 
@@ -108,7 +121,5 @@ export default D1GroupRepository;
 
 function cryptoRandomId() {
   // UUID-like random id; D1 also has randomblob approach, but generate in app for simplicity
-  return (
-    Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
-  );
+  return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 }

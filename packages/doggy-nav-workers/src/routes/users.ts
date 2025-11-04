@@ -1,44 +1,120 @@
 import { Hono } from 'hono';
 import { createAuthMiddleware, requirePermission, requireRole } from '../middleware/auth';
 import { D1UserRepository } from '../adapters/d1UserRepository';
-import { responses } from '../index';
+import { responses } from '../utils/responses';
 import { getUser } from '../ioc/helpers';
 import { JWTUtils } from '../utils/jwtUtils';
+import { PasswordUtils } from '../utils/passwordUtils';
 
 const userRoutes = new Hono<{ Bindings: { DB: D1Database; JWT_SECRET?: string } }>();
 
 // Public routes
 
 // Protected routes requiring authentication
+// Server-compat: GET /api/user/profile
+userRoutes.get('/profile', createAuthMiddleware({ required: true }), async (c) => {
+  try {
+    const current = getUser(c)!;
+    const repo = new D1UserRepository(c.env.DB);
+    const user = await repo.getById(current.id);
+    if (!user) return c.json(responses.notFound('User not found'), 404);
+    return c.json(
+      responses.ok(
+        {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          nickName: user.nickName,
+          phone: user.phone,
+          avatar: user.avatar,
+          isActive: user.isActive,
+          roles: await repo.getUserRoles(user.id),
+          groups: await repo.getUserGroups(user.id),
+        },
+        'User profile retrieved successfully'
+      )
+    );
+  } catch (error) {
+    console.error('Profile error:', error);
+    return c.json(responses.serverError(), 500);
+  }
+});
+
+// Server-compat: PUT /api/user/profile
+userRoutes.put('/profile', createAuthMiddleware({ required: true }), async (c) => {
+  try {
+    const current = getUser(c)!;
+    const body = await c.req.json().catch(() => ({}));
+    const repo = new D1UserRepository(c.env.DB);
+    const updates: any = {};
+    if (body.email !== undefined) updates.email = body.email;
+    if (body.avatar !== undefined) updates.avatar = body.avatar;
+    // Server focuses on email/avatar; keep others unchanged for parity
+    const updated = await repo.update(current.id, updates);
+    if (!updated) return c.json(responses.notFound('User not found'), 404);
+    return c.json(
+      responses.ok(
+        {
+          id: updated.id,
+          username: updated.username,
+          email: updated.email,
+          nickName: updated.nickName,
+          phone: updated.phone,
+          avatar: updated.avatar,
+        },
+        'Profile updated successfully'
+      )
+    );
+  } catch (error) {
+    console.error('Profile update error:', error);
+    return c.json(responses.serverError(), 500);
+  }
+});
 userRoutes.get('/', createAuthMiddleware({ required: true }), requirePermission('user:read'), async (c) => {
   try {
-    const page = Math.max(Number(c.req.query('page') ?? 1), 1);
-    const limit = Math.min(Math.max(Number(c.req.query('limit') ?? 50), 1), 100);
-    const search = c.req.query('search') || '';
-    const isActive = c.req.query('isActive');
+    // Server-compat params
+    const pageSize = Math.min(Math.max(Number(c.req.query('pageSize') ?? c.req.query('page_size') ?? 10) || 10, 1), 100);
+    const pageNumber = Math.max(Number(c.req.query('pageNumber') ?? c.req.query('current') ?? 1) || 1, 1);
+    const account = c.req.query('account') || '';
+    const email = c.req.query('email') || '';
+    const statusRaw = c.req.query('status');
+    const status = statusRaw !== undefined && statusRaw !== '' ? (String(statusRaw) === '1' || String(statusRaw).toLowerCase() === 'true') : undefined;
 
     const userRepository = new D1UserRepository(c.env.DB);
 
-    const options: any = {
-      pageSize: limit,
-      pageNumber: page,
+    // Build simple filters (exact email / username contains)
+    const list = await userRepository.list({
+      pageSize,
+      pageNumber,
       filter: {
-        ...(search && { search }),
-        ...(isActive !== undefined && { isActive: isActive === 'true' }),
+        emails: email ? [String(email)] : undefined,
+        usernames: account ? [String(account)] : undefined,
+        isActive: status,
       },
-    };
+    });
 
-    const result = await userRepository.list(options);
+    // Map to AdminUserListItem[]
+    const data = await Promise.all(list.data.map(async (u) => {
+      const roles = await userRepository.getUserRoles(u.id);
+      const role = roles.includes('admin') || roles.includes('sysadmin') ? 'admin' : 'default';
+      // groups display names (fallback to slug)
+      const groupRows = await c.env.DB.prepare(`SELECT g.display_name, g.slug FROM groups g JOIN user_groups ug ON ug.group_id = g.id WHERE ug.user_id = ?`).bind(u.id).all<any>();
+      const groups = (groupRows.results || []).map((g: any) => g.display_name || g.slug).filter(Boolean);
+      return {
+        id: u.id,
+        account: u.username,
+        nickName: u.nickName || u.username,
+        avatar: u.avatar || '',
+        email: u.email,
+        role,
+        groups,
+        status: u.isActive ? 1 : 0,
+        createdAt: u.createdAt?.toISOString?.() || undefined,
+        updatedAt: u.updatedAt?.toISOString?.() || undefined,
+      };
+    }));
 
-    return c.json(responses.ok({
-      users: result.data,
-      pagination: {
-        page,
-        limit,
-        total: result.total,
-        totalPages: result.pageNumber,
-      },
-    }, 'Users retrieved successfully'));
+    return c.json(responses.ok({ list: data, total: list.total }));
 
   } catch (error) {
     console.error('Get users error:', error);
@@ -62,20 +138,22 @@ userRoutes.get('/:id', createAuthMiddleware({ required: true }), async (c) => {
       return c.json(responses.err('Insufficient permissions'), 403);
     }
 
+    const rolesIdsRs = await c.env.DB.prepare(`SELECT role_id FROM user_roles WHERE user_id = ?`).bind(id).all<any>();
+    const roles = (rolesIdsRs.results || []).map((r: any) => String(r.role_id));
+    const groupsIdsRs = await c.env.DB.prepare(`SELECT group_id FROM user_groups WHERE user_id = ?`).bind(id).all<any>();
+    const groups = (groupsIdsRs.results || []).map((g: any) => String(g.group_id));
+
     return c.json(responses.ok({
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        nickName: user.nickName,
-        phone: user.phone,
-        isActive: user.isActive,
-        avatar: user.avatar,
-        lastLoginAt: user.lastLoginAt,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
-    }, 'User retrieved successfully'));
+      id: user.id,
+      account: user.username,
+      nickName: user.nickName || user.username,
+      email: user.email,
+      phone: user.phone || '',
+      status: !!user.isActive,
+      role: (await userRepository.getUserRoles(user.id)).some((r) => r === 'admin' || r === 'sysadmin') ? 'admin' : 'default',
+      roles,
+      groups,
+    }));
 
   } catch (error) {
     console.error('Get user error:', error);
@@ -86,10 +164,11 @@ userRoutes.get('/:id', createAuthMiddleware({ required: true }), async (c) => {
 userRoutes.post('/', createAuthMiddleware({ required: true }), requirePermission('user:create'), async (c) => {
   try {
     const body = await c.req.json();
-    const { username, email, password, nickName, phone, isActive, roles, groups } = body;
+    const { username, account, email, password, nickName, phone, status, isActive, roles, groups } = body;
 
-    if (!username || !email || !password) {
-      return c.json(responses.badRequest('Username, email, and password are required'), 400);
+    const finalUsername = String(username || account || '').trim();
+    if (!finalUsername || !email || !password) {
+      return c.json(responses.badRequest('Username/account, email, and password are required'), 400);
     }
 
     const userRepository = new D1UserRepository(c.env.DB);
@@ -100,16 +179,16 @@ userRoutes.post('/', createAuthMiddleware({ required: true }), requirePermission
       return c.json(responses.badRequest('User with this email already exists'), 409);
     }
 
-    const existingUsername = await userRepository.getByUsername(username);
+    const existingUsername = await userRepository.getByUsername(finalUsername);
     if (existingUsername) {
       return c.json(responses.badRequest('Username already taken'), 409);
     }
 
-    // Hash password (this would be done in a real implementation)
-    const passwordHash = 'hashed_password_placeholder'; // TODO: Implement password hashing
+    // Hash password
+    const passwordHash = await PasswordUtils.hashPassword(password);
 
     const newUser = await userRepository.create({
-      username,
+      username: finalUsername,
       email,
       passwordHash,
       nickName: nickName || '',
@@ -122,6 +201,12 @@ userRoutes.post('/', createAuthMiddleware({ required: true }), requirePermission
     }
     if (groups && Array.isArray(groups)) {
       await userRepository.setUserGroups(newUser.id, groups);
+    }
+
+    // Status mapping
+    const effActive = status !== undefined ? !!status : isActive !== undefined ? !!isActive : undefined;
+    if (effActive !== undefined) {
+      await userRepository.update(newUser.id, { isActive: effActive });
     }
 
     return c.json(responses.ok({
@@ -193,6 +278,35 @@ userRoutes.put('/:id', createAuthMiddleware({ required: true }), requirePermissi
   }
 });
 
+// Server-compat: PATCH /api/user/:id
+userRoutes.patch('/:id', createAuthMiddleware({ required: true }), requirePermission('user:update'), async (c) => {
+  try {
+    const { id } = c.req.param();
+    const body = await c.req.json();
+    const userRepository = new D1UserRepository(c.env.DB);
+    const exists = await userRepository.getById(id);
+    if (!exists) return c.json(responses.notFound('User not found'), 404);
+    // Map server adminUpdate input to fields
+    await userRepository.update(id, {
+      email: body.email,
+      nickName: body.nickName,
+      phone: body.phone,
+      isActive: typeof body.status !== 'undefined' ? !!body.status : undefined,
+      avatar: body.avatar,
+    });
+    if (Array.isArray(body.roles)) {
+      await userRepository.setUserRoles(id, body.roles);
+    }
+    if (Array.isArray(body.groups)) {
+      await userRepository.setUserGroups(id, body.groups);
+    }
+    return c.json(responses.ok(true));
+  } catch (error) {
+    console.error('Patch user error:', error);
+    return c.json(responses.serverError(), 500);
+  }
+});
+
 userRoutes.delete('/:id', createAuthMiddleware({ required: true }), requirePermission('user:delete'), async (c) => {
   try {
     const { id } = c.req.param();
@@ -219,6 +333,24 @@ userRoutes.delete('/:id', createAuthMiddleware({ required: true }), requirePermi
 
   } catch (error) {
     console.error('Delete user error:', error);
+    return c.json(responses.serverError(), 500);
+  }
+});
+
+// Server-compat: DELETE /api/user (ids list)
+userRoutes.delete('/', createAuthMiddleware({ required: true }), requirePermission('user:delete'), async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const ids: string[] = Array.isArray(body?.ids) ? body.ids : [];
+    const repo = new D1UserRepository(c.env.DB);
+    if (!ids.length) return c.json(responses.badRequest('ids required'), 400);
+    let ok = true;
+    for (const id of ids) {
+      const del = await repo.delete(id);
+      ok = ok && del;
+    }
+    return c.json(ok ? responses.ok(true) : responses.serverError('Failed to delete some users'), ok ? 200 : 500);
+  } catch (error) {
     return c.json(responses.serverError(), 500);
   }
 });

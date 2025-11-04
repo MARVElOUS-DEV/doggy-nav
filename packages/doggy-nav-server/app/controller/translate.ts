@@ -1,12 +1,15 @@
 import { Controller } from 'egg';
-import { TranslateService } from 'doggy-nav-core';
-import GoogleTranslateProvider from '../../adapters/translateProvider';
+import type { TranslateService } from 'doggy-nav-core';
+import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
 
 /**
  * Translation Controller
  * Handles translation requests
  */
 export default class TranslateController extends Controller {
+  @Inject(TOKENS.TranslateService)
+  private translateService!: TranslateService;
   /**
    * Translate text from source language to target language
    * POST /api/translate
@@ -36,8 +39,7 @@ export default class TranslateController extends Controller {
     }
 
     try {
-      const service = new TranslateService(new GoogleTranslateProvider());
-      const translatedText = await service.translateText(text, sourceLang, targetLang);
+      const translatedText = await this.translateService.translateText(text, sourceLang, targetLang);
 
       ctx.status = 200;
       ctx.body = {

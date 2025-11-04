@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { timing } from 'hono/timing';
 import { secureHeaders } from 'hono/secure-headers';
-import { responses } from './index';
+import { responses } from './utils/responses';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { roleRoutes } from './routes/roles';
@@ -11,12 +11,7 @@ import { categoryRoutes } from './routes/categories';
 import { navRoutes } from './routes/nav';
 import { tagRoutes } from './routes/tags';
 import { inviteCodeRoutes } from './routes/inviteCode';
-
-type Env = {
-  DB: D1Database;
-  JWT_SECRET?: string;
-  NODE_ENV?: string;
-};
+import { Env } from './types/hono-env';
 
 export function createApp(bindings: Env) {
   const app = new Hono<{ Bindings: Env }>();
@@ -30,7 +25,9 @@ export function createApp(bindings: Env) {
   };
   app.use('/api/*', cors(corsOptions));
 
-  app.get('/api/health', (c) => c.json(responses.ok({ status: 'healthy', timestamp: new Date().toISOString() })));
+  app.get('/api/health', (c) =>
+    c.json(responses.ok({ status: 'healthy', timestamp: new Date().toISOString() }))
+  );
 
   app.route('/api/auth', authRoutes);
   app.route('/api/users', userRoutes);

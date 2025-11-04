@@ -45,18 +45,38 @@ export default class D1FavoriteRepository implements FavoriteRepository {
   }
 
   async structured(userId: string): Promise<FavoriteUnionItem[]> {
-    // Minimal: return root items only
-    const rs = await this.db
+    // Folders
+    const foldersRs = await this.db
+      .prepare(`SELECT id, name FROM favorite_folders WHERE user_id = ? ORDER BY created_at DESC`)
+      .bind(userId)
+      .all<any>();
+    const folderRows: any[] = foldersRs.results || [];
+
+    const out: FavoriteUnionItem[] = [];
+    for (const f of folderRows) {
+      const itemsRs = await this.db
+        .prepare(
+          `SELECT b.* FROM favorites fav JOIN bookmarks b ON b.id = fav.bookmark_id
+           WHERE fav.user_id = ? AND fav.folder_name = ? ORDER BY fav.created_at DESC`
+        )
+        .bind(userId, f.name)
+        .all<any>();
+      const items: NavItem[] = (itemsRs.results || []).map(rowToNavItem);
+      out.push({ type: 'folder', order: null, folder: { id: String(f.id), name: String(f.name), order: null, coverNavId: null }, items });
+    }
+
+    // Root items (no folder)
+    const rootRs = await this.db
       .prepare(
         `SELECT b.* FROM favorites f JOIN bookmarks b ON b.id = f.bookmark_id
-        WHERE f.user_id = ? ORDER BY f.created_at DESC`
+        WHERE f.user_id = ? AND (f.folder_name IS NULL OR f.folder_name = '') ORDER BY f.created_at DESC`
       )
       .bind(userId)
       .all<any>();
-    const rows: any[] = rs.results || [];
-    return rows.map(
-      (r) => ({ type: 'nav', order: null, nav: rowToNavItem(r) }) as FavoriteUnionItem
-    );
+    const rootRows: any[] = rootRs.results || [];
+    for (const r of rootRows) out.push({ type: 'nav', order: null, nav: rowToNavItem(r) });
+
+    return out;
   }
 }
 

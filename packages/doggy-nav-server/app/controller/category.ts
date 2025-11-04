@@ -3,8 +3,13 @@ import { Types } from 'mongoose';
 import { globalRootCategoryId } from '../../constants';
 import type { AuthUserContext } from '../../types/rbac';
 import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { CategoryService } from 'doggy-nav-core';
 
 export default class CategoryController extends Controller {
+  @Inject(TOKENS.CategoryService)
+  private categoryService!: CategoryService;
+
   tableName(): string {
     return 'Category';
   }
@@ -63,8 +68,7 @@ export default class CategoryController extends Controller {
             source: (user?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
           }
         : undefined;
-      const service = ctx.di.resolve(TOKENS.CategoryService);
-      const tree = await service.listTree(auth, {
+      const tree = await this.categoryService.listTree(auth, {
         showInMenu: showInMenu ? showInMenu !== 'false' : undefined,
         rootId: globalRootCategoryId,
       });

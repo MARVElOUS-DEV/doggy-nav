@@ -1,4 +1,4 @@
-import type { Group } from '../domain/types';
+import type { Group } from '../types/types';
 import type { PageResult } from '../dto/pagination';
 
 export interface GroupListOptions {

@@ -2,39 +2,30 @@ import { Hono } from 'hono';
 import { createAuthMiddleware, requirePermission } from '../middleware/auth';
 import { TOKENS } from '../ioc/tokens';
 import { getDI } from '../ioc/helpers';
-import { responses } from '../index';
+import { responses } from '../utils/responses';
 
 const roleRoutes = new Hono<{ Bindings: { DB: D1Database; JWT_SECRET?: string } }>();
 
 roleRoutes.get('/', createAuthMiddleware({ required: true }), requirePermission('role:read'), async (c) => {
   try {
-    const page = Math.max(Number(c.req.query('page') ?? 1), 1);
-    const limit = Math.min(Math.max(Number(c.req.query('limit') ?? 50), 1), 100);
-    const search = c.req.query('search') || '';
+    const pageSize = Math.min(Math.max(Number(c.req.query('pageSize') ?? c.req.query('limit') ?? 50) || 50, 1), 100);
+    const pageNumber = Math.max(Number(c.req.query('pageNumber') ?? c.req.query('page') ?? 1) || 1, 1);
     const isSystem = c.req.query('isSystem');
 
     const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
 
     const options: any = {
-      pageSize: limit,
-      pageNumber: page,
+      pageSize,
+      pageNumber,
       filter: {
-        ...(search && { search }),
         ...(isSystem !== undefined && { isSystem: isSystem === 'true' }),
       },
     };
 
     const result = await roleRepository.list(options);
 
-    return c.json(responses.ok({
-      roles: result.data,
-      pagination: {
-        page,
-        limit,
-        total: result.total,
-        totalPages: result.pageNumber,
-      },
-    }, 'Roles retrieved successfully'));
+    // Server parity: { data, total, pageNumber }
+    return c.json(responses.ok({ data: result.data, total: result.total, pageNumber: result.pageNumber }));
 
   } catch (error) {
     console.error('Get roles error:', error);
@@ -99,17 +90,24 @@ roleRoutes.post('/', createAuthMiddleware({ required: true }), requirePermission
       return c.json(responses.badRequest('Role with this slug already exists'), 409);
     }
 
+    const perms = Array.isArray(permissions)
+      ? permissions
+      : typeof permissions === 'string'
+        ? permissions
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : [];
+
     const newRole = await roleRepository.create({
       slug,
       displayName,
       description: description || '',
-      permissions: permissions || [],
+      permissions: perms,
       isSystem: isSystem || false,
     });
 
-    return c.json(responses.ok({
-      role: newRole,
-    }, 'Role created successfully'), 201);
+    return c.json(responses.ok(newRole), 201);
 
   } catch (error) {
     console.error('Create role error:', error);
@@ -139,17 +137,49 @@ roleRoutes.put('/:id', createAuthMiddleware({ required: true }), requirePermissi
     const updates: any = {};
     if (body.displayName !== undefined) updates.displayName = body.displayName;
     if (body.description !== undefined) updates.description = body.description;
-    if (body.permissions !== undefined) updates.permissions = body.permissions;
+    if (body.permissions !== undefined) {
+      updates.permissions = Array.isArray(body.permissions)
+        ? body.permissions
+        : typeof body.permissions === 'string'
+          ? body.permissions
+              .split(',')
+              .map((s: string) => s.trim())
+              .filter(Boolean)
+          : [];
+    }
     if (body.isSystem !== undefined && !existingRole.isSystem) updates.isSystem = body.isSystem;
 
     const updatedRole = await roleRepository.update(id, updates);
 
-    return c.json(responses.ok({
-      role: updatedRole,
-    }, 'Role updated successfully'));
+    return c.json(responses.ok(updatedRole));
 
   } catch (error) {
     console.error('Update role error:', error);
+    return c.json(responses.serverError(), 500);
+  }
+});
+
+// Server-compat: PUT /api/roles (body.id)
+roleRoutes.put('/', createAuthMiddleware({ required: true }), requirePermission('role:update'), async (c) => {
+  try {
+    const body = await c.req.json();
+    const { id, displayName, description, permissions, isSystem } = body || {};
+    if (!id) return c.json(responses.badRequest('id required'), 400);
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
+    const existingRole = await roleRepository.getById(id);
+    if (!existingRole) return c.json(responses.notFound('Role not found'), 404);
+    const perms = Array.isArray(permissions)
+      ? permissions
+      : typeof permissions === 'string'
+        ? permissions
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : undefined;
+    const updatedRole = await roleRepository.update(id, { displayName, description, permissions: perms, isSystem });
+    return c.json(responses.ok(updatedRole));
+  } catch (error) {
+    console.error('Update role (compat) error:', error);
     return c.json(responses.serverError(), 500);
   }
 });
@@ -179,6 +209,38 @@ roleRoutes.delete('/:id', createAuthMiddleware({ required: true }), requirePermi
 
   } catch (error) {
     console.error('Delete role error:', error);
+    return c.json(responses.serverError(), 500);
+  }
+});
+
+// Server-compat: DELETE /api/roles (body.id)
+roleRoutes.delete('/', createAuthMiddleware({ required: true }), requirePermission('role:delete'), async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const id = body?.id;
+    const ids: string[] = Array.isArray(body?.ids) ? body.ids : [];
+    const roleRepository = getDI(c).resolve(TOKENS.RoleRepo) as any;
+
+    if (ids.length > 0) {
+      let ok = true;
+      for (const rid of ids) {
+        const existing = await roleRepository.getById(rid);
+        if (!existing) { ok = false; continue; }
+        if (existing.isSystem) { ok = false; continue; }
+        const deleted = await roleRepository.delete(rid);
+        ok = ok && deleted;
+      }
+      return c.json(ok ? responses.ok({}) : responses.serverError('Failed to delete some roles'), ok ? 200 : 500);
+    }
+
+    if (!id) return c.json(responses.badRequest('id or ids required'), 400);
+    const existingRole = await roleRepository.getById(id);
+    if (!existingRole) return c.json(responses.notFound('Role not found'), 404);
+    if (existingRole.isSystem) return c.json(responses.badRequest('Cannot delete system role'), 400);
+    const deleted = await roleRepository.delete(id);
+    return c.json(deleted ? responses.ok({}) : responses.serverError('Failed to delete role'), deleted ? 200 : 500);
+  } catch (error) {
+    console.error('Delete role (compat) error:', error);
     return c.json(responses.serverError(), 500);
   }
 });

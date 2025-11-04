@@ -1,5 +1,5 @@
 import type { PageQuery, PageResult } from '../dto/pagination';
-import type { NavItem, FavoriteUnionItem } from '../domain/types';
+import type { NavItem, FavoriteUnionItem } from '../types/types';
 import type { FavoriteRepository } from '../repositories/FavoriteRepository';
 
 function normalizePage(page: PageQuery) {
@@ -20,7 +20,7 @@ export class FavoriteService {
     const union = await this.repo.structured(userId);
     return { data: union };
   }
- 
+
   async check(userId: string, navId: string): Promise<{ isFavorite: boolean }> {
     const ok = await this.repo.check(userId, navId);
     return { isFavorite: ok };

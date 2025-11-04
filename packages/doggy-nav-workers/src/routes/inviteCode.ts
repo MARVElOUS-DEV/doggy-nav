@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { TOKENS } from '../ioc/tokens';
 import { getDI } from '../ioc/helpers';
-import { responses } from '../index';
+import { responses } from '../utils/responses';
 import { createAuthMiddleware, requireRole } from '../middleware/auth';
 
 export const inviteCodeRoutes = new Hono<{ Bindings: { DB: D1Database; JWT_SECRET?: string } }>();
@@ -34,6 +34,20 @@ inviteCodeRoutes.post('/create', createAuthMiddleware({ required: true }), requi
     return c.json(responses.ok(res));
   } catch (err: any) {
     console.error('InviteCode create error:', err);
+    const msg = err?.message || 'Failed to create invite codes';
+    return c.json(responses.badRequest(msg), 400);
+  }
+});
+
+// Server-compat: POST /api/invite-codes
+inviteCodeRoutes.post('/', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
+  try {
+    const body = await c.req.json();
+    const { count, usageLimit, expiresAt, note, allowedEmailDomain } = body || {};
+    const svc = getDI(c).resolve(TOKENS.InviteCodeService);
+    const res = await svc.createBulkByCount({ count, usageLimit, expiresAt, note, allowedEmailDomain });
+    return c.json(responses.ok(res));
+  } catch (err: any) {
     const msg = err?.message || 'Failed to create invite codes';
     return c.json(responses.badRequest(msg), 400);
   }

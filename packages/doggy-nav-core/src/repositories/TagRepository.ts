@@ -1,4 +1,4 @@
-import type { Tag } from '../domain/types';
+import type { Tag } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
 
 export interface TagRepository {

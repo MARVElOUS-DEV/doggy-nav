@@ -1,4 +1,4 @@
-import type { FavoriteFolder } from '../domain/types';
+import type { FavoriteFolder } from '../types/types';
 
 export interface CreateFolderInput {
   name: string;
@@ -21,7 +21,11 @@ export interface PlacementsInput {
 
 export interface FavoriteFolderRepository {
   createFolder(userId: string, input: CreateFolderInput): Promise<FavoriteFolder>;
-  updateFolder(userId: string, id: string, input: UpdateFolderInput): Promise<{ id: string; name?: string; order?: number | null }>;
+  updateFolder(
+    userId: string,
+    id: string,
+    input: UpdateFolderInput
+  ): Promise<{ id: string; name?: string; order?: number | null }>;
   deleteFolder(userId: string, id: string): Promise<{ id: string }>;
   placements(userId: string, input: PlacementsInput): Promise<{ ok: boolean }>;
 }

@@ -22,11 +22,16 @@ export const routePermissions: RoutePermission[] = [
   // User authentication routes
   {
     method: 'POST',
-    path: '/api/register',
+    path: '/api/auth/register',
     require: { level: 'public' },
     description: 'User registration',
   },
-  { method: 'POST', path: '/api/login', require: { level: 'public' }, description: 'User login' },
+  {
+    method: 'POST',
+    path: '/api/auth/login',
+    require: { level: 'public' },
+    description: 'User login',
+  },
   {
     method: 'POST',
     path: '/api/auth/refresh',

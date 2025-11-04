@@ -1,8 +1,13 @@
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
 import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { RoleService } from 'doggy-nav-core';
 
 export default class RoleController extends Controller {
+  @Inject(TOKENS.RoleService)
+  private roleService!: RoleService;
+
   tableName(): string { return 'Role'; }
 
   async getList() {
@@ -20,8 +25,7 @@ export default class RoleController extends Controller {
           source: (user?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
         }
       : undefined;
-    const service = ctx.di.resolve(TOKENS.RoleService);
-    const res = await service.list({ pageSize: query.pageSize as any, pageNumber: query.pageNumber as any } as any, auth);
+    const res = await this.roleService.list({ pageSize: query.pageSize as any, pageNumber: query.pageNumber as any } as any, auth);
     this.success(res);
   }
 

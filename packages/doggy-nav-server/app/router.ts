@@ -10,13 +10,13 @@ export default (app: Application) => {
   router.get('/api/auth/me', controller.auth.me);
   router.post('/api/auth/refresh', controller.auth.refresh);
   router.get('/api/auth/config', controller.auth.getAuthConfig);
+  router.post('/api/auth/register', controller.user.register);
+  router.post('/api/auth/login', controller.user.login);
   // OAuth callback route (dynamic provider), Note: dynamic route should be after the common ones.
   router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);
   // OAuth init route (dynamic provider)
   router.get('/api/auth/:provider', controller.auth.oauthInit);
 
-  router.post('/api/register', controller.user.register);
-  router.post('/api/login', controller.user.login);
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
   // Admin user management

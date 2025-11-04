@@ -1,4 +1,4 @@
-import type { Application } from '../domain/application';
+import type { Application } from '../types/application';
 import type { PageQuery } from '../dto/pagination';
 
 export interface ApplicationCreateInput {

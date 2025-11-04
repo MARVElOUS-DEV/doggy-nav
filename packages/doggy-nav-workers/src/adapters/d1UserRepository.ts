@@ -32,6 +32,7 @@ function rowToUser(row: any): User {
     isActive: Boolean(row.is_active),
     nickName: row.nick_name,
     phone: row.phone,
+    passwordHash: row.password_hash,
     extraPermissions: JSON.parse(row.extra_permissions || '[]'),
     lastLoginAt: row.last_login_at ? new Date(row.last_login_at) : null,
     createdAt: row.created_at ? new Date(row.created_at) : undefined,
@@ -47,7 +48,7 @@ export class D1UserRepository {
     const stmt = this.db.prepare(
       `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
               last_login_at, created_at, updated_at, avatar
-       FROM users WHERE id = ? LIMIT 1`
+      FROM users WHERE id = ? LIMIT 1`
     );
     const row = await stmt.bind(id).first<any>();
     return row ? rowToUser(row) : null;
@@ -57,9 +58,9 @@ export class D1UserRepository {
     const stmt = this.db.prepare(
       `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
               last_login_at, created_at, updated_at, avatar
-       FROM users WHERE email = ? LIMIT 1`
+      FROM users WHERE email = ? LIMIT 1`
     );
-    const row = await stmt.bind(email).first<any>();
+    const row = await stmt.bind(String(email).toLowerCase()).first<any>();
     return row ? rowToUser(row) : null;
   }
 
@@ -67,10 +68,55 @@ export class D1UserRepository {
     const stmt = this.db.prepare(
       `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
               last_login_at, created_at, updated_at, avatar
-       FROM users WHERE username = ? LIMIT 1`
+      FROM users WHERE username = ? LIMIT 1`
     );
     const row = await stmt.bind(username).first<any>();
     return row ? rowToUser(row) : null;
+  }
+
+  // Auth-only lookups (include password hash, minimal fields)
+  async getAuthByEmail(email: string): Promise<{
+    id: string;
+    username: string;
+    email: string;
+    isActive: boolean;
+    passwordHash: string;
+  } | null> {
+    const stmt = this.db.prepare(
+      `SELECT id, username, email, is_active, password_hash
+       FROM users WHERE email = ? LIMIT 1`
+    );
+    const row = await stmt.bind(String(email).toLowerCase()).first<any>();
+    if (!row) return null;
+    return {
+      id: String(row.id),
+      username: row.username,
+      email: row.email,
+      isActive: Boolean(row.is_active),
+      passwordHash: row.password_hash,
+    };
+  }
+
+  async getAuthByUsername(username: string): Promise<{
+    id: string;
+    username: string;
+    email: string;
+    isActive: boolean;
+    passwordHash: string;
+  } | null> {
+    const stmt = this.db.prepare(
+      `SELECT id, username, email, is_active, password_hash
+      FROM users WHERE username = ? LIMIT 1`
+    );
+    const row = await stmt.bind(username).first<any>();
+    if (!row) return null;
+    return {
+      id: String(row.id),
+      username: row.username,
+      email: row.email,
+      isActive: Boolean(row.is_active),
+      passwordHash: row.password_hash,
+    };
   }
 
   async list(options: UserListOptions) {
@@ -103,9 +149,9 @@ export class D1UserRepository {
       .prepare(
         `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
                 last_login_at, created_at, updated_at, avatar
-         FROM users ${where}
-         ORDER BY created_at DESC
-         LIMIT ? OFFSET ?`
+        FROM users ${where}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?`
       )
       .bind(...params, pageSize, offset)
       .all<any>();
@@ -132,8 +178,9 @@ export class D1UserRepository {
     phone?: string;
     avatar?: string;
   }): Promise<User> {
-    const id = (globalThis.crypto?.randomUUID?.() as string) ||
-               (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+    const id =
+      (globalThis.crypto?.randomUUID?.() as string) ||
+      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 
     const stmt = this.db.prepare(`
       INSERT INTO users (
@@ -141,30 +188,35 @@ export class D1UserRepository {
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    await stmt.bind(
-      id,
-      userData.username,
-      userData.email,
-      userData.passwordHash,
-      userData.nickName || '',
-      userData.phone || '',
-      userData.avatar || null
-    ).run();
+    await stmt
+      .bind(
+        id,
+        userData.username,
+        userData.email,
+        userData.passwordHash,
+        userData.nickName || '',
+        userData.phone || '',
+        userData.avatar || null
+      )
+      .run();
 
     return (await this.getById(id))!;
   }
 
-  async update(id: string, updates: Partial<{
-    username: string;
-    email: string;
-    passwordHash: string;
-    isActive: boolean;
-    nickName: string;
-    phone: string;
-    avatar: string;
-    lastLoginAt: Date | null;
-    extraPermissions: string[];
-  }>): Promise<User | null> {
+  async update(
+    id: string,
+    updates: Partial<{
+      username: string;
+      email: string;
+      passwordHash: string;
+      isActive: boolean;
+      nickName: string;
+      phone: string;
+      avatar: string;
+      lastLoginAt: Date | null;
+      extraPermissions: string[];
+    }>
+  ): Promise<User | null> {
     const fields: string[] = [];
     const params: any[] = [];
 
@@ -209,11 +261,9 @@ export class D1UserRepository {
       return this.getById(id);
     }
 
-    fields.push('updated_at = strftime(\'%Y-%m-%dT%H:%M:%fZ\', \'now\')');
+    fields.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')");
 
-    const stmt = this.db.prepare(
-      `UPDATE users SET ${fields.join(', ')} WHERE id = ?`
-    );
+    const stmt = this.db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`);
 
     await stmt.bind(...params, id).run();
 
@@ -229,24 +279,24 @@ export class D1UserRepository {
 
   async getUserRoles(userId: string): Promise<string[]> {
     const stmt = this.db.prepare(`
-      SELECT r.id FROM roles r
+      SELECT r.slug FROM roles r
       JOIN user_roles ur ON r.id = ur.role_id
       WHERE ur.user_id = ?
     `);
     const result = await stmt.bind(userId).all<any>();
     const rows = (result?.results ?? []) as any[];
-    return rows.map(row => row.id);
+    return rows.map((row) => row.slug).filter(Boolean);
   }
 
   async getUserGroups(userId: string): Promise<string[]> {
     const stmt = this.db.prepare(`
-      SELECT g.id FROM groups g
+      SELECT g.slug FROM groups g
       JOIN user_groups ug ON g.id = ug.group_id
       WHERE ug.user_id = ?
     `);
     const result = await stmt.bind(userId).all<any>();
     const rows = (result?.results ?? []) as any[];
-    return rows.map(row => row.id);
+    return rows.map((row) => row.slug).filter(Boolean);
   }
 
   async setUserRoles(userId: string, roleIds: string[]): Promise<void> {

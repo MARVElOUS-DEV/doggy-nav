@@ -4,12 +4,14 @@ compatibility_date = "2024-09-30"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "doggy_nav"
+database_name = "${D1_DATABASE_NAME}"
 database_id = "${D1_DATABASE_ID}"
 
 [vars]
 # JWT/CORS config
-ALLOWED_ORIGINS = "http://localhost:3001,http://localhost:3000"
+ALLOWED_ORIGINS = "http://localhost:3001"
+RATE_LIMIT_WINDOW_MS = "60000"
+RATE_LIMIT_MAX = "100"
 
 [observability]
 enabled = true

@@ -74,7 +74,7 @@ wrangler d1 migrations apply <database-name>
 wrangler d1 migrations list <database-name>
 
 # Reset database (development only)
-wrangler d1 execute <database-name> --file=./migrations/002_schema_design.sql --remote
+wrangler d1 execute <database-name> --file=./migrations/001_init.sql --remote
 ```
 
 ## Deployment Steps
@@ -142,7 +142,7 @@ new_sql = [
 [[migrations]]
 tag = "v2"
 new_sql = [
-  "migrations/002_schema_design.sql"
+  "migrations/002_invite_codes_extension.sql"
 ]
 ```
 

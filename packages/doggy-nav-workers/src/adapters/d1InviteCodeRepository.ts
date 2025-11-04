@@ -62,7 +62,7 @@ export default class D1InviteCodeRepository implements InviteCodeRepository {
   async createBulk(items: InviteCodeCreateItem[]): Promise<InviteCode[]> {
     const stmt = this.db.prepare(
       `INSERT INTO invite_codes (id, code, usage_limit, used_count, active, allowed_email_domain, note, created_by, expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     const created: InviteCode[] = [];
     for (const it of items) {
@@ -97,14 +97,32 @@ export default class D1InviteCodeRepository implements InviteCodeRepository {
   async update(id: string, patch: InviteCodeUpdatePatch): Promise<InviteCode | null> {
     const fields: string[] = [];
     const params: any[] = [];
-    if (patch.active !== undefined) { fields.push('active = ?'); params.push(patch.active ? 1 : 0); }
-    if (patch.usageLimit !== undefined) { fields.push('usage_limit = ?'); params.push(patch.usageLimit); }
-    if (patch.expiresAt !== undefined) { fields.push('expires_at = ?'); params.push(patch.expiresAt ?? null); }
-    if (patch.note !== undefined) { fields.push('note = ?'); params.push(patch.note ?? null); }
-    if (patch.allowedEmailDomain !== undefined) { fields.push('allowed_email_domain = ?'); params.push(patch.allowedEmailDomain ?? null); }
+    if (patch.active !== undefined) {
+      fields.push('active = ?');
+      params.push(patch.active ? 1 : 0);
+    }
+    if (patch.usageLimit !== undefined) {
+      fields.push('usage_limit = ?');
+      params.push(patch.usageLimit);
+    }
+    if (patch.expiresAt !== undefined) {
+      fields.push('expires_at = ?');
+      params.push(patch.expiresAt ?? null);
+    }
+    if (patch.note !== undefined) {
+      fields.push('note = ?');
+      params.push(patch.note ?? null);
+    }
+    if (patch.allowedEmailDomain !== undefined) {
+      fields.push('allowed_email_domain = ?');
+      params.push(patch.allowedEmailDomain ?? null);
+    }
     if (!fields.length) return this.getById(id);
     fields.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')");
-    await this.db.prepare(`UPDATE invite_codes SET ${fields.join(', ')} WHERE id = ?`).bind(...params, id).run();
+    await this.db
+      .prepare(`UPDATE invite_codes SET ${fields.join(', ')} WHERE id = ?`)
+      .bind(...params, id)
+      .run();
     return this.getById(id);
   }
 }

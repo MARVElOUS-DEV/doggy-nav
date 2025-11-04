@@ -3,9 +3,14 @@ import { AuthenticationError } from '../core/errors';
 import { EnforceAdminOnAdminSource } from '../utils/decorators';
 import { UserAuthService } from 'doggy-nav-core';
 import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { UserService } from 'doggy-nav-core';
 import MongooseAuthRepository from '../../adapters/authRepository';
 
 export default class UserController extends CommonController {
+  @Inject(TOKENS.UserService)
+  private userService!: UserService;
+
   tableName(): string {
     return 'User';
   }
@@ -54,26 +59,22 @@ export default class UserController extends CommonController {
     if (!userId) {
       throw new AuthenticationError('用户未认证');
     }
-    const res = await ctx.di.resolve(TOKENS.UserService).getProfile(String(userId));
+    const res = await this.userService.getProfile(String(userId));
     this.success(res);
   }
 
   public async updateProfile() {
-    const { ctx } = this;
-    const userId = ctx.state.userinfo?.userId;
+    const userId = this.ctx.state.userinfo?.userId;
     if (!userId) {
       throw new AuthenticationError('用户未认证');
     }
     const body = this.getSanitizedBody();
-    const res = await ctx.di
-      .resolve(TOKENS.UserService)
-      .updateProfile(String(userId), { email: body.email, avatar: body.avatar });
+    const res = await this.userService.updateProfile(String(userId), { email: body.email, avatar: body.avatar });
     this.success(res);
   }
 
   // ===== Admin user management =====
   public async adminList() {
-    const { ctx } = this;
     const query = this.getSanitizedQuery();
     const pageSize = Math.min(Math.max(Number(query.pageSize || query.page_size || 10), 1), 100);
     const current = Math.max(Number(query.pageNumber || query.current || 1), 1);
@@ -87,25 +88,20 @@ export default class UserController extends CommonController {
           ? String(query.status) === '1' || String(query.status) === 'true'
           : undefined,
     };
-    const res = await ctx.di
-      .resolve(TOKENS.UserService)
-      .adminList(filter, { pageSize, pageNumber: current });
+    const res = await this.userService.adminList(filter, { pageSize, pageNumber: current });
     this.success(res);
   }
 
   public async adminGetOne() {
-    const { ctx } = this;
-    const { id } = ctx.params;
-    const res = await ctx.di.resolve(TOKENS.UserService).adminGetOne(String(id));
+    const { id } = this.ctx.params;
+    const res = await this.userService.adminGetOne(String(id));
     this.success(res);
   }
 
   public async adminCreate() {
-    const { ctx } = this;
     const body = this.getSanitizedBody();
-    const service = ctx.di.resolve(TOKENS.UserService);
     try {
-      const created = await service.adminCreate({
+      const created = await this.userService.adminCreate({
         account: String(body.account || ''),
         email: String(body.email || ''),
         password: String(body.password || ''),
@@ -123,12 +119,10 @@ export default class UserController extends CommonController {
   }
 
   public async adminUpdate() {
-    const { ctx } = this;
-    const { id } = ctx.params;
+    const { id } = this.ctx.params;
     const body = this.getSanitizedBody();
-    const service = ctx.di.resolve(TOKENS.UserService);
     try {
-      const ok = await service.adminUpdate(String(id), {
+      const ok = await this.userService.adminUpdate(String(id), {
         account: body.account,
         email: body.email,
         password: body.password,
@@ -146,9 +140,8 @@ export default class UserController extends CommonController {
   }
 
   public async adminDelete() {
-    const { ctx } = this;
-    const ids: string[] = Array.isArray(ctx.request.body?.ids) ? ctx.request.body.ids : [];
-    const ok = await ctx.di.resolve(TOKENS.UserService).adminDelete(ids);
+    const ids: string[] = Array.isArray(this.ctx.request.body?.ids) ? this.ctx.request.body.ids : [];
+    const ok = await this.userService.adminDelete(ids);
     if (!ok) return this.error('删除失败');
     this.success(true);
   }

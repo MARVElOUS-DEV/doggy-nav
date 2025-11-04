@@ -1,4 +1,4 @@
-import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, FavoriteFolderService, InviteCodeService, EmailSettingsService, ApplicationService, RoleService, UserService, TagService } from 'doggy-nav-core';
+import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, FavoriteFolderService, InviteCodeService, EmailSettingsService, ApplicationService, RoleService, UserService, TagService, TranslateService } from 'doggy-nav-core';
 import { TOKENS } from '../core/ioc';
 import MongooseGroupRepository from '../../adapters/groupRepository';
 import MongooseCategoryRepository from '../../adapters/categoryRepository';
@@ -12,6 +12,7 @@ import MongooseApplicationRepository from '../../adapters/applicationRepository'
 import MongooseRoleRepository from '../../adapters/roleRepository';
 import MongooseUserRepository from '../../adapters/userRepository';
 import MongooseTagRepository from '../../adapters/tagRepository';
+import GoogleTranslateProvider from '../../adapters/translateProvider';
 
 export default function ioc() {
   return async (ctx: any, next: any) => {
@@ -30,6 +31,7 @@ export default function ioc() {
     di.register(TOKENS.RoleService, () => new RoleService(new MongooseRoleRepository(ctx)));
     di.register(TOKENS.UserService, () => new UserService(new MongooseUserRepository(ctx)));
     di.register(TOKENS.TagService, () => new TagService(new MongooseTagRepository(ctx)));
+    di.register(TOKENS.TranslateService, () => new TranslateService(new GoogleTranslateProvider()));
 
     ctx.di = di;
     await next();

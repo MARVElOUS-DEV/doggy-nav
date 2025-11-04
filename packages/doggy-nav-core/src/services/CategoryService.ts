@@ -1,4 +1,4 @@
-import type { AuthContext, Category, Audience, Visibility } from '../domain/types';
+import type { AuthContext, Category, Audience, Visibility } from '../types/types';
 import type { CategoryRepository, CategoryListOptions } from '../repositories/CategoryRepository';
 
 function isIdLike(v?: string | null): v is string {

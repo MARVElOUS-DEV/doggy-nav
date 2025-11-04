@@ -396,7 +396,7 @@ export class DataMigration {
         WHERE ${check.fkColumn} NOT IN (SELECT id FROM ${check.fkTable})
       `;
       const result = await this.db.prepare(orphanedQuery).first();
-      const orphanedCount = result?.orphaned_count || 0;
+      const orphanedCount = Number((result as any)?.orphaned_count ?? 0);
 
       if (orphanedCount > 0) {
         errors.push(`Found ${orphanedCount} orphaned records in ${check.table}`);
@@ -418,7 +418,7 @@ export class DataMigration {
 
     for (const table of tables) {
       const result = await this.db.prepare(`SELECT COUNT(*) as count FROM ${table}`).first();
-      stats[table] = result?.count || 0;
+      stats[table] = Number((result as any)?.count ?? 0);
     }
 
     return stats;

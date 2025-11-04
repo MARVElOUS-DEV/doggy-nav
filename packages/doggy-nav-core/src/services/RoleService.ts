@@ -1,4 +1,4 @@
-import type { AuthContext, Role } from '../domain/types';
+import type { AuthContext, Role } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
 import type { RoleRepository } from '../repositories/RoleRepository';
 
@@ -15,7 +15,7 @@ export class RoleService {
     const { pageSize, pageNumber } = normalizePage(page);
     const roles = Array.isArray(user?.roles) ? user!.roles! : [];
     const isAdmin = roles.includes('sysadmin') || roles.includes('admin');
-    const filter = isAdmin ? undefined : (roles.length > 0 ? { slugs: roles } : { slugs: [] });
+    const filter = isAdmin ? undefined : roles.length > 0 ? { slugs: roles } : { slugs: [] };
     return this.repo.list({ page: { pageSize, pageNumber }, filter });
   }
 }

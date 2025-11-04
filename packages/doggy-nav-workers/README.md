@@ -55,8 +55,10 @@ cd packages/doggy-nav-workers
 pnpm install
 
 # Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
+# Local dev uses Cloudflare's .dev.vars file
+cp .dev.vars.example .dev.vars
+# Set JWT_SECRET as a Cloudflare secret (not in .dev.vars)
+wrangler secret put JWT_SECRET
 ```
 
 ### Development
@@ -250,14 +252,24 @@ See `wrangler.toml` for Cloudflare Workers configuration including:
 
 ## Deployment
 
-### Production Deployment
+### Cloudflare Deployment
 
 ```bash
 # Authenticate with Cloudflare
 wrangler login
 
-# Create D1 database
+# Create (or reuse) a D1 database and capture its id
 wrangler d1 create doggy_nav
+# Export the created database id for this shell (or set it in your CI)
+export D1_DATABASE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+# Configure environment variables
+# (Optional) edit wrangler.toml [vars] for ALLOWED_ORIGINS / rate limits
+# (Required secret) set JWT secret
+wrangler secret put JWT_SECRET
+
+# Apply SQL migrations to the D1 database
+wrangler d1 migrations apply doggy_nav --remote
 
 # Deploy to production
 wrangler publish
@@ -266,7 +278,12 @@ wrangler publish
 ### Staging Deployment
 
 ```bash
-# Deploy to staging
+# Create a staging D1 database
+wrangler d1 create doggy_nav_staging
+export D1_DATABASE_ID=yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+
+# Apply migrations to staging DB and deploy
+wrangler d1 migrations apply doggy_nav_staging --remote
 wrangler publish --env staging
 ```
 

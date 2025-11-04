@@ -1,4 +1,4 @@
-import type { NavItem } from '../domain/types';
+import type { NavItem } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
 
 export interface NavListFilter {

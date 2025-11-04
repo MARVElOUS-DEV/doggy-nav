@@ -1,9 +1,14 @@
 import CommonController from '../core/base_controller';
 import { ValidationError } from '../core/errors';
 import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { InviteCodeService } from 'doggy-nav-core';
 import { randomBytes } from 'crypto';
 
 export default class InviteCodeController extends CommonController {
+  @Inject(TOKENS.InviteCodeService)
+  private inviteCodeService!: InviteCodeService;
+
   tableName(): string {
     return 'InviteCode';
   }
@@ -15,7 +20,7 @@ export default class InviteCodeController extends CommonController {
     let { pageSize = 10, pageNumber = 1 } = query;
     pageSize = Math.min(Math.max(Number(pageSize) || 10, 1), 100);
     pageNumber = Math.max(Number(pageNumber) || 1, 1);
-    const service = ctx.di.resolve(TOKENS.InviteCodeService);
+    const service = this.inviteCodeService;
     const filter: any = {};
     if (rawQuery.active !== undefined && rawQuery.active !== '' && rawQuery.active !== 'undefined') {
       filter.active = String(query.active) === 'true';
@@ -45,7 +50,7 @@ export default class InviteCodeController extends CommonController {
     const note = body.note || '';
     const allowedEmailDomain = body.allowedEmailDomain ? String(body.allowedEmailDomain).toLowerCase().replace(/^@/, '') : null;
 
-    const service = ctx.di.resolve(TOKENS.InviteCodeService);
+    const service = this.inviteCodeService;
     const codeLength = Number(ctx.app.config?.invite?.codeLength || 12);
     const gen = (len: number) => randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len).toUpperCase();
     const res = await service.createBulkByCount({
@@ -68,7 +73,7 @@ export default class InviteCodeController extends CommonController {
       return;
     }
     const body = this.getSanitizedBody();
-    const service = ctx.di.resolve(TOKENS.InviteCodeService);
+    const service = this.inviteCodeService;
     const patch: any = {};
     if (body.active !== undefined) patch.active = !!body.active;
     if (body.usageLimit !== undefined) patch.usageLimit = Number(body.usageLimit);
@@ -91,9 +96,7 @@ export default class InviteCodeController extends CommonController {
       this.error('ID is required');
       return;
     }
-    const repo = new MongooseInviteCodeRepository(ctx);
-    const service = new InviteCodeService(repo);
-    const updated = await service.update(String(id), { active: false });
+    const updated = await this.inviteCodeService.update(String(id), { active: false });
     if (!updated) return this.error('邀请码不存在');
     this.success(updated);
   }

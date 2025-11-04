@@ -19,15 +19,11 @@ export default class D1TagRepository implements TagRepository {
     const offset = (pageNumber - 1) * pageSize;
 
     const listRs = await this.db
-      .prepare(
-        `SELECT id, name FROM tags ORDER BY created_at DESC LIMIT ? OFFSET ?`
-      )
+      .prepare(`SELECT id, name FROM tags ORDER BY created_at DESC LIMIT ? OFFSET ?`)
       .bind(pageSize, offset)
       .all<any>();
 
-    const countRs = await this.db
-      .prepare(`SELECT COUNT(1) as cnt FROM tags`)
-      .all<any>();
+    const countRs = await this.db.prepare(`SELECT COUNT(1) as cnt FROM tags`).all<any>();
 
     const total = Number((countRs.results?.[0]?.cnt as number) || 0);
     const rows: any[] = listRs.results || [];

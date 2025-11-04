@@ -1,7 +1,5 @@
-import { Hono } from 'hono';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createApp } from '../testApp';
-import { MemoryDB } from '../utils/memoryDB';
 
 // Mock D1Database for testing
 class MockD1Database {
@@ -10,21 +8,21 @@ class MockD1Database {
       bind: vi.fn().mockReturnThis(),
       first: vi.fn().mockResolvedValue(null),
       all: vi.fn().mockResolvedValue({ results: [] }),
-      run: vi.fn().mockResolvedValue({ meta: { rows_written: 1 } })
+      run: vi.fn().mockResolvedValue({ meta: { rows_written: 1 } }),
     };
   }
 }
 
 describe('Doggy Nav Worker API', () => {
-  let app: Hono;
+  let app: ReturnType<typeof createApp>;
   let mockDB: MockD1Database;
 
   beforeEach(() => {
     mockDB = new MockD1Database();
     app = createApp({
-      DB: mockDB as any,
+      DB: mockDB,
       JWT_SECRET: 'test-secret-key',
-      NODE_ENV: 'test'
+      NODE_ENV: 'test',
     });
   });
 
@@ -51,7 +49,7 @@ describe('Doggy Nav Worker API', () => {
           username: 'testuser',
           email: 'test@example.com',
           password: 'password123',
-        })
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -70,7 +68,7 @@ describe('Doggy Nav Worker API', () => {
         extraPermissions: '[]',
         lastLoginAt: null,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       mockDB.prepare().bind().first.mockResolvedValue(mockUser);
@@ -81,7 +79,7 @@ describe('Doggy Nav Worker API', () => {
         body: JSON.stringify({
           email: 'test@example.com',
           password: 'password123',
-        })
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -96,7 +94,7 @@ describe('Doggy Nav Worker API', () => {
         body: JSON.stringify({
           email: 'nonexistent@example.com',
           password: 'wrongpassword',
-        })
+        }),
       });
 
       expect(response.status).toBe(401);
@@ -119,7 +117,7 @@ describe('Doggy Nav Worker API', () => {
         displayName: 'Test Group',
         description: 'A test group',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       mockDB.prepare().bind().first.mockResolvedValue(mockGroup);
@@ -179,7 +177,7 @@ describe('Doggy Nav Worker API', () => {
       const response = await app.request('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}) // Missing required fields
+        body: JSON.stringify({}), // Missing required fields
       });
 
       expect(response.status).toBe(400);
@@ -198,7 +196,7 @@ describe('JWT Utilities', () => {
       username: 'testuser',
       roles: ['admin'],
       groups: ['default'],
-      permissions: ['user:read']
+      permissions: ['user:read'],
     };
 
     const tokens = await jwtUtils.generateTokenPair(payload);
@@ -221,7 +219,7 @@ describe('JWT Utilities', () => {
       username: 'testuser',
       roles: ['admin'],
       groups: ['default'],
-      permissions: ['user:read']
+      permissions: ['user:read'],
     };
 
     const tokens = await jwtUtils.generateTokenPair(payload);
@@ -240,7 +238,7 @@ describe('JWT Utilities', () => {
       username: 'testuser',
       roles: ['admin'],
       groups: ['default'],
-      permissions: ['user:read']
+      permissions: ['user:read'],
     };
 
     const tokens = await jwtUtils.generateTokenPair(payload);
@@ -268,7 +266,7 @@ describe('Password Utilities', () => {
   });
 
   it('should validate password strength', async () => {
-    const { PasswordUtils } = await import('../routes/auth');
+    const { PasswordUtils } = await import('../utils/passwordUtils');
 
     // Valid password
     const validResult = PasswordUtils.validatePassword('StrongPass123');

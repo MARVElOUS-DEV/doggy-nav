@@ -17,7 +17,7 @@ export class D1RoleRepository {
   async getById(id: string): Promise<Role | null> {
     const stmt = this.db.prepare(
       `SELECT id, slug, display_name, description, permissions, is_system, created_at, updated_at
-       FROM roles WHERE id = ? LIMIT 1`
+      FROM roles WHERE id = ? LIMIT 1`
     );
     const row = await stmt.bind(id).first<any>();
     return row ? rowToRole(row) : null;
@@ -86,8 +86,9 @@ export class D1RoleRepository {
     permissions?: string[];
     isSystem?: boolean;
   }): Promise<Role> {
-    const id = (globalThis.crypto?.randomUUID?.() as string) ||
-               (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+    const id =
+      (globalThis.crypto?.randomUUID?.() as string) ||
+      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 
     const stmt = this.db.prepare(`
       INSERT INTO roles (
@@ -95,25 +96,30 @@ export class D1RoleRepository {
       ) VALUES (?, ?, ?, ?, ?, ?)
     `);
 
-    await stmt.bind(
-      id,
-      roleData.slug,
-      roleData.displayName,
-      roleData.description || '',
-      JSON.stringify(roleData.permissions || []),
-      roleData.isSystem ? 1 : 0
-    ).run();
+    await stmt
+      .bind(
+        id,
+        roleData.slug,
+        roleData.displayName,
+        roleData.description || '',
+        JSON.stringify(roleData.permissions || []),
+        roleData.isSystem ? 1 : 0
+      )
+      .run();
 
     return (await this.getById(id))!;
   }
 
-  async update(id: string, updates: Partial<{
-    slug: string;
-    displayName: string;
-    description: string;
-    permissions: string[];
-    isSystem: boolean;
-  }>): Promise<Role | null> {
+  async update(
+    id: string,
+    updates: Partial<{
+      slug: string;
+      displayName: string;
+      description: string;
+      permissions: string[];
+      isSystem: boolean;
+    }>
+  ): Promise<Role | null> {
     const fields: string[] = [];
     const params: any[] = [];
 
@@ -142,11 +148,9 @@ export class D1RoleRepository {
       return this.getById(id);
     }
 
-    fields.push('updated_at = strftime(\'%Y-%m-%dT%H:%M:%fZ\', \'now\')');
+    fields.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')");
 
-    const stmt = this.db.prepare(
-      `UPDATE roles SET ${fields.join(', ')} WHERE id = ?`
-    );
+    const stmt = this.db.prepare(`UPDATE roles SET ${fields.join(', ')} WHERE id = ?`);
 
     await stmt.bind(...params, id).run();
 

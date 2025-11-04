@@ -180,7 +180,7 @@ export default (appInfo: EggAppInfo) => {
     // These are essential routes that should remain accessible for initial setup
     bypassRoutes: [
       '/api/register',
-      '/api/login',
+      '/api/auth/login',
       '/api/application/verify-client-secret',
       '/api/auth/:provider',
       '/api/auth/:provider/callback',

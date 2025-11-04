@@ -5,6 +5,8 @@ import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
 import { buildAudienceFilterEx } from '../utils/audience';
 import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { NavService } from 'doggy-nav-core';
 
 enum NAV_STATUS {
   pass,
@@ -13,6 +15,9 @@ enum NAV_STATUS {
 }
 
 export default class NavController extends Controller {
+  @Inject(TOKENS.NavService)
+  private navService!: NavService;
+
   tableName(): string {
     return 'Nav';
   }
@@ -37,8 +42,7 @@ export default class NavController extends Controller {
           source: (userCtx?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
         }
       : undefined;
-    const service = ctx.di.resolve(TOKENS.NavService);
-    const res = await service.list(
+    const res = await this.navService.list(
       page,
       {
         status: status !== undefined && status !== '' ? Number(status) : undefined,

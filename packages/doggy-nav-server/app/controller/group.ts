@@ -1,15 +1,19 @@
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
 import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { GroupService } from 'doggy-nav-core';
 
 export default class GroupController extends Controller {
+  @Inject(TOKENS.GroupService)
+  private groupService!: GroupService;
+
   tableName(): string { return 'Group'; }
 
   async getOne() {
     const { ctx } = this;
     const { id } = ctx.params;
-    const service = ctx.di.resolve(TOKENS.GroupService);
-    const group = await service.getOne(id);
+    const group = await this.groupService.getOne(id);
     if (!group) {
       this.ctx.status = 404;
       return this.error('Group not found');
@@ -22,8 +26,7 @@ export default class GroupController extends Controller {
     const query = this.getSanitizedQuery();
     const { pageSize = 50, pageNumber = 1 } = query as any;
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-    const service = ctx.di.resolve(TOKENS.GroupService);
-    const res = await service.list({ pageSize: Number(pageSize), pageNumber: Number(pageNumber) }, {
+    const res = await this.groupService.list({ pageSize: Number(pageSize), pageNumber: Number(pageNumber) }, {
       roles: userCtx?.roles,
       groups: userCtx?.groups,
     });

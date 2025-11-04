@@ -1,4 +1,4 @@
-import type { AuthContext, Group } from '../domain/types';
+import type { AuthContext, Group } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
 import type { GroupRepository } from '../repositories/GroupRepository';
 
@@ -9,10 +9,7 @@ export class GroupService {
     return this.repo.getById(id);
   }
 
-  async list(
-    page: PageQuery,
-    user?: AuthContext
-  ): Promise<PageResult<Group>> {
+  async list(page: PageQuery, user?: AuthContext): Promise<PageResult<Group>> {
     const pageSize = Math.min(Math.max(Number(page.pageSize) || 50, 1), 200);
     const pageNumber = Math.max(Number(page.pageNumber) || 1, 1);
 
@@ -22,7 +19,9 @@ export class GroupService {
 
     const filter = isAdmin
       ? undefined
-      : (userGroups.length > 0 ? { slugs: userGroups } : { slugs: [] });
+      : userGroups.length > 0
+        ? { slugs: userGroups }
+        : { slugs: [] };
 
     return this.repo.list({ pageSize, pageNumber, filter });
   }

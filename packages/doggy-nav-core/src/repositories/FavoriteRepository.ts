@@ -1,4 +1,4 @@
-import type { NavItem, FavoriteUnionItem } from '../domain/types';
+import type { NavItem, FavoriteUnionItem } from '../types/types';
 import type { PageQuery, PageResult } from '../dto/pagination';
 
 export interface FavoriteRepository {
