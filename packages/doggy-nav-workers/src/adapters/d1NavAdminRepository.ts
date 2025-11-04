@@ -1,14 +1,11 @@
-import type {
-  NavAdminRepository,
-  NavAdminCreateInput,
-  NavAdminUpdateInput,
-} from 'doggy-nav-core';
+import type { NavAdminRepository, NavAdminCreateInput, NavAdminUpdateInput } from 'doggy-nav-core';
+import { newId24 } from '../utils/id';
 
 export default class D1NavAdminRepository implements NavAdminRepository {
   constructor(private readonly db: D1Database) {}
 
   async create(input: NavAdminCreateInput): Promise<{ id: string }> {
-    const id = (globalThis.crypto?.randomUUID?.() as string) || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
     const createTime = Date.now();
     const vis = (input.audience?.visibility as any) || 'public';
     const tagsJson = JSON.stringify(Array.isArray(input.tags) ? input.tags : []);

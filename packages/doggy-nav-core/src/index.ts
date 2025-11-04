@@ -33,3 +33,4 @@ export * from './repositories/UserRepository';
 export * from './services/UserService';
 export * from './ioc';
 export * from './seed/engine';
+export * from './seed/defaults';
