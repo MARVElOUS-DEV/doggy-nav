@@ -21,9 +21,3 @@ tag = "v1"
 new_sql = [
   "migrations/001_init.sql"
 ]
-
-[[migrations]]
-tag = "v2"
-new_sql = [
-  "migrations/002_invite_codes_extension.sql"
-]

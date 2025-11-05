@@ -261,7 +261,86 @@ CREATE INDEX IF NOT EXISTS idx_oauth_providers_provider_user_id ON oauth_provide
 CREATE INDEX IF NOT EXISTS idx_applications_slug ON applications(slug);
 CREATE INDEX IF NOT EXISTS idx_applications_category_id ON applications(category_id);
 
+-- Extend invite_codes for usage limits and metadata
+ALTER TABLE invite_codes ADD COLUMN usage_limit INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE invite_codes ADD COLUMN used_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE invite_codes ADD COLUMN active INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE invite_codes ADD COLUMN note TEXT DEFAULT NULL;
+ALTER TABLE invite_codes ADD COLUMN allowed_email_domain TEXT DEFAULT NULL;
+
+-- Indexes to optimize lookup
+CREATE INDEX IF NOT EXISTS idx_invite_codes_active ON invite_codes(active);
+CREATE INDEX IF NOT EXISTS idx_invite_codes_code_like ON invite_codes(code);
+
+-- Client Applications table for API client secrets (separate from navigation applications)
+CREATE TABLE IF NOT EXISTS client_applications (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4)) || hex(randomblob(4)) || hex(randomblob(4)))),
+  name TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  client_secret TEXT NOT NULL UNIQUE,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  allowed_origins TEXT NOT NULL DEFAULT '[]',
+  created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_client_apps_active ON client_applications(is_active);
+-- SMTP Email settings table (single-row config)
+CREATE TABLE IF NOT EXISTS email_settings (
+  id TEXT PRIMARY KEY,
+  smtp_host TEXT NOT NULL,
+  smtp_port INTEGER NOT NULL DEFAULT 587,
+  smtp_secure INTEGER NOT NULL DEFAULT 0,
+  smtp_user TEXT NOT NULL,
+  smtp_pass TEXT NOT NULL,
+  from_name TEXT NOT NULL DEFAULT 'Doggy Nav',
+  from_address TEXT NOT NULL,
+  reply_to TEXT NOT NULL,
+  enable_notifications INTEGER NOT NULL DEFAULT 0,
+  admin_emails TEXT NOT NULL DEFAULT '[]',
+  created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+ALTER TABLE favorites ADD COLUMN updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+ALTER TABLE invite_codes ADD COLUMN updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+
+UPDATE favorites SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE updated_at IS NULL;
+UPDATE invite_codes SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE updated_at IS NULL;
+-- System meta key-value store for idempotent operations (e.g., seeding guards)
+CREATE TABLE IF NOT EXISTS system_meta (
+  meta_key TEXT PRIMARY KEY,
+  meta_value TEXT NOT NULL,
+  created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+
 -- Triggers for automatic updated_at timestamp
+CREATE TRIGGER IF NOT EXISTS update_system_meta_updated_at
+  AFTER UPDATE ON system_meta
+  FOR EACH ROW
+  WHEN NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE system_meta SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE meta_key = NEW.meta_key;
+END;
+
+CREATE TRIGGER IF NOT EXISTS update_email_settings_updated_at
+  AFTER UPDATE ON email_settings
+  FOR EACH ROW
+  WHEN NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE email_settings SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS update_client_applications_updated_at
+  AFTER UPDATE ON client_applications
+  FOR EACH ROW
+  WHEN NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE client_applications SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = NEW.id;
+END;
+
 CREATE TRIGGER IF NOT EXISTS update_users_updated_at
   AFTER UPDATE ON users
   FOR EACH ROW
