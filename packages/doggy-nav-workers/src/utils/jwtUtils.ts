@@ -183,17 +183,14 @@ export class JWTUtils {
    * Check if user has required permission
    */
   static hasPermission(payload: JWTPayload, requiredPermission: string): boolean {
-    return (
-      payload.permissions.includes(requiredPermission) ||
-      payload.permissions.includes('*')
-    );
+    return payload.permissions.includes(requiredPermission) || payload.permissions.includes('*');
   }
 
   /**
    * Check if user has required role
    */
   static hasRole(payload: JWTPayload, requiredRole: string): boolean {
-    return payload.roles.includes(requiredRole);
+    return payload.roles.includes(requiredRole) || payload.roles.includes('sysadmin');
   }
 
   /**

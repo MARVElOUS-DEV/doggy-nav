@@ -1,4 +1,3 @@
-import { Hono } from 'hono';
 import { JWTUtils } from '../utils/jwtUtils';
 import { getAccessTokenFromCookies } from '../utils/cookieAuth';
 import { D1UserRepository } from '../adapters/d1UserRepository';
@@ -35,7 +34,8 @@ export function createAuthMiddleware(options: { required?: boolean } = {}) {
     let token = JWTUtils.extractTokenFromHeader(authHeader);
     if (!token) {
       const cookieToken = getAccessTokenFromCookies(c);
-      if (cookieToken) token = cookieToken.startsWith('Bearer ') ? cookieToken.slice(7) : cookieToken;
+      if (cookieToken)
+        token = cookieToken.startsWith('Bearer ') ? cookieToken.slice(7) : cookieToken;
     }
 
     if (!token) {
@@ -50,18 +50,23 @@ export function createAuthMiddleware(options: { required?: boolean } = {}) {
       const payload = await jwtUtils.verifyAccessToken(token);
 
       if (!payload) {
-        return c.json(responses.err('Invalid token'), 401);
+        if (options.required) return c.json(responses.err('Invalid token'), 401);
+        return await next();
       }
 
       // Check if token is expired
       if (JWTUtils.isTokenExpired(payload)) {
-        return c.json(responses.err('Token expired'), 401);
+        if (options.required) return c.json(responses.err('Token expired'), 401);
+        return await next();
       }
 
       // Load user access context centrally
       const userRepository = new D1UserRepository(c.env.DB);
       const ctx = await getUserAccessContext(c.env.DB, userRepository, payload.userId);
-      if (!ctx) return c.json(responses.err('User not found or inactive'), 401);
+      if (!ctx) {
+        if (options.required) return c.json(responses.err('User not found or inactive'), 401);
+        return await next();
+      }
       c.set('user', {
         id: ctx.user.id,
         email: ctx.user.email,
@@ -74,7 +79,8 @@ export function createAuthMiddleware(options: { required?: boolean } = {}) {
       await next();
     } catch (error) {
       console.error('Auth middleware error:', error);
-      return c.json(responses.err('Authentication failed'), 401);
+      if (options.required) return c.json(responses.err('Authentication failed'), 401);
+      return await next();
     }
   };
 }
@@ -170,7 +176,8 @@ export function publicRoute() {
     let token = JWTUtils.extractTokenFromHeader(authHeader);
     if (!token) {
       const cookieToken = getAccessTokenFromCookies(c);
-      if (cookieToken) token = cookieToken.startsWith('Bearer ') ? cookieToken.slice(7) : cookieToken;
+      if (cookieToken)
+        token = cookieToken.startsWith('Bearer ') ? cookieToken.slice(7) : cookieToken;
     }
 
     if (token) {

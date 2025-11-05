@@ -9,6 +9,8 @@ import { createWorkerContainer } from './ioc/worker';
 import { responses } from './utils/responses';
 import { rateLimit } from './middleware/rateLimit';
 import { sourceGuard } from './middleware/sourceGuard';
+import { publicRoute } from './middleware/auth';
+import { accessControl } from './middleware/accessControl';
 
 type Env = RouteEnv;
 const app = new Hono<{ Bindings: RouteEnv }>();
@@ -38,18 +40,24 @@ app.use('/api/*', async (c, next) => {
 // Basic rate limit
 app.use('/api/*', rateLimit());
 
+// Health check endpoint
+app.get('/api/health', (c) => {
+  return c.json(responses.ok({ status: 'healthy', timestamp: new Date().toISOString() }));
+});
+
 // Enforce source header and admin-source auth gating (server parity)
 app.use('/api/*', sourceGuard());
+
+// Populate optional auth context for downstream access checks (non-blocking)
+app.use('/api/*', publicRoute());
+
+// Centralized access control matrix enforcement (server parity)
+app.use('/api/*', accessControl());
 
 // Error handling middleware
 app.onError((err, c) => {
   console.error('Error:', err);
   return c.json(responses.serverError(), 500);
-});
-
-// Health check endpoint
-app.get('/api/health', (c) => {
-  return c.json(responses.ok({ status: 'healthy', timestamp: new Date().toISOString() }));
 });
 
 // Register App Routes in a single place

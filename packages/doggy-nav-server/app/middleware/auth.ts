@@ -1,4 +1,4 @@
-import { getRoutePermission, hasAccess } from '../access-control';
+import { getRoutePermission, hasAccess } from 'doggy-nav-core';
 import { getAccessTokenFromCookies, getAppSource } from '../utils/appSource';
 import { computeEffectiveRoles } from '../utils/rbac';
 import type { AuthUserContext } from '../../types/rbac';

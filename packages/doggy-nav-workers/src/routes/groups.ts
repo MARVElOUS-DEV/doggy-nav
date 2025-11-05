@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { createAuthMiddleware, requireRole } from '../middleware/auth';
-import { getDI } from '../ioc/helpers';
+import { createAuthMiddleware, requireRole, publicRoute } from '../middleware/auth';
+import { getDI, getUser } from '../ioc/helpers';
 import { TOKENS } from '../ioc/tokens';
 import { responses } from '../utils/responses';
 import type { GroupService } from 'doggy-nav-core';
@@ -9,13 +9,14 @@ type Env = { DB: D1Database };
 
 export const groupRoutes = new Hono<{ Bindings: Env }>();
 
-groupRoutes.get('/', async (c) => {
+groupRoutes.get('/', publicRoute(), async (c) => {
   try {
     const pageSize = Math.min(Math.max(Number(c.req.query('pageSize') ?? 50), 1), 100);
     const pageNumber = Math.max(Number(c.req.query('pageNumber') ?? 1), 1);
 
     const service = getDI(c).resolve(TOKENS.GroupService);
-    const result = await service.list({ pageSize, pageNumber });
+    const user = getUser(c);
+    const result = await (service as GroupService).list({ pageSize, pageNumber }, user as any);
 
     return c.json(responses.ok(result));
   } catch (error) {

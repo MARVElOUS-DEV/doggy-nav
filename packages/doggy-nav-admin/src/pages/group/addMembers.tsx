@@ -47,7 +47,7 @@ const AddMembers: React.FC<{
         </Space>
       }
       width={800}
-      destroyOnClose
+      destroyOnHidden
     >
       <ProTable
         rowKey="id"

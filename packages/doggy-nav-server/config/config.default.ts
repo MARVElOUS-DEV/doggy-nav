@@ -132,9 +132,6 @@ export default (appInfo: EggAppInfo) => {
     codeLength: 12,
   };
 
-  // Route access control is now handled by the access-control.js configuration
-  // config.routerAuth is deprecated
-
   // Rate limiting configuration
   config.ratelimiter = {
     enable: process.env.NODE_ENV === 'production',
