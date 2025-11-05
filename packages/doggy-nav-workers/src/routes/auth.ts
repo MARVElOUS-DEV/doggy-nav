@@ -453,7 +453,9 @@ type ProviderConfig = {
 
 function randomState(): string {
   const arr = new Uint8Array(16);
-  (globalThis.crypto || ({} as any)).getRandomValues?.(arr);
+  // Type-safe access to crypto API
+  const cryptoObj = (globalThis as any).crypto;
+  cryptoObj?.getRandomValues?.(arr);
   return Array.from(arr)
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');

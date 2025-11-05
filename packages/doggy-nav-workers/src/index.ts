@@ -5,7 +5,6 @@ import { timing } from 'hono/timing';
 import { secureHeaders } from 'hono/secure-headers';
 import { registerRoutes, Env as RouteEnv } from './routes';
 import { createWorkerContainer } from './ioc/worker';
-// Response helpers
 import { responses } from './utils/responses';
 import { rateLimit } from './middleware/rateLimit';
 import { sourceGuard } from './middleware/sourceGuard';

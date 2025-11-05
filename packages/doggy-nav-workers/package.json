@@ -11,9 +11,9 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "types": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "test:watch": "vitest --watch"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -23,11 +23,13 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241022.0",
+    "@swc/jest": "^0.2.39",
     "@types/bcryptjs": "^3.0.0",
-    "@vitest/ui": "^2.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.0",
+    "jest": "^30.2.0",
     "jsdom": "^25.0.0",
-    "typescript": "^5",
-    "vite": "^5.4.10",
-    "vitest": "^2.1.0"
+    "ts-jest": "^29.4.5",
+    "typescript": "^5"
   }
 }

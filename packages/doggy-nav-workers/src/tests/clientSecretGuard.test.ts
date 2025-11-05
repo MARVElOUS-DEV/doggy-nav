@@ -1,16 +1,37 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createApp } from '../testApp';
+import createApp from '../testApp';
+
+// Create a mock for responses module
+jest.mock('../utils/responses', () => ({
+  responses: {
+    ok: (data: any, message: string = 'ok') => ({ code: 1, msg: message, data }),
+    err: (message: string, code: number = 0) => ({ code, msg: message, data: null }),
+    notFound: (message: string = 'Endpoint not found') => ({ code: 0, msg: message, data: null }),
+    badRequest: (message: string = 'Bad request') => ({ code: 400, msg: message, data: null }),
+    serverError: (message: string = 'Internal server error') => ({
+      code: 500,
+      msg: message,
+      data: null,
+    }),
+  },
+}));
 
 // Mock D1Database for testing
 class MockD1Database {
   prepare() {
     return {
-      bind: vi.fn().mockReturnThis(),
-      first: vi.fn().mockResolvedValue(null),
-      all: vi.fn().mockResolvedValue({ results: [] }),
-      run: vi.fn().mockResolvedValue({ meta: { rows_written: 1 } }),
-    } as any;
+      bind: jest.fn().mockReturnThis(),
+      first: jest.fn().mockResolvedValue(null),
+      all: jest.fn().mockResolvedValue({ results: [] }),
+      run: jest.fn().mockResolvedValue({ meta: { rows_written: 1 } }),
+      raw: jest.fn().mockResolvedValue([]),
+    };
   }
+
+  // Add missing D1Database methods
+  batch = jest.fn();
+  exec = jest.fn();
+  withSession = jest.fn();
+  dump = jest.fn();
 }
 
 describe('Client Secret Guard (workers)', () => {

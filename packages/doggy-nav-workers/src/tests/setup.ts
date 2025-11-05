@@ -1,18 +1,8 @@
 // Test setup file
-import { afterAll, beforeAll, beforeEach, vi } from 'vitest';
 
 // Mock environment variables for testing
 process.env.JWT_SECRET = 'test-secret-key';
 process.env.NODE_ENV = 'test';
-
-// Mock console methods to reduce noise in tests
-global.console = {
-  ...console,
-  log: vi.fn(),
-  error: vi.fn(),
-  warn: vi.fn(),
-  info: vi.fn(),
-};
 
 // Global test configuration
 beforeAll(() => {
@@ -25,7 +15,21 @@ afterAll(() => {
 
 beforeEach(() => {
   // Reset mocks before each test
-  vi.clearAllMocks();
+  jest.clearAllMocks();
+});
+
+// Provide crypto polyfill for Node.js environment
+Object.defineProperty(global, 'crypto', {
+  value: {
+    getRandomValues: (arr: any) => {
+      for (let i = 0; i < arr.length; i++) {
+        arr[i] = Math.floor(Math.random() * 256);
+      }
+      return arr;
+    },
+  },
+  writable: true,
+  configurable: true,
 });
 
 export {};

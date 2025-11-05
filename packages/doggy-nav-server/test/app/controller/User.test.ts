@@ -11,7 +11,7 @@ describe('test/app/controller/user.test.ts', () => {
         user: { name: 'testName' },
       };
     });
-    await app.httpRequest().post('/api/login')
+    await app.httpRequest().post('/api/auth/login')
       .set('X-App-Source', 'main')
       .expect(200);
   });
