@@ -24,6 +24,8 @@ function rowToLink(row: any): OAuthLink {
   };
 }
 
+import { newId24 } from '../utils/id';
+
 export class D1OAuthRepository {
   constructor(private readonly db: D1Database) {}
 
@@ -33,7 +35,7 @@ export class D1OAuthRepository {
   ): Promise<OAuthLink | null> {
     const stmt = this.db.prepare(
       `SELECT id, user_id, provider, provider_user_id, access_token, refresh_token, created_at, updated_at
-       FROM oauth_providers WHERE provider = ? AND provider_user_id = ? LIMIT 1`
+      FROM oauth_providers WHERE provider = ? AND provider_user_id = ? LIMIT 1`
     );
     const row = await stmt.bind(provider, providerUserId).first<any>();
     return row ? rowToLink(row) : null;
@@ -46,14 +48,12 @@ export class D1OAuthRepository {
     accessToken?: string | null;
     refreshToken?: string | null;
   }): Promise<OAuthLink> {
-    const id =
-      (globalThis.crypto?.randomUUID?.() as string) ||
-      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
 
     await this.db
       .prepare(
         `INSERT INTO oauth_providers (id, user_id, provider, provider_user_id, access_token, refresh_token)
-         VALUES (?, ?, ?, ?, ?, ?)`
+        VALUES (?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id,
@@ -68,7 +68,7 @@ export class D1OAuthRepository {
     const row = await this.db
       .prepare(
         `SELECT id, user_id, provider, provider_user_id, access_token, refresh_token, created_at, updated_at
-         FROM oauth_providers WHERE id = ?`
+        FROM oauth_providers WHERE id = ?`
       )
       .bind(id)
       .first<any>();

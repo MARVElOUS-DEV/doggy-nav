@@ -1,6 +1,7 @@
 import type { TagRepository } from 'doggy-nav-core';
 import type { PageQuery, PageResult } from 'doggy-nav-core';
 import type { Tag } from 'doggy-nav-core';
+import { newId24 } from '../utils/id';
 
 function rowToTag(row: any): Tag {
   return {
@@ -63,7 +64,7 @@ export default class D1TagRepository implements TagRepository {
   }
 
   async create(name: string): Promise<Tag> {
-    const id = (globalThis.crypto?.randomUUID?.() as string) || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
     const slug = this.toSlug(name);
     await this.db
       .prepare(`INSERT INTO tags (id, name, slug, description) VALUES (?, ?, ?, '')`)

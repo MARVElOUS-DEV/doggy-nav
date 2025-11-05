@@ -5,6 +5,7 @@ import type {
   InviteCodeUpdatePatch,
 } from 'doggy-nav-core';
 import type { InviteCode } from 'doggy-nav-core';
+import { newId24 } from '../utils/id';
 
 function rowToInviteCode(row: any): InviteCode {
   return {
@@ -66,7 +67,7 @@ export default class D1InviteCodeRepository implements InviteCodeRepository {
     );
     const created: InviteCode[] = [];
     for (const it of items) {
-      const id = (globalThis.crypto?.randomUUID?.() as string) || cryptoRandomId();
+      const id = newId24();
       await stmt
         .bind(
           id,
@@ -125,8 +126,4 @@ export default class D1InviteCodeRepository implements InviteCodeRepository {
       .run();
     return this.getById(id);
   }
-}
-
-function cryptoRandomId() {
-  return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 }

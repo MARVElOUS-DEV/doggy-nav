@@ -13,10 +13,17 @@ declare module 'hono' {
       nickName?: string;
       avatar?: string | null;
     };
+    clientApplication?: {
+      id: string;
+      name: string;
+      authType: 'client_secret';
+    };
   }
 }
 export type Env = {
   DB: D1Database;
   JWT_SECRET?: string;
   NODE_ENV?: string;
+  REQUIRE_CLIENT_SECRET?: string;
+  CLIENT_SECRET_HEADER?: string;
 };

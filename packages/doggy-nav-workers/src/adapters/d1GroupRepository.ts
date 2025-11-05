@@ -1,5 +1,6 @@
 import type { Group } from 'doggy-nav-core';
 import type { GroupRepository, GroupListOptions } from 'doggy-nav-core';
+import { newId24 } from '../utils/id';
 
 function rowToGroup(row: any): Group {
   return {
@@ -74,7 +75,7 @@ export class D1GroupRepository implements GroupRepository {
   }
 
   async create(data: { slug: string; displayName: string; description?: string }): Promise<Group> {
-    const id = (globalThis.crypto?.randomUUID?.() as string) || cryptoRandomId();
+    const id = newId24();
     await this.db
       .prepare(`INSERT INTO groups (id, slug, display_name, description) VALUES (?, ?, ?, ?)`)
       .bind(id, data.slug, data.displayName, data.description ?? '')
@@ -126,8 +127,4 @@ export class D1GroupRepository implements GroupRepository {
 }
 
 export default D1GroupRepository;
-
-function cryptoRandomId() {
-  // UUID-like random id; D1 also has randomblob approach, but generate in app for simplicity
-  return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-}
+ 

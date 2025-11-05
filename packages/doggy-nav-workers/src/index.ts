@@ -11,6 +11,7 @@ import { rateLimit } from './middleware/rateLimit';
 import { sourceGuard } from './middleware/sourceGuard';
 import { publicRoute } from './middleware/auth';
 import { accessControl } from './middleware/accessControl';
+import { clientSecretGuard } from './middleware/clientSecretGuard';
 
 type Env = RouteEnv;
 const app = new Hono<{ Bindings: RouteEnv }>();
@@ -47,6 +48,9 @@ app.get('/api/health', (c) => {
 
 // Enforce source header and admin-source auth gating (server parity)
 app.use('/api/*', sourceGuard());
+
+// Enforce client secret when enabled (server parity)
+app.use('/api/*', clientSecretGuard());
 
 // Populate optional auth context for downstream access checks (non-blocking)
 app.use('/api/*', publicRoute());

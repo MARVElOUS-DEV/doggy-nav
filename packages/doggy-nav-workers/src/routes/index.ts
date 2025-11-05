@@ -22,6 +22,9 @@ export type Env = {
   ALLOWED_ORIGINS?: string;
   RATE_LIMIT_WINDOW_MS?: string | number;
   RATE_LIMIT_MAX?: string | number;
+  REQUIRE_CLIENT_SECRET?: string; // 'true' to enable
+  CLIENT_SECRET_HEADER?: string; // default 'x-client-secret'
+  CLIENT_SECRET_BYPASS?: string; // comma-separated paths
 };
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>) {

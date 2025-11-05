@@ -36,10 +36,10 @@
     "validate-secrets": "node scripts/validate-secrets.js"
   },
   "dependencies": {
-    "doggy-nav-core": "workspace:*",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "cheerio": "1.0.0-rc.10",
+    "doggy-nav-core": "workspace:*",
     "dotenv": "^17.2.2",
     "egg": "^3.31.0",
     "egg-bin": "^6.13.0",
@@ -70,7 +70,6 @@
     "@types/supertest": "2.0.0",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
-    "autod-egg": "1.1.0",
     "egg-ci": "1.19.0",
     "egg-ts-helper": "^3.1.1",
     "esbuild": "^0.25.10",
@@ -88,14 +87,13 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/MARVElOUS-DEV/doggy-nav"
   },
   "eslintIgnore": [
     "coverage"
   ],
   "author": "",
   "license": "MIT",
-  "main": ".autod.conf.js",
   "directories": {
     "test": "test"
   },

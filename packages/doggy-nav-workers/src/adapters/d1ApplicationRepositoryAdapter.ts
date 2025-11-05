@@ -4,6 +4,7 @@ import type {
   ApplicationUpdateInput,
 } from 'doggy-nav-core';
 import type { Application } from 'doggy-nav-core';
+import { newId24 } from '../utils/id';
 import type { PageQuery } from 'doggy-nav-core';
 
 export default class D1ApplicationRepositoryAdapter implements ApplicationRepository {
@@ -25,7 +26,7 @@ export default class D1ApplicationRepositoryAdapter implements ApplicationReposi
   }
 
   async create(input: ApplicationCreateInput): Promise<Application> {
-    const id = (globalThis.crypto?.randomUUID?.() as string) || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
     const allowed = JSON.stringify(Array.isArray(input.allowedOrigins) ? input.allowedOrigins : []);
     await this.db
       .prepare(

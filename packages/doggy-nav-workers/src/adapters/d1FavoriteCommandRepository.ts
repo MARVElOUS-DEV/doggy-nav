@@ -1,4 +1,5 @@
 import type { FavoriteCommandRepository } from 'doggy-nav-core';
+import { newId24 } from '../utils/id';
 
 export default class D1FavoriteCommandRepository implements FavoriteCommandRepository {
   constructor(private readonly db: D1Database) {}
@@ -7,9 +8,7 @@ export default class D1FavoriteCommandRepository implements FavoriteCommandRepos
     userId: string,
     navId: string
   ): Promise<{ id: string; userId: string; navId: string }> {
-    const id =
-      (globalThis.crypto?.randomUUID?.() as string) ||
-      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
     await this.db
       .prepare(`INSERT OR IGNORE INTO favorites (id, user_id, bookmark_id) VALUES (?, ?, ?)`)
       .bind(id, userId, navId)

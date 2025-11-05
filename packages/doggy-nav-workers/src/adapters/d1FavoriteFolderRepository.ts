@@ -5,14 +5,13 @@ import type {
   PlacementsInput,
 } from 'doggy-nav-core';
 import type { FavoriteFolder } from 'doggy-nav-core';
+import { newId24 } from '../utils/id';
 
 export default class D1FavoriteFolderRepository implements FavoriteFolderRepository {
   constructor(private readonly db: D1Database) {}
 
   async createFolder(userId: string, input: CreateFolderInput): Promise<FavoriteFolder> {
-    const id =
-      (globalThis.crypto?.randomUUID?.() as string) ||
-      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
     const name = String(input.name);
     await this.db
       .prepare(`INSERT INTO favorite_folders (id, user_id, name) VALUES (?, ?, ?)`)

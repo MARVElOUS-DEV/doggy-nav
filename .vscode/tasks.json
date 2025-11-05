@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "core:watch",
+      "type": "shell",
+      "command": "pnpm -F doggy-nav-core dev",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch",
+      "presentation": {
+        "reveal": "never",
+        "panel": "dedicated",
+        "group": "watchers"
+      }
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import type {
   PageQuery,
 } from 'doggy-nav-core';
 import { PasswordUtils } from '../utils/passwordUtils';
+import { newId24 } from '../utils/id';
 
 function toBool(v: any) {
   if (typeof v === 'boolean') return v;
@@ -165,9 +166,7 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
   }
 
   async adminCreate(input: AdminCreateUserInput): Promise<{ id: string }> {
-    const id =
-      (globalThis.crypto?.randomUUID?.() as string) ||
-      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
     const passwordHash = await PasswordUtils.hashPassword(input.password);
     await this.db
       .prepare(

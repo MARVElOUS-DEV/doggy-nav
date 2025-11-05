@@ -13,7 +13,7 @@ export default class D1NavAdminRepository implements NavAdminRepository {
     await this.db
       .prepare(
         `INSERT INTO bookmarks (id, category_id, name, href, description, logo, author_name, author_url, create_time, tags, audience_visibility)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id,
@@ -31,8 +31,12 @@ export default class D1NavAdminRepository implements NavAdminRepository {
       .run();
 
     if (vis === 'restricted') {
-      const allowRoles: string[] = Array.isArray(input.audience?.allowRoles) ? input.audience!.allowRoles! : [];
-      const allowGroups: string[] = Array.isArray(input.audience?.allowGroups) ? input.audience!.allowGroups! : [];
+      const allowRoles: string[] = Array.isArray(input.audience?.allowRoles)
+        ? input.audience!.allowRoles!
+        : [];
+      const allowGroups: string[] = Array.isArray(input.audience?.allowGroups)
+        ? input.audience!.allowGroups!
+        : [];
       for (const rid of allowRoles) {
         await this.db
           .prepare(`INSERT INTO bookmark_role_permissions (bookmark_id, role_id) VALUES (?, ?)`)
@@ -53,16 +57,38 @@ export default class D1NavAdminRepository implements NavAdminRepository {
   async update(id: string, input: NavAdminUpdateInput): Promise<{ id: string } | null> {
     const fields: string[] = [];
     const params: any[] = [];
-    if (input.name !== undefined) { fields.push('name = ?'); params.push(String(input.name)); }
-    if (input.href !== undefined) { fields.push('href = ?'); params.push(String(input.href)); }
-    if (input.desc !== undefined) { fields.push('description = ?'); params.push(input.desc || ''); }
-    if (input.logo !== undefined) { fields.push('logo = ?'); params.push(input.logo || ''); }
-    if (input.categoryId !== undefined) { fields.push('category_id = ?'); params.push(input.categoryId || null); }
-    if (input.authorName !== undefined) { fields.push('author_name = ?'); params.push(input.authorName || ''); }
-    if (input.authorUrl !== undefined) { fields.push('author_url = ?'); params.push(input.authorUrl || ''); }
+    if (input.name !== undefined) {
+      fields.push('name = ?');
+      params.push(String(input.name));
+    }
+    if (input.href !== undefined) {
+      fields.push('href = ?');
+      params.push(String(input.href));
+    }
+    if (input.desc !== undefined) {
+      fields.push('description = ?');
+      params.push(input.desc || '');
+    }
+    if (input.logo !== undefined) {
+      fields.push('logo = ?');
+      params.push(input.logo || '');
+    }
+    if (input.categoryId !== undefined) {
+      fields.push('category_id = ?');
+      params.push(input.categoryId || null);
+    }
+    if (input.authorName !== undefined) {
+      fields.push('author_name = ?');
+      params.push(input.authorName || '');
+    }
+    if (input.authorUrl !== undefined) {
+      fields.push('author_url = ?');
+      params.push(input.authorUrl || '');
+    }
     if (input.tags !== undefined) {
       const tagsJson = JSON.stringify(Array.isArray(input.tags) ? input.tags : []);
-      fields.push('tags = ?'); params.push(tagsJson);
+      fields.push('tags = ?');
+      params.push(tagsJson);
     }
     if (fields.length) {
       await this.db
@@ -71,20 +97,36 @@ export default class D1NavAdminRepository implements NavAdminRepository {
         .run();
     }
     if (input.audience) {
-      await this.db.prepare('DELETE FROM bookmark_role_permissions WHERE bookmark_id = ?').bind(id).run();
-      await this.db.prepare('DELETE FROM bookmark_group_permissions WHERE bookmark_id = ?').bind(id).run();
+      await this.db
+        .prepare('DELETE FROM bookmark_role_permissions WHERE bookmark_id = ?')
+        .bind(id)
+        .run();
+      await this.db
+        .prepare('DELETE FROM bookmark_group_permissions WHERE bookmark_id = ?')
+        .bind(id)
+        .run();
       await this.db
         .prepare(`UPDATE bookmarks SET audience_visibility = ? WHERE id = ?`)
         .bind((input.audience.visibility as any) || 'public', id)
         .run();
       if (input.audience.visibility === 'restricted') {
-        const allowRoles: string[] = Array.isArray(input.audience.allowRoles) ? input.audience.allowRoles : [];
-        const allowGroups: string[] = Array.isArray(input.audience.allowGroups) ? input.audience.allowGroups : [];
+        const allowRoles: string[] = Array.isArray(input.audience.allowRoles)
+          ? input.audience.allowRoles
+          : [];
+        const allowGroups: string[] = Array.isArray(input.audience.allowGroups)
+          ? input.audience.allowGroups
+          : [];
         for (const rid of allowRoles) {
-          await this.db.prepare('INSERT INTO bookmark_role_permissions (bookmark_id, role_id) VALUES (?, ?)').bind(id, rid).run();
+          await this.db
+            .prepare('INSERT INTO bookmark_role_permissions (bookmark_id, role_id) VALUES (?, ?)')
+            .bind(id, rid)
+            .run();
         }
         for (const gid of allowGroups) {
-          await this.db.prepare('INSERT INTO bookmark_group_permissions (bookmark_id, group_id) VALUES (?, ?)').bind(id, gid).run();
+          await this.db
+            .prepare('INSERT INTO bookmark_group_permissions (bookmark_id, group_id) VALUES (?, ?)')
+            .bind(id, gid)
+            .run();
         }
       }
     }
@@ -98,7 +140,9 @@ export default class D1NavAdminRepository implements NavAdminRepository {
 
   async setAudit(id: string, status: number, reason?: string): Promise<boolean> {
     const res = await this.db
-      .prepare(`UPDATE bookmarks SET status = ?, audit_time = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`)
+      .prepare(
+        `UPDATE bookmarks SET status = ?, audit_time = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`
+      )
       .bind(status, id)
       .run();
     // reason not stored in schema; ignore

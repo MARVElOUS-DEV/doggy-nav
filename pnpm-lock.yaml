@@ -358,9 +358,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.44.1
         version: 8.44.1(eslint@8.57.1)(typescript@5.9.2)
-      autod-egg:
-        specifier: 1.1.0
-        version: 1.1.0
       egg-ci:
         specifier: 1.19.0
         version: 1.19.0(chokidar@3.6.0)
@@ -4027,10 +4024,6 @@ packages:
   atomic-sleep@1.0.0:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
-
-  autod-egg@1.1.0:
-    resolution: {integrity: sha512-dZ5ZRiHcHaehQnpEBWmxHTvQfIHKUdr10Qlrs/ZdBfb6NG2lUfNlVUGnqNVkp9wFsJJTGdN7ADmW9gkN8bSLrg==}
-    engines: {node: '>=4.0.0'}
 
   autoprefixer@10.4.21:
     resolution: {integrity: sha512-O+A6LWV5LDHSJD3LjHYoNi4VLsj/Whi7k6zG12xTYaU4cQ8oxQGckXNX8cRHK5yOZ/ppVHe0ZBXGzSV9jXdVbQ==}
@@ -15607,8 +15600,6 @@ snapshots:
   at-least-node@1.0.0: {}
 
   atomic-sleep@1.0.0: {}
-
-  autod-egg@1.1.0: {}
 
   autoprefixer@10.4.21(postcss@8.5.6):
     dependencies:

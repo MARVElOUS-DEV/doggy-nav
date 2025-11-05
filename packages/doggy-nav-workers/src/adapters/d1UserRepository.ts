@@ -1,3 +1,4 @@
+import { newId24 } from '../utils/id';
 // Local types for worker auth/user data
 export interface User {
   id: string;
@@ -178,9 +179,7 @@ export class D1UserRepository {
     phone?: string;
     avatar?: string;
   }): Promise<User> {
-    const id =
-      (globalThis.crypto?.randomUUID?.() as string) ||
-      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const id = newId24();
 
     const stmt = this.db.prepare(`
       INSERT INTO users (
