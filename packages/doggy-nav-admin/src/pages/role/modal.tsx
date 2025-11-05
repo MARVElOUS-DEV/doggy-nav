@@ -60,7 +60,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ id, open, onOk, onClose }) => {
       onCancel={onClose}
       footer={null}
       width={600}
-      destroyOnClose
+      destroyOnHidden
     >
       <ProForm
         form={form}

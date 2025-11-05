@@ -1,13 +1,19 @@
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
+import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { GroupService } from 'doggy-nav-core';
 
 export default class GroupController extends Controller {
+  @Inject(TOKENS.GroupService)
+  private groupService!: GroupService;
+
   tableName(): string { return 'Group'; }
 
   async getOne() {
     const { ctx } = this;
     const { id } = ctx.params;
-    const group = await ctx.model.Group.findById(id).lean().select('-__v');
+    const group = await this.groupService.getOne(id);
     if (!group) {
       this.ctx.status = 404;
       return this.error('Group not found');
@@ -18,22 +24,13 @@ export default class GroupController extends Controller {
   async getList() {
     const { ctx } = this;
     const query = this.getSanitizedQuery();
-    let { pageSize = 50, pageNumber = 1 } = query as any;
-    pageSize = Math.min(Math.max(Number(pageSize) || 50, 1), 200);
-    pageNumber = Math.max(Number(pageNumber) || 1, 1);
-    const skipNumber = pageSize * pageNumber - pageSize;
+    const { pageSize = 50, pageNumber = 1 } = query as any;
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-    const groups = Array.isArray(userCtx?.groups) ? userCtx!.groups : [];
-    const roles = Array.isArray(userCtx?.roles) ? userCtx!.roles : [];
-    const isAdmin = roles.includes('sysadmin') || roles.includes('admin');
-
-    const cond = isAdmin ? {} : (groups.length > 0 ? { slug: { $in: groups } } : { _id: { $in: [] } });
-
-    const [ data, total ] = await Promise.all([
-      ctx.model.Group.find(cond).skip(skipNumber).limit(pageSize).sort({ _id: -1 }).lean().select('-__v'),
-      ctx.model.Group.countDocuments(cond),
-    ]);
-    this.success({ data, total, pageNumber: Math.ceil(total / pageSize) });
+    const res = await this.groupService.list({ pageSize: Number(pageSize), pageNumber: Number(pageNumber) }, {
+      roles: userCtx?.roles,
+      groups: userCtx?.groups,
+    });
+    this.success(res);
   }
 
   async add() {

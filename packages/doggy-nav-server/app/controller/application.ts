@@ -1,6 +1,12 @@
 import Controller from '../core/base_controller';
+import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { ApplicationService } from 'doggy-nav-core';
 
 export default class ApplicationController extends Controller {
+  @Inject(TOKENS.ApplicationService)
+  private applicationService!: ApplicationService;
+
   tableName(): string {
     return 'Application';
   }
@@ -47,11 +53,7 @@ export default class ApplicationController extends Controller {
         return this.error('应用名称不能为空');
       }
 
-      const application = await ctx.service.clientSecret.createApplication(
-        name,
-        description,
-        allowedOrigins,
-      );
+      const application = await this.applicationService.create(name, description, allowedOrigins);
       this.success(application);
     } catch (e: any) {
       this.error(e.message);
@@ -68,10 +70,9 @@ export default class ApplicationController extends Controller {
         return this.error('权限不足，需要管理员权限');
       }
 
-      const { page = 1, limit = 10 } = ctx.query;
-      const result = await ctx.service.clientSecret.getAllApplications(Number(page), Number(limit));
-
-      this.success(result);
+      const { page = 1, limit = 10 } = ctx.query as any;
+      const res = await this.applicationService.list({ pageNumber: Number(page), pageSize: Number(limit) });
+      this.success(res);
     } catch (e: any) {
       this.error(e.message);
     }
@@ -88,8 +89,8 @@ export default class ApplicationController extends Controller {
       const { hasAccess } = await this.checkApplicationAccess(id);
       if (!hasAccess) return;
 
-      const updatedApplication = await ctx.service.clientSecret.updateApplication(id, updates);
-      this.success(updatedApplication);
+      const updated = await this.applicationService.update(id, updates);
+      this.success(updated);
     } catch (e: any) {
       this.error(e.message);
     }
@@ -105,7 +106,7 @@ export default class ApplicationController extends Controller {
       const { hasAccess } = await this.checkApplicationAccess(id);
       if (!hasAccess) return;
 
-      const newSecret = await ctx.service.clientSecret.regenerateClientSecret(id);
+      const newSecret = await this.applicationService.regenerateClientSecret(id);
       this.success({ clientSecret: newSecret });
     } catch (e: any) {
       this.error(e.message);
@@ -122,12 +123,8 @@ export default class ApplicationController extends Controller {
       const { hasAccess } = await this.checkApplicationAccess(id);
       if (!hasAccess) return;
 
-      const success = await ctx.service.clientSecret.revokeApplication(id);
-      if (success) {
-        this.success({ message: '应用已撤销' });
-      } else {
-        this.error('撤销失败');
-      }
+      const ok = await this.applicationService.revoke(id);
+      if (ok) this.success({ message: '应用已撤销' }); else this.error('撤销失败');
     } catch (e: any) {
       this.error(e.message);
     }
@@ -140,8 +137,7 @@ export default class ApplicationController extends Controller {
       if (!clientSecret) {
         return this.error('Client secret is required');
       }
-
-      const isValid = await ctx.service.clientSecret.verifyClientSecret(clientSecret);
+      const isValid = await this.applicationService.verifyClientSecret(clientSecret);
       this.success({ valid: isValid });
     } catch (e: any) {
       this.error(e.message);

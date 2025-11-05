@@ -1,0 +1,13 @@
+# Copy this file to .dev.vars for local `wrangler dev`
+# Non-secret variables
+ALLOWED_ORIGINS="http://localhost:3001"
+RATE_LIMIT_MAX="100"
+RATE_LIMIT_WINDOW_MS="60000"
+NODE_ENV="development"
+
+# D1 database config (used by wrangler.toml variable substitution)
+D1_DATABASE_NAME="doggy_nav"
+D1_DATABASE_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Do NOT put secrets here. Set secrets with:
+#   wrangler secret put JWT_SECRET

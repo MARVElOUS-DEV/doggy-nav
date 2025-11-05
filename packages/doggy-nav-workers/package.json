@@ -1,0 +1,35 @@
+{
+  "name": "doggy-nav-workers",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloudflare Workers backend for doggy-nav (D1 adapter).",
+  "type": "module",
+  "scripts": {
+    "d1:seed:defaults": "node scripts/d1-seed-defaults.mjs",
+    "d1:seed:categories": "node scripts/d1-seed-categories.mjs",
+    "d1:reset-password": "node scripts/d1-reset-password.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "tsc -p tsconfig.json --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "doggy-nav-core": "workspace:*",
+    "hono": "^4.6.10",
+    "jose": "^5.3.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241022.0",
+    "@swc/jest": "^0.2.39",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.0",
+    "jest": "^30.2.0",
+    "jsdom": "^25.0.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5"
+  }
+}

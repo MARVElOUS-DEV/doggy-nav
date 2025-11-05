@@ -12,7 +12,7 @@
     "docker-start": "EGG_SERVER_ENV=prod node scripts/validate-secrets.js && egg-scripts start --title=doggy-nav-server",
     "start:railway": "EGG_SERVER_ENV=prod node scripts/validate-secrets.js && egg-scripts start --no-daemon --title=doggy-nav-server",
     "build": "npm run tsbuild",
-    "build:ci": "npm run tsbuild:ci",
+    "build:ci": "pnpm -F doggy-nav-core build && npm run tsbuild:ci",
     "stop": "egg-scripts stop --title=doggy-nav-server",
     "server": "egg-bin dev",
     "dev": "egg-bin dev --port=3002",
@@ -23,9 +23,12 @@
     "ets": "ets",
     "tsbuild": "ets && tsc -p tsconfig.json",
     "tsbuild:ci": "ets && tsc -p tsconfig.json --noCheck",
+    "static-check": "node scripts/static-check.js",
     "bundle:bookmark": "esbuild dist/bookmarkHelper-standalone.ts --bundle --platform=node --outfile=dist/bookmarkHelper-bundle.js --format=cjs --external:mongodb --external:mongoose",
     "bundle:cli": "esbuild dist/bookmarkHelper-cli.ts --bundle --platform=node --outfile=dist/bookmarkHelper-cli-bundle.js --format=cjs",
     "init:categories": "ts-node utils/initCategories.ts",
+    "seed:defaults": "ts-node utils/seed-core.ts defaults",
+    "seed:categories": "ts-node utils/seed-core.ts categories",
     "ci": "npm run lint && npm run cov && npm run tsc",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
@@ -36,6 +39,7 @@
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "cheerio": "1.0.0-rc.10",
+    "doggy-nav-core": "workspace:*",
     "dotenv": "^17.2.2",
     "egg": "^3.31.0",
     "egg-bin": "^6.13.0",
@@ -66,7 +70,6 @@
     "@types/supertest": "2.0.0",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
-    "autod-egg": "1.1.0",
     "egg-ci": "1.19.0",
     "egg-ts-helper": "^3.1.1",
     "esbuild": "^0.25.10",
@@ -84,14 +87,13 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/MARVElOUS-DEV/doggy-nav"
   },
   "eslintIgnore": [
     "coverage"
   ],
   "author": "",
   "license": "MIT",
-  "main": ".autod.conf.js",
   "directories": {
     "test": "test"
   },

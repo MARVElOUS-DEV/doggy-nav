@@ -1,4 +1,4 @@
-import { getRoutePermission, hasAccess } from '../access-control';
+import { getRoutePermission, hasAccess, enforceClientSecret, type ClientSecretGuardConfig } from 'doggy-nav-core';
 import { getAccessTokenFromCookies, getAppSource } from '../utils/appSource';
 import { computeEffectiveRoles } from '../utils/rbac';
 import type { AuthUserContext } from '../../types/rbac';
@@ -22,9 +22,31 @@ export default () => {
     const permission = getRoutePermission(ctx.method, url);
     if (!permission) return respond(ctx, 403, '访问被拒绝：未配置权限');
 
-    // 3.client secret
-    const clientSecretOk = await clientSecretGuard(ctx, url);
-    if (!clientSecretOk) return; // response already sent
+    // 3.client secret (shared core guard)
+    const cfg: ClientSecretGuardConfig = {
+      requireForAllAPIs: Boolean(ctx?.app?.config?.clientSecret?.requireForAllAPIs),
+      bypassRoutes: Array.isArray(ctx?.app?.config?.clientSecret?.bypassRoutes)
+        ? ctx.app.config.clientSecret.bypassRoutes
+        : [],
+      headerName: ctx?.app?.config?.clientSecret?.headerName || 'x-client-secret',
+    };
+    const headers: Record<string, string | undefined> = { ...ctx.headers };
+    const res = await enforceClientSecret({
+      url,
+      headers,
+      config: cfg,
+      validate: async (secret) => {
+        const valid = await ctx.service.clientSecret.verifyClientSecret(secret);
+        if (!valid) return { valid };
+        const appInfo = await ctx.service.clientSecret.getApplicationByClientSecret(secret);
+        if (appInfo) return { valid: true, app: { id: appInfo._id?.toString?.() ?? appInfo.id, name: appInfo.name } };
+        return { valid: true };
+      },
+    });
+    if (!res.ok) return respond(ctx, (res as any).code, (res as any).message);
+    if (res.appInfo) {
+      ctx.state.clientApplication = res.appInfo;
+    }
 
     // 4.access modes
     if (permission.require?.level === 'public') return await next();
@@ -70,44 +92,7 @@ function respond(ctx: any, status: number, msg: string) {
   ctx.body = { code: status, msg, data: null };
 }
 
-async function clientSecretGuard(ctx: any, url: string) {
-  const cfg = ctx?.app?.config?.clientSecret || {};
-  const required = Boolean(cfg.requireForAllAPIs);
-  const bypass: string[] = Array.isArray(cfg.bypassRoutes) ? cfg.bypassRoutes : [];
-  if (!required) return true;
-  const isBypass = matchesBypass(url, bypass);
-  if (isBypass) return true;
-
-  const headerName = (cfg as any).headerName || 'x-client-secret';
-  const clientSecret = ctx.headers[headerName];
-  if (!clientSecret) return (respond(ctx, 401, '请提供客户端密钥'), false);
-  try {
-    const isValid = await ctx.service.clientSecret.verifyClientSecret(clientSecret);
-    if (!isValid) return (respond(ctx, 401, '无效的客户端密钥'), false);
-    const appInfo = await ctx.service.clientSecret.getApplicationByClientSecret(clientSecret);
-    if (appInfo) {
-      ctx.state.clientApplication = {
-        id: appInfo._id?.toString?.() ?? appInfo.id,
-        name: appInfo.name,
-        authType: 'client_secret',
-      };
-    }
-    return true;
-  } catch (e) {
-    ctx.logger.error('Client secret verification error:', e);
-    return (respond(ctx, 500, '客户端密钥验证失败'), false);
-  }
-}
-
-function matchesBypass(url: string, routes: string[]) {
-  return routes.some((route) => {
-    if (route === url) return true;
-    const r = route.split('/');
-    const u = url.split('/');
-    if (r.length !== u.length) return false;
-    return r.every((part, i) => part.startsWith(':') || part === u[i]);
-  });
-}
+// client secret guard logic moved to doggy-nav-core/security/clientSecretGuard
 
 async function accessTokenVerify(ctx: any) {
   const bearer = ctx.headers.authorization ? ctx.headers.authorization : '';

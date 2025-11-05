@@ -7,11 +7,13 @@
   "type": "module",
   "scripts": {
     "test": "pnpm -r test",
+    "server:check": "pnpm -F doggy-nav-server run static-check",
     "commit": "cz",
     "commit:help": "echo 'Use: pnpm commit or pnpm run commit to start interactive conventional commit'",
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
     "server:dev": "pnpm -F doggy-nav-server dev",
+    "workers:dev": "pnpm -F doggy-nav-workers dev",
     "web:dev": "pnpm -F doggy-nav-main dev",
     "web:start": "pnpm -F doggy-nav-main -F doggy-nav-server start",
     "admin:dev": "pnpm -F doggy-nav-admin dev",
@@ -19,6 +21,7 @@
     "web:build": "pnpm -F doggy-nav-main build",
     "admin:build": "pnpm -F doggy-nav-admin build",
     "server:build": "pnpm -F doggy-nav-server build",
+    "workers:build": "pnpm -F doggy-nav-workers build",
     "server:build:ci": "pnpm -F doggy-nav-server build:ci",
     "prepare": "is-ci || husky",
     "postinstall": "is-ci || husky"
@@ -26,7 +29,8 @@
   "repository": "git+https://github.com/MARVElOUS-DEV/doggy-nav.git",
   "keywords": [
     "bookmarks",
-    "navigation"
+    "navigation",
+    "nav"
   ],
   "author": "Marvelous",
   "license": "MIT",
@@ -34,11 +38,14 @@
     "url": "https://github.com/MARVElOUS-DEV/doggy-nav/issues"
   },
   "homepage": "https://github.com/MARVElOUS-DEV/doggy-nav#readme",
+  "dependencies": {
+    "is-ci": "^4.1.0"
+  },
   "devDependencies": {
-    "cross-env": "^10.0.0",
+    "cross-env": "^10.1.0",
     "cz-conventional-changelog": "3.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^13.3.0",
+    "lint-staged": "^16.2.6",
     "prettier": "^3.6.2"
   },
   "config": {
@@ -47,7 +54,16 @@
     }
   },
   "lint-staged": {
-    "packages/doggy-nav-server/**/*.{ts,js}": [
+    "packages/doggy-nav-server/app/**/*.{ts,js}": [
+      "pnpm -F doggy-nav-server run lint:fix"
+    ],
+    "packages/doggy-nav-server/test/**/*.{ts,js}": [
+      "pnpm -F doggy-nav-server run lint:fix"
+    ],
+    "packages/doggy-nav-server/typings/**/*.{ts,js}": [
+      "pnpm -F doggy-nav-server run lint:fix"
+    ],
+    "packages/doggy-nav-server/adapters/**/*.{ts,js}": [
       "pnpm -F doggy-nav-server run lint:fix"
     ],
     "packages/doggy-nav-main/**/*.{ts,tsx,js,jsx}": [
@@ -63,8 +79,5 @@
   },
   "engines": {
     "node": ">=20.17.0"
-  },
-  "dependencies": {
-    "is-ci": "^4.1.0"
   }
 }

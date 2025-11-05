@@ -1,21 +1,21 @@
 import Controller from '../core/base_controller';
 import { ValidationError } from '../core/errors';
+import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { EmailSettingsService } from 'doggy-nav-core';
 
 export default class EmailSettingsController extends Controller {
+  @Inject(TOKENS.EmailSettingsService)
+  private emailSettingsService!: EmailSettingsService;
+
   tableName(): string {
     return 'EmailNotificationSettings';
   }
 
   async get() {
     try {
-      const settings = await this.ctx.service.email.getSettings();
-      if (settings) {
-        const obj = settings.toObject();
-        delete (obj as any).smtpPass;
-        this.success(obj);
-      } else {
-        this.success(null);
-      }
+      const settings = await this.emailSettingsService.get();
+      this.success(settings);
     } catch (error: any) {
       this.ctx.logger.error('Failed to get email settings:', error);
       this.error('Failed to get email settings');
@@ -25,17 +25,8 @@ export default class EmailSettingsController extends Controller {
   async update() {
     try {
       const body = this.getSanitizedBody();
-
-      // Validate required fields
-      if (!body.smtpHost || !body.smtpUser || !body.fromAddress) {
-        throw new ValidationError('Missing required fields: smtpHost, smtpUser, fromAddress');
-      }
-
-      // Update with sensitive data included
-      const settings = await this.ctx.service.email.updateSettings(body);
-      const obj = (settings?.toObject?.() || settings || {}) as any;
-      delete obj.smtpPass;
-      this.success(obj);
+      const updated = await this.emailSettingsService.update(body);
+      this.success(updated);
     } catch (error: any) {
       if (error instanceof ValidationError) {
         this.error(error.message);

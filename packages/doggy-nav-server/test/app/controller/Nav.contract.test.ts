@@ -1,0 +1,35 @@
+import { app } from 'egg-mock/bootstrap';
+
+// Run these only when RUN_CONTRACT is set (to avoid DB dependency in CI by default)
+const RUN = String(process.env.RUN_CONTRACT || '').toLowerCase();
+const ENABLED = RUN === '1' || RUN === 'true' || RUN === 'yes';
+
+describe('contract: GET /api/nav/list', () => {
+  it('returns stable envelope and page payload when enabled', async function () {
+    if (!ENABLED) return this.skip();
+    const res = await app
+      .httpRequest()
+      .get('/api/nav/list')
+      .set('X-App-Source', 'main')
+      .expect(200);
+
+    const body = res.body;
+    // Envelope shape
+    if (typeof body !== 'object' || body === null) throw new Error('response not object');
+    if (!('code' in body) || !('msg' in body) || !('data' in body)) {
+      throw new Error('missing envelope fields code/msg/data');
+    }
+
+    // Payload shape for nav.list: page envelope on success
+    if (body.code === 1) {
+      const payload = body.data;
+      if (typeof payload !== 'object' || payload === null) throw new Error('payload not object');
+      if (!('data' in payload) || !('total' in payload) || !('pageNumber' in payload)) {
+        throw new Error('missing page fields data/total/pageNumber');
+      }
+    } else {
+      // On failure, controllers respond with data: null; keep baseline permissive
+      if (body.data !== null) throw new Error('data should be null when error');
+    }
+  });
+});

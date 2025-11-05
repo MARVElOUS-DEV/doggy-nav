@@ -1,10 +1,15 @@
 import Controller from '../core/base_controller';
 import { Types } from 'mongoose';
 import { globalRootCategoryId } from '../../constants';
-import { buildAudienceFilterEx } from '../utils/audience';
 import type { AuthUserContext } from '../../types/rbac';
+import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { CategoryService } from 'doggy-nav-core';
 
 export default class CategoryController extends Controller {
+  @Inject(TOKENS.CategoryService)
+  private categoryService!: CategoryService;
+
   tableName(): string {
     return 'Category';
   }
@@ -48,17 +53,25 @@ export default class CategoryController extends Controller {
     const { ctx } = this;
     const { showInMenu } = ctx.query;
     try {
-      const params: any = {};
-      if (showInMenu) {
-        params.showInMenu = { $eq: showInMenu !== 'false' };
-      }
-
-      // Audience filtering (+ legacy hide compatibility)
-      const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-      const filter = buildAudienceFilterEx(params, userCtx);
-
-      const data = await ctx.model.Category.find(filter).limit(100000);
-      const tree = ctx.service.category.formatCategoryList(data);
+      const user = ctx.state.userinfo as AuthUserContext | undefined;
+      const auth = user
+        ? {
+            roles:
+              Array.isArray(user?.effectiveRoles) && user!.effectiveRoles!.length > 0
+                ? user!.effectiveRoles!
+                : Array.isArray(user?.roles)
+                  ? user!.roles!
+                  : [],
+            groups: Array.isArray(user?.groups) ? user!.groups! : [],
+            roleIds: Array.isArray((user as any)?.roleIds) ? (user as any).roleIds : [],
+            groupIds: Array.isArray((user as any)?.groupIds) ? (user as any).groupIds : [],
+            source: (user?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
+          }
+        : undefined;
+      const tree = await this.categoryService.listTree(auth, {
+        showInMenu: showInMenu ? showInMenu !== 'false' : undefined,
+        rootId: globalRootCategoryId,
+      });
       this.success(tree);
     } catch (error: any) {
       this.error(error.message);

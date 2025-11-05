@@ -8,6 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "nav-server",
+      "preLaunchTask": "core:watch",
       "skipFiles": ["<node_internals>/**"],
       "localRoot": "${workspaceFolder}/packages/doggy-nav-server",
       "program": "${workspaceFolder}/packages/doggy-nav-server/node_modules/egg-bin/dist/bin/cli.js",
@@ -54,6 +55,27 @@
         "<node_internals>/**",
         "${workspaceFolder}/packages/doggy-nav-main/node_modules/**"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "workers: dev (wrangler)",
+      "cwd": "${workspaceFolder}/packages/doggy-nav-workers",
+      "preLaunchTask": "core:watch",
+      "runtimeExecutable": "pnpm",
+      "args": ["-F", "doggy-nav-workers", "run", "dev", "--", "--inspector-port", "9230"],
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Attach: workers (9230)",
+      "type": "node",
+      "request": "attach",
+      "port": 9230,
+      "restart": true,
+      "address": "localhost",
+      "cwd": "${workspaceFolder}/packages/doggy-nav-workers",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

@@ -11,6 +11,7 @@ WORKDIR /app
 # Copy package.json and lock files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/doggy-nav-server/package.json ./packages/doggy-nav-server/
+COPY packages/doggy-nav-core/package.json ./packages/doggy-nav-core/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -20,9 +21,11 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/doggy-nav-server/node_modules ./packages/doggy-nav-server/node_modules
+COPY --from=deps /app/packages/doggy-nav-core/node_modules ./packages/doggy-nav-core/node_modules
 
 # Copy source code
 COPY packages/doggy-nav-server ./packages/doggy-nav-server
+COPY packages/doggy-nav-core ./packages/doggy-nav-core
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Build the application
@@ -46,6 +49,7 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/packages/doggy-nav-server/package.json ./packages/doggy-nav-server/package.json
+COPY --from=builder /app/packages/doggy-nav-core/package.json ./packages/doggy-nav-core/package.json
 
 # Install only production dependencies
 ENV CI=true
@@ -54,6 +58,7 @@ RUN pnpm -F doggy-nav-server install --prod --frozen-lockfile
 # Copy the entire built application from dist to the package directory
 COPY --from=builder /app/packages/doggy-nav-server/dist/ ./packages/doggy-nav-server/
 COPY --from=builder /app/packages/doggy-nav-server/scripts ./packages/doggy-nav-server/scripts
+COPY --from=builder /app/packages/doggy-nav-core/dist/ ./packages/doggy-nav-core/
 
 WORKDIR /app/packages/doggy-nav-server
 # Change ownership to non-root user

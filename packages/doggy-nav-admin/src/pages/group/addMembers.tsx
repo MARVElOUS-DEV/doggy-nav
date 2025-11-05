@@ -47,7 +47,7 @@ const AddMembers: React.FC<{
         </Space>
       }
       width={800}
-      destroyOnClose
+      destroyOnHidden
     >
       <ProTable
         rowKey="id"
@@ -80,7 +80,7 @@ const AddMembers: React.FC<{
             title: '用户组',
             dataIndex: 'groups',
             hideInSearch: true,
-            render: (groups: string[]) =>
+            renderText: (groups: string[]) =>
               Array.isArray(groups) && groups.length ? groups.join(', ') : '-',
           },
           {

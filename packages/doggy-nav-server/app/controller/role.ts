@@ -1,28 +1,32 @@
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
+import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
+import type { RoleService } from 'doggy-nav-core';
 
 export default class RoleController extends Controller {
+  @Inject(TOKENS.RoleService)
+  private roleService!: RoleService;
+
   tableName(): string { return 'Role'; }
 
   async getList() {
     const { ctx } = this;
-    // roles are simple docs; lean for speed
     const query = this.getSanitizedQuery();
-    let { pageSize = 50, pageNumber = 1 } = query as any;
-    pageSize = Math.min(Math.max(Number(pageSize) || 50, 1), 200);
-    pageNumber = Math.max(Number(pageNumber) || 1, 1);
-    const skipNumber = pageSize * pageNumber - pageSize;
-    const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
-    const roles = Array.isArray(userCtx?.roles) ? userCtx!.roles : [];
-    const isAdmin = roles.includes('sysadmin') || roles.includes('admin');
-
-    const cond = isAdmin ? {} : (roles.length > 0 ? { slug: { $in: roles } } : { _id: { $in: [] } });
-
-    const [ data, total ] = await Promise.all([
-      ctx.model.Role.find(cond).skip(skipNumber).limit(pageSize).sort({ _id: -1 }).lean().select('-__v'),
-      ctx.model.Role.countDocuments(cond),
-    ]);
-    this.success({ data, total, pageNumber: Math.ceil(total / pageSize) });
+    const user = ctx.state.userinfo as AuthUserContext | undefined;
+    const auth = user
+      ? {
+          roles:
+            Array.isArray(user?.effectiveRoles) && user!.effectiveRoles!.length > 0
+              ? user!.effectiveRoles!
+              : Array.isArray(user?.roles)
+                ? user!.roles!
+                : [],
+          source: (user?.source === 'admin' ? 'admin' : 'main') as 'admin' | 'main',
+        }
+      : undefined;
+    const res = await this.roleService.list({ pageSize: query.pageSize as any, pageNumber: query.pageNumber as any } as any, auth);
+    this.success(res);
   }
 
   async edit() {

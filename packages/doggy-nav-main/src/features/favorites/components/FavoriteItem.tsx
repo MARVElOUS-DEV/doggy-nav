@@ -98,10 +98,13 @@ export default function FavoriteItem({
           </div>
         )}
       </div>
-      <span className="text-sm text-center text-gray-700 font-medium max-w-full truncate">
+      <span className="text-sm text-center font-medium max-w-full truncate text-primary-50">
         {item.name}
       </span>
-      <span className="text-xs text-center text-gray-500 mt-1 max-w-full truncate">
+      <span
+        className="text-xs text-center mt-1 max-w-full truncate"
+        style={{ color: 'var(--color-muted-foreground)' }}
+      >
         {t(item.categoryName || 'uncategorized', {
           defaultValue: item.categoryName || t('uncategorized'),
         })}

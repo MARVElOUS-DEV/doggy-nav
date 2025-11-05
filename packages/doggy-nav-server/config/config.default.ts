@@ -67,7 +67,7 @@ export default (appInfo: EggAppInfo) => {
     },
   };
 
-  config.middleware = ['error', 'auth'];
+  config.middleware = ['error', 'ioc', 'auth'];
 
   config.jwt = {
     secret: JWT_SECRET,
@@ -132,9 +132,6 @@ export default (appInfo: EggAppInfo) => {
     codeLength: 12,
   };
 
-  // Route access control is now handled by the access-control.js configuration
-  // config.routerAuth is deprecated
-
   // Rate limiting configuration
   config.ratelimiter = {
     enable: process.env.NODE_ENV === 'production',
@@ -180,7 +177,7 @@ export default (appInfo: EggAppInfo) => {
     // These are essential routes that should remain accessible for initial setup
     bypassRoutes: [
       '/api/register',
-      '/api/login',
+      '/api/auth/login',
       '/api/application/verify-client-secret',
       '/api/auth/:provider',
       '/api/auth/:provider/callback',

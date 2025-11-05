@@ -50,10 +50,10 @@ export default function FolderOverlay({
             className="absolute top-3 right-3 p-2 rounded-full bg-white/70 hover:bg-white shadow"
             onClick={onClose}
           >
-            <X className="w-4 h-4 text-gray-700" />
+            <X className="w-4 h-4" style={{ color: 'var(--color-foreground)' }} />
           </button>
           {name ? (
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 pr-8 truncate">{name}</h3>
+            <h3 className="text-lg font-semibold mb-4 pr-8 truncate" style={{ color: 'var(--color-foreground)' }}>{name}</h3>
           ) : null}
           <FavoritesLayout onDragEnd={handleDragEnd}>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
