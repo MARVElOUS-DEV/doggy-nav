@@ -77,6 +77,40 @@ wrangler d1 migrations list <database-name>
 wrangler d1 execute <database-name> --file=./migrations/001_init.sql --remote
 ```
 
+## Initial Data Seeding (Defaults & Categories)
+
+You can seed the D1 database without local CLI using token‑gated Worker endpoints, or via CLI scripts.
+
+### Option A: Seed via Cloudflare Dashboard (recommended)
+
+1. In your Worker → Settings → Variables, add secrets:
+   - SEED_TOKEN: a strong random token (required)
+   - ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NICKNAME (optional; defaults provided)
+2. Ensure schema is applied (see “Running Migrations”, or paste `migrations/001_init.sql` in D1 → Query).
+3. Invoke the seed endpoints (idempotent; safe to re‑run):
+
+```bash
+curl -X POST "https://<your-worker>.<account>.workers.dev/api/seed/defaults?token=<SEED_TOKEN>"
+curl -X POST "https://<your-worker>.<account>.workers.dev/api/seed/categories?token=<SEED_TOKEN>"
+```
+
+Notes:
+
+- Endpoints are protected by SEED_TOKEN and record completion in `system_meta` to avoid duplicates.
+- After seeding, you may rotate/remove SEED_TOKEN.
+
+### Option B: Seed via CLI (Wrangler)
+
+```bash
+# Defaults (admin, roles, group)
+pnpm -F doggy-nav-workers run d1:seed:defaults --remote
+
+# Categories & bookmarks
+pnpm -F doggy-nav-workers run d1:seed:categories --remote
+```
+
+These scripts call `wrangler d1 execute` under the hood and are also idempotent.
+
 ## Deployment Steps
 
 ### 1. Development Deployment
@@ -109,41 +143,6 @@ wrangler publish
 
 # Verify deployment
 curl https://your-worker.workers.dev/api/health
-```
-
-## Configuration Files
-
-### wrangler.toml
-
-```toml
-name = "doggy-nav-workers"
-main = "src/index.ts"
-compatibility_date = "2024-09-30"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "doggy_nav"
-database_id = "${D1_DATABASE_ID}"
-
-[vars]
-JWT_SECRET = "${JWT_SECRET}"
-NODE_ENV = "${NODE_ENV}"
-
-[observability]
-enabled = true
-
-# Migration configuration
-[[migrations]]
-tag = "v1"
-new_sql = [
-  "migrations/001_init.sql"
-]
-
-[[migrations]]
-tag = "v2"
-new_sql = [
-  "migrations/002_invite_codes_extension.sql"
-]
 ```
 
 ### Environment Variables Template (.env.example)

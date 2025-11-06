@@ -14,6 +14,7 @@ import emailSettingsRoutes from './emailSettings';
 import urlCheckerRoutes from './urlChecker';
 import applicationRoutes from './application';
 import translateRoutes from './translate';
+import seedRoutes from './seed';
 
 export type Env = {
   DB: D1Database;
@@ -49,4 +50,5 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/application', applicationRoutes);
   app.route('/api/translate', translateRoutes);
   app.route('/api/migration', migrationRoutes);
+  app.route('/api/seed', seedRoutes);
 }
