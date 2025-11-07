@@ -348,9 +348,6 @@
 .dark .bg-theme-background {
   @apply from-gray-900 via-slate-900 to-gray-800;
 }
-.bg-content-background {
-  background-color: var(--color-background);
-}
 
 .bg-theme-muted {
   background-color: var(--color-muted);

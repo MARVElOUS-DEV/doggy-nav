@@ -7,7 +7,13 @@ import ThemeToggle from './ThemeToggle';
 import UserAvatar from './UserAvatar';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { IconPlusCircle, IconMenuFold, IconMenuUnfold, IconMenu, IconSearch } from '@arco-design/web-react/icon';
+import {
+  IconPlusCircle,
+  IconMenuFold,
+  IconMenuUnfold,
+  IconMenu,
+  IconSearch,
+} from '@arco-design/web-react/icon';
 import { isFeatureEnabled } from '@/config/featureFlags';
 import ReactIf from './ReactIf';
 import { useRouter } from 'next/router';
@@ -18,7 +24,11 @@ interface AppHeaderProps {
   onOpenMobileMenu?: () => void;
 }
 
-export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOpenMobileMenu }: AppHeaderProps) {
+export default function AppHeader({
+  onHandleShowMenu,
+  showMenuType = false,
+  onOpenMobileMenu,
+}: AppHeaderProps) {
   const { t } = useTranslation('translation');
   const [showSearch, setShowSearch] = useState(false);
   const router = useRouter();
@@ -126,12 +136,12 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
           <Search onClose={() => setShowSearch(false)} />
         ) : (
           <Button
-            className="header-search-btn w-full h-12 rounded-2xl transition-all shadow-sm hover:shadow-md"
+            className="bg-theme-background header-search-btn w-full h-12 rounded-2xl transition-all shadow-sm hover:shadow-md"
             onClick={() => setShowSearch(true)}
           >
             <div className="flex items-center justify-center">
               <i className="iconfont icon-search mr-2 text-lg"></i>
-            <span>{t('search_placeholder')}</span>
+              <span>{t('search_placeholder')}</span>
             </div>
           </Button>
         )}
@@ -151,7 +161,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
             href="/recommend"
             className="app-header-action text-2xl !flex items-center justify-center w-8 h-8 mr-0"
           >
-            <IconPlusCircle style={{width: 20, height: 20}}/>
+            <IconPlusCircle style={{ width: 20, height: 20 }} />
           </Link>
         </Tooltip>
 
@@ -159,17 +169,15 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
           <Button
             className="app-header-action text-2xl cursor-pointer !flex items-center justify-center w-10 h-10"
             onClick={() => setShowSearch(!showSearch)}
-            icon={
-              <IconSearch style={{height: 20, width: 20}}/>
-            }
+            icon={<IconSearch style={{ height: 20, width: 20 }} />}
           />
         </Tooltip>
         {/* Language Switcher */}
         {/** @ts-ignore */}
-        <ReactIf condition={isFeatureEnabled('lang_switch')} >
+        <ReactIf condition={isFeatureEnabled('lang_switch')}>
           <LanguageSwitcher />
         </ReactIf>
-        <div className='mr-1'>
+        <div className="mr-1">
           <ThemeToggle />
         </div>
 
@@ -180,12 +188,7 @@ export default function AppHeader({ onHandleShowMenu, showMenuType = false, onOp
       {/* Mobile Dropdown Menu (actions) */}
       <div className="lg:hidden flex items-center">
         <Dropdown droplist={mobileDropdownMenu} trigger="click" position="br">
-          <Button
-            className="app-header-action p-2"
-            icon={<IconMenu />}
-            type="text"
-            size="large"
-          />
+          <Button className="app-header-action p-2" icon={<IconMenu />} type="text" size="large" />
         </Dropdown>
       </div>
     </header>

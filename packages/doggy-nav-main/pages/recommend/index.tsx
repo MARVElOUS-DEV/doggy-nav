@@ -125,7 +125,7 @@ export default function Recommend() {
 
   return (
     <div className="p-8">
-      <div className="container mx-auto max-w-7xl text-theme-foreground bg-content-background border border-theme-border rounded-xl shadow-md transition-colors">
+      <div className="container mx-auto max-w-7xl text-theme-foreground border border-theme-border rounded-xl shadow-md transition-colors">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

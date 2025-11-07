@@ -8,33 +8,5 @@
     "command": "pnpm -F doggy-nav-core build",
   },
   // - Add the D1 binding named "DB" in the Cloudflare Dashboard → Settings → Bindings (D1 Databases)
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "D1_DATABASE_NAME": "${D1_DATABASE_NAME}",
-      "D1_DATABASE_ID": "${D1_DATABASE_ID}",
-    },
-  ],
-  // - Add Secrets/Vars there as well (JWT_SECRET, SEED_TOKEN, etc.)
-  "vars": {
-    "D1_DATABASE_NAME": "your-database-name",
-    "D1_DATABASE_ID": "your-database-id",
-    "JWT_SECRET": "your-secret-key",
-    "ALLOWED_ORIGINS": "http://localhost:3001",
-    "RATE_LIMIT_MAX": "100",
-    "RATE_LIMIT_WINDOW_MS": "60000",
-    //[optional] OAuth Credentials, replace with your own for production use
-    // if removed, OAuth logins will be disabled
-    "GITHUB_CLIENT_ID": "xxxxxxxxxxxxxxx",
-    "GITHUB_CLIENT_SECRET": "xxxxxxxxxxxxxxx",
-    "GITHUB_CALLBACK_URL": "https://{yourwebhost}/api/auth/github/callback",
-
-    "LINUXDO_CLIENT_ID": "xxxxxxxxxxxxxxx",
-    "LINUXDO_CLIENT_SECRET": "xxxxxxxxxxxxxxx",
-    "LINUXDO_CALLBACK_URL": "http://{yourwebhost}/api/auth/linuxdo/callback",
-    "LINUXDO_AUTHORIZATION_URL": "https://connect.linux.do/oauth2/authorize",
-    "LINUXDO_TOKEN_URL": "https://connect.linux.do/oauth2/token",
-    "LINUXDO_PROFILE_URL": "https://connect.linux.do/api/user",
-    "LINUXDO_SCOPE": "profile,email",
-  },
+  // - Add Secrets/Vars through cloudflare dashboard (JWT_SECRET, SEED_TOKEN, etc.), refer to .dev.vars.example
 }

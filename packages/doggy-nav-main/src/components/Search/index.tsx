@@ -34,7 +34,8 @@ export default function AppSearch({ onClose }: AppSearchProps) {
     };
 
     document.addEventListener('keydown', handleEsc);
-    const targetEl = (inputRef?.current as any)?.dom ?? (inputRef?.current as unknown as HTMLElement);
+    const targetEl =
+      (inputRef?.current as any)?.dom ?? (inputRef?.current as unknown as HTMLElement);
     if (targetEl) {
       targetEl.addEventListener('keydown', handleEnter as any);
     }
@@ -65,10 +66,7 @@ export default function AppSearch({ onClose }: AppSearchProps) {
         value={searchValue}
         onChange={handleSearch}
         prefix={
-          <div
-            className="transition-colors"
-            style={{ color: 'var(--color-primary)' }}
-          >
+          <div className="transition-colors" style={{ color: 'var(--color-primary)' }}>
             <IconSearch />
           </div>
         }
@@ -94,11 +92,10 @@ export default function AppSearch({ onClose }: AppSearchProps) {
             </button>
           </div>
         }
-        className="w-full py-3 px-6 text-base rounded-2xl transition-all shadow-lg"
+        className="w-full py-3 px-6 text-base bg-theme-background rounded-2xl transition-all shadow-lg"
         style={{
-          backgroundColor: 'var(--color-card)',
           borderColor: 'var(--color-border)',
-          color: 'var(--color-foreground)'
+          color: 'var(--color-foreground)',
         }}
         onPressEnter={handleSearchSubmit}
       />
