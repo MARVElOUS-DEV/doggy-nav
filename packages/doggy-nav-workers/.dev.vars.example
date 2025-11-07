@@ -5,9 +5,25 @@ RATE_LIMIT_MAX="100"
 RATE_LIMIT_WINDOW_MS="60000"
 NODE_ENV="development"
 
+# optional for OAuth, if you do not need oauth login, remove them from cloudflare envs
+# better to put secret variables to secrets
+GITHUB_CLIENT_ID=your_github_client_secret
+GITHUB_CLIENT_SECRET=your_github_client_secret
+GITHUB_CALLBACK_URL=http://localhost:3001/api/auth/github/callback
+
+LINUXDO_CLIENT_ID=your_linuxdo_client_secret
+LINUXDO_CLIENT_SECRET=your_linuxdo_client_secret
+LINUXDO_CALLBACK_URL=http://localhost:3001/api/auth/linuxdo/callback
+LINUXDO_AUTHORIZATION_URL=https://connect.linux.do/oauth2/authorize
+LINUXDO_TOKEN_URL=https://connect.linux.do/oauth2/token
+LINUXDO_PROFILE_URL=https://connect.linux.do/api/user
+LINUXDO_SCOPE=profile,email
+
 # D1 database config (used by wrangler.toml variable substitution)
 D1_DATABASE_NAME="doggy_nav"
 D1_DATABASE_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # Do NOT put secrets here. Set secrets with:
 #   wrangler secret put JWT_SECRET
+#   wrangler secret put GITHUB_CLIENT_SECRET
+#   wrangler secret put LINUXDO_CLIENT_SECRET

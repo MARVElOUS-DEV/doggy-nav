@@ -9,7 +9,6 @@ import { inviteCodeRoutes } from './inviteCode';
 import { favoriteRoutes } from './favorite';
 import { groupRoutes } from './groups';
 import { migrationRoutes } from './migration';
-import compatRoutes from './compat';
 import emailSettingsRoutes from './emailSettings';
 import urlCheckerRoutes from './urlChecker';
 import applicationRoutes from './application';
@@ -30,8 +29,6 @@ export type Env = {
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/auth', authRoutes);
-  // Server-compat shortcuts under /api
-  app.route('/api', compatRoutes);
   app.route('/api/users', userRoutes);
   // Server-compat alias (server uses singular /api/user)
   app.route('/api/user', userRoutes);

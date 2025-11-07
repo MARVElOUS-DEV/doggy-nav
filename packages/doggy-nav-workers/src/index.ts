@@ -72,13 +72,3 @@ app.notFound((c) => {
 });
 
 export default app;
-
-// Expose a factory for tests to bind environment to requests
-export function createApp(bindings: Env) {
-  const anyApp = app as any;
-  anyApp.request = (input: RequestInfo, init?: RequestInit) => {
-    const req = input instanceof Request ? input : new Request(input as any, init);
-    return app.fetch(req, bindings);
-  };
-  return app;
-}

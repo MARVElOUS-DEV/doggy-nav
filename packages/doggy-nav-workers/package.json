@@ -5,6 +5,9 @@
   "description": "Cloudflare Workers backend for doggy-nav (D1 adapter).",
   "type": "module",
   "scripts": {
+    "d1:migrate": "wrangler d1 migrations apply DB",
+    "d1:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "d1:migrations:list": "wrangler d1 migrations list DB --remote",
     "d1:seed:defaults": "node scripts/d1-seed-defaults.mjs",
     "d1:seed:categories": "node scripts/d1-seed-categories.mjs",
     "d1:reset-password": "node scripts/d1-reset-password.mjs",
