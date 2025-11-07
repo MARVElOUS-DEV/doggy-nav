@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers config for doggy-nav-workers (monorepo)
+  "name": "doggy-nav-workers",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-01",
+  "observability": { "enabled": true },
+  "build": {
+    "command": "pnpm -F doggy-nav-core build",
+  },
+  // - Add the D1 binding named "DB" in the Cloudflare Dashboard → Settings → Bindings (D1 Databases)
+  // - Add Secrets/Vars through cloudflare dashboard (JWT_SECRET, SEED_TOKEN, etc.), refer to .dev.vars.example
+}

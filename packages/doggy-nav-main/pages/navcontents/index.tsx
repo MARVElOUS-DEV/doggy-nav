@@ -43,13 +43,14 @@ export default function NavContentsPage() {
                   boxShadow:
                     index === 0
                       ? '0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent)'
-                      : undefined
+                      : undefined,
                 }}
               >
                 <div
                   className="section-header px-8 py-6 border-b border-theme-border transition-colors"
                   style={{
-                    background: 'linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 18%, transparent) 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 100%)'
+                    background:
+                      'linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 18%, transparent) 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 100%)',
                   }}
                 >
                   <div className="flex items-center space-x-4">
@@ -57,18 +58,16 @@ export default function NavContentsPage() {
                       className="w-4 h-4 rounded-full animate-pulse"
                       style={{ backgroundColor: 'var(--color-primary)' }}
                     ></div>
-                    <h2
-                      id={item.id}
-                      className="text-2xl font-bold"
-                    >
+                    <h2 id={item.id} className="text-2xl font-bold">
                       {t(item.name, { defaultValue: item.name })}
                     </h2>
                     {item.list && (
                       <span
                         className="text-sm font-medium px-3 py-1 rounded-full"
                         style={{
-                          backgroundColor: 'color-mix(in srgb, var(--color-primary) 25%, transparent)',
-                          color: 'var(--color-primary)'
+                          backgroundColor:
+                            'color-mix(in srgb, var(--color-primary) 25%, transparent)',
+                          color: 'var(--color-primary)',
                         }}
                       >
                         {item.list.length} {t('items_count')}
@@ -77,7 +76,7 @@ export default function NavContentsPage() {
                   </div>
                 </div>
 
-                <div className="section-content p-8">
+                <div className="section-content p-8 bg-theme-background transition-colors">
                   {item.list && item.list.length > 0 ? (
                     <AppNavList list={item.list} />
                   ) : (
@@ -117,10 +116,7 @@ export default function NavContentsPage() {
           <div className="bg-theme-background border border-theme-border rounded-xl shadow-md p-6 transition-colors">
             <p className="text-theme-muted-foreground">
               {t('showing')}{' '}
-              <span
-                className="font-bold"
-                style={{ color: 'var(--color-primary)' }}
-              >
+              <span className="font-bold" style={{ color: 'var(--color-primary)' }}>
                 {data.reduce((acc, item) => acc + (item.list?.length || 0), 0)}
               </span>{' '}
               {t('website_resources')}

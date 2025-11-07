@@ -88,6 +88,8 @@ doggy-nav/
 │   ├── doggy-nav-main/     # Next.js frontend application
 │   ├── doggy-nav-server/   # Egg.js backend API
 │   └── doggy-nav-admin/    # UmiJS admin panel
+│   └── doggy-nav-core/    # shared backend pkg
+│   └── doggy-nav-workers/    # cloudflare workers service
 ├── deploy/                 # Deployment configurations
 ├── scripts/                # Build and deployment scripts
 └── docs/                   # Documentation
@@ -111,6 +113,7 @@ echo "🎉 Doggy Nav is running!"
 echo "Frontend: http://localhost:3001"
 echo "Backend API: http://localhost:3002"
 echo "Admin Panel: http://localhost:8080"
+echo "Workers API: http://localhost:8787"
 ```
 
 Alternative: build images locally
@@ -126,9 +129,6 @@ docker compose -f deploy/docker-compose-init-prod.yml up -d --build
 ### 🛠 Development Setup
 
 See the Development Guide: docs/DEVELOPMENT.md
-
-## 🔧 Development
-
 See docs/DEVELOPMENT.md for setup, scripts, database, and environment configuration.
 
 ## 📖 Documentation
@@ -146,6 +146,7 @@ See docs/DEVELOPMENT.md for setup, scripts, database, and environment configurat
 - [Frontend Development](packages/doggy-nav-main/README.md)
 - [Backend Development](packages/doggy-nav-server/README.md)
 - [Admin Panel Development](packages/doggy-nav-admin/README.md)
+- [Workers Development](packages/doggy-nav-workers/README.md)
 
 ## 🤝 Contributing
 
@@ -181,6 +182,8 @@ We welcome contributions! Please follow these steps:
    ```bash
    pnpm server:dev  # Start backend
    pnpm web:dev     # Start frontend
+   pnpm admin:dev     # Start frontend
+   pnpm workers:dev     # Start frontend
    pnpm test        # Run tests
    ```
 
@@ -240,14 +243,6 @@ Found a bug? Please create an issue with:
 - Health check endpoints
 - Performance metrics
 - Error tracking and logging
-- Resource usage monitoring
-
-### 🔄 Recent Updates
-
-- [x] **Docker Optimization** - Multi-stage builds
-- [x] **CI/CD Pipeline** - Automated testing & deployment
-- [x] **Modern UI** - Updated design system
-- [x] **Performance** - Database indexing & caching
 
 ## 📄 License
 

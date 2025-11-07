@@ -48,12 +48,10 @@ function createApp(bindings: Env) {
     return c.json(responses.err('Endpoint not found'), 404);
   });
 
-  const anyApp = app as any;
-  anyApp.request = (input: RequestInfo, init?: RequestInit) => {
+  app.request = (input: URL | RequestInfo, init?: RequestInit) => {
     // Ensure the URL is absolute for testing
-    const url = typeof input === 'string' && !input.startsWith('http')
-      ? `http://localhost${input}`
-      : input;
+    const url =
+      typeof input === 'string' && !input.startsWith('http') ? `http://localhost${input}` : input;
     const req = input instanceof Request ? input : new Request(url as any, init);
     return app.fetch(req, bindings);
   };

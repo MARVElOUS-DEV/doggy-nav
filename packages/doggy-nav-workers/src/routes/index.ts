@@ -9,11 +9,11 @@ import { inviteCodeRoutes } from './inviteCode';
 import { favoriteRoutes } from './favorite';
 import { groupRoutes } from './groups';
 import { migrationRoutes } from './migration';
-import compatRoutes from './compat';
 import emailSettingsRoutes from './emailSettings';
 import urlCheckerRoutes from './urlChecker';
 import applicationRoutes from './application';
 import translateRoutes from './translate';
+import seedRoutes from './seed';
 
 export type Env = {
   DB: D1Database;
@@ -29,8 +29,6 @@ export type Env = {
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/auth', authRoutes);
-  // Server-compat shortcuts under /api
-  app.route('/api', compatRoutes);
   app.route('/api/users', userRoutes);
   // Server-compat alias (server uses singular /api/user)
   app.route('/api/user', userRoutes);
@@ -49,4 +47,5 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/application', applicationRoutes);
   app.route('/api/translate', translateRoutes);
   app.route('/api/migration', migrationRoutes);
+  app.route('/api/seed', seedRoutes);
 }
