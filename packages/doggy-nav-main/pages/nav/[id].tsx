@@ -185,15 +185,14 @@ export default function NavDetail() {
         <Col md={8} xs={24} className="item">
           <div className="shiny left rounded-xl shadow-lg p-4 relative border border-theme-border bg-theme-background transition-colors">
             <div className="img-wrap h-40 md:h-44 flex items-center justify-center bg-theme-color border border-theme-border rounded-lg transition-colors">
-              <Link href={detail.href} target="_blank" rel="noopener noreferrer">
-                <DoggyImage
-                  logo={detail.logo}
-                  name={detail.name}
-                  width={80}
-                  height={80}
-                  className="object-contain rounded-lg shadow-sm max-w-20 max-h-20 md:max-w-24 md:max-h-24"
-                />
-              </Link>
+              <DoggyImage
+                logo={detail.logo}
+                name={detail.name}
+                width={80}
+                height={80}
+                onClick={() => handleNavClick(detail)}
+                className="cursor-pointer object-contain rounded-lg shadow-sm max-w-20 max-h-20 md:max-w-24 md:max-h-24"
+              />
             </div>
             {/* Action buttons moved below image to prevent overlap and add spacing */}
             <div className="tool mt-4 flex items-center justify-center gap-3 md:gap-4 px-2">
