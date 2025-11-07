@@ -225,7 +225,7 @@ CREATE TABLE roles (
 - Users ↔ Groups (many-to-many via `user_groups` table)
 - Categories ↔ Roles/Groups (permission tables)
 
-See `migrations/002_schema_design.sql` for complete schema.
+See `migrations/001_init.sql` for complete schema.
 
 ## Configuration
 
@@ -243,7 +243,7 @@ CORS_ORIGIN="https://your-frontend.com"
 
 ### Wrangler Configuration
 
-See `wrangler.toml` for Cloudflare Workers configuration including:
+See `wrangler.jsonc` for Cloudflare Workers configuration including:
 
 - D1 database bindings
 - Environment variables
@@ -262,6 +262,7 @@ wrangler login
 wrangler d1 create doggy_nav
 # Export the created database id for this shell (or set it in your CI)
 export D1_DATABASE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export D1_DATABASE_NAME=xxxxxxxx
 
 # Configure environment variables
 # (Optional) edit wrangler.toml [vars] for ALLOWED_ORIGINS / rate limits
@@ -411,26 +412,6 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
 ## License
 
 MIT License - see [LICENSE](../../LICENSE) file for details.
-
-## Changelog
-
-### v1.0.0 (Current)
-
-- Initial Cloudflare Workers implementation
-- Complete API migration from Egg.js
-- D1 database schema and migrations
-- JWT authentication system
-- User, role, and group management
-- Data migration tools
-- Comprehensive test suite
-
-### Migration from v0.x
-
-- Replaced Egg.js server with Hono framework
-- Migrated from MongoDB to D1 SQL database
-- Implemented serverless architecture
-- Added edge computing capabilities
-- Enhanced security and performance
 
 ## Credits
 

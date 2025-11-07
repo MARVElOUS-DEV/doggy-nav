@@ -11,15 +11,12 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "your-d1-database-name",
-      "database_id": "your-d1-database-id",
+      "D1_DATABASE_NAME": "your-d1-database-name",
+      "D1_DATABASE_ID": "your-d1-database-id",
     },
   ],
   // - Add Secrets/Vars there as well (JWT_SECRET, SEED_TOKEN, etc.)
   "vars": {
-    "AUTH_ENABLED": "true", // 是否启用认证
-    "AUTH_USERNAME": "admin", // 管理员用户名
-    "AUTH_PASSWORD": "password", // 管理员密码 (请修改为安全密码)
     "JWT_SECRET": "your-secret-key",
     "ALLOWED_ORIGINS": "http://localhost:3001",
     "RATE_LIMIT_MAX": "100",
