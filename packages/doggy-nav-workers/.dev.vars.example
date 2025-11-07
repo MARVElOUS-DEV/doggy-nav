@@ -19,9 +19,7 @@ LINUXDO_TOKEN_URL=https://connect.linux.do/oauth2/token
 LINUXDO_PROFILE_URL=https://connect.linux.do/api/user
 LINUXDO_SCOPE=profile,email
 
-# D1 database config (used by wrangler.toml variable substitution)
-D1_DATABASE_NAME="doggy_nav"
-D1_DATABASE_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+# D1 database config should be configured in cloudflare workers dashboard binding.
 
 # Do NOT put secrets here. Set secrets with:
 #   wrangler secret put JWT_SECRET
