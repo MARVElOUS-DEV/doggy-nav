@@ -11,12 +11,14 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "D1_DATABASE_NAME": "your-d1-database-name",
-      "D1_DATABASE_ID": "your-d1-database-id",
+      "D1_DATABASE_NAME": "${D1_DATABASE_NAME}",
+      "D1_DATABASE_ID": "${D1_DATABASE_ID}",
     },
   ],
   // - Add Secrets/Vars there as well (JWT_SECRET, SEED_TOKEN, etc.)
   "vars": {
+    "D1_DATABASE_NAME": "your-database-name",
+    "D1_DATABASE_ID": "your-database-id",
     "JWT_SECRET": "your-secret-key",
     "ALLOWED_ORIGINS": "http://localhost:3001",
     "RATE_LIMIT_MAX": "100",
