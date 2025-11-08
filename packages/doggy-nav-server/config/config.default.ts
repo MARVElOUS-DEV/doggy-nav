@@ -176,7 +176,7 @@ export default (appInfo: EggAppInfo) => {
     // Allow specific routes to bypass client secret requirement even when enabled
     // These are essential routes that should remain accessible for initial setup
     bypassRoutes: [
-      '/api/register',
+      '/api/auth/register',
       '/api/auth/login',
       '/api/application/verify-client-secret',
       '/api/auth/:provider',
