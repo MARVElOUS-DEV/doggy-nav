@@ -50,8 +50,7 @@ jobs:
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
           echo "Using branch: $BRANCH"
 
-      - name: Deploy to Cloudflare Pages
-        working-directory: packages/doggy-nav-admin
+      - name: Deploy to Cloudflare Pages (use wrangler from workers pkg)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -59,14 +58,14 @@ jobs:
         run: |
           set -euo pipefail
           echo "Deploying dist/ with functions/ to Pages project: $CF_PAGES_PROJECT_NAME"
-          pnpm exec wrangler pages deploy dist \
+          pnpm -F doggy-nav-workers exec wrangler pages deploy dist \
             --project-name "$CF_PAGES_PROJECT_NAME" \
-            --branch "${{ steps.sel.outputs.branch }}"
+            --branch "${{ steps.sel.outputs.branch }}" \
+            --cwd packages/doggy-nav-admin
 
       # Optional: sync runtime vars into Pages project if provided as repo secrets
-      - name: (Optional) Sync DOGGY_* variables to Pages project
+      - name: (Optional) Sync DOGGY_* variables to Pages project (use wrangler from workers pkg)
         if: ${{ inputs.environment }}
-        working-directory: packages/doggy-nav-admin
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -77,8 +76,8 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "${DOGGY_SERVER:-}" ]; then
-            printf '%s' "$DOGGY_SERVER" | pnpm exec wrangler pages secret put DOGGY_SERVER --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" || true
+            printf '%s' "$DOGGY_SERVER" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" --cwd packages/doggy-nav-admin || true
           fi
           if [ -n "${DOGGY_SERVER_CLIENT_SECRET:-}" ]; then
-            printf '%s' "$DOGGY_SERVER_CLIENT_SECRET" | pnpm exec wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" || true
+            printf '%s' "$DOGGY_SERVER_CLIENT_SECRET" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" --cwd packages/doggy-nav-admin || true
           fi

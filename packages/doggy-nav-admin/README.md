@@ -1,57 +1,56 @@
-# Ant Design Pro
+# Doggy Nav Admin
 
-This project is initialized with [Ant Design Pro](https://pro.ant.design). Follow is the quick guide for how to use.
+Umi/Ant Design admin console for Doggy Nav.
 
-## Environment Prepare
+## Development
 
-Install `node_modules`:
+- Install: `pnpm install`
+- Dev: `pnpm -F doggy-nav-admin dev`
+- Lint: `pnpm -F doggy-nav-admin lint`
+- Build: `pnpm -F doggy-nav-admin build` (outputs to `dist/`)
 
-```bash
-npm install
-```
+## Cloudflare Pages (Deployment)
 
-or
+This package ships with:
 
-```bash
-yarn
-```
+- SPA fallback: `public/_redirects` → routes `/*` to `/index.html`
+- API proxy (Pages Functions): `functions/api/[[path]].ts` forwarding `/api/*` to `${DOGGY_SERVER}/api/*` and injecting `x-client-secret` (server-side only)
 
-## Provided Scripts
+Recommended deploy path: GitHub Actions → “Deploy Admin to Cloudflare Pages (Manual)”.
 
-Ant Design Pro provides some useful script to help you quick start and build with web project, code style check and test.
+### Prerequisites (GitHub Secrets)
 
-Scripts provided in `package.json`. It's safe to modify or add additional script:
+- `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT_NAME`
+- Optional: `DOGGY_SERVER`, `DOGGY_SERVER_CLIENT_SECRET`
 
-### Start project
+### Trigger manual deploy
 
-```bash
-npm start
-```
+GitHub → Actions → “Deploy Admin to Cloudflare Pages (Manual)” → choose environment (`production` or `preview`).
 
-### Build project
-
-```bash
-npm run build
-```
-
-### Check code style
+The workflow builds this package and deploys `dist/` with `functions/` using Wrangler from the workers package:
 
 ```bash
-npm run lint
+pnpm -F doggy-nav-workers exec wrangler pages deploy dist \
+  --project-name <project> \
+  --branch <branch> \
+  --cwd packages/doggy-nav-admin
 ```
 
-You can also use script to auto fix some lint error:
+Secrets (if provided) are pushed to the Pages project:
 
 ```bash
-npm run lint:fix
+wrangler pages secret put DOGGY_SERVER --project-name <project> --environment <production|preview> --cwd packages/doggy-nav-admin
+wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name <project> --environment <production|preview> --cwd packages/doggy-nav-admin
 ```
 
-### Test code
+### Local check (optional)
 
 ```bash
-npm test
+pnpm -F doggy-nav-admin build
+pnpm -F doggy-nav-workers exec wrangler pages dev dist --cwd packages/doggy-nav-admin
 ```
 
-## More
+## Notes
 
-You can view full document on our [official website](https://pro.ant.design). And welcome any feedback in our [github](https://github.com/ant-design/ant-design-pro).
+- Do not expose `DOGGY_SERVER_CLIENT_SECRET` on the client; it is only injected by the proxy function.
+- For more detail, see `docs/DEPLOYMENT.md` → “Cloudflare Pages (Admin)”.
