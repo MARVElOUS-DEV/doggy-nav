@@ -52,20 +52,7 @@ jobs:
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
           echo "Using branch: $BRANCH"
 
-      - name: Deploy to Cloudflare Pages (use wrangler from workers pkg)
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_PAGES_PROJECT_NAME: ${{ secrets.CF_PAGES_PROJECT_NAME }}
-        run: |
-          set -euo pipefail
-          echo "Deploying dist/ with functions/ to Pages project: $CF_PAGES_PROJECT_NAME"
-          pnpm -F doggy-nav-workers exec wrangler pages deploy dist \
-            --project-name "$CF_PAGES_PROJECT_NAME" \
-            --branch "${{ steps.sel.outputs.branch }}" \
-            --cwd ../doggy-nav-admin
-
-      # Optional: sync runtime vars into Pages project if provided as repo secrets
+      # Set runtime secrets BEFORE deploy so the new deployment can read them
       - name: (Optional) Sync DOGGY_* variables to Pages project (use wrangler from workers pkg)
         if: ${{ inputs.environment }}
         env:
@@ -82,3 +69,16 @@ jobs:
           if [ -n "${DOGGY_SERVER_CLIENT_SECRET:-}" ]; then
             printf '%s' "$DOGGY_SERVER_CLIENT_SECRET" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name "$CF_PAGES_PROJECT_NAME" --cwd ../doggy-nav-admin || true
           fi
+
+      - name: Deploy to Cloudflare Pages (use wrangler from workers pkg)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT_NAME: ${{ secrets.CF_PAGES_PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          echo "Deploying dist/ with functions/ to Pages project: $CF_PAGES_PROJECT_NAME"
+          pnpm -F doggy-nav-workers exec wrangler pages deploy dist \
+            --project-name "$CF_PAGES_PROJECT_NAME" \
+            --branch "${{ steps.sel.outputs.branch }}" \
+            --cwd ../doggy-nav-admin
