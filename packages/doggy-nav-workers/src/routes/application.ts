@@ -33,6 +33,19 @@ applicationRoutes.get('/list', createAuthMiddleware({ required: true }), require
   }
 });
 
+// Get application details by id
+applicationRoutes.get('/:id', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
+  try {
+    const { id } = c.req.param();
+    const svc = getDI(c).resolve(TOKENS.ApplicationService) as any;
+    const app = await svc.getById(id);
+    if (!app) return c.json(responses.notFound('Application not found'), 404);
+    return c.json(responses.ok(app));
+  } catch (err) {
+    return c.json(responses.serverError(), 500);
+  }
+});
+
 applicationRoutes.post('/verify-client-secret', async (c) => {
   try {
     const { clientSecret } = await c.req.json();

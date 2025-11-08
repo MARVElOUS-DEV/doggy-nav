@@ -35,6 +35,10 @@ export class ApplicationService {
     return this.repo.list(p);
   }
 
+  async getById(id: string): Promise<Application | null> {
+    return this.repo.getById(id);
+  }
+
   async update(id: string, updates: ApplicationUpdateInput): Promise<Application | null> {
     if (updates.allowedOrigins && !Array.isArray(updates.allowedOrigins)) {
       updates.allowedOrigins = [];
