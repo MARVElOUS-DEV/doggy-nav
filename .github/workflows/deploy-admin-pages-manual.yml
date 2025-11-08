@@ -1,0 +1,84 @@
+name: Deploy Admin to Cloudflare Pages (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (production deploys to the production branch)'
+        type: choice
+        required: true
+        options:
+          - production
+          - preview
+        default: preview
+
+jobs:
+  deploy:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build admin
+        run: pnpm -F doggy-nav-admin build
+
+      - name: Select deploy branch
+        id: sel
+        env:
+          ENV: ${{ inputs.environment }}
+          PROD_BRANCH_FALLBACK: main
+          CF_PAGES_PROD_BRANCH: ${{ vars.CF_PAGES_PROD_BRANCH }}
+        run: |
+          set -euo pipefail
+          PROD_BRANCH="${CF_PAGES_PROD_BRANCH:-$PROD_BRANCH_FALLBACK}"
+          if [ "$ENV" = "production" ]; then
+            BRANCH="$PROD_BRANCH"
+          else
+            BRANCH="${PROD_BRANCH_FALLBACK}"
+          fi
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "Using branch: $BRANCH"
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: packages/doggy-nav-admin
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT_NAME: ${{ secrets.CF_PAGES_PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          echo "Deploying dist/ with functions/ to Pages project: $CF_PAGES_PROJECT_NAME"
+          pnpm exec wrangler pages deploy dist \
+            --project-name "$CF_PAGES_PROJECT_NAME" \
+            --branch "${{ steps.sel.outputs.branch }}"
+
+      # Optional: sync runtime vars into Pages project if provided as repo secrets
+      - name: (Optional) Sync DOGGY_* variables to Pages project
+        if: ${{ inputs.environment }}
+        working-directory: packages/doggy-nav-admin
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT_NAME: ${{ secrets.CF_PAGES_PROJECT_NAME }}
+          ENV_NAME: ${{ inputs.environment }}
+          DOGGY_SERVER: ${{ secrets.DOGGY_SERVER }}
+          DOGGY_SERVER_CLIENT_SECRET: ${{ secrets.DOGGY_SERVER_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -n "${DOGGY_SERVER:-}" ]; then
+            printf '%s' "$DOGGY_SERVER" | pnpm exec wrangler pages secret put DOGGY_SERVER --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" || true
+          fi
+          if [ -n "${DOGGY_SERVER_CLIENT_SECRET:-}" ]; then
+            printf '%s' "$DOGGY_SERVER_CLIENT_SECRET" | pnpm exec wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" || true
+          fi
