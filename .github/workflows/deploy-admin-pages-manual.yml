@@ -72,14 +72,13 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_PAGES_PROJECT_NAME: ${{ secrets.CF_PAGES_PROJECT_NAME }}
-          ENV_NAME: ${{ inputs.environment }}
           DOGGY_SERVER: ${{ secrets.DOGGY_SERVER }}
           DOGGY_SERVER_CLIENT_SECRET: ${{ secrets.DOGGY_SERVER_CLIENT_SECRET }}
         run: |
           set -euo pipefail
           if [ -n "${DOGGY_SERVER:-}" ]; then
-            printf '%s' "$DOGGY_SERVER" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" --cwd ../doggy-nav-admin || true
+            printf '%s' "$DOGGY_SERVER" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER --project-name "$CF_PAGES_PROJECT_NAME" --cwd ../doggy-nav-admin || true
           fi
           if [ -n "${DOGGY_SERVER_CLIENT_SECRET:-}" ]; then
-            printf '%s' "$DOGGY_SERVER_CLIENT_SECRET" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name "$CF_PAGES_PROJECT_NAME" --environment "$ENV_NAME" --cwd ../doggy-nav-admin || true
+            printf '%s' "$DOGGY_SERVER_CLIENT_SECRET" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name "$CF_PAGES_PROJECT_NAME" --cwd ../doggy-nav-admin || true
           fi
