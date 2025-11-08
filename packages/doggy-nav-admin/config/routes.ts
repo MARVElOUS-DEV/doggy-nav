@@ -13,7 +13,7 @@ export default [
   },
   { name: '首页', icon: 'home', path: '/nav/admin', component: './Admin' },
   {
-    name: '审核列表',
+    name: '审核管理',
     icon: 'audit',
     path: '/nav/audit',
     component: './nav/Audit',
