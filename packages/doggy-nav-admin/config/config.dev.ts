@@ -7,7 +7,7 @@ const serverTarget = (() => {
   if (!s) return 'http://127.0.0.1:3002';
   return s.startsWith('http') ? s : `http://${s}`;
 })();
-const devClientSecret = process.env.DOGGY_SERVER_CLIENT_SECRET || process.env.SERVER_CLIENT_SECRET;
+const devClientSecret = process.env.DOGGY_SERVER_CLIENT_SECRET;
 
 export default defineConfig({
   antd: {},
