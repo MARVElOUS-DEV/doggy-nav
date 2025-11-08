@@ -3,12 +3,14 @@ import {
   testEmailSettings,
   updateEmailSettings,
 } from '@/services/api';
+import { PageContainer } from '@ant-design/pro-layout';
 import {
   Alert,
   Button,
-  Card,
+  Col,
   Form,
   Input,
+  Row,
   Space,
   Switch,
   Typography,
@@ -90,176 +92,210 @@ export default function EmailSettingsPage() {
   const adminEmails = Form.useWatch('adminEmails', form);
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '20px' }}>
-      <Card>
-        <Title level={2}>Email Notification Settings</Title>
+    <PageContainer header={{ title: false }}>
+      <Title level={2}>Email Notification Settings</Title>
 
-        <Alert
-          message="Only users with sysadmin role can access and modify these settings."
-          type="info"
-          showIcon
-          style={{ marginBottom: '20px' }}
-        />
+      <Alert
+        message="Only users with sysadmin role can access and modify these settings."
+        type="info"
+        showIcon
+        style={{ marginBottom: '20px' }}
+      />
 
-        <Form<EmailSettingsForm>
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          initialValues={{
-            smtpPort: 587,
-            smtpSecure: false,
-            fromName: 'Doggy Nav',
-            enableNotifications: true,
-            adminEmails: [],
-          }}
-        >
-          <Title level={3}>SMTP Configuration</Title>
+      <Form<EmailSettingsForm>
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={{
+          smtpPort: 587,
+          smtpSecure: false,
+          fromName: 'Doggy Nav',
+          enableNotifications: true,
+          adminEmails: [],
+        }}
+      >
+        <Title level={3}>SMTP Configuration</Title>
 
-          <Form.Item
-            name="smtpHost"
-            label="SMTP Host"
-            rules={[{ required: true, message: 'Please enter SMTP host' }]}
-          >
-            <Input placeholder="smtp.example.com" />
-          </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="smtpHost"
+              label="SMTP Host"
+              rules={[{ required: true, message: 'Please enter SMTP host' }]}
+            >
+              <Input placeholder="smtp.example.com" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="smtpPort"
+              label="SMTP Port"
+              rules={[{ required: true, message: 'Please enter SMTP port' }]}
+            >
+              <Input type="number" placeholder="587" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Form.Item
-            name="smtpPort"
-            label="SMTP Port"
-            rules={[{ required: true, message: 'Please enter SMTP port' }]}
-          >
-            <Input type="number" placeholder="587" />
-          </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="smtpSecure"
+              label="Use SSL/TLS"
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="smtpUser"
+              label="SMTP Username"
+              rules={[
+                { required: true, message: 'Please enter SMTP username' },
+              ]}
+            >
+              <Input placeholder="your-email@example.com" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Form.Item
-            name="smtpSecure"
-            label="Use SSL/TLS"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item
+              name="smtpPass"
+              label="SMTP Password"
+              rules={[
+                { required: true, message: 'Please enter SMTP password' },
+              ]}
+            >
+              <Input.Password placeholder="Enter SMTP password" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Form.Item
-            name="smtpUser"
-            label="SMTP Username"
-            rules={[{ required: true, message: 'Please enter SMTP username' }]}
-          >
-            <Input placeholder="your-email@example.com" />
-          </Form.Item>
+        <Title level={3}>Sender Configuration</Title>
 
-          <Form.Item
-            name="smtpPass"
-            label="SMTP Password"
-            rules={[{ required: true, message: 'Please enter SMTP password' }]}
-          >
-            <Input.Password placeholder="Enter SMTP password" />
-          </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="fromName"
+              label="From Name"
+              rules={[{ required: true, message: 'Please enter sender name' }]}
+            >
+              <Input placeholder="Doggy Nav" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="fromAddress"
+              label="From Address"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please enter sender email address',
+                },
+              ]}
+            >
+              <Input placeholder="noreply@example.com" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Title level={3}>Sender Configuration</Title>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="replyTo"
+              label="Reply To Address"
+              rules={[
+                { required: true, message: 'Please enter reply-to address' },
+              ]}
+            >
+              <Input placeholder="support@example.com" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Form.Item
-            name="fromName"
-            label="From Name"
-            rules={[{ required: true, message: 'Please enter sender name' }]}
-          >
-            <Input placeholder="Doggy Nav" />
-          </Form.Item>
+        <Title level={3}>Notification Settings</Title>
 
-          <Form.Item
-            name="fromAddress"
-            label="From Address"
-            rules={[
-              { required: true, message: 'Please enter sender email address' },
-            ]}
-          >
-            <Input placeholder="noreply@example.com" />
-          </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="enableNotifications"
+              label="Enable Notifications"
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Form.Item
-            name="replyTo"
-            label="Reply To Address"
-            rules={[
-              { required: true, message: 'Please enter reply-to address' },
-            ]}
-          >
-            <Input placeholder="support@example.com" />
-          </Form.Item>
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item
+              name="adminEmails"
+              label="Admin Emails"
+              help="Email addresses that will receive submission notifications (one per line)"
+            >
+              <Input.TextArea
+                rows={4}
+                placeholder={`admin1@example.com\nadmin2@example.com`}
+                onChange={(e) => {
+                  const emails = e.target.value
+                    .split('\n')
+                    .filter((email) => email.trim());
+                  form.setFieldValue('adminEmails', emails);
+                }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Title level={3}>Notification Settings</Title>
+        {adminEmails && adminEmails.length > 0 && (
+          <div style={{ marginBottom: '20px' }}>
+            <Text strong>Admin recipients:</Text>
+            <ul>
+              {adminEmails.map((email, index) => (
+                <li key={index}>{email}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-          <Form.Item
-            name="enableNotifications"
-            label="Enable Notifications"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
+        <Form.Item>
+          <Space>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Save Settings
+            </Button>
+            <Button onClick={loadSettings} loading={loading}>
+              Reset
+            </Button>
+            <Button onClick={handleTestEmail} loading={testLoading}>
+              Send Test Email
+            </Button>
+          </Space>
+        </Form.Item>
+      </Form>
 
-          <Form.Item
-            name="adminEmails"
-            label="Admin Emails"
-            help="Email addresses that will receive submission notifications (one per line)"
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder="admin1@example.com
-admin2@example.com"
-              onChange={(e) => {
-                const emails = e.target.value
-                  .split('\n')
-                  .filter((email) => email.trim());
-                form.setFieldValue('adminEmails', emails);
-              }}
-            />
-          </Form.Item>
-
-          {adminEmails && adminEmails.length > 0 && (
-            <div style={{ marginBottom: '20px' }}>
-              <Text strong>Admin recipients:</Text>
-              <ul>
-                {adminEmails.map((email, index) => (
-                  <li key={index}>{email}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Save Settings
-              </Button>
-              <Button onClick={loadSettings} loading={loading}>
-                Reset
-              </Button>
-              <Button onClick={handleTestEmail} loading={testLoading}>
-                Send Test Email
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-
-        <Alert
-          message="Important Notes"
-          description={
-            <div>
-              <ul>
-                <li>Changes take effect immediately</li>
-                <li>Test email will be sent from the configured SMTP server</li>
-                <li>
-                  Admin emails are used for receiving new submission
-                  notifications
-                </li>
-                <li>
-                  Ensure SMTP credentials are correct to avoid delivery failures
-                </li>
-              </ul>
-            </div>
-          }
-          type="warning"
-          showIcon
-        />
-      </Card>
-    </div>
+      <Alert
+        message="Important Notes"
+        description={
+          <div>
+            <ul>
+              <li>Changes take effect immediately</li>
+              <li>Test email will be sent from the configured SMTP server</li>
+              <li>
+                Admin emails are used for receiving new submission notifications
+              </li>
+              <li>
+                Ensure SMTP credentials are correct to avoid delivery failures
+              </li>
+            </ul>
+          </div>
+        }
+        type="warning"
+        showIcon
+      />
+    </PageContainer>
   );
 }
