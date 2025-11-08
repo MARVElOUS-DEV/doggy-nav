@@ -4,6 +4,8 @@ ALLOWED_ORIGINS="http://localhost:3001"
 RATE_LIMIT_MAX="100"
 RATE_LIMIT_WINDOW_MS="60000"
 NODE_ENV="development"
+REQUIRE_CLIENT_SECRET=false
+CLIENT_SECRET_BYPASS="/api/auth/register,/api/auth/login,/api/application/verify-client-secret,/api/auth/:provider,/api/auth/:provider/callback,/api/auth/providers,/api/auth/config,/api/auth/me,/api/auth/logout"
 
 # optional for OAuth, if you do not need oauth login, remove them from cloudflare envs
 # better to put secret variables to secrets

@@ -199,6 +199,7 @@ userRoutes.put(
         nickName: body.nickName,
         phone: body.phone,
         status: body.isActive,
+        password: body.password,
         roles: body.roles,
         groups: body.groups,
       });
@@ -228,6 +229,7 @@ userRoutes.patch(
         nickName: body.nickName,
         phone: body.phone,
         status: typeof body.status !== 'undefined' ? !!body.status : undefined,
+        password: body.password,
         roles: Array.isArray(body.roles) ? body.roles : undefined,
         groups: Array.isArray(body.groups) ? body.groups : undefined,
       });
