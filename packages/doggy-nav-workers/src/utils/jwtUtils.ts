@@ -72,6 +72,8 @@ export class JWTUtils {
     try {
       const { payload } = await jwtVerify(token, this.secretKey, {
         algorithms: ['HS256'],
+        // Allow small clock skew to reduce false expirations in distributed/dev environments
+        clockTolerance: 60, // seconds
       });
 
       return {
@@ -97,6 +99,7 @@ export class JWTUtils {
     try {
       const { payload } = await jwtVerify(token, this.secretKey, {
         algorithms: ['HS256'],
+        clockTolerance: 60, // seconds
       });
 
       if (payload.type !== 'refresh') {

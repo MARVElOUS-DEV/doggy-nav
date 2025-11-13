@@ -2,8 +2,9 @@ import TableCom from '@/components/TableCom';
 import { API_NAV_AUDIT, API_NAV_LIST } from '@/services/api';
 import { NavStatus } from '@/types/api';
 import request from '@/utils/request';
-import { ProColumns } from '@ant-design/pro-table';
-import { Popconfirm, Space, Tag } from 'antd';
+import { ActionType, ProColumns } from '@ant-design/pro-table';
+import { Button, Popconfirm, Space, Tag, message } from 'antd';
+import React from 'react';
 
 function RandomColorTag({ children }) {
   const colors = [
@@ -26,6 +27,10 @@ function RandomColorTag({ children }) {
 }
 
 export default function NavAuditListPage() {
+  const actionRef = React.useRef<ActionType>();
+  const [selectedRowKeys, setSelectedRowKeys] = React.useState<React.Key[]>([]);
+  const [selectedRows, setSelectedRows] = React.useState<any[]>([]);
+
   const columns: ProColumns[] = [
     {
       title: '审核状态',
@@ -94,10 +99,73 @@ export default function NavAuditListPage() {
     action?.reload();
   }
 
+  async function onBatchAudit(status: NavStatus) {
+    if (!selectedRows.length) return;
+    const ids = selectedRows.map((r) => r.id);
+    try {
+      const results = await Promise.allSettled(
+        ids.map((id) =>
+          request({
+            url: API_NAV_AUDIT,
+            method: 'PUT',
+            data: { id, status },
+          }),
+        ),
+      );
+      const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
+      const rejected = results.length - fulfilled;
+      if (fulfilled > 0) {
+        message.success(
+          `${status === NavStatus.pass ? '通过' : '拒绝'}成功 ${fulfilled} 条`,
+        );
+      }
+      if (rejected > 0) {
+        message.warning(`有 ${rejected} 条操作失败`);
+      }
+      setSelectedRowKeys([]);
+      setSelectedRows([]);
+      if (fulfilled > 0) actionRef.current?.reload();
+    } catch (e) {
+      message.error('批量操作失败，请稍后重试');
+    }
+  }
+
   return (
     <TableCom
       columns={columns}
       requestParams={{ url: API_NAV_LIST, method: 'GET' }}
+      actionRef={actionRef}
+      rowSelection={{
+        selectedRowKeys,
+        onChange: (keys, rows) => {
+          setSelectedRowKeys(keys);
+          setSelectedRows(rows as any[]);
+        },
+      }}
+      toolbar={{
+        actions: [
+          <Popconfirm
+            key="batch-pass"
+            title="确定批量通过选中项吗？"
+            onConfirm={() => onBatchAudit(NavStatus.pass)}
+            disabled={!selectedRows.length}
+          >
+            <Button type="primary" disabled={!selectedRows.length}>
+              批量通过
+            </Button>
+          </Popconfirm>,
+          <Popconfirm
+            key="batch-reject"
+            title="确定批量拒绝选中项吗？"
+            onConfirm={() => onBatchAudit(NavStatus.reject)}
+            disabled={!selectedRows.length}
+          >
+            <Button danger disabled={!selectedRows.length}>
+              批量拒绝
+            </Button>
+          </Popconfirm>,
+        ],
+      }}
       renderOptions={(text, record, _, action) =>
         record.status !== NavStatus.reject
           ? [

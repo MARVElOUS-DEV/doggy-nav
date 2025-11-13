@@ -1,4 +1,9 @@
-import type { NavAdminRepository, NavAdminCreateInput, NavAdminUpdateInput } from 'doggy-nav-core';
+import {
+  type NavAdminRepository,
+  type NavAdminCreateInput,
+  type NavAdminUpdateInput,
+  nowChromeTime,
+} from 'doggy-nav-core';
 import { newId24 } from '../utils/id';
 
 export default class D1NavAdminRepository implements NavAdminRepository {
@@ -6,14 +11,14 @@ export default class D1NavAdminRepository implements NavAdminRepository {
 
   async create(input: NavAdminCreateInput): Promise<{ id: string }> {
     const id = newId24();
-    const createTime = Date.now();
+    const createTime = nowChromeTime(); // Chrome-like high-precision epoch ticks
     const vis = (input.audience?.visibility as any) || 'public';
     const tagsJson = JSON.stringify(Array.isArray(input.tags) ? input.tags : []);
 
     await this.db
       .prepare(
-        `INSERT INTO bookmarks (id, category_id, name, href, description, logo, author_name, author_url, create_time, tags, audience_visibility)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO bookmarks (id, category_id, name, href, description, logo, author_name, author_url, create_time, tags, audience_visibility, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id,
@@ -26,7 +31,8 @@ export default class D1NavAdminRepository implements NavAdminRepository {
         input.authorUrl || '',
         createTime,
         tagsJson,
-        vis
+        vis,
+        1 // wait for audit by default (server parity)
       )
       .run();
 

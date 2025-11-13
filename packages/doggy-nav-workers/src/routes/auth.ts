@@ -139,6 +139,8 @@ authRoutes.post('/login', async (c) => {
     if (!c.env.JWT_SECRET) {
       return c.json(responses.serverError('Server misconfigured: missing JWT secret'), 500);
     }
+    // Prevent stale cookies from causing login loops
+    clearAuthCookies(c as any);
     const body = await c.req.json();
     const { username, email, identifier, password } = body || {};
     const id = (identifier || email || username || '').toString();
@@ -269,7 +271,11 @@ authRoutes.get('/me', async (c) => {
       return c.json(responses.ok({ authenticated: false, user: null, accessExp: null }));
     }
 
-    const ctxUser = await getUserAccessContext(c.env.DB, new D1UserRepository(c.env.DB), payload.userId);
+    const ctxUser = await getUserAccessContext(
+      c.env.DB,
+      new D1UserRepository(c.env.DB),
+      payload.userId
+    );
     if (!ctxUser) {
       return c.json(responses.ok({ authenticated: false, user: null, accessExp: null }));
     }
