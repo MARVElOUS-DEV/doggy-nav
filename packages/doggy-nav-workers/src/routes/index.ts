@@ -14,6 +14,8 @@ import urlCheckerRoutes from './urlChecker';
 import applicationRoutes from './application';
 import translateRoutes from './translate';
 import seedRoutes from './seed';
+import aiRoutes from './ai';
+import promptRoutes from './prompt';
 
 export type Env = {
   DB: D1Database;
@@ -25,6 +27,11 @@ export type Env = {
   REQUIRE_CLIENT_SECRET?: string; // 'true' to enable
   CLIENT_SECRET_HEADER?: string; // default 'x-client-secret'
   CLIENT_SECRET_BYPASS?: string; // comma-separated paths
+  // AI provider envs (OpenAI-compatible)
+  AI_PROVIDER?: string;
+  AI_API_KEY?: string;
+  AI_BASE_URL?: string;
+  AI_MODEL?: string;
 };
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>) {
@@ -46,6 +53,9 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/url-checker', urlCheckerRoutes);
   app.route('/api/application', applicationRoutes);
   app.route('/api/translate', translateRoutes);
+  app.route('/api/prompts', promptRoutes);
   app.route('/api/migration', migrationRoutes);
   app.route('/api/seed', seedRoutes);
+  // OpenAI-compatible inference endpoint
+  app.route('/', aiRoutes);
 }

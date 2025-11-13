@@ -7,7 +7,8 @@ const serverTarget = (() => {
   if (!s) return 'http://localhost:3002';
   return s.startsWith('http') ? s : `http://${s}`;
 })();
-const devClientSecret = process.env.DOGGY_SERVER_CLIENT_SECRET || process.env.SERVER_CLIENT_SECRET;
+const devClientSecret =
+  process.env.DOGGY_SERVER_CLIENT_SECRET || process.env.SERVER_CLIENT_SECRET;
 
 export default defineConfig({
   antd: {},
@@ -19,12 +20,24 @@ export default defineConfig({
   routes,
   npmClient: 'pnpm',
   esbuildMinifyIIFE: true,
-  proxy: process.env.NODE_ENV === 'development' ? {
-    '/api': {
-      target: serverTarget,
-      changeOrigin: true,
-      // Ensure admin dev server injects client secret at proxy layer
-      headers: devClientSecret ? { 'x-client-secret': devClientSecret } : {},
-    },
-  } : {},
+  proxy:
+    process.env.NODE_ENV === 'development'
+      ? {
+          '/api': {
+            target: serverTarget,
+            changeOrigin: true,
+            headers: devClientSecret
+              ? { 'x-client-secret': devClientSecret }
+              : {},
+          },
+          // OpenAI-compatible test endpoint
+          '/v1': {
+            target: serverTarget,
+            changeOrigin: true,
+            headers: devClientSecret
+              ? { 'x-client-secret': devClientSecret }
+              : {},
+          },
+        }
+      : {},
 });

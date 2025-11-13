@@ -1,7 +1,7 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
-import React from 'react';
+import { pageTitles } from '../config/routes';
 import ContentHeader from './components/ContentHeader';
 import apiRequest, { requestConfigure } from './utils/request';
 import {
@@ -31,91 +31,6 @@ export async function getInitialState(): Promise<{
     return { settings: {} };
   }
 }
-
-// 页面标题和子标题映射
-const pageTitles: Record<
-  string,
-  {
-    title: string;
-    subtitle: string;
-    showUserMenu?: boolean;
-    showSearch?: boolean;
-    actions?: React.ReactNode[];
-  }
-> = {
-  '/nav/admin': {
-    title: '仪表盘',
-    subtitle: '系统概览',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/nav/list': {
-    title: '导航列表',
-    subtitle: '管理网站导航链接',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/nav/bookmarks': {
-    title: '书签导入',
-    subtitle: '批量导入浏览器书签',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/nav/category': {
-    title: '分类管理',
-    subtitle: '管理网站分类',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/nav/tag': {
-    title: '标签管理',
-    subtitle: '管理网站标签',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/nav/audit': {
-    title: '审核管理',
-    subtitle: '审核网站提交',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/group/manage': {
-    title: '分组管理',
-    subtitle: '管理用户分组',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/user/manage': {
-    title: '用户管理',
-    subtitle: '管理平台用户与权限',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/role/manage': {
-    title: '角色管理',
-    subtitle: '定义与分配角色权限',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/settings/email': {
-    title: '邮件通知',
-    subtitle: '配置 SMTP 与通知收件人',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/user/invite': {
-    title: '邀请码',
-    subtitle: '创建与管理用户邀请码',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/client/manage': {
-    title: '应用管理',
-    subtitle: '管理客户端应用与凭证',
-    showUserMenu: true,
-    showSearch: false,
-  },
-};
 
 export const layout: RunTimeLayoutConfig = ({
   initialState,

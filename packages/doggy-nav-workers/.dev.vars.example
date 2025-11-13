@@ -21,9 +21,17 @@ LINUXDO_TOKEN_URL=https://connect.linux.do/oauth2/token
 LINUXDO_PROFILE_URL=https://connect.linux.do/api/user
 LINUXDO_SCOPE=profile,email
 
+# AI api
+AI_PROVIDER=xxx
+AI_BASE_URL=https://openai.com
+AI_MODEL=gpt-5
+
 # D1 database config should be configured in cloudflare workers dashboard binding.
 
 # Do NOT put secrets here. Set secrets with:
 #   wrangler secret put JWT_SECRET
 #   wrangler secret put GITHUB_CLIENT_SECRET
 #   wrangler secret put LINUXDO_CLIENT_SECRET
+#   wrangler secret put AI_API_KEY
+
+

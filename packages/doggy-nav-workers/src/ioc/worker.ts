@@ -15,6 +15,7 @@ import {
   EmailSettingsService,
   ApplicationService,
   NavAdminService,
+  PromptService,
 } from 'doggy-nav-core';
 import D1GroupRepository from '../adapters/d1GroupRepository';
 import D1CategoryRepository from '../adapters/d1CategoryRepository';
@@ -32,6 +33,7 @@ import D1AuthRepositoryAdapter from '../adapters/d1AuthRepositoryAdapter';
 import D1EmailSettingsRepositoryAdapter from '../adapters/d1EmailSettingsRepositoryAdapter';
 import D1ApplicationRepositoryAdapter from '../adapters/d1ApplicationRepositoryAdapter';
 import D1NavAdminRepository from '../adapters/d1NavAdminRepository';
+import D1PromptRepository from '../adapters/d1PromptRepository';
 import { TOKENS } from './tokens';
 
 type Env = { DB: D1Database };
@@ -73,5 +75,6 @@ export function createWorkerContainer(env: Env) {
   c.register(TOKENS.EmailSettingsService, () => new EmailSettingsService(new D1EmailSettingsRepositoryAdapter(env.DB)));
   c.register(TOKENS.ApplicationService, () => new ApplicationService(new D1ApplicationRepositoryAdapter(env.DB)));
   c.register(TOKENS.NavAdminService, () => new NavAdminService(new D1NavAdminRepository(env.DB)));
+  c.register(TOKENS.PromptService, () => new PromptService(new D1PromptRepository(env.DB)));
   return c;
 }

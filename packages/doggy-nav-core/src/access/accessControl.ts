@@ -483,6 +483,52 @@ export const routePermissions: RoutePermission[] = [
     description: 'translate tools',
   },
 
+  // AI inference (OpenAI-compatible)
+  {
+    method: 'POST',
+    path: '/v1/chat/completions',
+    require: { level: 'optional' },
+    description: 'Chat completions (OpenAI-compatible)',
+  },
+  {
+    method: 'POST',
+    path: '/api/ai/chat',
+    require: { level: 'optional' },
+    description: 'Chat completions (API alias)',
+  },
+
+  // Prompt management (sysadmin only)
+  {
+    method: 'GET',
+    path: '/api/prompts',
+    require: { anyRole: ['sysadmin'] },
+    description: 'List prompts',
+  },
+  {
+    method: 'POST',
+    path: '/api/prompts',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Create prompt',
+  },
+  {
+    method: 'PUT',
+    path: '/api/prompts',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Update prompt',
+  },
+  {
+    method: 'DELETE',
+    path: '/api/prompts',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Delete prompt',
+  },
+  {
+    method: 'POST',
+    path: '/api/prompts/:id/activate',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Activate prompt',
+  },
+
   // Email settings (sysadmin only)
   {
     method: 'GET',

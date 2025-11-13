@@ -112,3 +112,12 @@ export interface FavoriteFolder {
 export type FavoriteUnionItem =
   | { type: 'folder'; order?: number | null; folder: FavoriteFolder; items: NavItem[] }
   | { type: 'nav'; order?: number | null; nav: NavItem };
+
+export interface Prompt {
+  id: ID;
+  name: string;
+  content: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}

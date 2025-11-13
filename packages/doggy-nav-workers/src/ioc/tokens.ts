@@ -33,6 +33,7 @@ export const TOKENS = {
   EmailSettingsService: Symbol('EmailSettingsService') as Token<EmailSettingsService>,
   ApplicationService: Symbol('ApplicationService') as Token<ApplicationService>,
   NavAdminService: Symbol('NavAdminService') as Token<NavAdminService>,
+  PromptService: Symbol('PromptService') as Token<any>,
   UserRepo: Symbol('UserRepo') as Token<any>,
   RoleRepo: Symbol('RoleRepo') as Token<any>,
   CategoryRepo: Symbol('CategoryRepo') as Token<any>,
