@@ -1,55 +1,31 @@
 import type { Context } from 'egg';
 import { getAppSource, getCookieNames } from './appSource';
+import {
+  buildCookieOptions as buildCookieOptionsCore,
+  type CookieEnvConfig,
+  type CookieRequestMeta,
+} from 'doggy-nav-core';
 
 interface TokenPair {
   accessToken: string;
   refreshToken?: string;
 }
 
-// Compute cookie domain per request based on strategy.
-// Strategies:
-// - auto (default): host-only cookie (omit Domain)
-// - fixed: always use COOKIE_DOMAIN
-// - allowlist: use COOKIE_DOMAIN_ALLOWLIST mapping (e.g., "admin=admin.example.com,main=main.example.org")
-const getCookieDomainForRequest = (ctx: Context): string | undefined => {
-  const mode = String(process.env.COOKIE_DOMAIN_MODE || 'auto').toLowerCase();
-  if (mode === 'fixed') {
-    return process.env.COOKIE_DOMAIN || undefined;
-  }
-  if (mode === 'allowlist') {
-    const raw = process.env.COOKIE_DOMAIN_ALLOWLIST || '';
-    if (raw) {
-      const map: Record<string, string> = {};
-      raw
-        .split(/[;,]/)
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .forEach((pair) => {
-          const [k, v] = pair.split(/[:=]/).map((s) => s.trim());
-          if (k && v) map[k.toLowerCase()] = v;
-        });
-      const src = getAppSource(ctx);
-      if (map[src]) return map[src];
-      const host = String((ctx.request?.header?.host || ctx.host || '')).toLowerCase();
-      if (host && map[host]) return map[host];
-    }
-  }
-  return undefined; // auto -> host-only
-};
-
 const buildCookieOptions = (ctx: Context, path: string = '/') => {
-  const options: any = {
-    httpOnly: true,
-    // In dev with localhost over http, force secure=false so cookies persist
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path,
+  const env: CookieEnvConfig = {
+    nodeEnv: process.env.NODE_ENV,
+    cookieDomainMode: process.env.COOKIE_DOMAIN_MODE,
+    cookieDomain: process.env.COOKIE_DOMAIN,
+    cookieDomainAllowlist: process.env.COOKIE_DOMAIN_ALLOWLIST,
   };
 
-  const domain = getCookieDomainForRequest(ctx);
-  if (domain) options.domain = domain;
+  const req: CookieRequestMeta = {
+    appSourceHeader: ctx.get('X-App-Source'),
+    host: (ctx.request?.header?.host || ctx.host || '') as string,
+    isSecure: Boolean((ctx as any).secure),
+  };
 
-  return options;
+  return buildCookieOptionsCore(env, req, path);
 };
 
 export const setAuthCookies = (ctx: Context, tokens: TokenPair) => {

@@ -134,10 +134,11 @@ DOGGY_SERVER=http://localhost:3002
 
 ### Frontend (packages/doggy-nav-main)
 
-| Variable     | Required (prod) | Default               | Description                                        |
-| ------------ | --------------- | --------------------- | -------------------------------------------------- |
-| DOGGY_SERVER | Recommended     | http://localhost:3002 | Backend base URL used by Next.js API proxy routes. |
-| ANALYZE      | Optional        | false                 | Enable bundle analyzer.                            |
+| Variable                   | Required (prod) | Default               | Description                                                                                            |
+| -------------------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
+| DOGGY_SERVER               | Recommended     | http://localhost:3002 | Backend base URL used by Next.js API proxy routes.                                                     |
+| ANALYZE                    | Optional        | false                 | Enable bundle analyzer.                                                                                |
+| DOGGY_SERVER_CLIENT_SECRET | Optional        | (unset)               | If REQUIRE_CLIENT_SECRET=true, set to your server client secret; injected by proxy as x-client-secret. |
 
 ### Admin (packages/doggy-nav-admin)
 

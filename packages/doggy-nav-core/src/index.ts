@@ -39,3 +39,4 @@ export * from './seed/engine';
 export * from './seed/defaults';
 export * from './access/accessControl';
 export * from './security/clientSecretGuard';
+export * from './security/authCookies';

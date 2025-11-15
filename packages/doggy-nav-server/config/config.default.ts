@@ -81,6 +81,9 @@ export default (appInfo: EggAppInfo) => {
     level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'INFO' : 'DEBUG'),
     consoleLevel:
       process.env.CONSOLE_LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'WARN' : 'DEBUG'),
+    // In Docker we want logs to stay on stdout/stderr instead of being silenced
+    // after the app is ready, so keep console logging enabled.
+    disableConsoleAfterReady: false,
   };
 
   const cookieConfig: any = {
