@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--inspect --enable-source-maps' PORT=3001 next dev",
     "build": "cross-env next build",
+    "build:static": "node ./scripts/static-build.mjs",
     "start": "cross-env PORT=3001 next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix"

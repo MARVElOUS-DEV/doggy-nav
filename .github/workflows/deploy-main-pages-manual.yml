@@ -1,0 +1,94 @@
+name: Deploy Main (Web) to Cloudflare Pages (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (production deploys to the production branch)'
+        type: choice
+        required: true
+        options:
+          - production
+          - preview
+        default: production
+
+jobs:
+  deploy:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build main (static)
+        run: pnpm -F doggy-nav-main run build:static
+
+      - name: Select deploy branch
+        id: sel
+        env:
+          ENV: ${{ inputs.environment }}
+          PROD_BRANCH_FALLBACK: main
+          CF_PAGES_PROD_BRANCH_MAIN: ${{ vars.CF_PAGES_PROD_BRANCH_MAIN }}
+        run: |
+          set -euo pipefail
+          PROD_BRANCH="${CF_PAGES_PROD_BRANCH_MAIN:-$PROD_BRANCH_FALLBACK}"
+          if [ "$ENV" = "production" ]; then
+            BRANCH="$PROD_BRANCH"
+          else
+            BRANCH="${GITHUB_REF_NAME}"
+          fi
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "Using branch: $BRANCH"
+
+      # Set runtime secrets BEFORE deploy so the new deployment can read them
+      - name: (Optional) Sync DOGGY_* and NEWS_SOURCE_URL to Pages project (via wrangler)
+        if: ${{ inputs.environment }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT_NAME_MAIN: ${{ secrets.CF_PAGES_PROJECT_NAME_MAIN }}
+          DOGGY_SERVER: ${{ secrets.DOGGY_SERVER }}
+          DOGGY_SERVER_CLIENT_SECRET: ${{ secrets.DOGGY_SERVER_CLIENT_SECRET }}
+          NEWS_SOURCE_URL: ${{ secrets.NEWS_SOURCE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CF_PAGES_PROJECT_NAME_MAIN:-}" ]; then
+            echo "CF_PAGES_PROJECT_NAME_MAIN is not set" >&2
+            exit 1
+          fi
+          if [ -n "${DOGGY_SERVER:-}" ]; then
+            printf '%s' "$DOGGY_SERVER" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER --project-name "$CF_PAGES_PROJECT_NAME_MAIN" --cwd ../doggy-nav-main || true
+          fi
+          if [ -n "${DOGGY_SERVER_CLIENT_SECRET:-}" ]; then
+            printf '%s' "$DOGGY_SERVER_CLIENT_SECRET" | pnpm -F doggy-nav-workers exec wrangler pages secret put DOGGY_SERVER_CLIENT_SECRET --project-name "$CF_PAGES_PROJECT_NAME_MAIN" --cwd ../doggy-nav-main || true
+          fi
+          if [ -n "${NEWS_SOURCE_URL:-}" ]; then
+            printf '%s' "$NEWS_SOURCE_URL" | pnpm -F doggy-nav-workers exec wrangler pages secret put NEWS_SOURCE_URL --project-name "$CF_PAGES_PROJECT_NAME_MAIN" --cwd ../doggy-nav-main || true
+          fi
+
+      - name: Deploy to Cloudflare Pages (via wrangler)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT_NAME_MAIN: ${{ secrets.CF_PAGES_PROJECT_NAME_MAIN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CF_PAGES_PROJECT_NAME_MAIN:-}" ]; then
+            echo "CF_PAGES_PROJECT_NAME_MAIN is not set" >&2
+            exit 1
+          fi
+          echo "Deploying packages/doggy-nav-main/dist with functions/ to Pages project: $CF_PAGES_PROJECT_NAME_MAIN"
+          pnpm -F doggy-nav-workers exec wrangler pages deploy dist \
+            --project-name "$CF_PAGES_PROJECT_NAME_MAIN" \
+            --branch "${{ steps.sel.outputs.branch }}" \
+            --cwd ../doggy-nav-main

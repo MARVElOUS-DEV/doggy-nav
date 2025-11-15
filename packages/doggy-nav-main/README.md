@@ -65,7 +65,7 @@ Create `.env.local`:
 
 ```bash
 # Backend API URL
-SERVER_URL=http://localhost:3002
+DOGGY_SERVER=http://localhost:3002
 
 # Build configuration
 ANALYZE=false
@@ -141,7 +141,7 @@ Development API calls are proxied through Next.js API routes:
 ```typescript
 // pages/api/auth/login.ts
 export default async function handler(req, res) {
-  const response = await axios.post(`${SERVER_URL}/api/login`, req.body);
+  const response = await axios.post(`${DOGGY_SERVER}/api/login`, req.body);
   return res.status(response.status).json(response.data);
 }
 ```
@@ -219,7 +219,7 @@ Optimized for Vercel with automatic deployments and environment management.
    - Clear `.next` directory and rebuild
 
 2. **API Connection Issues**
-   - Verify `SERVER_URL` environment variable
+   - Verify `DOGGY_SERVER` environment variable
    - Check backend server is running
    - Review proxy configuration
 

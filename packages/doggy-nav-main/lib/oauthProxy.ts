@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
-const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
-const SERVER_CLIENT_SECRET = process.env.SERVER_CLIENT_SECRET;
+const DOGGY_SERVER = process.env.DOGGY_SERVER || 'http://localhost:3002';
+const DOGGY_SERVER_CLIENT_SECRET = process.env.DOGGY_SERVER_CLIENT_SECRET;
 
 const buildHeaders = (req: NextApiRequest) => ({
   ...(req.headers.cookie ? { Cookie: req.headers.cookie } : {}),
-  ...(SERVER_CLIENT_SECRET ? { 'x-client-secret': SERVER_CLIENT_SECRET } : {}),
+  ...(DOGGY_SERVER_CLIENT_SECRET ? { 'x-client-secret': DOGGY_SERVER_CLIENT_SECRET } : {}),
   'X-App-Source': 'main',
 });
 
@@ -18,7 +18,7 @@ export function createOAuthInitHandler(provider: string) {
     }
 
     try {
-      const response = await axios.get(`${SERVER_URL}/api/auth/${provider}`, {
+      const response = await axios.get(`${DOGGY_SERVER}/api/auth/${provider}`, {
         headers: buildHeaders(req),
         maxRedirects: 0,
         validateStatus: () => true,
@@ -53,7 +53,7 @@ export function createOAuthCallbackHandler(provider: string) {
 
     try {
       const qs = req.url?.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
-      const url = `${SERVER_URL}/api/auth/${provider}/callback${qs}`;
+      const url = `${DOGGY_SERVER}/api/auth/${provider}/callback${qs}`;
 
       const response = await axios.get(url, {
         headers: buildHeaders(req),

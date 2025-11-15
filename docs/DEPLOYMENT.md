@@ -32,7 +32,7 @@ This project consists of three main components:
 3. **Set Environment Variables in Vercel Dashboard**:
    - Go to your project settings in Vercel Dashboard
    - Add these environment variables:
-     - `SERVER_URL`: Your deployed backend URL (e.g., `https://your-backend.railway.app`)
+     - `DOGGY_SERVER`: Your deployed backend URL (e.g., `https://your-backend.railway.app`)
      - `ANALYZE`: `false`
 
 ### Alternative: Deploy specific package
@@ -127,7 +127,7 @@ This serves the built SPA with the local Pages Functions.
 
 ### Frontend (Vercel)
 
-- `SERVER_URL`: Backend server URL
+- `DOGGY_SERVER`: Backend server URL
 - `ANALYZE`: Bundle analyzer flag
 
 ### Backend (Your server platform)
@@ -156,5 +156,5 @@ pnpm build
 ## Troubleshooting
 
 1. **Build fails**: Ensure all dependencies are installed with `pnpm install`
-2. **API calls fail**: Verify `SERVER_URL` environment variable is set correctly
+2. **API calls fail**: Verify `DOGGY_SERVER` environment variable is set correctly
 3. **Database connection**: Ensure MongoDB is accessible from your backend deployment

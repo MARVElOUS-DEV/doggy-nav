@@ -43,7 +43,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      SERVER_URL: http://server:3002
+      DOGGY_SERVER: http://server:3002
     ports:
       - '3001:3001'
     depends_on:

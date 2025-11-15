@@ -97,7 +97,7 @@ RATE_LIMIT_MAX_REQUESTS=100
 ```bash
 # Build Configuration
 ANALYZE=false
-SERVER_URL=http://localhost:3002
+DOGGY_SERVER=http://localhost:3002
 ```
 
 ## Environment Variables Reference
@@ -134,10 +134,10 @@ SERVER_URL=http://localhost:3002
 
 ### Frontend (packages/doggy-nav-main)
 
-| Variable   | Required (prod) | Default               | Description                                        |
-| ---------- | --------------- | --------------------- | -------------------------------------------------- |
-| SERVER_URL | Recommended     | http://localhost:3002 | Backend base URL used by Next.js API proxy routes. |
-| ANALYZE    | Optional        | false                 | Enable bundle analyzer.                            |
+| Variable     | Required (prod) | Default               | Description                                        |
+| ------------ | --------------- | --------------------- | -------------------------------------------------- |
+| DOGGY_SERVER | Recommended     | http://localhost:3002 | Backend base URL used by Next.js API proxy routes. |
+| ANALYZE      | Optional        | false                 | Enable bundle analyzer.                            |
 
 ### Admin (packages/doggy-nav-admin)
 

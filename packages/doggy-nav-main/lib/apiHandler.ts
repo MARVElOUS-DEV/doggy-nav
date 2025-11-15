@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios, { AxiosRequestConfig } from 'axios';
 
-const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
-const SERVER_CLIENT_SECRET = process.env.SERVER_CLIENT_SECRET;
+const DOGGY_SERVER = process.env.DOGGY_SERVER || 'http://localhost:3002';
+const DOGGY_SERVER_CLIENT_SECRET = process.env.DOGGY_SERVER_CLIENT_SECRET;
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -15,15 +15,12 @@ interface ApiConfig {
 }
 
 export const createApiHandler = (config: ApiConfig) => {
-  return async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-  ) {
+  return async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== config.method) {
       return res.status(405).json({
         code: 0,
         message: 'Method not allowed',
-        success: false
+        success: false,
       });
     }
 
@@ -41,19 +38,19 @@ export const createApiHandler = (config: ApiConfig) => {
         headers.Cookie = req.headers.cookie;
       }
 
-      if (SERVER_CLIENT_SECRET) {
-        headers['x-client-secret'] = SERVER_CLIENT_SECRET;
+      if (DOGGY_SERVER_CLIENT_SECRET) {
+        headers['x-client-secret'] = DOGGY_SERVER_CLIENT_SECRET;
       }
 
       const method = req.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete';
-      const targetPath = config.buildUrl ? config.buildUrl(req) : (config.endpoint || '');
-      const url = `${SERVER_URL}${targetPath}`;
+      const targetPath = config.buildUrl ? config.buildUrl(req) : config.endpoint || '';
+      const url = `${DOGGY_SERVER}${targetPath}`;
 
       // Collect query params if specified
       let params: Record<string, any> | undefined;
       if (config.paramNames) {
         params = {};
-        config.paramNames.forEach(paramName => {
+        config.paramNames.forEach((paramName) => {
           if (req.query[paramName] !== undefined) {
             params![paramName] = req.query[paramName];
           }
@@ -63,13 +60,13 @@ export const createApiHandler = (config: ApiConfig) => {
       }
 
       let response;
-      const axiosConfig:AxiosRequestConfig = {
+      const axiosConfig: AxiosRequestConfig = {
         headers,
         params,
         withCredentials: true,
       };
       if (process.env.NODE_ENV === 'development') {
-        axiosConfig.timeout = 0
+        axiosConfig.timeout = 0;
       }
 
       if (method === 'get') {
@@ -90,9 +87,11 @@ export const createApiHandler = (config: ApiConfig) => {
       }
 
       return res.status(response.status).json(response.data);
-
     } catch (error: any) {
-      console.error(`${SERVER_URL}${config.endpoint || config.buildUrl?.(req as any) || ''} proxy error:`, error);
+      console.error(
+        `${DOGGY_SERVER}${config.endpoint || config.buildUrl?.(req as any) || ''} proxy error:`,
+        error
+      );
 
       if (error.response) {
         const setCookie = error.response.headers?.['set-cookie'];
@@ -105,7 +104,7 @@ export const createApiHandler = (config: ApiConfig) => {
       return res.status(500).json({
         code: 0,
         message: 'Server connection failed',
-        success: false
+        success: false,
       });
     }
   };
