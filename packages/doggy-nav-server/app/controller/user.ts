@@ -25,10 +25,27 @@ export default class UserController extends CommonController {
   public async login() {
     const { ctx } = this;
     const { username, password } = ctx.request.body || {};
+    // Legacy fallback: if body is empty but old service.login exists, delegate and normalize shape
     if ((!username || !password) && typeof (ctx.service as any)?.user?.login === 'function') {
       const legacy = await (ctx.service as any).user.login();
-      ctx.body = { code: 1, msg: 'ok', data: { token: legacy?.token, user: legacy?.user } };
-      return;
+      if (!legacy) {
+        throw new AuthenticationError('账号或密码错误');
+      }
+      return {
+        token: legacy.token,
+        tokens: legacy.tokens ?? {
+          accessToken:
+            typeof legacy.token === 'string' && legacy.token.startsWith('Bearer ')
+              ? legacy.token.slice(7)
+              : legacy.token,
+          refreshToken: undefined,
+        },
+        user: legacy.user,
+      };
+    }
+
+    if (!username || !password) {
+      throw new AuthenticationError('请输入用户名和密码');
     }
     const repo = new MongooseAuthRepository(ctx);
     const service = new UserAuthService(repo);
@@ -49,8 +66,10 @@ export default class UserController extends CommonController {
       return { accessToken, refreshToken };
     };
     const res = await service.login(String(username || ''), String(password || ''), issueTokens);
-    if (!res) return this.error('账号或密码错误');
-    this.success(res);
+    if (!res) {
+      throw new AuthenticationError('账号或密码错误');
+    }
+    return res;
   }
 
   public async profile() {
@@ -69,7 +88,10 @@ export default class UserController extends CommonController {
       throw new AuthenticationError('用户未认证');
     }
     const body = this.getSanitizedBody();
-    const res = await this.userService.updateProfile(String(userId), { email: body.email, avatar: body.avatar });
+    const res = await this.userService.updateProfile(String(userId), {
+      email: body.email,
+      avatar: body.avatar,
+    });
     this.success(res);
   }
 
@@ -140,7 +162,9 @@ export default class UserController extends CommonController {
   }
 
   public async adminDelete() {
-    const ids: string[] = Array.isArray(this.ctx.request.body?.ids) ? this.ctx.request.body.ids : [];
+    const ids: string[] = Array.isArray(this.ctx.request.body?.ids)
+      ? this.ctx.request.body.ids
+      : [];
     const ok = await this.userService.adminDelete(ids);
     if (!ok) return this.error('删除失败');
     this.success(true);
