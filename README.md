@@ -5,6 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.17.0-brightgreen)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-f38020)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-Pages-f38020)
+
 [![CI/CD](https://github.com/MARVElOUS-DEV/doggy-nav/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/MARVElOUS-DEV/doggy-nav/actions)
 
 _A modern, self-hosted navigation and bookmark management system_
@@ -109,32 +112,72 @@ doggy-nav/
 
 ## 📦 Quick Start
 
-### ⚡ Quick Start with Docker (CI images — recommended)
+### ⚡ Quick Start with Docker
 
 ```bash
-# Clone the repository
-git clone https://github.com/MARVElOUS-DEV/doggy-nav.git
+# get the dockerfile
+mkdir doggy-nav
 cd doggy-nav
+wget https://raw.githubusercontent.com/MARVElOUS-DEV/doggy-nav/refs/heads/main/docker-compose.yml
+```
 
-# Use prebuilt images from CI (defaults: ghcr.io/marvelous-dev, tag=latest)
+> **update the JWT_SECRET with at least 32 length complicated string for your service security, otherwise all the service will fail**
+
+<strong>this is important!!</strong>
+
+```bash
+# start the containers
 docker compose up -d
 
-# Access the applications
-echo "🎉 Doggy Nav is running!"
-echo "Frontend: http://localhost:3001"
-echo "Backend API: http://localhost:3002"
-echo "Admin Panel: http://localhost:8080"
+# initialize the system user
+docker exec -it doggy-nav-server sh -c "node utils/postinstall.js"
+
+# initialize the system categories and nav items
+docker exec -it doggy-nav-server sh -c "node utils/initCategories.js"
 ```
 
-Alternative: build images locally
+🎉 Doggy Nav is running!
+
+Access the applications in current machine with their exposed ports, you can add any reverse proxy for your service if you like.
+
+Frontend: http://localhost:3001, front also supports vercel deploy
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/MARVElOUS-DEV/doggy-nav%2Ftree%2Fmaster)
+
+Backend API: http://localhost:3002
+
+Admin Panel: http://localhost:8080
+
+### ⚡ Quick Start with Cloudflare
+
+1. Fork the repo
+2. Create a D1 database from your cloudflare console. pay attention to the DB name and its id. they will be used later.
+3. Link your cloudflare workers and pages with your forked repo, then go to the repo settings page to set the secrets and variables
+
+- in the cloudflare console side:
+  <img src="docs/assets/cloudflare-dashboard.png" alt="cloudflare-dashboard" />
+  <img src="docs/assets/workers-binding-1.png" alt="workers-binding-1" />
+  <img src="docs/assets/workers-binding-2.png" alt="workers-binding-2" />
+
+- in the github side:
+  <img src="docs/assets/github-actions-setting.png" alt="github-actions-setting" />
+  <img src="docs/assets/github-secrets.png" alt="github-secrets" />
+  <img src="docs/assets/github-variables.png" alt="github-variables" />
+
+4. Trigger the github actions in your repo.
+   4.1 Deploy the workers secrets first time
+   <img src="docs/assets/deploy-workers-secrets.png" alt="cloudflare-dashboard" />
+   4.2 then deploy the workers
+   <img src="docs/assets/deploy-workers.png" alt="deploy-workers" />
+   4.3 deploy main or admin web
+   <img src="docs/assets/deploy-main-web.png" alt="deploy-main-web" />
+   <img src="docs/assets/deploy-admin-pages.png" alt="deploy-admin-pages" />
+
+5. initialize the system user and categories\nav items with REST Api, this rely on the seed token set in your github action secrets. so if you have initialized the system, we recommend you remove the SEED_TOKEN secret from your github action secrets.
 
 ```bash
-cp deploy/.env.example deploy/.env   # optional, edit values like JWT_SECRET/MONGO_ROOT_PASSWORD
-docker compose -f deploy/docker-compose-init-prod.yml --env-file deploy/.env up -d --build
+curl -X POST "https://<your-worker>.<account>.workers.dev/api/seed/defaults?token=<SEED_TOKEN>"
+curl -X POST "https://<your-worker>.<account>.workers.dev/api/seed/categories?token=<SEED_TOKEN>"
 ```
-
-- For cloud/platform deployment, see docs/DEPLOYMENT.md.
-- For Docker/Compose deployment, see docs/DOCKER.md.
 
 ### 🛠 Development Setup
 
@@ -156,70 +199,6 @@ See `docs/DEVELOPMENT.md` for local setup, scripts, database, and environment co
 - [Backend Development](packages/doggy-nav-server/README.md)
 - [Admin Panel Development](packages/doggy-nav-admin/README.md)
 - [Workers Development](packages/doggy-nav-workers/README.md)
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-### 🔄 Development Workflow
-
-0. **Review the repo guide**  
-   Skim through [AGENTS.md](AGENTS.md) to understand coding standards, testing expectations, and commit conventions.
-
-1. **Fork & Clone**
-
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/doggy-nav.git
-   cd doggy-nav
-   ```
-
-2. **Create Feature Branch**
-
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-
-3. **Install & Setup**
-
-   ```bash
-   pnpm install
-   cp packages/doggy-nav-server/.env.example packages/doggy-nav-server/.env.local
-   ```
-
-4. **Develop & Test**
-
-   ```bash
-   pnpm server:dev  # Start backend
-   pnpm web:dev     # Start frontend
-   pnpm admin:dev     # Start frontend
-   pnpm workers:dev     # Start frontend
-   pnpm test        # Run tests
-   ```
-
-5. **Commit & Push**
-
-   ```bash
-   pnpm commit      # Use conventional commits
-   git push origin feature/amazing-feature
-   ```
-
-6. **Create Pull Request**
-
-### 📋 Contribution Guidelines
-
-- **Code Style**: ESLint + Prettier (auto-formatted)
-- **Commits**: Use [Conventional Commits](https://conventionalcommits.org/)
-- **Testing**: Add tests for new features
-- **Documentation**: Update docs for API changes
-
-### 🐛 Bug Reports
-
-Found a bug? Please create an issue with:
-
-- **Environment details** (OS, Node.js version, etc.)
-- **Steps to reproduce**
-- **Expected vs actual behavior**
-- **Screenshots** (if applicable)
 
 ## 🛡 Security
 

@@ -20,6 +20,7 @@ services:
   server:
     image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-server:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    name: doggy-nav-server
     environment:
       NODE_ENV: production
       PORT: 3002
@@ -54,6 +55,7 @@ services:
   frontend:
     image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    name: doggy-nav-main
     environment:
       NODE_ENV: production
       PORT: 3001
@@ -70,6 +72,7 @@ services:
   admin:
     image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-marvelous-dev}/doggy-nav-admin:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    name: doggy-nav-admin
     environment:
       DOGGY_SERVER: http://server:3002
       # Optional: if server enforces client secret on all APIs, set below

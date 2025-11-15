@@ -145,3 +145,67 @@ DOGGY_SERVER=http://localhost:3002
 | -------------------------- | -------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
 | DOGGY_SERVER               | No       | http://localhost:3002 | Dev proxy target for API.                                                                              |
 | DOGGY_SERVER_CLIENT_SECRET | Optional | (unset)               | If REQUIRE_CLIENT_SECRET=true, set to your server client secret; injected by proxy as x-client-secret. |
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+### 🔄 Development Workflow
+
+0. **Review the repo guide**  
+   Skim through [AGENTS.md](AGENTS.md) to understand coding standards, testing expectations, and commit conventions.
+
+1. **Fork & Clone**
+
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/doggy-nav.git
+   cd doggy-nav
+   ```
+
+2. **Create Feature Branch**
+
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+3. **Install & Setup**
+
+   ```bash
+   pnpm install
+   cp packages/doggy-nav-server/.env.example packages/doggy-nav-server/.env.local
+   ```
+
+4. **Develop & Test**
+
+   ```bash
+   pnpm server:dev  # Start backend
+   pnpm web:dev     # Start frontend
+   pnpm admin:dev     # Start frontend
+   pnpm workers:dev     # Start frontend
+   pnpm test        # Run tests
+   ```
+
+5. **Commit & Push**
+
+   ```bash
+   pnpm commit      # Use conventional commits
+   git push origin feature/amazing-feature
+   ```
+
+6. **Create Pull Request**
+
+### 📋 Contribution Guidelines
+
+- **Code Style**: ESLint + Prettier (auto-formatted)
+- **Commits**: Use [Conventional Commits](https://conventionalcommits.org/)
+- **Testing**: Add tests for new features
+- **Documentation**: Update docs for API changes
+
+### 🐛 Bug Reports
+
+Found a bug? Please create an issue with:
+
+- **Environment details** (OS, Node.js version, etc.)
+- **Steps to reproduce**
+- **Expected vs actual behavior**
+- **Screenshots** (if applicable)
