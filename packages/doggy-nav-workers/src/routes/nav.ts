@@ -17,11 +17,24 @@ navRoutes.get('/list', publicRoute(), async (c) => {
 
     const svc = getDI(c).resolve(TOKENS.NavService);
     const user = (c as any).get?.('user');
+
+    // If requesting non-approved statuses, require admin auth explicitly
+    const reqStatus = status !== undefined ? Number(status) : undefined;
+    if (reqStatus !== undefined && reqStatus !== 0) {
+      const roles: string[] = Array.isArray(user?.roles) ? user!.roles! : [];
+      if (!user) {
+        return c.json(responses.err('Authentication required'), 401);
+      }
+      if (!(roles.includes('admin') || roles.includes('sysadmin'))) {
+        return c.json(responses.err('Insufficient role'), 403);
+      }
+    }
+
     const auth = user
       ? ({
           roles: Array.isArray(user.roles) ? user.roles : [],
           groups: Array.isArray(user.groups) ? user.groups : [],
-          source: 'main' as const,
+          source: 'admin' as const,
         } as any)
       : undefined;
 

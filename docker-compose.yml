@@ -26,10 +26,24 @@ services:
       # IMPORTANT: server reads host:port (or mongodb+srv URL). Do not pass full mongodb:// URL here.
       MONGO_URL: mongodb:27017
       JWT_SECRET: ${JWT_SECRET:-doggy-nav-super-secret-change-in-production}
+      REQUIRE_CLIENT_SECRET: false
+      REQUIRE_INVITE_CODE: true
+      JWT_ACCESS_EXPIRES_IN: 10m
+      JWT_REFRESH_EXPIRES_IN: 7d
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
       RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
-      # Allow frontend and admin origins
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001,http://localhost:8080}
+      # OAUTH
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL:-}
+
+      LINUXDO_CLIENT_ID: ${LINUXDO_CLIENT_ID:-}
+      LINUXDO_CLIENT_SECRET: ${LINUXDO_CLIENT_SECRET:-}
+      LINUXDO_CALLBACK_URL: ${LINUXDO_CALLBACK_URL:-}
+      LINUXDO_AUTHORIZATION_URL: https://connect.linux.do/oauth2/authorize
+      LINUXDO_TOKEN_URL: https://connect.linux.do/oauth2/token
+      LINUXDO_PROFILE_URL: https://connect.linux.do/api/user
+      LINUXDO_SCOPE: profile,email
     ports:
       - '3002:3002'
     depends_on:
@@ -43,7 +57,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      SERVER_URL: http://server:3002
+      DOGGY_SERVER: http://server:3002
+      # Optional: if server enforces client secret on all APIs, set below
+      # DOGGY_SERVER_CLIENT_SECRET: ${DOGGY_SERVER_CLIENT_SECRET}
     ports:
       - '3001:3001'
     depends_on:

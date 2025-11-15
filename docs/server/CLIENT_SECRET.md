@@ -215,7 +215,7 @@ These bypass routes are essential for initial system setup and client secret man
 
 2. Configure web apps to send the secret header automatically
 
-- Main (Next.js): set env `SERVER_URL` and `SERVER_CLIENT_SECRET` in your hosting environment. The app forwards requests through Next.js API routes and automatically adds header `x-client-secret: $SERVER_CLIENT_SECRET` when calling the server.
+- Main (Next.js): set env `DOGGY_SERVER` and `SERVER_CLIENT_SECRET` in your hosting environment. The app forwards requests through Next.js API routes and automatically adds header `x-client-secret: $SERVER_CLIENT_SECRET` when calling the server.
 - Admin (Umi): DO NOT expose the secret in the browser. Inject the header at a trusted proxy:
   - Development: configure Umi dev proxy to forward `/api` to the server and inject header `x-client-secret` from `DOGGY_SERVER_CLIENT_SECRET`.
   - Production: configure nginx to proxy `/api` and inject header `x-client-secret` from the env `DOGGY_SERVER_CLIENT_SECRET`.

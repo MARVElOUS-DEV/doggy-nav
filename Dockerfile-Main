@@ -57,4 +57,4 @@ ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
 WORKDIR /app/packages/doggy-nav-main
-CMD ["pnpm", "start"]
+CMD ["pnpm", "exec", "next", "start"]

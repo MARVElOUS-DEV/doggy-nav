@@ -1,4 +1,5 @@
 import { D1Database } from '@cloudflare/workers-types';
+import { nowChromeTime } from 'doggy-nav-core';
 
 /**
  * Data migration utilities for converting MongoDB data to D1 SQL database
@@ -15,8 +16,9 @@ export class DataMigration {
    */
   generateUUID(): string {
     // D1 doesn't have native UUID, so we create a simple one
-    return Math.random().toString(36).substring(2, 15) +
-           Math.random().toString(36).substring(2, 15);
+    return (
+      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    );
   }
 
   /**
@@ -54,22 +56,24 @@ export class DataMigration {
       const userId = this.convertObjectId(user._id.toString());
 
       // Insert user
-      await insertUser.bind(
-        userId,
-        user.username || '',
-        user.email || '',
-        user.password || '',
-        user.isActive ? 1 : 0,
-        user.nickName || '',
-        user.phone || '',
-        JSON.stringify(user.extraPermissions || []),
-        user.lastLoginAt ? user.lastLoginAt.toISOString() : null,
-        user.createdAt ? user.createdAt.toISOString() : new Date().toISOString(),
-        user.updatedAt ? user.updatedAt.toISOString() : new Date().toISOString(),
-        user.resetPasswordToken || null,
-        user.resetPasswordExpires ? user.resetPasswordExpires.toISOString() : null,
-        user.avatar || null
-      ).run();
+      await insertUser
+        .bind(
+          userId,
+          user.username || '',
+          user.email || '',
+          user.password || '',
+          user.isActive ? 1 : 0,
+          user.nickName || '',
+          user.phone || '',
+          JSON.stringify(user.extraPermissions || []),
+          user.lastLoginAt ? user.lastLoginAt.toISOString() : null,
+          user.createdAt ? user.createdAt.toISOString() : new Date().toISOString(),
+          user.updatedAt ? user.updatedAt.toISOString() : new Date().toISOString(),
+          user.resetPasswordToken || null,
+          user.resetPasswordExpires ? user.resetPasswordExpires.toISOString() : null,
+          user.avatar || null
+        )
+        .run();
 
       // Insert user roles
       if (user.roles && Array.isArray(user.roles)) {
@@ -106,16 +110,18 @@ export class DataMigration {
     for (const role of mongoRoles) {
       const roleId = this.convertObjectId(role._id.toString());
 
-      await insertRole.bind(
-        roleId,
-        role.slug || '',
-        role.displayName || '',
-        role.description || '',
-        JSON.stringify(role.permissions || []),
-        role.isSystem ? 1 : 0,
-        role.createdAt ? role.createdAt.toISOString() : new Date().toISOString(),
-        role.updatedAt ? role.updatedAt.toISOString() : new Date().toISOString()
-      ).run();
+      await insertRole
+        .bind(
+          roleId,
+          role.slug || '',
+          role.displayName || '',
+          role.description || '',
+          JSON.stringify(role.permissions || []),
+          role.isSystem ? 1 : 0,
+          role.createdAt ? role.createdAt.toISOString() : new Date().toISOString(),
+          role.updatedAt ? role.updatedAt.toISOString() : new Date().toISOString()
+        )
+        .run();
     }
   }
 
@@ -133,14 +139,16 @@ export class DataMigration {
     for (const group of mongoGroups) {
       const groupId = this.convertObjectId(group._id.toString());
 
-      await insertGroup.bind(
-        groupId,
-        group.slug || '',
-        group.displayName || '',
-        group.description || '',
-        group.createdAt ? group.createdAt.toISOString() : new Date().toISOString(),
-        group.updatedAt ? group.updatedAt.toISOString() : new Date().toISOString()
-      ).run();
+      await insertGroup
+        .bind(
+          groupId,
+          group.slug || '',
+          group.displayName || '',
+          group.description || '',
+          group.createdAt ? group.createdAt.toISOString() : new Date().toISOString(),
+          group.updatedAt ? group.updatedAt.toISOString() : new Date().toISOString()
+        )
+        .run();
     }
   }
 
@@ -173,31 +181,35 @@ export class DataMigration {
     for (const category of mongoCategories) {
       const categoryId = this.convertObjectId(category._id.toString());
 
-      await insertCategory.bind(
-        categoryId,
-        category.name || '',
-        category.categoryId || '',
-        category.description || '',
-        category.createAt || Date.now(),
-        category.onlyFolder ? 1 : 0,
-        category.icon || '',
-        category.showInMenu ? 1 : 0,
-        category.audience?.visibility || 'public',
-        category.createdAt ? category.createdAt.toISOString() : new Date().toISOString(),
-        category.updatedAt ? category.updatedAt.toISOString() : new Date().toISOString()
-      ).run();
+      await insertCategory
+        .bind(
+          categoryId,
+          category.name || '',
+          category.categoryId || '',
+          category.description || '',
+          category.createAt || nowChromeTime(),
+          category.onlyFolder ? 1 : 0,
+          category.icon || '',
+          category.showInMenu ? 1 : 0,
+          category.audience?.visibility || 'public',
+          category.createdAt ? category.createdAt.toISOString() : new Date().toISOString(),
+          category.updatedAt ? category.updatedAt.toISOString() : new Date().toISOString()
+        )
+        .run();
 
       // Insert category children
       if (category.children && Array.isArray(category.children)) {
         for (const child of category.children) {
           if (child.name) {
-            await insertCategoryChild.bind(
-              categoryId,
-              child.name,
-              child.categoryId || '',
-              child.createAt || Date.now(),
-              child.showInMenu ? 1 : 0
-            ).run();
+            await insertCategoryChild
+              .bind(
+                categoryId,
+                child.name,
+                child.categoryId || '',
+                child.createAt || nowChromeTime(),
+                child.showInMenu ? 1 : 0
+              )
+              .run();
           }
         }
       }
@@ -206,10 +218,9 @@ export class DataMigration {
       if (category.audience?.allowRoles && Array.isArray(category.audience.allowRoles)) {
         for (const roleId of category.audience.allowRoles) {
           if (roleId) {
-            await insertCategoryRolePermission.bind(
-              categoryId,
-              this.convertObjectId(roleId.toString())
-            ).run();
+            await insertCategoryRolePermission
+              .bind(categoryId, this.convertObjectId(roleId.toString()))
+              .run();
           }
         }
       }
@@ -218,10 +229,9 @@ export class DataMigration {
       if (category.audience?.allowGroups && Array.isArray(category.audience.allowGroups)) {
         for (const groupId of category.audience.allowGroups) {
           if (groupId) {
-            await insertCategoryGroupPermission.bind(
-              categoryId,
-              this.convertObjectId(groupId.toString())
-            ).run();
+            await insertCategoryGroupPermission
+              .bind(categoryId, this.convertObjectId(groupId.toString()))
+              .run();
           }
         }
       }
@@ -255,40 +265,43 @@ export class DataMigration {
 
     for (const bookmark of mongoBookmarks) {
       const bookmarkId = this.convertObjectId(bookmark._id.toString());
-      const categoryId = bookmark.categoryId ? this.convertObjectId(bookmark.categoryId.toString()) : null;
+      const categoryId = bookmark.categoryId
+        ? this.convertObjectId(bookmark.categoryId.toString())
+        : null;
 
-      await insertBookmark.bind(
-        bookmarkId,
-        categoryId,
-        bookmark.name || '',
-        bookmark.href || '',
-        bookmark.desc || '',
-        bookmark.logo || '',
-        bookmark.authorName || '',
-        bookmark.authorUrl || '',
-        bookmark.auditTime ? bookmark.auditTime.toISOString() : null,
-        bookmark.createTime || Date.now(),
-        JSON.stringify(bookmark.tags || []),
-        bookmark.view || 0,
-        bookmark.star || 0,
-        bookmark.status || 0,
-        bookmark.isFavorite ? 1 : 0,
-        bookmark.urlStatus || 'unknown',
-        bookmark.lastUrlCheck || null,
-        bookmark.responseTime || null,
-        bookmark.audience?.visibility || 'public',
-        bookmark.createdAt ? bookmark.createdAt.toISOString() : new Date().toISOString(),
-        bookmark.updatedAt ? bookmark.updatedAt.toISOString() : new Date().toISOString()
-      ).run();
+      await insertBookmark
+        .bind(
+          bookmarkId,
+          categoryId,
+          bookmark.name || '',
+          bookmark.href || '',
+          bookmark.desc || '',
+          bookmark.logo || '',
+          bookmark.authorName || '',
+          bookmark.authorUrl || '',
+          bookmark.auditTime ? bookmark.auditTime.toISOString() : null,
+          bookmark.createTime || nowChromeTime(),
+          JSON.stringify(bookmark.tags || []),
+          bookmark.view || 0,
+          bookmark.star || 0,
+          bookmark.status || 0,
+          bookmark.isFavorite ? 1 : 0,
+          bookmark.urlStatus || 'unknown',
+          bookmark.lastUrlCheck || null,
+          bookmark.responseTime || null,
+          bookmark.audience?.visibility || 'public',
+          bookmark.createdAt ? bookmark.createdAt.toISOString() : new Date().toISOString(),
+          bookmark.updatedAt ? bookmark.updatedAt.toISOString() : new Date().toISOString()
+        )
+        .run();
 
       // Insert bookmark role permissions
       if (bookmark.audience?.allowRoles && Array.isArray(bookmark.audience.allowRoles)) {
         for (const roleId of bookmark.audience.allowRoles) {
           if (roleId) {
-            await insertBookmarkRolePermission.bind(
-              bookmarkId,
-              this.convertObjectId(roleId.toString())
-            ).run();
+            await insertBookmarkRolePermission
+              .bind(bookmarkId, this.convertObjectId(roleId.toString()))
+              .run();
           }
         }
       }
@@ -297,10 +310,9 @@ export class DataMigration {
       if (bookmark.audience?.allowGroups && Array.isArray(bookmark.audience.allowGroups)) {
         for (const groupId of bookmark.audience.allowGroups) {
           if (groupId) {
-            await insertBookmarkGroupPermission.bind(
-              bookmarkId,
-              this.convertObjectId(groupId.toString())
-            ).run();
+            await insertBookmarkGroupPermission
+              .bind(bookmarkId, this.convertObjectId(groupId.toString()))
+              .run();
           }
         }
       }
@@ -322,14 +334,16 @@ export class DataMigration {
       const tagId = this.convertObjectId(tag._id.toString());
       const slug = tag.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '';
 
-      await insertTag.bind(
-        tagId,
-        tag.name || '',
-        slug,
-        tag.description || '',
-        tag.createdAt ? tag.createdAt.toISOString() : new Date().toISOString(),
-        tag.updatedAt ? tag.updatedAt.toISOString() : new Date().toISOString()
-      ).run();
+      await insertTag
+        .bind(
+          tagId,
+          tag.name || '',
+          slug,
+          tag.description || '',
+          tag.createdAt ? tag.createdAt.toISOString() : new Date().toISOString(),
+          tag.updatedAt ? tag.updatedAt.toISOString() : new Date().toISOString()
+        )
+        .run();
     }
   }
 
@@ -348,12 +362,14 @@ export class DataMigration {
       const userId = this.convertObjectId(favorite.userId.toString());
       const bookmarkId = this.convertObjectId(favorite.bookmarkId.toString());
 
-      await insertFavorite.bind(
-        userId,
-        bookmarkId,
-        favorite.folderName || '',
-        favorite.createdAt ? favorite.createdAt.toISOString() : new Date().toISOString()
-      ).run();
+      await insertFavorite
+        .bind(
+          userId,
+          bookmarkId,
+          favorite.folderName || '',
+          favorite.createdAt ? favorite.createdAt.toISOString() : new Date().toISOString()
+        )
+        .run();
     }
   }
 
@@ -369,7 +385,7 @@ export class DataMigration {
       { table: 'roles', expected: 'at least 1 role' },
       { table: 'groups', expected: 'at least 1 group' },
       { table: 'categories', expected: 'at least 1 category' },
-      { table: 'bookmarks', expected: 'at least 1 bookmark' }
+      { table: 'bookmarks', expected: 'at least 1 bookmark' },
     ];
 
     for (const check of checks) {
@@ -386,7 +402,7 @@ export class DataMigration {
       { table: 'user_roles', fkTable: 'users', fkColumn: 'user_id' },
       { table: 'user_groups', fkTable: 'users', fkColumn: 'user_id' },
       { table: 'category_role_permissions', fkTable: 'categories', fkColumn: 'category_id' },
-      { table: 'bookmark_role_permissions', fkTable: 'bookmarks', fkColumn: 'bookmark_id' }
+      { table: 'bookmark_role_permissions', fkTable: 'bookmarks', fkColumn: 'bookmark_id' },
     ];
 
     for (const check of fkChecks) {
@@ -405,7 +421,7 @@ export class DataMigration {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -429,9 +445,21 @@ export class DataMigration {
    */
   async resetAllData(): Promise<void> {
     const tables = [
-      'favorites', 'bookmark_tags', 'bookmark_role_permissions', 'bookmark_group_permissions',
-      'category_children', 'category_role_permissions', 'category_group_permissions',
-      'user_roles', 'user_groups', 'bookmarks', 'categories', 'tags', 'users', 'roles', 'groups'
+      'favorites',
+      'bookmark_tags',
+      'bookmark_role_permissions',
+      'bookmark_group_permissions',
+      'category_children',
+      'category_role_permissions',
+      'category_group_permissions',
+      'user_roles',
+      'user_groups',
+      'bookmarks',
+      'categories',
+      'tags',
+      'users',
+      'roles',
+      'groups',
     ];
 
     for (const table of tables) {

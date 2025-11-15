@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
     locales: ['en', 'zh'],
     defaultLocale: 'zh',
   },
-  // output: 'export',
   output: 'standalone',
   distDir: 'dist',
   typescript: {

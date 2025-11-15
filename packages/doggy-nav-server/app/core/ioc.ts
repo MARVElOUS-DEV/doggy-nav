@@ -29,6 +29,7 @@ export const TOKENS = {
   UserService: Symbol('UserService') as Token<UserService>,
   TagService: Symbol('TagService') as Token<TagService>,
   TranslateService: Symbol('TranslateService') as Token<TranslateService>,
+  PromptService: Symbol('PromptService') as Token<any>,
 };
 
 export type AppContainer = Container;

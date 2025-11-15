@@ -124,7 +124,7 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
       console.info('🔑 Client Secret (store securely, shown once):', clientSecret);
       console.info('➡️  Next steps:');
       console.info(
-        '   - Main (Next.js): set SERVER_CLIENT_SECRET to this value (requests go via Next.js API routes).'
+        '   - Main (Next.js): set DOGGY_SERVER_CLIENT_SECRET to this value (requests go via Next.js API routes).'
       );
       console.info('   - Admin: DO NOT expose in browser env.');
       console.info(

@@ -3,11 +3,13 @@
 ## Quick Start
 
 1. **Copy environment variables**:
+
    ```bash
    cp .env.docker.example .env
    ```
 
 2. **Start all services**:
+
    ```bash
    docker-compose up -d
    ```
@@ -21,11 +23,13 @@
 ## Development Setup
 
 1. **Start only database services**:
+
    ```bash
    docker-compose -f docker-compose.dev.yml up -d
    ```
 
 2. **Run applications locally**:
+
    ```bash
    # Terminal 1: Backend
    pnpm server:dev
@@ -42,6 +46,7 @@
 ### Environment Configuration
 
 Edit `.env` file with production values:
+
 ```bash
 MONGO_ROOT_PASSWORD=your-secure-password
 JWT_SECRET=your-super-secure-jwt-secret
@@ -66,6 +71,7 @@ docker-compose down
 ## Individual Service Commands
 
 ### Backend Server
+
 ```bash
 # Build
 docker build -f Dockerfile-Server -t doggy-nav-server .
@@ -80,6 +86,7 @@ docker run -d \
 ```
 
 ### Frontend
+
 ```bash
 # Build
 docker build -f Dockerfile-Main -t doggy-nav-frontend .
@@ -88,11 +95,12 @@ docker build -f Dockerfile-Main -t doggy-nav-frontend .
 docker run -d \
   --name doggy-nav-frontend \
   -p 3001:3001 \
-  -e SERVER_URL=http://localhost:3002 \
+  -e DOGGY_SERVER=http://localhost:3002 \
   doggy-nav-frontend
 ```
 
 ### Admin Panel
+
 ```bash
 # Build
 docker build -f Dockerfile-Admin -t doggy-nav-admin .
@@ -108,17 +116,20 @@ docker run -d \
 ## Optimization Features
 
 ### Multi-stage Builds
+
 - **Frontend**: Base → Dependencies → Builder → Runner (optimized for Next.js standalone)
 - **Backend**: Base → Dependencies → Builder → Runner (production-only dependencies)
 - **Admin**: Base → Dependencies → Builder → Nginx Runner
 
 ### Security
+
 - Non-root users in all containers
 - Minimal Alpine-based images
 - Production-only dependencies
 - Health checks for all services
 
 ### Performance
+
 - Layer caching optimization
 - Standalone Next.js output
 - gzip compression in nginx
@@ -127,12 +138,14 @@ docker run -d \
 ## Monitoring and Health Checks
 
 All services include health checks:
+
 - **MongoDB**: Connection ping
 - **Backend**: HTTP health endpoint
 - **Frontend**: HTTP availability check
 - **Admin**: HTTP availability check
 
 View health status:
+
 ```bash
 docker-compose ps
 ```
@@ -140,6 +153,7 @@ docker-compose ps
 ## Troubleshooting
 
 ### Build Issues
+
 ```bash
 # Clear build cache
 docker builder prune
@@ -149,6 +163,7 @@ docker-compose build --no-cache
 ```
 
 ### Runtime Issues
+
 ```bash
 # View logs
 docker-compose logs [service-name]
@@ -161,6 +176,7 @@ docker-compose restart [service-name]
 ```
 
 ### Database Issues
+
 ```bash
 # Reset database
 docker-compose down -v
@@ -170,7 +186,7 @@ docker-compose up -d
 ## Port Mapping
 
 | Service  | Internal Port | External Port |
-|----------|---------------|---------------|
+| -------- | ------------- | ------------- |
 | Frontend | 3001          | 3001          |
 | Backend  | 3002          | 3002          |
 | Admin    | 8080          | 8080          |

@@ -100,6 +100,18 @@ export default (app: Application) => {
   // Translation routes
   router.post('/api/translate', controller.translate.translate);
 
+  // Prompt management routes
+  router.get('/api/prompts', controller.prompt.list);
+  router.post('/api/prompts', controller.prompt.add);
+  router.put('/api/prompts', controller.prompt.update);
+  router.delete('/api/prompts', controller.prompt.remove);
+  router.post('/api/prompts/:id/activate', controller.prompt.setActive);
+
+  // AI inference routes (OpenAI-compatible)
+  router.post('/v1/chat/completions', controller.ai.chatCompletions);
+  // Admin-friendly alias under /api (proxied in dev)
+  router.post('/api/ai/chat', controller.ai.chatCompletions);
+
   // Email settings routes
   router.get('/api/email-settings', controller.emailSettings.get);
   router.put('/api/email-settings', controller.emailSettings.update);

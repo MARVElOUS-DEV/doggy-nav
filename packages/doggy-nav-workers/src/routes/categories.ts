@@ -4,7 +4,7 @@ import { getDI } from '../ioc/helpers';
 import { responses } from '../utils/responses';
 import { createAuthMiddleware, requireRole, publicRoute } from '../middleware/auth';
 import { newId24 } from '../utils/id';
-import { GLOBAL_ROOT_CATEGORY_ID } from 'doggy-nav-core';
+import { GLOBAL_ROOT_CATEGORY_ID, nowChromeTime } from 'doggy-nav-core';
 
 export const categoryRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -42,7 +42,7 @@ categoryRoutes.post(
       const { name, categoryId, description, icon, showInMenu, onlyFolder, audience } = body || {};
       if (!name || !categoryId)
         return c.json(responses.badRequest('name and categoryId are required'), 400);
-      const createAt = Date.now();
+      const createAt = nowChromeTime();
       const vis = (audience?.visibility as string) || 'public';
       const db = c.env.DB;
       const id = newId24();
