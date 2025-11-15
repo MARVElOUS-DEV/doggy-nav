@@ -1,17 +1,18 @@
 import type { Context } from 'egg';
+import {
+  type AppSource,
+  getAppSourceFromHeader,
+  getCookieNames as coreGetCookieNames,
+} from 'doggy-nav-core';
 
-export type AppSource = 'admin' | 'main';
+export type { AppSource };
 
 export function getAppSource(ctx: Context): AppSource {
-  const raw = (ctx.get('X-App-Source') || '').toLowerCase();
-  return raw === 'admin' ? 'admin' : 'main';
+  return getAppSourceFromHeader(ctx.get('X-App-Source'));
 }
 
 export function getCookieNames(src: AppSource): { access: string; refresh: string } {
-  return {
-    access: src === 'admin' ? 'access_token_admin' : 'access_token_main',
-    refresh: src === 'admin' ? 'refresh_token_admin' : 'refresh_token_main',
-  };
+  return coreGetCookieNames(src);
 }
 
 export function getAccessTokenFromCookies(ctx: Context): string | undefined {

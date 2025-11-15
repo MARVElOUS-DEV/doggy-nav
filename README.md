@@ -134,6 +134,9 @@ docker exec -it doggy-nav-server sh -c "node utils/postinstall.js"
 
 # initialize the system categories and nav items
 docker exec -it doggy-nav-server sh -c "node utils/initCategories.js"
+
+# optional: reset user
+docker exec -it doggy-nav-server sh -c "node utils/resetUser.js"
 ```
 
 🎉 Doggy Nav is running!
