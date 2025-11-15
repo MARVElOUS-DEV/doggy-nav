@@ -28,7 +28,8 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
 ENV CI=true
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile \
+  && pnpm -F doggy-nav-main add @next/bundle-analyzer@15.5.3
 
 # Production image, copy all the files and run Next.js
 FROM base AS runner
