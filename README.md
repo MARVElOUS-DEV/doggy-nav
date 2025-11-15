@@ -65,19 +65,31 @@ Doggy Nav is a comprehensive navigation and bookmark management system designed 
 
 ## 🏗 Architecture
 
+Doggy Nav supports two backend stacks and multiple deployment targets (Docker, traditional Node hosting, and Cloudflare Pages/Workers):
+
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   Admin Panel   │    │   Backend API   │
-│   (Next.js)     │◄──►│   (UmiJS)       │◄──►│   (Egg.js)      │
-│   Port: 3001    │    │   Port: 8080    │    │   Port: 3002    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │    MongoDB      │
-                    │   Port: 27017   │
-                    └─────────────────┘
+┌─────────────────────────────── Frontends & Admin ───────────────────────────────┐
+│                                                                               │
+│  doggy-nav-main (Next.js)           doggy-nav-admin (Umi SPA)                 │
+│  - Docker: http://localhost:3001    - Docker: http://localhost:8080           │
+│  - Vercel / Node hosting            - Cloudflare Pages + Pages Functions      │
+└───────────────────────────────┬───────────────────────────────────────────────┘
+                                │
+                  ┌─────────────┴───────────────────┐
+                  │                                 │
+        Classic backend stack               Edge backend stack
+          (Docker / Node)                  (Cloudflare Workers)
+
+   ┌─────────────────────────┐        ┌─────────────────────────┐
+   │ doggy-nav-server        │        │ doggy-nav-workers       │
+   │ Egg.js REST API         │        │ Hono on Cloudflare      │
+   │ Port: 3002 (Docker)     │        │ Workers / D1 database   │
+   └─────────────┬───────────┘        └─────────────┬───────────┘
+                 │                                  │
+        ┌────────▼────────┐                 ┌───────▼──────────┐
+        │   MongoDB       │                 │  Cloudflare D1   │
+        │   Port: 27017   │                 │  (SQL at edge)   │
+        └─────────────────┘                 └───────────────────┘
 ```
 
 ### 📁 Project Structure
@@ -104,8 +116,7 @@ doggy-nav/
 git clone https://github.com/MARVElOUS-DEV/doggy-nav.git
 cd doggy-nav
 
-# Use prebuilt images from CI (defaults: ghcr.io/MARVElOUS-DEV, tag=latest)
-cp deploy/.env.example deploy/.env   # optional, edit to customize
+# Use prebuilt images from CI (defaults: ghcr.io/marvelous-dev, tag=latest)
 docker compose up -d
 
 # Access the applications
@@ -113,14 +124,13 @@ echo "🎉 Doggy Nav is running!"
 echo "Frontend: http://localhost:3001"
 echo "Backend API: http://localhost:3002"
 echo "Admin Panel: http://localhost:8080"
-echo "Workers API: http://localhost:8787"
 ```
 
 Alternative: build images locally
 
 ```bash
-cp .env.docker.example .env
-docker compose -f deploy/docker-compose-init-prod.yml up -d --build
+cp deploy/.env.example deploy/.env   # optional, edit values like JWT_SECRET/MONGO_ROOT_PASSWORD
+docker compose -f deploy/docker-compose-init-prod.yml --env-file deploy/.env up -d --build
 ```
 
 - For cloud/platform deployment, see docs/DEPLOYMENT.md.
@@ -128,8 +138,7 @@ docker compose -f deploy/docker-compose-init-prod.yml up -d --build
 
 ### 🛠 Development Setup
 
-See the Development Guide: docs/DEVELOPMENT.md
-See docs/DEVELOPMENT.md for setup, scripts, database, and environment configuration.
+See `docs/DEVELOPMENT.md` for local setup, scripts, database, and environment configuration.
 
 ## 📖 Documentation
 
@@ -262,5 +271,9 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - [Egg.js](https://eggjs.org/) - Node.js backend framework
 - [UmiJS](https://umijs.org/) - React application framework
 - [MongoDB](https://mongodb.com/) - NoSQL database
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/) - Edge runtime backend
+- [Hono](https://hono.dev/) - Web framework for Workers
+- [Cloudflare Pages](https://developers.cloudflare.com/pages/) - Static hosting + Pages Functions
+- [Cloudflare D1](https://developers.cloudflare.com/d1/) - SQL database at the edge
 - [Docker](https://docker.com/) - Containerization
 - [Arco Design](https://arco.design/) - UI component library

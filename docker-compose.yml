@@ -59,7 +59,7 @@ services:
       PORT: 3001
       DOGGY_SERVER: http://server:3002
       # Optional: if server enforces client secret on all APIs, set below
-      # DOGGY_SERVER_CLIENT_SECRET: ${DOGGY_SERVER_CLIENT_SECRET}
+      DOGGY_SERVER_CLIENT_SECRET: ${DOGGY_SERVER_CLIENT_SECRET:-main}
     ports:
       - '3001:3001'
     depends_on:
@@ -73,7 +73,7 @@ services:
     environment:
       DOGGY_SERVER: http://server:3002
       # Optional: if server enforces client secret on all APIs, set below
-      # DOGGY_SERVER_CLIENT_SECRET: ${DOGGY_SERVER_CLIENT_SECRET}
+      DOGGY_SERVER_CLIENT_SECRET: ${DOGGY_SERVER_CLIENT_SECRET:-admin}
     ports:
       - '8080:8080'
     depends_on:
