@@ -7,6 +7,8 @@ import type {
   LoginFormValues,
   RegisterFormValues,
   OAuthProvider,
+  SystemVersionInfo,
+  Affiche,
 } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
@@ -97,6 +99,9 @@ const api = {
   updateProfile: (data: { username?: string; email?: string; avatar?: string }): Promise<User> =>
     axios.put('/api/user/profile', data),
 
+  changePassword: (data: { currentPassword: string; newPassword: string }): Promise<void> =>
+    axios.put('/api/user/password', data),
+
   // Favorite APIs - require authentication
   addFavorite: (navId: string): Promise<void> => axios.post('/api/favorites', { navId }),
 
@@ -134,6 +139,12 @@ const api = {
   // OAuth providers
   getAuthProviders: (): Promise<{ providers: Array<OAuthProvider> }> =>
     axios.get('/api/auth/providers'),
+
+  // System version info
+  getSystemVersion: (): Promise<SystemVersionInfo> => axios.get('/api/system/version'),
+
+  // Affiche / announcements
+  getActiveAffiches: (): Promise<Affiche[]> => axios.get('/api/affiches/active'),
 };
 
 export default api;

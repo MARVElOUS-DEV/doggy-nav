@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tooltip, Button, Dropdown, Menu } from '@arco-design/web-react';
-import Search from './Search';
-import LanguageSwitcher from './LanguageSwitcher';
-import ThemeToggle from './ThemeToggle';
-import UserAvatar from './UserAvatar';
+import Search from '../Search';
+import LanguageSwitcher from '../LanguageSwitcher';
+import ThemeToggle from '../Buttons/ThemeToggle';
+import UserAvatar from '../Avatar';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import {
@@ -15,7 +15,7 @@ import {
   IconSearch,
 } from '@arco-design/web-react/icon';
 import { isFeatureEnabled } from '@/config/featureFlags';
-import ReactIf from './ReactIf';
+import ReactIf from '../ReactIf';
 import { useRouter } from 'next/router';
 
 interface AppHeaderProps {
@@ -37,27 +37,27 @@ export default function AppHeader({
     <Menu>
       <Menu.Item key="search" onClick={() => setShowSearch(!showSearch)}>
         <div className="flex items-center py-1">
-          <i className="iconfont icon-search text-lg mr-3"></i>
-          <span>{t('search')}</span>
+          <i className="iconfont icon-search text-lg mr-3 text-theme-muted-foreground"></i>
+          <span className="text-theme-foreground">{t('search')}</span>
         </div>
       </Menu.Item>
       <Menu.Item key="recommend" onClick={() => router.push('/recommend')}>
         <div className="flex items-center py-1">
-          <IconPlusCircle className="text-lg mr-3" />
-          <span>{t('recommend_site')}</span>
+          <IconPlusCircle className="text-lg mr-3 text-theme-muted-foreground" />
+          <span className="text-theme-foreground">{t('recommend_site')}</span>
         </div>
       </Menu.Item>
       {isFeatureEnabled('lang_switch') && (
         <Menu.Item key="language">
           <div className="flex items-center justify-between py-1">
-            <span className="mr-3">{t('language')}</span>
+            <span className="mr-3 text-theme-foreground">{t('language')}</span>
             <LanguageSwitcher />
           </div>
         </Menu.Item>
       )}
       <Menu.Item key="theme">
         <div className="flex items-center justify-between py-1">
-          <span className="mr-3">{t('theme')}</span>
+          <span className="mr-3 text-theme-foreground">{t('theme')}</span>
           <ThemeToggle />
         </div>
       </Menu.Item>

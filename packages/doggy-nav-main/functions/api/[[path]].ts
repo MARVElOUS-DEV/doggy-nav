@@ -93,6 +93,71 @@ export const onRequest = async (context: any) => {
     }
   }
 
+  // Special case 3: /api/nav/search (Next-only endpoint → backend /api/nav with keyword)
+  if (reqUrl.pathname === '/api/nav/search') {
+    if (request.method !== 'GET') {
+      return new Response(JSON.stringify({ code: 0, message: 'Method not allowed' }), {
+        status: 405,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const upstreamBase: string | undefined = env.DOGGY_SERVER || env.API_BASE_URL || env.SERVER;
+    if (!upstreamBase) {
+      return new Response('Missing upstream: set DOGGY_SERVER (or API_BASE_URL/SERVER)', {
+        status: 500,
+      });
+    }
+
+    const base = upstreamBase.endsWith('/') ? upstreamBase : upstreamBase + '/';
+
+    // Map frontend params (page, limit) to backend params (pageNumber, pageSize)
+    const original = reqUrl.searchParams;
+    const upstreamParams = new URLSearchParams();
+    const keyword = original.get('keyword');
+    const categoryId = original.get('categoryId');
+    const page = original.get('page');
+    const limit = original.get('limit');
+
+    if (keyword) upstreamParams.set('keyword', keyword);
+    if (categoryId) upstreamParams.set('categoryId', categoryId);
+    if (page) upstreamParams.set('pageNumber', page);
+    if (limit) upstreamParams.set('pageSize', limit);
+
+    const targetUrl = base + 'api/nav' + (upstreamParams.toString() ? `?${upstreamParams.toString()}` : '');
+
+    const headers = new Headers(request.headers);
+    headers.set('X-App-Source', 'main');
+
+    const clientSecret = env.DOGGY_SERVER_CLIENT_SECRET;
+    if (clientSecret) headers.set('x-client-secret', clientSecret);
+
+    const cfIp = request.headers.get('CF-Connecting-IP') || '';
+    const xff = headers.get('x-forwarded-for');
+    headers.set('X-Real-IP', cfIp);
+    headers.set('X-Forwarded-Proto', reqUrl.protocol.replace(':', ''));
+    headers.set('X-Forwarded-Host', reqUrl.host);
+    headers.set('X-Forwarded-For', xff ? `${xff}, ${cfIp}` : cfIp);
+
+    headers.delete('host');
+    headers.delete('connection');
+    headers.delete('transfer-encoding');
+    headers.delete('upgrade');
+
+    const init: RequestInit = {
+      method: request.method,
+      headers,
+      body: undefined,
+      redirect: 'manual',
+    };
+
+    const upstreamResp = await fetch(targetUrl, init);
+    return new Response(upstreamResp.body, {
+      status: upstreamResp.status,
+      headers: upstreamResp.headers,
+    });
+  }
+
   // Generic proxy for all other /api/* routes → upstream server
   const upstreamBase: string | undefined = env.DOGGY_SERVER || env.API_BASE_URL || env.SERVER;
   if (!upstreamBase) {

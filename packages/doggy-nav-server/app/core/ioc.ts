@@ -13,6 +13,7 @@ import type {
   UserService,
   TagService,
   TranslateService,
+  AfficheService,
 } from 'doggy-nav-core';
 
 export const TOKENS = {
@@ -30,6 +31,7 @@ export const TOKENS = {
   TagService: Symbol('TagService') as Token<TagService>,
   TranslateService: Symbol('TranslateService') as Token<TranslateService>,
   PromptService: Symbol('PromptService') as Token<any>,
+  AfficheService: Symbol('AfficheService') as Token<AfficheService>,
 };
 
 export type AppContainer = Container;

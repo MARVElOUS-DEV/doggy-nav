@@ -73,6 +73,14 @@ export const routePermissions: RoutePermission[] = [
     description: 'OAuth callback for provider',
   },
 
+  // System / version info
+  {
+    method: 'GET',
+    path: '/api/system/version',
+    require: { level: 'public' },
+    description: 'Get backend system version / commit metadata',
+  },
+
   // User profile
   {
     method: 'GET',
@@ -85,6 +93,13 @@ export const routePermissions: RoutePermission[] = [
     path: '/api/user/profile',
     require: { level: 'authenticated' },
     description: 'Update user profile',
+  },
+
+  {
+    method: 'PUT',
+    path: '/api/user/password',
+    require: { level: 'authenticated' },
+    description: 'Change user password',
   },
 
   // User management
@@ -495,6 +510,38 @@ export const routePermissions: RoutePermission[] = [
     path: '/api/ai/chat',
     require: { level: 'optional' },
     description: 'Chat completions (API alias)',
+  },
+
+  // Affiche (announcement) routes
+  {
+    method: 'GET',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'List affiche announcements',
+  },
+  {
+    method: 'POST',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'Create affiche announcement',
+  },
+  {
+    method: 'PUT',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'Update affiche announcement',
+  },
+  {
+    method: 'DELETE',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'Delete affiche announcement',
+  },
+  {
+    method: 'GET',
+    path: '/api/affiches/active',
+    require: { level: 'public' },
+    description: 'List active affiche announcements (public)',
   },
 
   // Prompt management (sysadmin only)

@@ -9,6 +9,8 @@ import i18n from '@/i18n';
 import ReactIf from '@/components/ReactIf';
 import { useRouter } from 'next/router';
 import { startProactiveAuthRefresh } from '@/utils/session';
+import { GlobalAppWindowProvider } from '@/store/GlobalAppWindowStore';
+import { WindowZProvider } from '@/store/WindowZStore';
 
 import './global.css';
 
@@ -46,9 +48,13 @@ export default function MyApp({
         <SpeedInsights />
       </ReactIf>
       <JotaiProvider>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        {getLayout(<Component {...pageProps} />)}
+        <WindowZProvider>
+          <GlobalAppWindowProvider>
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore */}
+            {getLayout(<Component {...pageProps} />)}
+          </GlobalAppWindowProvider>
+        </WindowZProvider>
       </JotaiProvider>
     </>
   );

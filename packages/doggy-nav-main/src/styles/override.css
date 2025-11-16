@@ -120,3 +120,12 @@
 .dark .arco-typography {
   color: var(--color-foreground);
 }
+
+.arco-backtop {
+  bottom: 60px;
+}
+
+.profile-input .arco-input-group > .arco-input-inner-wrapper {
+  border-radius: 0.75rem; 
+}
+

@@ -10,7 +10,6 @@ interface NavRankingProps {
 }
 
 export default function NavRanking({ data, countType = 'createTimeDate' }: NavRankingProps) {
-
   const formatAttr = (value: string | number) => {
     if (countType === 'createTimeDate') {
       return dayjs(value).format('YYYY-MM-DD');
@@ -21,13 +20,21 @@ export default function NavRanking({ data, countType = 'createTimeDate' }: NavRa
   return (
     <Link
       href={`/nav/${data.id}`}
-      className="flex items-center text-theme-foreground mb-3 cursor-pointer min-h-[30px] transition-all duration-200 hover:bg-theme-muted rounded-lg p-2 -m-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60 hover:ring-1 hover:ring-theme-primary/30 hover:shadow-sm hover:-translate-y-[1px]"
+      className="flex items-center text-theme-foreground mb-3 cursor-pointer min-h-[30px] transition-all duration-200 hover:bg-theme-muted rounded-lg p-2 -m-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60 hover:ring-1 hover:ring-theme-primary/30 hover:shadow-sm hover:-translate-y-[1px] bg-glow-subtle"
     >
-      <DoggyImage logo={data.logo} name={data.name} className="rounded-md mr-2 flex-shrink-0 w-[20px] h-[20px] object-cover transition-transform duration-200 group-hover:scale-105" />
+      <DoggyImage
+        logo={data.logo}
+        name={data.name}
+        className="rounded-md mr-2 flex-shrink-0 w-[20px] h-[20px] object-cover transition-transform duration-200 group-hover:scale-105"
+      />
       <Tooltip content={data.name} position="top">
-        <span className="flex-1 font-medium text-sm truncate group-hover:text-theme-primary transition-colors duration-200">{data.name}</span>
+        <span className="flex-1 font-medium text-sm truncate group-hover:text-theme-primary transition-colors duration-200">
+          {data.name}
+        </span>
       </Tooltip>
-      <span className="text-xs whitespace-nowrap">{data[countType] && formatAttr(data[countType])}</span>
+      <span className="text-xs whitespace-nowrap">
+        {data[countType] && formatAttr(data[countType])}
+      </span>
       {countType === 'view' && <span className="iconfont icon-attentionfill ml-1 text-xs"></span>}
       {countType === 'star' && <span className="iconfont icon-appreciatefill ml-1 text-xs"></span>}
     </Link>

@@ -1,7 +1,7 @@
 import 'egg';
 import 'egg-mongoose';
 import { Mongoose, Types, ConnectOptions } from 'mongoose';
-import type { Container } from 'doggy-nav-core';
+import type { Container, SystemVersionInfo } from 'doggy-nav-core';
 
 // Global lightweight passport typings suitable for egg-passport usage
 declare global {
@@ -32,6 +32,7 @@ declare module 'egg' {
       verify(token: string, secret: string, options?: any): any;
     };
     passport: EggPassport;
+    systemVersion?: SystemVersionInfo;
   }
 
   interface EggAppConfig {
@@ -43,6 +44,11 @@ declare module 'egg' {
       secret: string;
       accessExpiresIn: string
       refreshExpiresIn: string
+    };
+    systemVersion?: {
+      enabled: boolean;
+      repoSlug?: string;
+      githubToken?: string;
     };
   }
 

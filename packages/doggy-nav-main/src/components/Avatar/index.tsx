@@ -13,7 +13,11 @@ interface UserAvatarProps {
   asMenuItems?: boolean;
 }
 
-export default function UserAvatar({ size = 40, className = '', asMenuItems = false }: UserAvatarProps) {
+export default function UserAvatar({
+  size = 40,
+  className = '',
+  asMenuItems = false,
+}: UserAvatarProps) {
   const { t } = useTranslation('translation');
   const [authState] = useAtom(authStateAtom);
   const [, dispatchAuth] = useAtom(authActionsAtom);
@@ -44,29 +48,30 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
   const user = authState.user as User | undefined;
 
   // Build menu items for use in both dropdown and inline menu modes
-  const menuItems = isAuthed && user ? (
-    <>
-      <Menu.Item key="profile" onClick={handleProfile}>
+  const menuItems =
+    isAuthed && user ? (
+      <>
+        <Menu.Item key="profile" onClick={handleProfile}>
+          <div className="flex items-center justify-between py-1">
+            <span className="mr-3 text-theme-foreground">{t('profile')}</span>
+            <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
+          </div>
+        </Menu.Item>
+        <Menu.Item key="logout" onClick={handleLogout}>
+          <div className="flex items-center justify-between py-1">
+            <span className="mr-3 text-theme-foreground">{t('sign_out')}</span>
+            <i className="iconfont icon-logout text-lg text-theme-muted-foreground"></i>
+          </div>
+        </Menu.Item>
+      </>
+    ) : (
+      <Menu.Item key="login" onClick={handleLogin}>
         <div className="flex items-center justify-between py-1">
-          <span className="mr-3 text-theme-foreground">{t('profile')}</span>
+          <span className="mr-3 text-theme-foreground">{t('sign_in')}</span>
           <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
         </div>
       </Menu.Item>
-      <Menu.Item key="logout" onClick={handleLogout}>
-        <div className="flex items-center justify-between py-1">
-          <span className="mr-3 text-theme-foreground">{t('sign_out')}</span>
-          <i className="iconfont icon-logout text-lg text-theme-muted-foreground"></i>
-        </div>
-      </Menu.Item>
-    </>
-  ) : (
-    <Menu.Item key="login" onClick={handleLogin}>
-      <div className="flex items-center justify-between py-1">
-        <span className="mr-3 text-theme-foreground">{t('sign_in')}</span>
-        <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
-      </div>
-    </Menu.Item>
-  );
+    );
 
   if (asMenuItems) {
     return <>{menuItems}</>;
@@ -104,10 +109,10 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
   const getAvatarColors = (username: string): string => {
     // Generate consistent colors based on username
     const hash = username.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
+      a = (a << 5) - a + b.charCodeAt(0);
       return a & a;
     }, 0);
-    
+
     const colors = [
       'bg-gradient-to-r from-blue-500 to-blue-600',
       'bg-gradient-to-r from-purple-500 to-purple-600',
@@ -118,7 +123,7 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
       'bg-gradient-to-r from-red-500 to-red-600',
       'bg-gradient-to-r from-yellow-500 to-yellow-600',
     ];
-    
+
     return colors[Math.abs(hash) % colors.length];
   };
 
@@ -132,11 +137,15 @@ export default function UserAvatar({ size = 40, className = '', asMenuItems = fa
     >
       <div className={`cursor-pointer ${className}`}>
         {user.avatar ? (
-          <ArcoAvatar
-            size={size}
-            className="ring-2 ring-white ring-opacity-50 shadow-md"
-          >
-            <Image className="rounded-full" src={user.avatar} alt={user.username} preview={false} width={40} height={40} />
+          <ArcoAvatar size={size} className="ring-2 ring-white ring-opacity-50 shadow-md">
+            <Image
+              className="rounded-full"
+              src={user.avatar}
+              alt={user.username}
+              preview={false}
+              width={40}
+              height={40}
+            />
           </ArcoAvatar>
         ) : (
           <div

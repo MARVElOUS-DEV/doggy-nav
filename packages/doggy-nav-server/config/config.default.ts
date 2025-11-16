@@ -1,6 +1,7 @@
 import { EggAppConfig, EggAppInfo, PowerPartial } from 'egg';
 import mongoConfig from './mongodb';
 import { ConnectOptions } from 'mongoose';
+import { baseRateLimitExemptPaths, defaultRateLimitRoutes } from 'doggy-nav-core';
 
 export default (appInfo: EggAppInfo) => {
   const config = {} as PowerPartial<EggAppConfig>;
@@ -67,12 +68,18 @@ export default (appInfo: EggAppInfo) => {
     },
   };
 
-  config.middleware = ['error', 'ioc', 'auth'];
+  config.middleware = ['error', 'ioc', 'auth', 'rateLimit'];
 
   config.jwt = {
     secret: JWT_SECRET,
     accessExpiresIn: JWT_ACCESS_EXPIRES_IN,
     refreshExpiresIn: JWT_REFRESH_EXPIRES_IN,
+  };
+
+  config.systemVersion = {
+    enabled: process.env.SYSTEM_VERSION_ENABLED !== 'false',
+    repoSlug: process.env.GIT_REPO_SLUG || 'MARVElOUS-DEV/doggy-nav',
+    githubToken: process.env.GITHUB_TOKEN,
   };
 
   // Logger configuration for better diagnostics (tunable via env)
@@ -136,18 +143,61 @@ export default (appInfo: EggAppInfo) => {
   };
 
   // Rate limiting configuration
+  const RATE_LIMIT_ENABLED_RAW = (process.env.RATE_LIMIT_ENABLED || '').toLowerCase();
+  const RATE_LIMIT_ENABLED = RATE_LIMIT_ENABLED_RAW ? RATE_LIMIT_ENABLED_RAW === 'true' : false;
+  const RATE_LIMIT_WHITELIST = process.env.RATE_LIMIT_WHITELIST
+    ? process.env.RATE_LIMIT_WHITELIST.split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+  const RATE_LIMIT_BLACKLIST = process.env.RATE_LIMIT_BLACKLIST
+    ? process.env.RATE_LIMIT_BLACKLIST.split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
   config.ratelimiter = {
-    enable: process.env.NODE_ENV === 'production',
+    enable: true,
     limit: 100,
     interval: 60000,
     headers: true,
     message: 'Too many requests, please try again later.',
     statusCode: 429,
     keyGenerator: (ctx: any) => {
-      return ctx.ip;
+      const user = ctx.state && (ctx.state as any).userinfo;
+      if (user && (user.userId || user.id)) {
+        return `user:${user.userId || user.id}`;
+      }
+      return `ip:${ctx.ip}`;
     },
-    whitelist: [],
-    blacklist: [],
+    whitelist: RATE_LIMIT_WHITELIST,
+    blacklist: RATE_LIMIT_BLACKLIST,
+  };
+
+  // Advanced rate limiting configuration per user type
+  config.rateLimit = {
+    enabled: RATE_LIMIT_ENABLED,
+    // Anonymous users (by IP)
+    anonymous: {
+      limit: parseInt(process.env.RATE_LIMIT_ANON || '100', 10),
+      interval: 60000, // 1 minute
+    },
+    // Authenticated regular users
+    authenticated: {
+      limit: parseInt(process.env.RATE_LIMIT_AUTH || '200', 10),
+      interval: 60000, // 1 minute
+    },
+    // Admin users
+    admin: {
+      limit: parseInt(process.env.RATE_LIMIT_ADMIN || '500', 10),
+      interval: 60000, // 1 minute
+    },
+    // Per-route overrides for sensitive endpoints (shared across server & workers)
+    routes: defaultRateLimitRoutes,
+    // Health check exemption (shared defaults; workers may extend)
+    exemptPaths: baseRateLimitExemptPaths,
+    whitelist: RATE_LIMIT_WHITELIST,
+    blacklist: RATE_LIMIT_BLACKLIST,
   };
 
   // URL Checker Configuration
@@ -188,6 +238,7 @@ export default (appInfo: EggAppInfo) => {
       '/api/auth/config',
       '/api/auth/me',
       '/api/auth/logout',
+      '/api/system/version',
     ],
   };
 

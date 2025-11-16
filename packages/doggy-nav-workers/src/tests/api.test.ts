@@ -21,6 +21,8 @@ jest.mock('../ioc/worker', () => {
   const actualTokens = jest.requireActual('../ioc/tokens');
   const TOKENS = actualTokens.TOKENS;
 
+  const { D1UserRepository } = jest.requireActual('../adapters/d1UserRepository');
+
   const originalModule = jest.requireActual('../ioc/worker');
 
   return {
@@ -91,6 +93,9 @@ jest.mock('../ioc/worker', () => {
           }
           if (token === TOKENS.GroupService) {
             return mockGroupService;
+          }
+          if (token === TOKENS.UserRepo) {
+            return new D1UserRepository(DB);
           }
           // Check if it's the application service that handles migration
           if (token === TOKENS.ApplicationService) {
@@ -208,6 +213,19 @@ describe('Doggy Nav Worker API', () => {
     });
   });
 
+  describe('System Version', () => {
+    it('should return system version info', async () => {
+      const response = await app.request('/api/system/version');
+      expect(response.status).toBe(200);
+
+      const data = await response.json();
+      expect(data.code).toBe(1);
+      expect(data.msg).toBe('ok');
+      expect(data.data).toHaveProperty('currentCommitId');
+      expect(data.data).toHaveProperty('hasNewVersion');
+    });
+  });
+
   describe('Authentication', () => {
     it.skip('should handle registration', async () => {
       (mockDB.prepare().bind().first as jest.Mock<any, any>).mockResolvedValue(null); // No existing user
@@ -305,6 +323,92 @@ describe('Doggy Nav Worker API', () => {
     it('should require authentication for user endpoints', async () => {
       const response = await app.request('/api/users');
       expect(response.status).toBe(401);
+    });
+  });
+
+  describe('User password change via /api/user/password', () => {
+    it('allows an authenticated user to change password', async () => {
+      const { PasswordUtils } = await import('../utils/passwordUtils');
+      const { JWTUtils } = await import('../utils/jwtUtils');
+      const { D1UserRepository } = await import('../adapters/d1UserRepository');
+
+      const repo = new D1UserRepository(mockDB as any);
+      const oldPassword = 'OldPass123';
+      const oldHash = await PasswordUtils.hashPassword(oldPassword);
+
+      const user = await repo.create({
+        username: 'user1',
+        email: 'user1@example.com',
+        passwordHash: oldHash,
+        nickName: 'User One',
+        phone: '',
+        avatar: undefined,
+      });
+
+      const jwtUtils = new JWTUtils('test-secret-key');
+      const tokens = await jwtUtils.generateTokenPair({
+        userId: user.id,
+        email: user.email,
+        username: user.username,
+        roles: [],
+        groups: [],
+        permissions: [],
+      });
+
+      const response = await app.request('/api/user/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+        body: JSON.stringify({ currentPassword: oldPassword, newPassword: 'NewPass123' }),
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.code).toBe(1);
+    });
+
+    it('rejects wrong current password', async () => {
+      const { PasswordUtils } = await import('../utils/passwordUtils');
+      const { JWTUtils } = await import('../utils/jwtUtils');
+      const { D1UserRepository } = await import('../adapters/d1UserRepository');
+
+      const repo = new D1UserRepository(mockDB as any);
+      const oldPassword = 'OldPass123';
+      const oldHash = await PasswordUtils.hashPassword(oldPassword);
+
+      const user = await repo.create({
+        username: 'user2',
+        email: 'user2@example.com',
+        passwordHash: oldHash,
+        nickName: 'User Two',
+        phone: '',
+        avatar: undefined,
+      });
+
+      const jwtUtils = new JWTUtils('test-secret-key');
+      const tokens = await jwtUtils.generateTokenPair({
+        userId: user.id,
+        email: user.email,
+        username: user.username,
+        roles: [],
+        groups: [],
+        permissions: [],
+      });
+
+      const response = await app.request('/api/user/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+        body: JSON.stringify({ currentPassword: 'WrongPass', newPassword: 'NewPass123' }),
+      });
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.code).toBe(400);
     });
   });
 

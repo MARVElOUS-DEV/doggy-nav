@@ -19,11 +19,6 @@ const plugin: EggPlugin = {
     enable: true,
     package: 'egg-cors',
   },
-  // Temporarily disable rate limiter due to configuration issues
-  // ratelimiter: {
-  //   enable: true,
-  //   package: 'egg-ratelimiter',
-  // },
 };
 
 export default plugin;

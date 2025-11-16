@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { I18nextProvider } from 'react-i18next';
 import AppNavMenus from '../AppNavMenus';
-import AppHeader from '../AppHeader';
+import AppHeader from '../Header';
 import i18n from '@/i18n';
 import { ConfigProvider, Drawer } from '@arco-design/web-react';
 import {
@@ -14,8 +14,9 @@ import {
 } from '@/store/store';
 import { useSetAtom } from 'jotai';
 import RightSideToolbar from '../RightSideToolbar';
-import LightbulbRope from '../LightbulbRope';
+import LightbulbRope from '../LightBulb';
 import router from 'next/router';
+import AppFooter from '../Footer';
 
 export default function RootLayout({
   children,
@@ -129,7 +130,10 @@ export default function RootLayout({
               className="flex-1 overflow-y-auto glass-light dark:glass-dark"
             >
               <div className="p-4">
-                <div className="min-h-screen bg-theme-background transition-colors">{children}</div>
+                <div className="min-h-screen bg-theme-background transition-colors flex flex-col">
+                  <div className="flex-1">{children}</div>
+                  <AppFooter />
+                </div>
               </div>
             </div>
           </div>

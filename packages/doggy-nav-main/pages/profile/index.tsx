@@ -14,9 +14,11 @@ const FormItem = Form.Item;
 function ProfileContent() {
   const { t } = useTranslation('translation');
   const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm();
   const authState = useAtomValue(authStateAtom);
   const dispatchAuth = useSetAtom(authActionsAtom);
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
 
   const user = authState.user!;
@@ -47,6 +49,35 @@ function ProfileContent() {
       Message.error(t('profile_update_failed'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (values: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    if (values.newPassword !== values.confirmPassword) {
+      Message.error(t('password_mismatch'));
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await api.changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      });
+      Message.success(t('password_change_success', { defaultValue: 'Password updated successfully!' }));
+      passwordForm.resetFields();
+    } catch (error: any) {
+      console.error('Password update failed:', error);
+      Message.error(
+        error?.message ||
+          t('password_change_failed', { defaultValue: 'Failed to update password' })
+      );
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -220,6 +251,130 @@ function ProfileContent() {
                 </div>
               </FormItem>
             </Form>
+
+            {/* Password Change Form */}
+            <div className="mt-10 pt-6 border-t border-theme-border transition-colors">
+              <h2 className="text-xl font-semibold text-theme-foreground mb-4 transition-colors">
+                {t('change_password', { defaultValue: 'Change Password' })}
+              </h2>
+              <Form
+                form={passwordForm}
+                onSubmit={handlePasswordSubmit}
+                layout="vertical"
+                requiredSymbol={false}
+              >
+                <FormItem
+                  label={
+                    <span className="text-theme-foreground font-medium transition-colors">
+                      {t('current_password', { defaultValue: 'Current Password' })}
+                    </span>
+                  }
+                  field="currentPassword"
+                  rules={[
+                    {
+                      required: true,
+                      message: t('current_password_required', {
+                        defaultValue: 'Please enter your current password',
+                      }),
+                    },
+                  ]}
+                >
+                  <Input.Password
+                    placeholder={t('enter_current_password', {
+                      defaultValue: 'Enter your current password',
+                    })}
+                    size="large"
+                    className="profile-input rounded-xl"
+                  />
+                </FormItem>
+
+                <FormItem
+                  label={
+                    <span className="text-theme-foreground font-medium transition-colors">
+                      {t('new_password', { defaultValue: 'New Password' })}
+                    </span>
+                  }
+                  field="newPassword"
+                  rules={[
+                    {
+                      required: true,
+                      message: t('new_password_required', {
+                        defaultValue: 'Please enter a new password',
+                      }),
+                    },
+                    {
+                      minLength: 6,
+                      message: t('password_min_length'),
+                    },
+                  ]}
+                >
+                  <Input.Password
+                    placeholder={t('enter_new_password', {
+                      defaultValue: 'Enter your new password',
+                    })}
+                    size="large"
+                    className="profile-input rounded-xl"
+                  />
+                </FormItem>
+
+                <FormItem
+                  label={
+                    <span className="text-theme-foreground font-medium transition-colors">
+                      {t('confirm_new_password', { defaultValue: 'Confirm New Password' })}
+                    </span>
+                  }
+                  field="confirmPassword"
+                  rules={[
+                    {
+                      required: true,
+                      message: t('confirm_new_password_required', {
+                        defaultValue: 'Please confirm your new password',
+                      }),
+                    },
+                    {
+                      validator: (value, callback) => {
+                        const newPassword = passwordForm.getFieldValue('newPassword');
+                        if (value && value !== newPassword) {
+                          callback(t('password_mismatch'));
+                        } else {
+                          callback();
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  <Input.Password
+                    placeholder={t('enter_confirm_new_password', {
+                      defaultValue: 'Confirm your new password',
+                    })}
+                    size="large"
+                    className="profile-input rounded-xl"
+                  />
+                </FormItem>
+
+                <FormItem>
+                  <div className="flex gap-4">
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={passwordLoading}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-xl font-medium"
+                    >
+                      {passwordLoading
+                        ? t('updating', { defaultValue: 'Updating...' })
+                        : t('change_password', { defaultValue: 'Change Password' })}
+                    </Button>
+                    <Button
+                      type="secondary"
+                      onClick={() => passwordForm.resetFields()}
+                      className="rounded-xl"
+                    >
+                      {t('reset')}
+                    </Button>
+                  </div>
+                </FormItem>
+              </Form>
+            </div>
           </div>
         </Card>
       </motion.div>

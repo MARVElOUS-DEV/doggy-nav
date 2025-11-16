@@ -4,6 +4,7 @@ import createOAuthCallback from './middleware/oauthCallback';
 export default (app: Application) => {
   const { controller, router } = app;
   const oauthCallback = createOAuthCallback();
+  router.put('/api/user/password', controller.user.changePassword);
 
   router.post('/api/auth/logout', controller.auth.logout);
   router.get('/api/auth/providers', controller.auth.providers);
@@ -16,6 +17,9 @@ export default (app: Application) => {
   router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);
   // OAuth init route (dynamic provider)
   router.get('/api/auth/:provider', controller.auth.oauthInit);
+
+  // System / version info
+  router.get('/api/system/version', controller.system.version);
 
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
@@ -106,6 +110,13 @@ export default (app: Application) => {
   router.put('/api/prompts', controller.prompt.update);
   router.delete('/api/prompts', controller.prompt.remove);
   router.post('/api/prompts/:id/activate', controller.prompt.setActive);
+
+  // Affiche (announcement) routes
+  router.get('/api/affiches', controller.affiche.list);
+  router.post('/api/affiches', controller.affiche.add);
+  router.put('/api/affiches', controller.affiche.update);
+  router.delete('/api/affiches', controller.affiche.remove);
+  router.get('/api/affiches/active', controller.affiche.listActive);
 
   // AI inference routes (OpenAI-compatible)
   router.post('/v1/chat/completions', controller.ai.chatCompletions);

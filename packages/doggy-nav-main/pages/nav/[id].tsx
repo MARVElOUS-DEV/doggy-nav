@@ -330,7 +330,7 @@ export default function NavDetail() {
                     <Col span={12} sm={8} md={6} key={item.id}>
                       <Link
                         href={`/nav/${item.id}`}
-                        className="bg-theme-color nav-block flex items-center p-3 border rounded-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5"
+                        className="bg-theme-color nav-block flex items-center p-3 border rounded-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 bg-glow"
                         style={{
                           borderColor: 'var(--color-border)',
                           color: 'var(--color-muted-foreground)',

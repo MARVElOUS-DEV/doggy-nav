@@ -15,6 +15,7 @@ import type {
   ApplicationService,
   NavAdminService,
   Token,
+  AfficheService,
 } from 'doggy-nav-core';
 
 export const TOKENS = {
@@ -34,6 +35,7 @@ export const TOKENS = {
   ApplicationService: Symbol('ApplicationService') as Token<ApplicationService>,
   NavAdminService: Symbol('NavAdminService') as Token<NavAdminService>,
   PromptService: Symbol('PromptService') as Token<any>,
+  AfficheService: Symbol('AfficheService') as Token<AfficheService>,
   UserRepo: Symbol('UserRepo') as Token<any>,
   RoleRepo: Symbol('RoleRepo') as Token<any>,
   CategoryRepo: Symbol('CategoryRepo') as Token<any>,
