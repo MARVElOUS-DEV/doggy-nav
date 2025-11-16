@@ -24,6 +24,7 @@ export type Env = {
   DB: D1Database;
   JWT_SECRET?: string;
   NODE_ENV?: string;
+  RATE_LIMIT_ENABLED?: string;
   REQUIRE_CLIENT_SECRET?: string;
   CLIENT_SECRET_HEADER?: string;
 };

@@ -23,6 +23,7 @@ const authRoutes = new Hono<{
     DB: D1Database;
     JWT_SECRET?: string;
     ALLOWED_ORIGINS?: string;
+    RATE_LIMIT_ENABLED?: string;
     RATE_LIMIT_WINDOW_MS?: string | number;
     RATE_LIMIT_MAX?: string | number;
     PUBLIC_BASE_URL?: string;

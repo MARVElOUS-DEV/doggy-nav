@@ -48,7 +48,6 @@
     "egg-mock": "^5.15.2",
     "egg-mongoose": "^4.0.1",
     "egg-passport": "^2.1.1",
-    "egg-ratelimiter": "^0.1.0",
     "egg-scripts": "^3.1.0",
     "egg-security": "^3.7.0",
     "jsonwebtoken": "^9.0.2",

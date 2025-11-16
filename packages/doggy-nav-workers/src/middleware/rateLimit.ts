@@ -1,44 +1,92 @@
 import type { Context } from 'hono';
 import { responses } from '../utils/responses';
+import {
+  type RateLimitBucket,
+  type RateLimitConfig,
+  type RateLimitUserType,
+  applyFixedWindow,
+  baseRateLimitExemptPaths,
+  defaultRateLimitRoutes,
+  generateRateLimitKey,
+  getRouteLimits,
+  getUserTypeFromContext,
+  isExemptPath,
+} from 'doggy-nav-core';
 
-type StoreEntry = { count: number; resetAt: number };
-const store: Map<string, StoreEntry> = new Map();
+const store: Map<string, RateLimitBucket> = new Map();
 
 function getClientIp(c: Context): string {
   const ip = c.req.header('CF-Connecting-IP') || c.req.header('x-forwarded-for') || '';
   return ip.split(',')[0].trim() || 'unknown';
 }
 
+function buildConfig(env: {
+  RATE_LIMIT_ENABLED?: string;
+  RATE_LIMIT_WINDOW_MS?: string | number;
+  RATE_LIMIT_MAX?: string | number;
+}): RateLimitConfig {
+  const enabledRaw = String(env.RATE_LIMIT_ENABLED ?? '').toLowerCase();
+  const enabled = enabledRaw === '' ? false : enabledRaw === 'true';
+  const windowMs = Number(env.RATE_LIMIT_WINDOW_MS ?? 60_000);
+  const max = Number(env.RATE_LIMIT_MAX ?? 100);
+  return {
+    enabled,
+    anonymous: { limit: max, interval: windowMs },
+    authenticated: { limit: max, interval: windowMs },
+    admin: { limit: max, interval: windowMs },
+    routes: defaultRateLimitRoutes,
+    exemptPaths: [...baseRateLimitExemptPaths, '/api/health'],
+  };
+}
+
 export function rateLimit() {
   return async (c: any, next: () => Promise<void>) => {
-    // Exempt health checks
-    const path = c.req.path || '';
-    if (path === '/api/health') return next();
+    const path: string = c.req.path || '';
+    const config = buildConfig(c.env || {});
 
-    const windowMs = Number(c.env.RATE_LIMIT_WINDOW_MS || 60_000);
-    const max = Number(c.env.RATE_LIMIT_MAX || 100);
-
-    const key = getClientIp(c);
-    const now = Date.now();
-    const entry = store.get(key);
-
-    if (!entry || now >= entry.resetAt) {
-      store.set(key, { count: 1, resetAt: now + windowMs });
-      c.header('X-RateLimit-Limit', String(max));
-      c.header('X-RateLimit-Remaining', String(max - 1));
-      c.header('X-RateLimit-Reset', String(Math.floor((now + windowMs) / 1000)));
+    if (config.enabled === false) {
       return next();
     }
 
-    entry.count += 1;
-    const remaining = Math.max(0, max - entry.count);
-    c.header('X-RateLimit-Limit', String(max));
-    c.header('X-RateLimit-Remaining', String(remaining));
-    c.header('X-RateLimit-Reset', String(Math.floor(entry.resetAt / 1000)));
+    if (isExemptPath(path, config.exemptPaths)) {
+      return next();
+    }
 
-    if (entry.count > max) {
-      const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
-      c.header('Retry-After', String(retryAfter));
+    const clientIp = getClientIp(c);
+
+    const user = c.get('user') as
+      | {
+          id: string;
+          roles?: string[];
+          effectiveRoles?: string[];
+        }
+      | undefined;
+
+    const userType: RateLimitUserType = getUserTypeFromContext({
+      hasUser: !!user,
+      roles: user?.roles,
+      effectiveRoles: user?.effectiveRoles,
+    });
+
+    const limits = getRouteLimits(path, config, userType);
+
+    const key = generateRateLimitKey({
+      userType,
+      userId: user?.id,
+      ip: clientIp,
+    });
+
+    const now = Date.now();
+    const result = applyFixedWindow(store, key, limits, now);
+
+    c.header('X-RateLimit-Limit', String(result.limit));
+    c.header('X-RateLimit-Remaining', String(result.remaining));
+    c.header('X-RateLimit-Reset', String(Math.floor(result.resetTime / 1000)));
+
+    if (!result.allowed) {
+      if (result.retryAfterSeconds != null) {
+        c.header('Retry-After', String(result.retryAfterSeconds));
+      }
       return c.json(responses.err('Too many requests'), 429);
     }
 

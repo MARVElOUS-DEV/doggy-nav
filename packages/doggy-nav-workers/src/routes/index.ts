@@ -24,6 +24,7 @@ export type Env = {
   JWT_SECRET?: string;
   NODE_ENV?: string;
   ALLOWED_ORIGINS?: string;
+  RATE_LIMIT_ENABLED?: string;
   RATE_LIMIT_WINDOW_MS?: string | number;
   RATE_LIMIT_MAX?: string | number;
   REQUIRE_CLIENT_SECRET?: string; // 'true' to enable

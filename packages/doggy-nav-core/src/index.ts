@@ -42,5 +42,6 @@ export * from './seed/defaults';
 export * from './access/accessControl';
 export * from './security/clientSecretGuard';
 export * from './security/authCookies';
+export * from './security/rateLimit';
 export * from './types/systemVersion';
 export * from './services/SystemVersionService';

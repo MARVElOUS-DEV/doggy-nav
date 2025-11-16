@@ -297,9 +297,6 @@ importers:
       egg-passport:
         specifier: ^2.1.1
         version: 2.1.1
-      egg-ratelimiter:
-        specifier: ^0.1.0
-        version: 0.1.0
       egg-scripts:
         specifier: ^3.1.0
         version: 3.1.0
@@ -5826,10 +5823,6 @@ packages:
   egg-path-matching@1.2.0:
     resolution: {integrity: sha512-u88hY0tH8GfWu4iocWFxux/abXvi7bh4lr/GIRlUHCTJFk8RQNCCfk5H3Vm67pqTBljtBOCl0lLykOsxj8trXQ==}
 
-  egg-ratelimiter@0.1.0:
-    resolution: {integrity: sha512-eHzHvZ1aCUu1utDrOQYM5+xXOCuLmtL9qTwKPUrkpVWPKW8ZiwF8nHSIHgyVFN5AXhks08+jpMzPtlANTL4rXQ==}
-    engines: {node: '>=8.9.0'}
-
   egg-schedule@4.0.1:
     resolution: {integrity: sha512-9BgIEOA5+jsqqvW8qLj/0SbTHkr9t2vNRBbZQkqqscejocViGysGd866vN+rcpuqd2zmnP6EQ0YqPAV5fI8P6Q==}
     engines: {node: '>=14.17.0'}
@@ -9302,9 +9295,6 @@ packages:
   range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
-
-  ratelimiter@3.4.1:
-    resolution: {integrity: sha512-5FJbRW/Jkkdk29ksedAfWFkQkhbUrMx3QJGwMKAypeIiQf4yrLW+gtPKZiaWt4zPrtw1uGufOjGO7UGM6VllsQ==}
 
   raw-body@2.5.2:
     resolution: {integrity: sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA==}
@@ -18456,14 +18446,6 @@ snapshots:
     dependencies:
       path-to-regexp: 1.9.0
 
-  egg-ratelimiter@0.1.0:
-    dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
-      ms: 2.1.3
-      ratelimiter: 3.4.1
-    transitivePeerDependencies:
-      - supports-color
-
   egg-schedule@4.0.1:
     dependencies:
       cron-parser: 2.18.0
@@ -22785,8 +22767,6 @@ snapshots:
       safe-buffer: 5.2.1
 
   range-parser@1.2.1: {}
-
-  ratelimiter@3.4.1: {}
 
   raw-body@2.5.2:
     dependencies:
