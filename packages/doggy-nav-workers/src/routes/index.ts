@@ -17,6 +17,7 @@ import seedRoutes from './seed';
 import aiRoutes from './ai';
 import promptRoutes from './prompt';
 import systemRoutes from './system';
+import afficheRoutes from './affiche';
 
 export type Env = {
   DB: D1Database;
@@ -63,9 +64,10 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/application', applicationRoutes);
   app.route('/api/translate', translateRoutes);
   app.route('/api/prompts', promptRoutes);
+  app.route('/api/affiches', afficheRoutes);
   app.route('/api/migration', migrationRoutes);
   app.route('/api/seed', seedRoutes);
-   app.route('/api/system', systemRoutes);
+  app.route('/api/system', systemRoutes);
   // OpenAI-compatible inference endpoint
   app.route('/', aiRoutes);
 }

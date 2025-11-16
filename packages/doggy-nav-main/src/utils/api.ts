@@ -8,6 +8,7 @@ import type {
   RegisterFormValues,
   OAuthProvider,
   SystemVersionInfo,
+  Affiche,
 } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
@@ -141,6 +142,9 @@ const api = {
 
   // System version info
   getSystemVersion: (): Promise<SystemVersionInfo> => axios.get('/api/system/version'),
+
+  // Affiche / announcements
+  getActiveAffiches: (): Promise<Affiche[]> => axios.get('/api/affiches/active'),
 };
 
 export default api;

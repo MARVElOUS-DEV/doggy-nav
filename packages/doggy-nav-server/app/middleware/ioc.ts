@@ -1,4 +1,4 @@
-import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, FavoriteFolderService, InviteCodeService, EmailSettingsService, ApplicationService, RoleService, UserService, TagService, TranslateService, PromptService } from 'doggy-nav-core';
+import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, FavoriteFolderService, InviteCodeService, EmailSettingsService, ApplicationService, RoleService, UserService, TagService, TranslateService, PromptService, AfficheService } from 'doggy-nav-core';
 import { TOKENS } from '../core/ioc';
 import MongooseGroupRepository from '../../adapters/groupRepository';
 import MongooseCategoryRepository from '../../adapters/categoryRepository';
@@ -14,6 +14,7 @@ import MongooseUserRepository from '../../adapters/userRepository';
 import MongooseTagRepository from '../../adapters/tagRepository';
 import GoogleTranslateProvider from '../../adapters/translateProvider';
 import MongoosePromptRepository from '../../adapters/promptRepository';
+import MongooseAfficheRepository from '../../adapters/afficheRepository';
 
 export default function ioc() {
   return async (ctx: any, next: any) => {
@@ -34,6 +35,7 @@ export default function ioc() {
     di.register(TOKENS.TagService, () => new TagService(new MongooseTagRepository(ctx)));
     di.register(TOKENS.TranslateService, () => new TranslateService(new GoogleTranslateProvider()));
     di.register(TOKENS.PromptService, () => new PromptService(new MongoosePromptRepository(ctx)));
+    di.register(TOKENS.AfficheService, () => new AfficheService(new MongooseAfficheRepository(ctx)));
 
     ctx.di = di;
     await next();

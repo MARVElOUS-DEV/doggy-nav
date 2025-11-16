@@ -512,6 +512,38 @@ export const routePermissions: RoutePermission[] = [
     description: 'Chat completions (API alias)',
   },
 
+  // Affiche (announcement) routes
+  {
+    method: 'GET',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'List affiche announcements',
+  },
+  {
+    method: 'POST',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'Create affiche announcement',
+  },
+  {
+    method: 'PUT',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'Update affiche announcement',
+  },
+  {
+    method: 'DELETE',
+    path: '/api/affiches',
+    require: { anyRole: ['admin'] },
+    description: 'Delete affiche announcement',
+  },
+  {
+    method: 'GET',
+    path: '/api/affiches/active',
+    require: { level: 'public' },
+    description: 'List active affiche announcements (public)',
+  },
+
   // Prompt management (sysadmin only)
   {
     method: 'GET',

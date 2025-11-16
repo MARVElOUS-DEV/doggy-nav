@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { IconCloseCircle } from '@arco-design/web-react/icon';
 import { Link as ArcoLink } from '@arco-design/web-react';
-import { useTranslation } from 'react-i18next';
+import api from '@/utils/api';
+import type { Affiche as AfficheItem } from '@/types';
 
 // Define the announcement type
 type Announcement = {
@@ -16,40 +17,11 @@ type Announcement = {
 };
 
 export default function Affiche() {
-  const { t } = useTranslation();
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [show, setShow] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Announcement data - can be fetched from API in the future
-  const announcements: Announcement[] = [
-    {
-      id: 'suggest',
-      text: t('if_you_have_suggestions'),
-      link: {
-        href: 'https://github.com/MARVElOUS-DEV/doggy-nav',
-        text: t('go_to_submit'),
-        target: '_blank'
-      },
-    },
-    {
-      id: 'issue',
-      text: t('support_submitting_sites_with_personal_info'),
-      link: {
-        href: '/recommend',
-        text: t('go_to_submit_sites')
-      },
-    },
-    {
-      id: 'new-feature',
-      text: t('new_feature_favorite_sites'),
-      link: {
-        href: '/login',
-        text: t('try_it_now')
-      },
-    }
-  ];
 
   // Auto-rotate announcements
   const clearTimers = () => {
@@ -92,6 +64,43 @@ export default function Affiche() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcements.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchAffiches = async () => {
+      try {
+        const items: AfficheItem[] = await api.getActiveAffiches();
+        if (cancelled) return;
+        const mapped: Announcement[] = (items || []).map((item) => ({
+          id: item.id,
+          text: item.text,
+          link:
+            item.linkHref && (item.linkText || item.linkHref)
+              ? {
+                  href: item.linkHref,
+                  text: item.linkText || item.linkHref,
+                  target: (item.linkTarget as '_blank' | '_self' | undefined) || '_self',
+                }
+              : undefined,
+        }));
+        setAnnouncements(mapped);
+        setCurrentIndex(0);
+      } catch (err) {
+        // Fallback: hide banner on error
+        // eslint-disable-next-line no-console
+        console.error('Failed to load affiche announcements', err);
+      }
+    };
+
+    fetchAffiches();
+
+    return () => {
+      cancelled = true;
+      clearTimers();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle manual navigation
   const goToNext = () => {

@@ -121,3 +121,15 @@ export interface Prompt {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface Affiche {
+  id: ID;
+  text: string;
+  linkHref?: string | null;
+  linkText?: string | null;
+  linkTarget?: string | null;
+  active: boolean;
+  order?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+}

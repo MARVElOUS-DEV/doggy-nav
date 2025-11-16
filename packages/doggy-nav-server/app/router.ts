@@ -111,6 +111,13 @@ export default (app: Application) => {
   router.delete('/api/prompts', controller.prompt.remove);
   router.post('/api/prompts/:id/activate', controller.prompt.setActive);
 
+  // Affiche (announcement) routes
+  router.get('/api/affiches', controller.affiche.list);
+  router.post('/api/affiches', controller.affiche.add);
+  router.put('/api/affiches', controller.affiche.update);
+  router.delete('/api/affiches', controller.affiche.remove);
+  router.get('/api/affiches/active', controller.affiche.listActive);
+
   // AI inference routes (OpenAI-compatible)
   router.post('/v1/chat/completions', controller.ai.chatCompletions);
   // Admin-friendly alias under /api (proxied in dev)

@@ -85,6 +85,13 @@ export default [
     component: './ai/Prompt',
     access: 'isSysadmin',
   },
+  {
+    name: '公告管理',
+    icon: 'notification',
+    path: '/settings/affiche',
+    component: './settings/Affiche',
+    access: 'isAdmin',
+  },
   { path: '/', redirect: '/nav/admin' },
   { path: '/*', component: '@/404' },
 ];
@@ -175,6 +182,12 @@ export const pageTitles: Record<
   '/ai/prompt': {
     title: 'Prompt 管理',
     subtitle: '管理 AI 对话 Prompt 模板',
+    showUserMenu: true,
+    showSearch: false,
+  },
+  '/settings/affiche': {
+    title: '公告管理',
+    subtitle: '配置首页公告内容与展示',
     showUserMenu: true,
     showSearch: false,
   },
