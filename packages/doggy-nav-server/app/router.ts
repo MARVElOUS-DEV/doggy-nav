@@ -4,6 +4,7 @@ import createOAuthCallback from './middleware/oauthCallback';
 export default (app: Application) => {
   const { controller, router } = app;
   const oauthCallback = createOAuthCallback();
+  router.put('/api/user/password', controller.user.changePassword);
 
   router.post('/api/auth/logout', controller.auth.logout);
   router.get('/api/auth/providers', controller.auth.providers);

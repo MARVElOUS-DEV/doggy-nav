@@ -95,6 +95,21 @@ export default class UserController extends CommonController {
     this.success(res);
   }
 
+  public async changePassword() {
+    const { ctx } = this;
+    const userId = ctx.state.userinfo?.userId;
+    if (!userId) {
+      throw new AuthenticationError('用户未认证');
+    }
+
+    const body = this.getSanitizedBody();
+    const currentPassword = String(body.currentPassword || '');
+    const newPassword = String(body.newPassword || '');
+
+    const ok = await ctx.service.user.changePassword(String(userId), currentPassword, newPassword);
+    this.success(!!ok);
+  }
+
   // ===== Admin user management =====
   public async adminList() {
     const query = this.getSanitizedQuery();

@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import { createAuthMiddleware, requirePermission } from '../middleware/auth';
 import { responses } from '../utils/responses';
-import { D1UserRepository } from '../adapters/d1UserRepository';
 import { getDI, getUser } from '../ioc/helpers';
 import { JWTUtils } from '../utils/jwtUtils';
 import { TOKENS } from '../ioc/tokens';
 import type { UserService } from 'doggy-nav-core';
+import type { D1UserRepository } from '../adapters/d1UserRepository';
+import { PasswordUtils } from '../utils/passwordUtils';
 
 const userRoutes = new Hono<{ Bindings: { DB: D1Database; JWT_SECRET?: string } }>();
 
@@ -76,6 +77,48 @@ userRoutes.put('/profile', createAuthMiddleware({ required: true }), async (c) =
     );
   } catch (error) {
     console.error('Profile update error:', error);
+    return c.json(responses.serverError(), 500);
+  }
+});
+
+// Server-compat: PUT /api/user/password
+userRoutes.put('/password', createAuthMiddleware({ required: true }), async (c) => {
+  try {
+    const current = getUser(c)!;
+    const body = await c.req.json().catch(() => ({}));
+    const currentPassword = String(body.currentPassword || '');
+    const newPassword = String(body.newPassword || '');
+
+    if (!currentPassword || !newPassword) {
+      return c.json(responses.badRequest('Current password and new password are required'), 400);
+    }
+
+    const validation = PasswordUtils.validatePassword(newPassword);
+    if (!validation.valid) {
+      return c.json(
+        responses.badRequest(`New password validation failed: ${validation.errors.join(', ')}`),
+        400
+      );
+    }
+
+    const di = getDI(c);
+    const userRepository = di.resolve(TOKENS.UserRepo) as D1UserRepository;
+    const dbUser = await userRepository.getById(current.id);
+    if (!dbUser || !dbUser.passwordHash) {
+      return c.json(responses.badRequest('User not found'), 404);
+    }
+
+    const isValidCurrent = await PasswordUtils.verifyPassword(currentPassword, dbUser.passwordHash);
+    if (!isValidCurrent) {
+      return c.json(responses.badRequest('Current password is incorrect'), 400);
+    }
+
+    const hashed = await PasswordUtils.hashPassword(newPassword);
+    await userRepository.update(current.id, { passwordHash: hashed });
+
+    return c.json(responses.ok({}, 'Password changed successfully'));
+  } catch (error) {
+    console.error('User password change error:', error);
     return c.json(responses.serverError(), 500);
   }
 });
@@ -290,7 +333,8 @@ userRoutes.delete(
 userRoutes.get('/:id/roles', createAuthMiddleware({ required: true }), async (c) => {
   try {
     const { id } = c.req.param();
-    const userRepository = new D1UserRepository(c.env.DB);
+    const di = getDI(c);
+    const userRepository = di.resolve(TOKENS.UserRepo) as D1UserRepository;
 
     // Check if user exists
     const user = await userRepository.getById(id);
@@ -317,7 +361,8 @@ userRoutes.get('/:id/roles', createAuthMiddleware({ required: true }), async (c)
 userRoutes.get('/:id/groups', createAuthMiddleware({ required: true }), async (c) => {
   try {
     const { id } = c.req.param();
-    const userRepository = new D1UserRepository(c.env.DB);
+    const di = getDI(c);
+    const userRepository = di.resolve(TOKENS.UserRepo) as D1UserRepository;
 
     // Check if user exists
     const user = await userRepository.getById(id);

@@ -87,6 +87,13 @@ export const routePermissions: RoutePermission[] = [
     description: 'Update user profile',
   },
 
+  {
+    method: 'PUT',
+    path: '/api/user/password',
+    require: { level: 'authenticated' },
+    description: 'Change user password',
+  },
+
   // User management
   {
     method: 'GET',

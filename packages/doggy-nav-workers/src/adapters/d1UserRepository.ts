@@ -48,7 +48,7 @@ export class D1UserRepository {
   async getById(id: string): Promise<User | null> {
     const stmt = this.db.prepare(
       `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
-              last_login_at, created_at, updated_at, avatar
+              last_login_at, created_at, updated_at, avatar, password_hash
       FROM users WHERE id = ? LIMIT 1`
     );
     const row = await stmt.bind(id).first<any>();
@@ -58,7 +58,7 @@ export class D1UserRepository {
   async getByEmail(email: string): Promise<User | null> {
     const stmt = this.db.prepare(
       `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
-              last_login_at, created_at, updated_at, avatar
+              last_login_at, created_at, updated_at, avatar, password_hash
       FROM users WHERE email = ? LIMIT 1`
     );
     const row = await stmt.bind(String(email).toLowerCase()).first<any>();
@@ -68,7 +68,7 @@ export class D1UserRepository {
   async getByUsername(username: string): Promise<User | null> {
     const stmt = this.db.prepare(
       `SELECT id, username, email, is_active, nick_name, phone, extra_permissions,
-              last_login_at, created_at, updated_at, avatar
+              last_login_at, created_at, updated_at, avatar, password_hash
       FROM users WHERE username = ? LIMIT 1`
     );
     const row = await stmt.bind(username).first<any>();

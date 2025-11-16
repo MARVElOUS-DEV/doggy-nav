@@ -261,15 +261,18 @@ export default class UserService extends Service {
     if (!email || !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
       errors.push('请输入有效的邮箱地址');
     }
+    const passwordErrors = this.validatePasswordComplexity(password);
+    return [...errors, ...passwordErrors];
+  }
 
+  private validatePasswordComplexity(password: string): string[] {
+    const errors: string[] = [];
     if (!password || password.length < 6) {
       errors.push('密码至少需要6个字符');
     }
-
     if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
       errors.push('密码必须包含至少一个大写字母、一个小写字母和一个数字');
     }
-
     return errors;
   }
 
@@ -362,6 +365,39 @@ export default class UserService extends Service {
     };
 
     return userResponse;
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const { ctx } = this;
+
+    if (!currentPassword || !newPassword) {
+      throw new ValidationError('请输入当前密码和新密码');
+    }
+
+    const user = await ctx.model.User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+
+    if (!user.password) {
+      throw new ValidationError('当前账号不支持修改密码');
+    }
+
+    const isPasswordValid = await this.comparePassword(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new AuthenticationError('当前密码不正确');
+    }
+
+    const passwordErrors = this.validatePasswordComplexity(newPassword);
+    if (passwordErrors.length > 0) {
+      throw new ValidationError(passwordErrors.join(', '));
+    }
+
+    const hashedPassword = await this.hashPassword(newPassword);
+    user.password = hashedPassword;
+    await user.save();
+
+    return true;
   }
 
   async login() {
