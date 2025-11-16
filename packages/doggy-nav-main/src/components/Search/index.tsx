@@ -59,7 +59,7 @@ export default function AppSearch({ onClose }: AppSearchProps) {
   };
 
   return (
-    <div className="relative w-full max-w-2xl">
+    <div className="relative w-full max-w-2xl mx-auto">
       <Input
         ref={inputRef}
         placeholder={t('search_placeholder')}

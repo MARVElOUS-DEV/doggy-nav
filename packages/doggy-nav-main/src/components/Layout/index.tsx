@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { I18nextProvider } from 'react-i18next';
 import AppNavMenus from '../AppNavMenus';
-import AppHeader from '../AppHeader';
+import AppHeader from '../Header';
 import i18n from '@/i18n';
 import { ConfigProvider, Drawer } from '@arco-design/web-react';
 import {
@@ -14,7 +14,7 @@ import {
 } from '@/store/store';
 import { useSetAtom } from 'jotai';
 import RightSideToolbar from '../RightSideToolbar';
-import LightbulbRope from '../LightbulbRope';
+import LightbulbRope from '../LightBulb';
 import router from 'next/router';
 import AppFooter from '../Footer';
 
