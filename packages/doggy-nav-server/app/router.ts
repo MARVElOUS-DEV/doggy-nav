@@ -18,6 +18,9 @@ export default (app: Application) => {
   // OAuth init route (dynamic provider)
   router.get('/api/auth/:provider', controller.auth.oauthInit);
 
+  // System / version info
+  router.get('/api/system/version', controller.system.version);
+
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
   // Admin user management

@@ -7,6 +7,7 @@ import type {
   LoginFormValues,
   RegisterFormValues,
   OAuthProvider,
+  SystemVersionInfo,
 } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
@@ -137,6 +138,9 @@ const api = {
   // OAuth providers
   getAuthProviders: (): Promise<{ providers: Array<OAuthProvider> }> =>
     axios.get('/api/auth/providers'),
+
+  // System version info
+  getSystemVersion: (): Promise<SystemVersionInfo> => axios.get('/api/system/version'),
 };
 
 export default api;

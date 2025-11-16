@@ -11,7 +11,7 @@ on:
     - cron: '0 2 * * *'
 
 env:
-  NODE_ENV: test
+  NODE_ENV: production
   PNPM_CACHE_FOLDER: .pnpm-store
 
 jobs:

@@ -62,7 +62,6 @@ const LightbulbRope = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, dragOffset]);
 
-  // External driver: show a temporary hint/highlight when event dispatched
   useEffect(() => {
     const handleHint = () => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
@@ -244,7 +243,7 @@ const LightbulbRope = () => {
           style={{
             top: `${(isDragging ? bulbY : BASE_ROPE_LENGTH) + 60}px`,
             left: '50%',
-            transform: `translateX(calc(-50% + ${(isDragging ? bulbX : 0)}px))`,
+            transform: `translateX(calc(-50% + ${isDragging ? bulbX : 0}px))`,
             transition: 'all 0.1s ease-out',
           }}
         >

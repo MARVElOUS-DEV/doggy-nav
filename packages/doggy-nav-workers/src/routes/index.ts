@@ -16,6 +16,7 @@ import translateRoutes from './translate';
 import seedRoutes from './seed';
 import aiRoutes from './ai';
 import promptRoutes from './prompt';
+import systemRoutes from './system';
 
 export type Env = {
   DB: D1Database;
@@ -32,6 +33,14 @@ export type Env = {
   AI_API_KEY?: string;
   AI_BASE_URL?: string;
   AI_MODEL?: string;
+  // System version / repo metadata
+  SERVER_COMMIT_ID?: string;
+  GIT_COMMIT_SHA?: string;
+  GIT_COMMIT?: string;
+  CF_PAGES_COMMIT_SHA?: string;
+  GIT_REPO_SLUG?: string;
+  SYSTEM_VERSION_ENABLED?: string;
+  GITHUB_TOKEN?: string;
 };
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>) {
@@ -56,6 +65,7 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/prompts', promptRoutes);
   app.route('/api/migration', migrationRoutes);
   app.route('/api/seed', seedRoutes);
+   app.route('/api/system', systemRoutes);
   // OpenAI-compatible inference endpoint
   app.route('/', aiRoutes);
 }

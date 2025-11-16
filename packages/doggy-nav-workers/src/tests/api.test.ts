@@ -213,6 +213,19 @@ describe('Doggy Nav Worker API', () => {
     });
   });
 
+  describe('System Version', () => {
+    it('should return system version info', async () => {
+      const response = await app.request('/api/system/version');
+      expect(response.status).toBe(200);
+
+      const data = await response.json();
+      expect(data.code).toBe(1);
+      expect(data.msg).toBe('ok');
+      expect(data.data).toHaveProperty('currentCommitId');
+      expect(data.data).toHaveProperty('hasNewVersion');
+    });
+  });
+
   describe('Authentication', () => {
     it.skip('should handle registration', async () => {
       (mockDB.prepare().bind().first as jest.Mock<any, any>).mockResolvedValue(null); // No existing user

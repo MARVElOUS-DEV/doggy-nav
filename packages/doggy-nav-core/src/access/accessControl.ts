@@ -73,6 +73,14 @@ export const routePermissions: RoutePermission[] = [
     description: 'OAuth callback for provider',
   },
 
+  // System / version info
+  {
+    method: 'GET',
+    path: '/api/system/version',
+    require: { level: 'public' },
+    description: 'Get backend system version / commit metadata',
+  },
+
   // User profile
   {
     method: 'GET',

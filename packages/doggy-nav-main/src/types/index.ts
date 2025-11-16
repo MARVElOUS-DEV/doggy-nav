@@ -83,3 +83,13 @@ export interface AuthState {
   user: User | null;
   token: string | null;
 }
+
+export interface SystemVersionInfo {
+  currentCommitId: string | null;
+  currentCommitTime: string | null;
+  latestCommitId: string | null;
+  latestCommitTime: string | null;
+  hasNewVersion: boolean;
+  checkedAt: string | null;
+  error?: string;
+}

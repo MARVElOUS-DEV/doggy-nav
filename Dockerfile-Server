@@ -1,4 +1,8 @@
 # Multi-stage build for doggy-nav-server (Egg.js Backend)
+# GIT_COMMIT_SHA is expected to be provided by CI so we can bake
+# the running server commit into the image as SERVER_COMMIT_ID.
+ARG GIT_COMMIT_SHA=unknown
+
 FROM node:20-alpine AS base
 
 # Install pnpm globally
@@ -20,6 +24,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 # Build the source code
 FROM base AS builder
 WORKDIR /app
+ARG GIT_COMMIT_SHA
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/doggy-nav-server/node_modules ./packages/doggy-nav-server/node_modules
 COPY --from=deps /app/packages/doggy-nav-core/node_modules ./packages/doggy-nav-core/node_modules
@@ -38,6 +43,8 @@ RUN pnpm server:build:ci
 # Production image
 FROM base AS runner
 WORKDIR /app
+
+ARG GIT_COMMIT_SHA
 
 ENV NODE_ENV=production
 
@@ -71,5 +78,6 @@ EXPOSE 3002
 
 ENV PORT=3002
 ENV EGG_SERVER_ENV=prod
+ENV SERVER_COMMIT_ID=${GIT_COMMIT_SHA}
 
 CMD ["pnpm", "run", "docker-start"]

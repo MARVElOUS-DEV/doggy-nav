@@ -75,6 +75,12 @@ export default (appInfo: EggAppInfo) => {
     refreshExpiresIn: JWT_REFRESH_EXPIRES_IN,
   };
 
+  config.systemVersion = {
+    enabled: process.env.SYSTEM_VERSION_ENABLED !== 'false',
+    repoSlug: process.env.GIT_REPO_SLUG || 'MARVElOUS-DEV/doggy-nav',
+    githubToken: process.env.GITHUB_TOKEN,
+  };
+
   // Logger configuration for better diagnostics (tunable via env)
   config.logger = {
     dir: process.env.LOG_DIR || undefined,
@@ -188,6 +194,7 @@ export default (appInfo: EggAppInfo) => {
       '/api/auth/config',
       '/api/auth/me',
       '/api/auth/logout',
+      '/api/system/version',
     ],
   };
 

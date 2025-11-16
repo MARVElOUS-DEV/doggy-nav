@@ -25,12 +25,16 @@ jobs:
           - dockerfile: Dockerfile-Main
             image: doggy-nav-frontend
             context: .
+            build-args: ''
           - dockerfile: Dockerfile-Server
             image: doggy-nav-server
             context: .
+            build-args: |
+              GIT_COMMIT_SHA=${{ github.sha }}
           - dockerfile: Dockerfile-Admin
             image: doggy-nav-admin
             context: .
+            build-args: ''
 
     steps:
       - name: Checkout repository
@@ -81,6 +85,7 @@ jobs:
             ${{ steps.meta.outputs.tags }}
             ${{ env.LATEST_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ matrix.build-args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 
-export default function RightSideToolbar(props: any) {
+export default function RightSideToolbar() {
   const { t } = useTranslation();
   const router = useRouter();
   const [popupVisible, setPopupVisible] = useState(false);
@@ -16,11 +16,10 @@ export default function RightSideToolbar(props: any) {
   };
 
   const handleCustomerService = () => {
-    window.open('https://github.com/MARVElOUS-DEV/doggy-nav','_blank')
+    window.open('https://github.com/MARVElOUS-DEV/doggy-nav', '_blank');
   };
 
   const handleMouseEnter = () => {
-    // Clear any existing hide timeout
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -40,7 +39,7 @@ export default function RightSideToolbar(props: any) {
 
     hideTimeoutRef.current = setTimeout(() => {
       setPopupVisible(false);
-    }, 5000);
+    }, 3000);
   };
 
   const handlePopupMouseEnter = () => {
@@ -67,12 +66,11 @@ export default function RightSideToolbar(props: any) {
     };
   }, []);
 
-
   const glassButtonStyle = {
     background: 'rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(10px)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
-    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
   };
 
   const renderMenu = () => (
@@ -82,7 +80,7 @@ export default function RightSideToolbar(props: any) {
         background: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(15px)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.4)'
+        boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.4)',
       }}
       onMouseEnter={handlePopupMouseEnter}
       onMouseLeave={handlePopupMouseLeave}
@@ -114,28 +112,19 @@ export default function RightSideToolbar(props: any) {
       </div>
     </div>
   );
-    
 
   return (
     <div className="fixed right-5 bottom-5 z-50">
-      <div
-        className="relative"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
+      <div className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         {/* Popup Menu */}
-        {popupVisible && (
-          <div className="absolute bottom-20 right-0 mb-2">
-            {renderMenu()}
-          </div>
-        )}
+        {popupVisible && <div className="absolute bottom-20 right-0 mb-2">{renderMenu()}</div>}
 
         {/* BackTop component */}
         <BackTop
           visibleHeight={30}
           easing={'quintIn'}
           duration={200}
-          target={() => document.getElementById('doggy-content-area')|| window}
+          target={() => document.getElementById('doggy-content-area') || window}
         >
           <div className="transition-all duration-300 hover:scale-110">
             <Tooltip content={t('back_to_top')} position="left">
