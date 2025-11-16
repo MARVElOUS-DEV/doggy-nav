@@ -9,12 +9,14 @@ import Launchpad from '@/apps/LaunchPad';
 import { useRouter } from 'next/router';
 import { DesktopCtx, type AppId } from '@/apps/config';
 import { DesktopProvider, useDesktop } from '@/apps/Desktop/DesktopStore';
+import { useGlobalAppWindow } from '@/store/GlobalAppWindowStore';
 
 type NextPageWithLayout = NextPage & { getLayout?: (page: React.ReactNode) => React.ReactNode };
 
 function DesktopInner() {
   const router = useRouter();
   const { state, actions, wallpapers } = useDesktop();
+  const globalWindow = useGlobalAppWindow();
   const [dockOffset, setDockOffset] = useState(0);
   const [topbarHeight, setTopbarHeight] = useState(32);
   const isClient = typeof window !== 'undefined';
@@ -60,7 +62,9 @@ function DesktopInner() {
       .map((id) => {
         const cfg = state.windows[id];
         if (!cfg) return null as any;
-        const running = cfg.open || cfg.minimized;
+        const isGlobalRunning =
+          !!cfg.globalWindow && globalWindow.state.open && globalWindow.state.sourceId === id;
+        const running = cfg.open || cfg.minimized || isGlobalRunning;
         return {
           key: id,
           label: cfg.title || id,
@@ -72,7 +76,23 @@ function DesktopInner() {
               return;
             }
             actions.closeLaunchpad();
-            if (cfg.shouldOpenWindow) {
+            if (cfg.globalWindow) {
+              const rect: WindowRect = (cfg.rect as WindowRect) ??
+                (cfg.defaultRect as WindowRect) ?? {
+                  x: 120,
+                  y: 90,
+                  width: 860,
+                  height: 520,
+                };
+              const content = typeof cfg.render === 'function' ? cfg.render(ctx) : null;
+              globalWindow.openWindow({
+                sourceId: id,
+                title: cfg.title || id,
+                rect,
+                keepAliveOnMinimize: cfg.keepAliveOnMinimize ?? true,
+                content,
+              });
+            } else if (cfg.shouldOpenWindow) {
               actions.openWindow(id);
               actions.activateWindow(id);
             } else {
@@ -91,6 +111,7 @@ function DesktopInner() {
     wallpapers.current,
     wallpapers.items,
     router,
+    globalWindow,
   ]);
 
   const onMenuClick = useCallback(() => actions.toggleSys(), [actions]);
@@ -179,6 +200,7 @@ function DesktopInner() {
               onActivate={onActivate}
               zIndex={win.z}
               bounds="#windows-area"
+              expandable={win.expandable ?? true}
               getMaxArea={() => {
                 if (typeof document !== 'undefined') {
                   const el = document.getElementById('windows-area');

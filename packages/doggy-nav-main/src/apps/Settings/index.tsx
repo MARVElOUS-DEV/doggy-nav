@@ -6,14 +6,17 @@ import { getSetting, setSetting } from '@/utils/idb';
 import { Message } from '@arco-design/web-react';
 import { getRandomFallbackIcon } from '@/utils/fallbackIcons';
 import { useDesktop } from '@/apps/Desktop/DesktopStore';
+import { useGlobalAppWindow } from '@/store/GlobalAppWindowStore';
 
 export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
   const { state } = useDesktop();
+  const globalWindow = useGlobalAppWindow();
   const [active, setActive] = useState<string>('music');
 
   // Music config form state
   const musicDefaultUrl = 'https://y.qq.com/';
   const [musicUrl, setMusicUrl] = useState(musicDefaultUrl);
+  const [musicGlobalWindow, setMusicGlobalWindow] = useState(true);
   useEffect(() => {
     let alive = true;
     getSetting<string>('music.url').then((v) => {
@@ -24,14 +27,27 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
     };
   }, []);
 
+  useEffect(() => {
+    let alive = true;
+    getSetting<boolean>('music.globalWindow').then((v) => {
+      if (!alive) return;
+      if (typeof v === 'boolean') setMusicGlobalWindow(v);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const onSaveMusic = async () => {
     // Update music app to point to the new URL
     ctx.actions.updateApp('music', {
       keepAliveOnMinimize: true,
+      globalWindow: musicGlobalWindow,
       webviewUrl: musicUrl || musicDefaultUrl,
       render: () => <IframeContainer src={musicUrl || musicDefaultUrl} title="music" />,
     });
     await setSetting('music.url', musicUrl || musicDefaultUrl);
+    await setSetting('music.globalWindow', musicGlobalWindow);
     Message.success('Music settings saved');
   };
 
@@ -39,6 +55,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
   const [newName, setNewName] = useState('My Web App');
   const [newUrl, setNewUrl] = useState('https://');
   const [newIcon, setNewIcon] = useState('');
+  const [newGlobalWindow, setNewGlobalWindow] = useState(false);
   const canCreate = useMemo(
     () => /^https?:\/\//i.test(newUrl) && newName.trim().length > 0,
     [newUrl, newName]
@@ -47,6 +64,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
   const onCreateApp = () => {
     if (!canCreate) return;
     const id = `app-${Date.now()}`;
+    const rect = { x: 240, y: 120, width: 960, height: 640 } as const;
     ctx.actions.addApp({
       id,
       title: newName.trim(),
@@ -55,16 +73,26 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
       keepAliveOnMinimize: true,
       userApp: true,
       webviewUrl: newUrl,
+      globalWindow: newGlobalWindow,
       open: false,
       minimized: false,
-      defaultRect: { x: 240, y: 120, width: 960, height: 640 },
-      rect: { x: 240, y: 120, width: 960, height: 640 },
+      defaultRect: rect,
+      rect,
       z: undefined,
       render: () => <IframeContainer src={newUrl} title={newName} />,
     });
     // Open immediately
-    ctx.actions.openWindow(id);
-    ctx.actions.activateWindow(id);
+    if (newGlobalWindow) {
+      globalWindow.openWindow({
+        title: newName.trim(),
+        rect,
+        keepAliveOnMinimize: true,
+        content: <IframeContainer src={newUrl} title={newName} />,
+      });
+    } else {
+      ctx.actions.openWindow(id);
+      ctx.actions.activateWindow(id);
+    }
     Message.success('App created and opened');
   };
 
@@ -147,6 +175,19 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                   placeholder={musicDefaultUrl}
                 />
               </label>
+              <label
+                className="inline-flex items-center gap-2 text-xs"
+                style={{ color: 'var(--color-foreground)' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={musicGlobalWindow}
+                  onChange={(e) => setMusicGlobalWindow(e.target.checked)}
+                  className="rounded border bg-transparent"
+                  style={{ borderColor: 'var(--color-border)' }}
+                />
+                <span>Use global window (keeps open when navigating to other pages)</span>
+              </label>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -179,6 +220,22 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                   {activeApp.webviewUrl || '—'}
                 </div>
               </div>
+              <label
+                className="inline-flex items-center gap-2 text-xs"
+                style={{ color: 'var(--color-foreground)' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!activeApp.globalWindow}
+                  onChange={(e) => {
+                    ctx.actions.updateApp(active as any, { globalWindow: e.target.checked });
+                    Message.success('Window setting updated');
+                  }}
+                  className="rounded border bg-transparent"
+                  style={{ borderColor: 'var(--color-border)' }}
+                />
+                <span>Use global window (keeps open when navigating to other pages)</span>
+              </label>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -239,6 +296,19 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                   style={{ borderColor: 'var(--color-border)' }}
                   placeholder="/app-icons/tools.png"
                 />
+              </label>
+              <label
+                className="inline-flex items-center gap-2 text-xs"
+                style={{ color: 'var(--color-foreground)' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={newGlobalWindow}
+                  onChange={(e) => setNewGlobalWindow(e.target.checked)}
+                  className="rounded border bg-transparent"
+                  style={{ borderColor: 'var(--color-border)' }}
+                />
+                <span>Use global window (keeps open when navigating to other pages)</span>
               </label>
               <div className="flex items-center gap-2">
                 <button

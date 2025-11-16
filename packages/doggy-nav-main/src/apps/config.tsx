@@ -39,6 +39,8 @@ export type DesktopAppConfig = {
   expandable?: boolean;
   // If true, window stays mounted when minimized (useful for iframes/media)
   keepAliveOnMinimize?: boolean;
+  // If true, this app prefers the global AppWindow that persists across routes
+  globalWindow?: boolean;
   // Runtime webview metadata for user-created apps
   userApp?: boolean;
   webviewUrl?: string;
@@ -80,7 +82,7 @@ export const appsConfig: Record<AppId, DesktopAppConfig> = {
     title: 'Translation',
     icon: '/app-icons/translate.png',
     shouldOpenWindow: true,
-    defaultRect: { x: 220, y: 140, width: 860, height: 560 },
+    defaultRect: { x: 220, y: 140, width: 860, height: 480 },
     render: () => <TranslationApp />,
   },
   music: {
@@ -90,6 +92,7 @@ export const appsConfig: Record<AppId, DesktopAppConfig> = {
     icon: '/app-icons/music.png',
     shouldOpenWindow: true,
     keepAliveOnMinimize: true,
+    globalWindow: true,
     defaultRect: { x: 240, y: 120, width: 960, height: 640 },
     render: () => <IframeContainer src={'https://y.qq.com/'} title="music" />,
   },

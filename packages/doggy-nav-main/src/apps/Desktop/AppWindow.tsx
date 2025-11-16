@@ -24,6 +24,7 @@ interface AppWindowProps {
   zIndex?: number;
   bounds?: string | HTMLElement;
   getMaxArea?: () => WindowRect;
+  expandable?: boolean;
   children?: React.ReactNode;
 }
 
@@ -43,13 +44,44 @@ export default function AppWindow({
   zIndex,
   bounds,
   getMaxArea,
+  expandable = true,
 }: AppWindowProps) {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
 
   const [localRect, setLocalRect] = useState<WindowRect>(rect);
   const prevRectRef = useRef<WindowRect | null>(null);
+  const lastTouchTimeRef = useRef<number>(0);
   const [maximized, setMaximized] = useState(false);
+
+  const handleMaximize = () => {
+    if (!expandable) return;
+
+    if (!maximized) {
+      prevRectRef.current = { ...localRect };
+      let next: WindowRect;
+      if (typeof getMaxArea === 'function') {
+        next = getMaxArea();
+      } else {
+        const margin = 20;
+        const top = 60;
+        const w = Math.max(320, window.innerWidth - margin * 2);
+        const h = Math.max(200, window.innerHeight - top - margin);
+        next = { x: margin, y: top, width: w, height: h };
+      }
+      setLocalRect(next);
+      onRectChange?.(next);
+      setMaximized(true);
+    } else {
+      const prev = prevRectRef.current;
+      if (prev) {
+        setLocalRect(prev);
+        onRectChange?.(prev);
+      }
+      setMaximized(false);
+    }
+  };
+
   useEffect(() => {
     setLocalRect(rect);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,7 +155,7 @@ export default function AppWindow({
           >
             {/* Title bar */}
             <div
-              className="app-window-title flex items-center justify-between px-3 py-2 border-b rounded-t-2xl select-none"
+              className="app-window-title flex items-center px-3 py-2 border-b rounded-t-2xl select-none gap-3"
               style={{
                 borderColor: 'var(--color-border)',
                 touchAction: 'none',
@@ -131,44 +163,36 @@ export default function AppWindow({
               }}
               onPointerDown={onActivate}
             >
-              <div className="flex items-center gap-3">
-                <div className="no-drag">
-                  <TrafficLights
-                    onClose={onClose}
-                    onMinimize={onMinimize}
-                    onMaximize={() => {
-                      if (!maximized) {
-                        prevRectRef.current = { ...localRect };
-                        let next: WindowRect;
-                        if (typeof getMaxArea === 'function') {
-                          next = getMaxArea();
-                        } else {
-                          const margin = 20;
-                          const top = 60;
-                          const w = Math.max(320, window.innerWidth - margin * 2);
-                          const h = Math.max(200, window.innerHeight - top - margin);
-                          next = { x: margin, y: top, width: w, height: h };
-                        }
-                        setLocalRect(next);
-                        onRectChange?.(next);
-                        setMaximized(true);
-                      } else {
-                        const prev = prevRectRef.current;
-                        if (prev) {
-                          setLocalRect(prev);
-                          onRectChange?.(prev);
-                        }
-                        setMaximized(false);
-                      }
-                    }}
-                  />
-                </div>
-                <div
-                  className="ml-1 font-medium text-sm"
-                  style={{ color: 'var(--color-muted-foreground)' }}
-                >
-                  {title}
-                </div>
+              <div className="no-drag">
+                <TrafficLights
+                  onClose={onClose}
+                  onMinimize={onMinimize}
+                  onMaximize={handleMaximize}
+                  expandable={expandable}
+                />
+              </div>
+              <div
+                className="font-medium text-sm flex-1"
+                style={{ color: 'var(--color-muted-foreground)' }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  if (expandable) {
+                    handleMaximize();
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  // Handle double tap for mobile devices
+                  const now = Date.now();
+                  if (now - (lastTouchTimeRef.current || 0) < 300) {
+                    e.stopPropagation();
+                    if (expandable) {
+                      handleMaximize();
+                    }
+                  }
+                  lastTouchTimeRef.current = now;
+                }}
+              >
+                {title}
               </div>
               <div
                 className="text-xs px-1 flex items-center"
