@@ -12,6 +12,8 @@
 
 _A modern, self-hosted navigation and bookmark management system_
 
+[English](./README.md) | [简体中文](./README-zh-CN.md)
+
 [🚀 Features](#-features) • [📦 Quick Start](#-quick-start) • [🔧 Development](#-development) • [🐳 Docker](#-docker-deployment) • [📖 Documentation](#-documentation)
 
 </div>
@@ -25,7 +27,7 @@ Doggy Nav is a comprehensive navigation and bookmark management system designed 
 ### 🎯 Use Cases
 
 - **Team Bookmark Management** - Shared bookmarks for development teams
-- **Personal Navigation Hub** - Private bookmark organization
+- **Personal Navigation Hub** - Private bookmark organization, One-stop personal quick access web desktop
 - **Cloud-Based SaaS** - Multi-tenant bookmark service
 - **Enterprise Portal** - Internal company navigation system
 
@@ -43,6 +45,9 @@ Doggy Nav is a comprehensive navigation and bookmark management system designed 
   <br/>
   <img src="docs/assets/login_page.png" alt="Login Page" width="45%" />
   <img src="docs/assets/login_page_dark.jpeg" alt="Login Page" width="45%" />
+  <br/>
+  <img src="docs/assets/desktop-light.jpeg" alt="desktop-light" width="45%" />
+  <img src="docs/assets/desktop-dark.jpeg" alt="desktop-dark" width="45%" />
   
 </p>
 
