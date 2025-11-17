@@ -74,7 +74,6 @@ export default function NavListPage() {
     {
       title: '网站名称',
       dataIndex: 'name',
-      width: 180,
     },
     {
       title: '网站标签',
@@ -92,7 +91,6 @@ export default function NavListPage() {
     {
       title: '分类',
       dataIndex: 'categoryId',
-      width: 500,
       hideInTable: true,
       renderFormItem: (props) => <CategorySelect {...props} />,
     },
@@ -141,7 +139,6 @@ export default function NavListPage() {
         columns={columns}
         requestParams={{ url: API_NAV_LIST, method: 'GET' }}
         showPageHeader={false}
-        // Ensure horizontal scroll for long/fixed columns to prevent overflow
         scroll={{ x: 'max-content' }}
         rowSelection={rowSelection}
         toolbar={{

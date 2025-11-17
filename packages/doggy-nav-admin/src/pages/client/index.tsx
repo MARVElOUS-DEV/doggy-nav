@@ -183,7 +183,7 @@ const ClientPage: React.FC = () => {
       title: 'Client Secret',
       dataIndex: 'clientSecret',
       hideInSearch: true,
-      render: (secret: string) => (
+      renderText: (secret: string) => (
         <Space>
           <Text code style={{ fontSize: '12px' }}>
             {maskSecret(secret)}

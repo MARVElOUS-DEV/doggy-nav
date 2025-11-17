@@ -365,7 +365,7 @@ function TableCom(props: TableComProps, ref: any) {
           {
             title: '操作',
             valueType: 'option',
-            width: 200,
+            width: 100,
             fixed: 'right',
             render: (text, record, _, action) =>
               formatOptions(renderOptions(text, record, _, action)),
@@ -418,17 +418,15 @@ function TableCom(props: TableComProps, ref: any) {
     incomingRequest ?? (requestParams?.url ? onRequest : undefined);
 
   const proTable = (
-    <div className="table-horizontal-wrapper">
-      <ProTable
-        columns={realColumns}
-        loading={loading}
-        formRef={from}
-        request={resolvedRequest}
-        rowSelection={{ type: 'checkbox' }}
-        rowKey={'id'}
-        {...restTableProps}
-      />
-    </div>
+    <ProTable
+      columns={realColumns}
+      loading={loading}
+      formRef={from}
+      request={resolvedRequest}
+      rowSelection={{ type: 'checkbox' }}
+      rowKey={'id'}
+      {...restTableProps}
+    />
   );
 
   if (!showPageHeader) {
