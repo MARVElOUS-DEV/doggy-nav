@@ -32,20 +32,7 @@ export async function getInitialState(): Promise<{
   }
 }
 
-export const layout: RunTimeLayoutConfig = ({
-  initialState,
-  setInitialState,
-}) => {
-  //expose a global helper to refresh currentUser so access() re-evaluates without full reload
-  (window as any).g_updateInitialState = async () => {
-    try {
-      const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
-      const currentUser = json?.data?.user || undefined;
-      await setInitialState((s: any) => ({ ...s, currentUser }));
-    } catch {
-      await setInitialState((s: any) => ({ ...s, currentUser: undefined }));
-    }
-  };
+export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
     disableContentMargin: false,
     waterMarkProps: {
