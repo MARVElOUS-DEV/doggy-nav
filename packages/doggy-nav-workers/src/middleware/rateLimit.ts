@@ -32,8 +32,8 @@ function buildConfig(env: {
   return {
     enabled,
     anonymous: { limit: max, interval: windowMs },
-    authenticated: { limit: max, interval: windowMs },
-    admin: { limit: max, interval: windowMs },
+    authenticated: { limit: max + 100, interval: windowMs },
+    admin: { limit: max + 200, interval: windowMs },
     routes: defaultRateLimitRoutes,
     exemptPaths: [...baseRateLimitExemptPaths, '/api/health'],
   };

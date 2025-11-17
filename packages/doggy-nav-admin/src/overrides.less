@@ -12,13 +12,25 @@
   .ant-table {
     background: transparent;
     border-radius: 0;
-    overflow: visible;
+    overflow: hidden;
+    position: relative;
     box-shadow: none;
     border: none;
   }
 
+  .ant-table-container,
+  .ant-table-body,
+  .ant-table-content {
+    overflow: auto;
+  }
+
+  .ant-table-fixed-right,
+  .ant-table-fixed-left {
+    background: #fff;
+  }
+
   .ant-table-thead > tr > th {
-    background: transparent;
+    background: #fff;
     font-weight: 600;
     border: none !important;
     border-bottom: 1px solid #f0f0f0 !important;
@@ -234,3 +246,6 @@
   overflow: hidden;
 }
 
+.ant-tooltip-inner {
+  background-color: #f5f5f5;
+}

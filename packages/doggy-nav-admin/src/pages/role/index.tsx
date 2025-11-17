@@ -1,7 +1,7 @@
+import TableCom from '@/components/TableCom';
 import { PlusOutlined } from '@ant-design/icons';
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
 import { Access, useRequest } from '@umijs/max';
 import { Button, Modal, Space, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
@@ -51,8 +51,6 @@ const RolePage: React.FC = () => {
         </Tag>
       ),
     },
-    { title: '创建时间', dataIndex: 'createdAt', hideInSearch: true },
-    { title: '更新时间', dataIndex: 'updatedAt', hideInSearch: true },
     {
       title: '操作',
       valueType: 'option',
@@ -101,7 +99,7 @@ const RolePage: React.FC = () => {
           }}
         />
       ) : null}
-      <ProTable
+      <TableCom
         scroll={{ x: 'max-content' }}
         actionRef={actionRef}
         loading={loading}

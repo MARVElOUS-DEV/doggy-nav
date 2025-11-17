@@ -1,8 +1,8 @@
+import TableCom from '@/components/TableCom';
 import { defaultHeaders } from '@/utils/request';
 import { PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
 import { request as umiRequest } from '@umijs/max';
 import {
   Button,
@@ -177,7 +177,7 @@ const PromptPage: React.FC = () => {
         </Space>
       </Card>
 
-      <ProTable<Prompt>
+      <TableCom
         rowKey="id"
         actionRef={actionRef}
         columns={columns}
@@ -194,6 +194,7 @@ const PromptPage: React.FC = () => {
           } as any;
         }}
         pagination={{ pageSize: 10 }}
+        rowSelection={false}
       />
 
       <Drawer

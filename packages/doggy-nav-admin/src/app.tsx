@@ -1,4 +1,5 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
+import '@ant-design/v5-patch-for-react-19';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
 import { pageTitles } from '../config/routes';
@@ -32,22 +33,10 @@ export async function getInitialState(): Promise<{
   }
 }
 
-export const layout: RunTimeLayoutConfig = ({
-  initialState,
-  setInitialState,
-}) => {
-  //expose a global helper to refresh currentUser so access() re-evaluates without full reload
-  (window as any).g_updateInitialState = async () => {
-    try {
-      const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
-      const currentUser = json?.data?.user || undefined;
-      await setInitialState((s: any) => ({ ...s, currentUser }));
-    } catch {
-      await setInitialState((s: any) => ({ ...s, currentUser: undefined }));
-    }
-  };
+export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
     disableContentMargin: false,
+    disableMobile: true,
     waterMarkProps: {
       content: initialState?.currentUser?.name,
     },
@@ -64,13 +53,7 @@ export const layout: RunTimeLayoutConfig = ({
       };
 
       return (
-        <div
-          style={{
-            overflow: 'hidden',
-            maxWidth: '100%',
-            boxSizing: 'border-box',
-          }}
-        >
+        <div className="admin-header-wrapper">
           {pathname !== loginPath && pathname !== '/404' && (
             <ContentHeader
               title={pageInfo.title}

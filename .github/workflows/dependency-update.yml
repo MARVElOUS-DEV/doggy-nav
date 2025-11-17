@@ -3,8 +3,8 @@ name: Dependency Updates
 
 on:
   schedule:
-    # Run every Monday at 9 AM UTC
-    - cron: '0 9 * * 1'
+    # Run every first Day of this Month at 9 AM UTC
+    - cron: '0 9 1 * *'
   workflow_dispatch:
 
 jobs:

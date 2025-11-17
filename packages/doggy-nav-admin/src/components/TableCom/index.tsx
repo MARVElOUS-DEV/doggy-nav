@@ -32,6 +32,8 @@ interface TableComProps extends ProTableProps<any, any> {
   ) => ReactNode[];
 }
 
+const MIN_TABLE_WIDTH = 1024;
+
 function TableCom(props: TableComProps, ref: any) {
   const {
     showPageHeader = false,
@@ -251,138 +253,179 @@ function TableCom(props: TableComProps, ref: any) {
     ));
   }
 
-  const realColumns = useMemo<ProColumns[]>(() => {
+  const { realColumns, estimatedWidth } = useMemo<{
+    realColumns: ProColumns[];
+    estimatedWidth: number;
+  }>(() => {
     // Process columns to add height restrictions, ellipsis, and optimized widths
-    const processedColumns = columns.map((column: ProColumns) => {
-      // Determine optimized width based on column type
-      let optimizedWidth = column.width;
-      if (!optimizedWidth) {
-        // Set default widths based on common column types
-        if (
-          column.dataIndex === 'createTime' ||
-          column.dataIndex === 'updateTime' ||
-          column.valueType === 'dateTime' ||
-          column.valueType === 'date'
-        ) {
-          optimizedWidth = 180; // DateTime columns need more space
-        } else if (column.dataIndex === 'status') {
-          optimizedWidth = 100; // Status columns are usually compact
-        } else if (
-          column.dataIndex === 'name' ||
-          column.dataIndex === 'title'
-        ) {
-          optimizedWidth = 200; // Name columns often need moderate space
-        } else if (
-          column.dataIndex === 'desc' ||
-          column.dataIndex === 'description'
-        ) {
-          optimizedWidth = 300; // Description columns need more space but will be truncated
-        } else {
-          optimizedWidth = 150; // Default width for most columns
+    const processedColumns = columns.map(
+      (column: ProColumns, index: number) => {
+        const baseColumn: ProColumns = {
+          ...column,
+          fixed: column.fixed ?? (index === 0 ? 'left' : undefined),
+        };
+        // Determine optimized width based on column type
+        let optimizedWidth = baseColumn.width;
+        if (!optimizedWidth) {
+          // Set default widths based on common column types
+          if (
+            baseColumn.dataIndex === 'createTime' ||
+            baseColumn.dataIndex === 'updateTime' ||
+            baseColumn.valueType === 'dateTime' ||
+            baseColumn.valueType === 'date'
+          ) {
+            optimizedWidth = 180; // DateTime columns need more space
+          } else if (baseColumn.dataIndex === 'status') {
+            optimizedWidth = 100; // Status columns are usually compact
+          } else if (
+            baseColumn.dataIndex === 'name' ||
+            baseColumn.dataIndex === 'title'
+          ) {
+            optimizedWidth = 200; // Name columns often need moderate space
+          } else if (
+            baseColumn.dataIndex === 'desc' ||
+            baseColumn.dataIndex === 'description'
+          ) {
+            optimizedWidth = 300; // Description columns need more space but will be truncated
+          } else {
+            optimizedWidth = 150; // Default width for most columns
+          }
         }
-      }
 
-      // Only apply height restriction to text-based columns
-      if (
-        !column.valueType ||
-        ['text', 'textarea', 'select', undefined].includes(
-          column.valueType as string,
-        )
-      ) {
-        return {
-          ...column,
-          width: optimizedWidth,
-          ellipsis: column.ellipsis ?? true,
-          render: (
-            dom: any,
-            record: any,
-            index: number,
-            action: any,
-            schema: any,
-          ) => {
-            // Original render function if exists
-            const originalRender =
-              typeof column.render === 'function'
-                ? column.render(dom, record, index, action, schema)
-                : dom;
+        // Only apply height restriction to text-based columns
+        if (
+          !baseColumn.valueType ||
+          ['text', 'textarea', 'select', undefined].includes(
+            baseColumn.valueType as string,
+          )
+        ) {
+          return {
+            ...baseColumn,
+            width: optimizedWidth,
+            ellipsis: baseColumn.ellipsis ?? true,
+            render: (
+              dom: any,
+              record: any,
+              index: number,
+              action: any,
+              schema: any,
+            ) => {
+              // Original render function if exists
+              const originalRender =
+                typeof baseColumn.render === 'function'
+                  ? baseColumn.render(dom, record, index, action, schema)
+                  : dom;
 
-            // If it's a string or number and needs ellipsis (but not for specific value types like progress bars)
-            if (
-              (typeof originalRender === 'string' ||
-                typeof originalRender === 'number') &&
-              column.valueType !== 'progress' &&
-              column.valueType !== 'image' &&
-              column.valueType !== 'avatar' &&
-              !column.render
-            ) {
-              // Only apply to default renders, not custom ones
-              const content = String(originalRender);
-              // Create a div with max-height and overflow to restrict to 2 lines
-              return (
-                <Tooltip title={content} placement="topLeft">
-                  <div
-                    style={{
-                      maxHeight: '40px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      lineHeight: '20px',
-                    }}
-                  >
-                    {content}
-                  </div>
-                </Tooltip>
-              );
-            }
-            return originalRender;
+              // If it's a string or number and needs ellipsis (but not for specific value types like progress bars)
+              if (
+                (typeof originalRender === 'string' ||
+                  typeof originalRender === 'number') &&
+                baseColumn.valueType !== 'progress' &&
+                baseColumn.valueType !== 'image' &&
+                baseColumn.valueType !== 'avatar' &&
+                !baseColumn.render
+              ) {
+                // Only apply to default renders, not custom ones
+                const content = String(originalRender);
+                // Create a div with max-height and overflow to restrict to 2 lines
+                return (
+                  <Tooltip title={content} placement="topLeft">
+                    <div
+                      style={{
+                        maxHeight: '40px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        lineHeight: '20px',
+                      }}
+                    >
+                      {content}
+                    </div>
+                  </Tooltip>
+                );
+              }
+              return originalRender;
+            },
+          };
+        } else {
+          // For non-text columns, just set optimized width
+          return {
+            ...baseColumn,
+            width: optimizedWidth,
+          };
+        }
+      },
+    );
+
+    const actionColumns = renderOptions
+      ? [
+          ...processedColumns,
+          {
+            title: '操作',
+            valueType: 'option',
+            width: 100,
+            fixed: 'right',
+            render: (text, record, _, action) =>
+              formatOptions(renderOptions(text, record, _, action)),
           },
-        };
-      } else {
-        // For non-text columns, just set optimized width
-        return {
-          ...column,
-          width: optimizedWidth,
-        };
-      }
-    });
+        ]
+      : processedColumns;
 
-    if (renderOptions) {
-      return [
-        ...processedColumns,
-        {
-          title: '操作',
-          valueType: 'option',
-          width: 150,
-          fixed: 'right',
-          render: (text, record, _, action) =>
-            formatOptions(renderOptions(text, record, _, action)),
-        },
-      ];
-    }
-    return processedColumns;
+    const estimatedTableWidth = actionColumns.reduce((total, column) => {
+      const widthValue = column?.width;
+      if (typeof widthValue === 'number') return total + widthValue;
+      if (typeof widthValue === 'string') {
+        const parsed = Number.parseInt(widthValue, 10);
+        return total + (Number.isNaN(parsed) ? 150 : parsed);
+      }
+      return total + 150;
+    }, 0);
+
+    return { realColumns: actionColumns, estimatedWidth: estimatedTableWidth };
   }, [renderOptions, columns]);
 
   // Ensure horizontal scroll when columns are fixed to avoid overflow at narrower widths
   const mergedTableProps: ProTableProps<any, any> = { ...proTableProps };
-  if (!mergedTableProps.scroll && realColumns.some((c: any) => c && c.fixed)) {
-    mergedTableProps.scroll = { x: 'max-content' };
+  const shouldApplyScrollWidth =
+    !mergedTableProps.scroll ||
+    mergedTableProps.scroll.x === undefined ||
+    mergedTableProps.scroll.x === 'max-content';
+
+  if (
+    shouldApplyScrollWidth ||
+    typeof mergedTableProps.scroll?.x === 'number'
+  ) {
+    const targetWidth = Math.max(estimatedWidth, MIN_TABLE_WIDTH);
+    const resolvedScroll = mergedTableProps.scroll || {};
+    const existingX = resolvedScroll.x;
+    mergedTableProps.scroll = {
+      ...resolvedScroll,
+      x:
+        typeof existingX === 'number' && !shouldApplyScrollWidth
+          ? Math.max(existingX, targetWidth)
+          : targetWidth,
+    };
   }
   // A fixed table layout helps keep cells within bounds when widths are constrained
   if (!('tableLayout' in mergedTableProps)) {
     mergedTableProps.tableLayout = 'fixed';
   }
 
+  const { request: incomingRequest, ...restTableProps } = mergedTableProps;
+  const resolvedRequest =
+    incomingRequest ?? (requestParams?.url ? onRequest : undefined);
+
   const proTable = (
     <ProTable
       columns={realColumns}
       loading={loading}
       formRef={from}
-      request={mergedTableProps.request || onRequest}
+      request={resolvedRequest}
       rowSelection={{ type: 'checkbox' }}
       rowKey={'id'}
-      {...mergedTableProps}
+      {...restTableProps}
     />
   );
 

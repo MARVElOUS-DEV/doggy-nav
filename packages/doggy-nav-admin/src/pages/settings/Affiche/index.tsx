@@ -1,6 +1,6 @@
+import TableCom from '@/components/TableCom';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
 import { request as umiRequest } from '@umijs/max';
 import {
   Button,
@@ -133,7 +133,7 @@ const AffichePage: React.FC = () => {
         </Button>,
       ]}
     >
-      <ProTable<Affiche>
+      <TableCom
         rowKey="id"
         actionRef={actionRef}
         columns={columns}
@@ -150,6 +150,7 @@ const AffichePage: React.FC = () => {
           } as any;
         }}
         pagination={{ pageSize: 10 }}
+        rowSelection={false}
       />
 
       <Drawer

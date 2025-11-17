@@ -3,6 +3,10 @@ import defaultSettings from '../config/defaultSettings';
 const { pwa } = defaultSettings;
 const isHttps = document.location.protocol === 'https:'; // if pwa is true
 
+message.config({
+  top: 88,
+});
+
 if (pwa) {
   // Notify user if offline now
   window.addEventListener('sw.offline', () => {

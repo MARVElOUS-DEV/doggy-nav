@@ -1,4 +1,6 @@
+import TableCom from '@/components/TableCom';
 import AddOrEdit from '@/pages/user/addOrEdit';
+import { formatDateTime } from '@/utils/time';
 import {
   ExclamationCircleFilled,
   FrownOutlined,
@@ -6,7 +8,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
-import { ActionType, ProTable } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-table';
 import { Access, useRequest } from '@umijs/max';
 import { Avatar, Button, Modal, Space } from 'antd';
 import React, { useRef, useState } from 'react';
@@ -68,6 +70,8 @@ const UserPage: React.FC = () => {
     {
       title: '账号',
       dataIndex: 'account',
+      fixed: 'left',
+      width: 200,
     },
     {
       title: '状态',
@@ -133,11 +137,13 @@ const UserPage: React.FC = () => {
       title: '创建时间',
       hideInSearch: true,
       dataIndex: 'createdAt',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '更新时间',
       hideInSearch: true,
       dataIndex: 'updatedAt',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '操作',
@@ -168,7 +174,7 @@ const UserPage: React.FC = () => {
           actionRef={actionRef}
         />
       ) : null}
-      <ProTable<User.UserItem>
+      <TableCom
         scroll={{ x: 'max-content' }}
         actionRef={actionRef}
         loading={loading}
