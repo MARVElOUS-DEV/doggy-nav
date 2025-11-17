@@ -4,6 +4,7 @@ import CategorySelect from '@/pages/nav/Category/CategorySelect';
 import NavListForm from '@/pages/nav/List/NavListForm';
 import { API_NAV, API_NAV_LIST } from '@/services/api';
 import request from '@/utils/request';
+import { formatDateTime } from '@/utils/time';
 import { ProColumns } from '@ant-design/pro-table';
 import { Button, message, Modal, Popconfirm, Space, Tag } from 'antd';
 import { useRef, useState } from 'react';
@@ -122,7 +123,7 @@ export default function NavListPage() {
       title: '创建时间',
       dataIndex: 'createTimeDate',
       search: false,
-      valueType: 'dateTime',
+      renderText: (v) => formatDateTime(v),
     },
   ];
 

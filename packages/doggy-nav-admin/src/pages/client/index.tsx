@@ -1,5 +1,6 @@
 import TableCom from '@/components/TableCom';
 import AddOrEdit from '@/pages/client/addOrEdit';
+import { formatDateTime } from '@/utils/time';
 import {
   ApiOutlined,
   CopyOutlined,
@@ -234,14 +235,13 @@ const ClientPage: React.FC = () => {
       title: '最后使用',
       dataIndex: 'lastUsedAt',
       hideInSearch: true,
-      render: (date: string) =>
-        date ? new Date(date).toLocaleString() : '从未使用',
+      render: (date: string) => formatDateTime(date),
     },
     {
       title: '创建时间',
       hideInSearch: true,
       dataIndex: 'createdAt',
-      render: (date: string) => new Date(date).toLocaleString(),
+      render: (date: string) => formatDateTime(date),
     },
     {
       title: '操作',

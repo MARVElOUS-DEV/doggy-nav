@@ -1,4 +1,5 @@
 import TableCom from '@/components/TableCom';
+import { formatDateTime } from '@/utils/time';
 import { PlusOutlined } from '@ant-design/icons';
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
@@ -51,8 +52,18 @@ const RolePage: React.FC = () => {
         </Tag>
       ),
     },
-    { title: '创建时间', dataIndex: 'createdAt', hideInSearch: true },
-    { title: '更新时间', dataIndex: 'updatedAt', hideInSearch: true },
+    {
+      title: '创建时间',
+      dataIndex: 'createdAt',
+      hideInSearch: true,
+      renderText: (v) => formatDateTime(v),
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updatedAt',
+      hideInSearch: true,
+      renderText: (v) => formatDateTime(v),
+    },
     {
       title: '操作',
       valueType: 'option',

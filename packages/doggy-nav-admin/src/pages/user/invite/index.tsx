@@ -5,6 +5,7 @@ import {
   revokeInviteCode,
   updateInviteCode,
 } from '@/services/api';
+import { formatDateTime } from '@/utils/time';
 import type { ProColumns } from '@ant-design/pro-table';
 import {
   Button,
@@ -86,21 +87,19 @@ const InviteCodePage: React.FC = () => {
       title: '过期时间',
       dataIndex: 'expiresAt',
       search: false,
-      valueType: 'dateTime',
-      renderText: (value) => value || '永不过期',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       search: false,
-      valueType: 'dateTime',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '最后使用',
       dataIndex: 'lastUsedAt',
       search: false,
-      valueType: 'dateTime',
-      renderText: (value) => value || '-',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '备注',

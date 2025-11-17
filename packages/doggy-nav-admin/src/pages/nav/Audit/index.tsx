@@ -2,6 +2,7 @@ import TableCom from '@/components/TableCom';
 import { API_NAV_AUDIT, API_NAV_LIST } from '@/services/api';
 import { NavStatus } from '@/types/api';
 import request from '@/utils/request';
+import { formatDateTime } from '@/utils/time';
 import { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Popconfirm, Space, Tag, message } from 'antd';
 import React from 'react';
@@ -78,7 +79,7 @@ export default function NavAuditListPage() {
       title: '创建时间',
       dataIndex: 'createTimeDate',
       search: false,
-      valueType: 'dateTime',
+      renderText: (v) => formatDateTime(v),
     },
   ];
 

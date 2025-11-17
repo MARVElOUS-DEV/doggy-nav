@@ -2,19 +2,32 @@ import type { Category } from 'doggy-nav-core';
 import type { CategoryRepository, CategoryListOptions } from 'doggy-nav-core';
 
 function mapDocToCategory(doc: any): Category {
+  const source = doc?.toJSON ? doc.toJSON() : doc;
+  const childrenSource = source.childrenWithDates ?? source.children;
   return {
-    id: doc._id?.toString?.() ?? doc.id,
-    name: doc.name,
-    categoryId: doc.categoryId ?? null,
-    description: doc.description ?? null,
-    onlyFolder: !!doc.onlyFolder,
-    icon: doc.icon ?? null,
-    showInMenu: typeof doc.showInMenu === 'boolean' ? doc.showInMenu : undefined,
-    audience: doc.audience
+    id: source._id?.toString?.() ?? source.id,
+    name: source.name,
+    categoryId: source.categoryId ?? null,
+    description: source.description ?? null,
+    onlyFolder: !!source.onlyFolder,
+    icon: source.icon ?? null,
+    showInMenu: typeof source.showInMenu === 'boolean' ? source.showInMenu : undefined,
+    createAtDate: source.createAtDate ?? null,
+    children: Array.isArray(childrenSource)
+      ? childrenSource.map((child: any) => ({
+          ...child,
+          createAtDate: child.createAtDate ?? null,
+        }))
+      : undefined,
+    audience: source.audience
       ? {
-          visibility: doc.audience.visibility,
-          allowRoles: (doc.audience.allowRoles || []).map((x: any) => (x?.toString ? x.toString() : x)),
-          allowGroups: (doc.audience.allowGroups || []).map((x: any) => (x?.toString ? x.toString() : x)),
+          visibility: source.audience.visibility,
+          allowRoles: (source.audience.allowRoles || []).map((x: any) =>
+            x?.toString ? x.toString() : x
+          ),
+          allowGroups: (source.audience.allowGroups || []).map((x: any) =>
+            x?.toString ? x.toString() : x
+          ),
         }
       : undefined,
   };
@@ -30,7 +43,7 @@ export class MongooseCategoryRepository implements CategoryRepository {
   async listAll(options?: CategoryListOptions): Promise<Category[]> {
     const cond: any = {};
     if (typeof options?.showInMenu === 'boolean') cond.showInMenu = options.showInMenu;
-    const rows = await this.model.find(cond).limit(100000).lean().select('-__v');
+    const rows = await this.model.find(cond).limit(100000).select('-__v');
     return rows.map(mapDocToCategory);
   }
 }

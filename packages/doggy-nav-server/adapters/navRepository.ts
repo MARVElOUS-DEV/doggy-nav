@@ -3,27 +3,34 @@ import type { NavRepository, NavListOptions } from 'doggy-nav-core';
 import { Types } from 'mongoose';
 
 function mapDocToNav(doc: any): NavItem {
+  const source = doc?.toJSON ? doc.toJSON() : doc;
   return {
-    id: doc._id?.toString?.() ?? doc.id,
-    categoryId: doc.categoryId ?? null,
-    name: doc.name,
-    href: doc.href ?? null,
-    desc: doc.desc ?? null,
-    logo: doc.logo ?? null,
-    authorName: doc.authorName ?? null,
-    authorUrl: doc.authorUrl ?? null,
-    auditTime: doc.auditTime ? new Date(doc.auditTime).toISOString() : null,
-    createTime: typeof doc.createTime === 'number' ? doc.createTime : null,
-    tags: Array.isArray(doc.tags) ? doc.tags : [],
-    view: typeof doc.view === 'number' ? doc.view : undefined,
-    star: typeof doc.star === 'number' ? doc.star : undefined,
-    status: typeof doc.status === 'number' ? doc.status : undefined,
-    isFavorite: typeof doc.isFavorite === 'boolean' ? doc.isFavorite : undefined,
-    audience: doc.audience
+    id: source._id?.toString?.() ?? source.id,
+    categoryId: source.categoryId ?? null,
+    name: source.name,
+    href: source.href ?? null,
+    desc: source.desc ?? null,
+    logo: source.logo ?? null,
+    authorName: source.authorName ?? null,
+    authorUrl: source.authorUrl ?? null,
+    auditTime: source.auditTime ? new Date(source.auditTime).toISOString() : null,
+    createTime: typeof source.createTime === 'number' ? source.createTime : null,
+    createTimeDate: source.createTimeDate ?? null,
+    lastUrlCheckDate: source.lastUrlCheckDate ?? null,
+    tags: Array.isArray(source.tags) ? source.tags : [],
+    view: typeof source.view === 'number' ? source.view : undefined,
+    star: typeof source.star === 'number' ? source.star : undefined,
+    status: typeof source.status === 'number' ? source.status : undefined,
+    isFavorite: typeof source.isFavorite === 'boolean' ? source.isFavorite : undefined,
+    audience: source.audience
       ? {
-          visibility: doc.audience.visibility,
-          allowRoles: (doc.audience.allowRoles || []).map((x: any) => (x?.toString ? x.toString() : x)),
-          allowGroups: (doc.audience.allowGroups || []).map((x: any) => (x?.toString ? x.toString() : x)),
+          visibility: source.audience.visibility,
+          allowRoles: (source.audience.allowRoles || []).map((x: any) =>
+            x?.toString ? x.toString() : x
+          ),
+          allowGroups: (source.audience.allowGroups || []).map((x: any) =>
+            x?.toString ? x.toString() : x
+          ),
         }
       : undefined,
   };
@@ -83,11 +90,12 @@ export class MongooseNavRepository implements NavRepository {
         this.model.aggregate(countPipeline),
       ]);
       const total = countRes.length > 0 ? countRes[0].total : 0;
-      return { data: rows.map(mapDocToNav), total, pageNumber: Math.ceil(total / pageSize) };
+      const hydrated = rows.map((row) => this.model.hydrate(row));
+      return { data: hydrated.map(mapDocToNav), total, pageNumber: Math.ceil(total / pageSize) };
     }
 
     const [rows, total] = await Promise.all([
-      this.model.find(cond).skip(skip).limit(pageSize).sort({ _id: -1 }).lean().select('-__v'),
+      this.model.find(cond).skip(skip).limit(pageSize).sort({ _id: -1 }).select('-__v'),
       this.model.countDocuments(cond),
     ]);
     return { data: rows.map(mapDocToNav), total, pageNumber: Math.ceil(total / pageSize) };

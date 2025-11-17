@@ -33,6 +33,7 @@ export interface Category {
   onlyFolder?: boolean;
   icon?: string | null;
   showInMenu?: boolean;
+  createAtDate?: string | null;
   audience?: Audience;
   children?: Category[];
 }
@@ -48,6 +49,8 @@ export interface NavItem {
   authorUrl?: string | null;
   auditTime?: string | null;
   createTime?: number | null;
+  createTimeDate?: string | null;
+  lastUrlCheckDate?: string | null;
   tags?: string[];
   view?: number;
   star?: number;

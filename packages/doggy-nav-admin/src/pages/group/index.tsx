@@ -1,6 +1,7 @@
 import TableCom from '@/components/TableCom';
 import AddMembers from '@/pages/group/addMembers';
 import AddOrEdit from '@/pages/group/addOrEdit';
+import { formatDateTime } from '@/utils/time';
 import { PlusOutlined } from '@ant-design/icons';
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import { ActionType } from '@ant-design/pro-table';
@@ -96,11 +97,13 @@ const GroupPage: React.FC = () => {
       title: '创建时间',
       hideInSearch: true,
       dataIndex: 'createdAt',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '更新时间',
       hideInSearch: true,
       dataIndex: 'updatedAt',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '操作',

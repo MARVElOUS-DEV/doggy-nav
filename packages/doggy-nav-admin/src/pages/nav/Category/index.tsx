@@ -6,6 +6,7 @@ import { API_CATEGORY, API_CATEGORY_LIST } from '@/services/api';
 import { CategoryModel } from '@/types/api';
 import { getIconComponent } from '@/utils/helpers';
 import request from '@/utils/request';
+import { formatDateTime } from '@/utils/time';
 import { PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Popconfirm } from 'antd';
@@ -91,8 +92,10 @@ export default function NavAuditListPage() {
       dataIndex: 'description',
     },
     {
-      title: '显示在菜单',
+      title: '创建时间',
       dataIndex: 'createAtDate',
+      hideInSearch: true,
+      renderText: (v) => formatDateTime(v),
     },
   ];
   return (

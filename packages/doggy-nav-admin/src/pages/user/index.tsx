@@ -1,5 +1,6 @@
 import TableCom from '@/components/TableCom';
 import AddOrEdit from '@/pages/user/addOrEdit';
+import { formatDateTime } from '@/utils/time';
 import {
   ExclamationCircleFilled,
   FrownOutlined,
@@ -136,11 +137,13 @@ const UserPage: React.FC = () => {
       title: '创建时间',
       hideInSearch: true,
       dataIndex: 'createdAt',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '更新时间',
       hideInSearch: true,
       dataIndex: 'updatedAt',
+      renderText: (v) => formatDateTime(v),
     },
     {
       title: '操作',
