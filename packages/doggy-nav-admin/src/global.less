@@ -1,10 +1,63 @@
 @import './styles/variables.less';
 
+@layout-min-width: 1024px;
+
+:root {
+  --layout-min-width: @layout-min-width;
+}
+
 html,
 body,
 #root {
   height: 100%;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+html,
+body {
+  min-width: @layout-min-width;
+  width: 100%;
+  overflow-x: auto;
+}
+
+#root,
+.ant-layout,
+.ant-design-pro,
+.ant-pro-layout,
+.ant-layout-content {
+  min-width: @layout-min-width;
+}
+
+.admin-header-wrapper {
+  overflow: hidden;
+  width: 100%;
+  min-width: @layout-min-width;
+  box-sizing: border-box;
+}
+
+@media (max-width: @layout-min-width) {
+  :global {
+    [class~='ant-pro-sider'],
+    [class~='ant-layout-sider'] {
+      flex: 0 0 208px !important;
+      width: 208px !important;
+      max-width: 208px !important;
+      min-width: 208px !important;
+    }
+
+    [class~='ant-pro-global-header'],
+    [class~='ant-layout-header'],
+    [class~='ant-pro-basicLayout-content'],
+    [class~='ant-pro-layout'],
+    [class~='ant-layout'],
+    [class~='ant-design-pro'] {
+      min-width: @layout-min-width !important;
+    }
+  }
+
+  #root {
+    min-width: @layout-min-width !important;
+  }
 }
 
 .colorWeak {
@@ -41,6 +94,12 @@ ol {
 .table-container {
   overflow: auto;
   max-width: 100%;
+}
+
+.table-horizontal-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 @media (max-width: 768px) {

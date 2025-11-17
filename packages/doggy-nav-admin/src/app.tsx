@@ -35,6 +35,7 @@ export async function getInitialState(): Promise<{
 export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
     disableContentMargin: false,
+    disableMobile: true,
     waterMarkProps: {
       content: initialState?.currentUser?.name,
     },
@@ -51,13 +52,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
       };
 
       return (
-        <div
-          style={{
-            overflow: 'hidden',
-            maxWidth: '100%',
-            boxSizing: 'border-box',
-          }}
-        >
+        <div className="admin-header-wrapper">
           {pathname !== loginPath && pathname !== '/404' && (
             <ContentHeader
               title={pageInfo.title}

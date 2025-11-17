@@ -1,6 +1,6 @@
+import TableCom from '@/components/TableCom';
 import { addGroupMembers } from '@/services/api';
 import request from '@/utils/request';
-import { ProTable } from '@ant-design/pro-table';
 import { Button, Modal, Space, message } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -49,7 +49,7 @@ const AddMembers: React.FC<{
       width={800}
       destroyOnHidden
     >
-      <ProTable
+      <TableCom
         rowKey="id"
         search={{ labelWidth: 60 }}
         pagination={{ pageSize: 10 }}

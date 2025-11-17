@@ -1,3 +1,4 @@
+import TableCom from '@/components/TableCom';
 import { GLOBAL_CATEGORY_ID } from '@/constants';
 import CategorySelect from '@/pages/nav/Category/CategorySelect';
 import { API_CATEGORY, API_NAV } from '@/services/api';
@@ -5,7 +6,6 @@ import request from '@/utils/request';
 import { UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
 import Editor, { Monaco } from '@monaco-editor/react';
 import {
   Button,
@@ -511,7 +511,7 @@ export default function BookmarksImportPage() {
                 }
               >
                 {saving && <Progress percent={progress} />}
-                <ProTable<CatItem>
+                <TableCom
                   rowKey={(r) => r.guid}
                   columns={catColumns}
                   dataSource={cats}
@@ -523,7 +523,7 @@ export default function BookmarksImportPage() {
                         (r) => r.categoryGuid === record.guid,
                       );
                       return (
-                        <ProTable<RowItem>
+                        <TableCom
                           size="small"
                           rowKey={(r) => r.href + (r.name || '')}
                           columns={columns}
@@ -578,6 +578,7 @@ export default function BookmarksImportPage() {
                     },
                   }}
                   scroll={{ x: 'max-content' }}
+                  rowSelection={false}
                 />
                 <Drawer
                   title="编辑网址"
