@@ -275,5 +275,6 @@
   "no_navigation_content": "No navigation content",
   "no_resources_any_category": "There are currently no website resources in any category",
   "showing": "Showing",
-  "website_resources": "website resources"
+  "website_resources": "website resources",
+  "markdown_preview_empty": "Input content to preview"
 }

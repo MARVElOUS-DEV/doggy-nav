@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { Search as SearchIcon } from 'lucide-react';
 import { Tooltip, Button, Dropdown, Menu } from '@arco-design/web-react';
 import Search from '../Search';
 import LanguageSwitcher from '../LanguageSwitcher';
@@ -37,7 +38,7 @@ export default function AppHeader({
     <Menu>
       <Menu.Item key="search" onClick={() => setShowSearch(!showSearch)}>
         <div className="flex items-center py-1">
-          <i className="iconfont icon-search text-lg mr-3 text-theme-muted-foreground"></i>
+          <SearchIcon className="text-lg mr-3 text-theme-muted-foreground" size={18} />
           <span className="text-theme-foreground">{t('search')}</span>
         </div>
       </Menu.Item>
@@ -140,7 +141,7 @@ export default function AppHeader({
             onClick={() => setShowSearch(true)}
           >
             <div className="flex items-center justify-center">
-              <i className="iconfont icon-search mr-2 text-lg"></i>
+              <SearchIcon className="mr-2 text-lg" size={18} />
               <span>{t('search_placeholder')}</span>
             </div>
           </Button>

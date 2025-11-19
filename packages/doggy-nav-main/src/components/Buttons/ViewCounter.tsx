@@ -1,3 +1,5 @@
+import { Eye } from 'lucide-react';
+
 interface ViewCounterProps {
   viewCount: number;
   size?: 'small' | 'default' | 'large';
@@ -20,7 +22,7 @@ export default function ViewCounter({
       className={`flex items-center space-x-1 ${sizeClasses[size]} ${className}`}
       style={{ color: 'var(--color-primary)' }}
     >
-      <i className="iconfont icon-attentionfill"></i>
+      <Eye size={14} />
       <span>{viewCount}</span>
     </div>
   );

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import api from '@/utils/api';
 import type { RegisterFormValues } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { User, Mail, Lock, Key } from 'lucide-react';
 
 const FormItem = Form.Item;
 
@@ -106,7 +107,7 @@ export default function RegisterPage() {
                   placeholder={t('enter_username')}
                   size="large"
                   className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<i className="iconfont icon-user text-gray-400"></i>}
+                  prefix={<User className="text-gray-400" size={20} />}
                 />
               </FormItem>
 
@@ -122,7 +123,7 @@ export default function RegisterPage() {
                   placeholder={t('enter_email')}
                   size="large"
                   className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<i className="iconfont icon-email text-gray-400"></i>}
+                  prefix={<Mail className="text-gray-400" size={20} />}
                 />
               </FormItem>
 
@@ -138,7 +139,7 @@ export default function RegisterPage() {
                   placeholder={t('enter_password')}
                   size="large"
                   className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<i className="iconfont icon-lock text-gray-400"></i>}
+                  prefix={<Lock className="text-gray-400" size={20} />}
                 />
               </FormItem>
 
@@ -163,7 +164,7 @@ export default function RegisterPage() {
                   placeholder={t('enter_confirm_password')}
                   size="large"
                   className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<i className="iconfont icon-lock text-gray-400"></i>}
+                  prefix={<Lock className="text-gray-400" size={20} />}
                 />
               </FormItem>
 
@@ -179,7 +180,7 @@ export default function RegisterPage() {
                     placeholder={t('enter_invite_code')}
                     size="large"
                     className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                    prefix={<i className="iconfont icon-key text-gray-400"></i>}
+                    prefix={<Key className="text-gray-400" size={20} />}
                   />
                 </FormItem>
               )}

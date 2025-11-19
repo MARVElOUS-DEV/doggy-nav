@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Tooltip } from '@arco-design/web-react';
+import { Eye, ThumbsUp } from 'lucide-react';
 import DoggyImage from './DoggyImage';
 import dayjs from 'dayjs';
 import { NavItem } from '@/types';
@@ -35,8 +36,8 @@ export default function NavRanking({ data, countType = 'createTimeDate' }: NavRa
       <span className="text-xs whitespace-nowrap">
         {data[countType] && formatAttr(data[countType])}
       </span>
-      {countType === 'view' && <span className="iconfont icon-attentionfill ml-1 text-xs"></span>}
-      {countType === 'star' && <span className="iconfont icon-appreciatefill ml-1 text-xs"></span>}
+      {countType === 'view' && <Eye className="ml-1 text-xs" size={12} />}
+      {countType === 'star' && <ThumbsUp className="ml-1 text-xs" size={12} />}
     </Link>
   );
 }

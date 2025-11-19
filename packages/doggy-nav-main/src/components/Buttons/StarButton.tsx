@@ -1,5 +1,6 @@
 import { Tooltip, Button } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
+import { ThumbsUp } from 'lucide-react';
 
 interface StarButtonProps {
   isStarred: boolean;
@@ -39,7 +40,7 @@ export default function StarButton({
           title={t('like')}
           style={{ color: isStarred ? activeColor : inactiveColor }}
         >
-          <i className="iconfont icon-appreciatefill"></i>
+          <ThumbsUp size={14} />
           {showCount && <span>{starCount}</span>}
         </button>
       </Tooltip>
@@ -61,7 +62,7 @@ export default function StarButton({
           backgroundColor: 'transparent',
           borderColor: 'var(--color-border)'
         }}
-        icon={<i className="iconfont icon-appreciatefill"></i>}
+        icon={<ThumbsUp size={14} />}
       >
         {showCount && starCount}
       </Button>

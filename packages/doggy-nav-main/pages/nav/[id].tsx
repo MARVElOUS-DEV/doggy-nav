@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { NavItem } from '@/types';
 import { useRouter } from 'next/router';
 import { IconHeartFill } from '@arco-design/web-react/icon';
+import { Eye, ThumbsUp, ArrowRight, RefreshCw } from 'lucide-react';
 import { useAtom } from 'jotai';
 import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
@@ -85,6 +86,7 @@ export default function NavDetail() {
       Message.warning(t('please_login_to_favorite'));
       return;
     }
+    if (!detail) return;
     try {
       if (isFavorite) {
         await favoritesActions({ type: 'REMOVE_FAVORITE', navId: detail.id });
@@ -206,7 +208,7 @@ export default function NavDetail() {
                     color: 'var(--color-primary)',
                   }}
                 >
-                  <i className="iconfont icon-attentionfill text-base md:text-lg"></i>
+                  <Eye className="text-base md:text-lg" size={16} />
                   <p className="m-0 text-[10px] md:text-xs font-medium">{detail.view}</p>
                 </div>
               </Tooltip>
@@ -228,7 +230,7 @@ export default function NavDetail() {
                   }
                   onClick={handleNavStarFn}
                 >
-                  <i className="iconfont icon-appreciatefill text-base md:text-lg"></i>
+                  <ThumbsUp className="text-base md:text-lg" size={16} />
                   <p className="m-0 text-[10px] md:text-xs font-medium">{detail.star}</p>
                 </div>
               </Tooltip>
@@ -303,7 +305,7 @@ export default function NavDetail() {
                 className="btn-link btn-group-item bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg flex items-center cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
                 {t('go_direct')}
-                <i className="iconfont icon-Icons_ToolBar_ArrowRight ml-2 text-sm"></i>
+                <ArrowRight className="ml-2 text-sm" size={14} />
               </div>
             </div>
           </div>
@@ -316,10 +318,11 @@ export default function NavDetail() {
             <div className="app-card-header flex justify-between items-center p-6 border-b border-theme-border">
               <h3 className="app-card-title m-0 text-xl font-bold">{t('random_websites')}</h3>
               <div className="app-card-extra">
-                <i
-                  className="iconfont icon-shuaxin cursor-pointer text-theme-muted-foreground hover:text-theme-primary transition-colors text-lg"
+                <RefreshCw
+                  className="cursor-pointer text-theme-muted-foreground hover:text-theme-primary transition-colors text-lg"
+                  size={18}
                   onClick={getRandomNavList}
-                ></i>
+                />
               </div>
             </div>
             <div className="app-card-content p-6">

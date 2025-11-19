@@ -276,7 +276,7 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
                 >
-                  <FormItem label={t('website_tags')} field="tags" rules={rules.tags}>
+                  <FormItem label={t('website_tags')} field="tags" rules={rules.tags} className="pt-[1em]">
                     <Select
                       mode="multiple"
                       showSearch
