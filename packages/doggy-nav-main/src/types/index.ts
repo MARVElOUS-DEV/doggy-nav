@@ -17,6 +17,7 @@ export interface NavItem {
   name: string;
   href: string;
   desc: string;
+  detail?: string;
   logo: string;
   authorName?: string;
   authorUrl?: string;

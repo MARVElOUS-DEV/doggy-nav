@@ -44,6 +44,7 @@ export interface NavItem {
   name: string;
   href?: string | null;
   desc?: string | null;
+  detail?: string | null;
   logo?: string | null;
   authorName?: string | null;
   authorUrl?: string | null;

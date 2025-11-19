@@ -10,6 +10,7 @@ import { useAtom } from 'jotai';
 import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
 import DoggyImage from '@/components/DoggyImage';
+import MarkdownContent from '@/components/MarkdownContent';
 
 const { Row, Col } = Grid;
 
@@ -358,8 +359,14 @@ export default function NavDetail() {
         <Col span={24}>
           <div className="detail bg-theme-background text-theme-foreground rounded-xl shadow-lg p-8 border border-theme-border transition-colors">
             <h2 className="text-2xl font-bold mb-4">{t('detailed_info')}</h2>
-            <div className="detail text-theme-muted-foreground leading-relaxed whitespace-pre-wrap">
-              {detail.desc}
+            <div className="detail text-base leading-relaxed">
+              <MarkdownContent
+                value={detail.detail}
+                className="space-y-4 text-theme-muted-foreground"
+                fallback={
+                  <p className="text-theme-muted-foreground whitespace-pre-wrap">{detail.desc}</p>
+                }
+              />
             </div>
           </div>
         </Col>

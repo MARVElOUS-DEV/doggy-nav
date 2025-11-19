@@ -177,13 +177,14 @@ seedRoutes.post('/categories', async (c) => {
     },
     async insertBookmark(
       catId: string,
-      { name, href, desc, logo, createTime }: Core.BookmarkData
+      { name, href, desc, detail, logo, createTime }: Core.BookmarkData
     ): Promise<void> {
+      const detailValue = detail ?? desc ?? '';
       await c.env.DB.prepare(
-        `INSERT INTO bookmarks (id, category_id, name, href, description, logo, author_name, author_url, audit_time, create_time, tags, view_count, star_count, status, is_favorite, url_status)
+        `INSERT INTO bookmarks (id, category_id, name, href, description, detail, logo, author_name, author_url, audit_time, create_time, tags, view_count, star_count, status, is_favorite, url_status)
           VALUES (lower(hex(randomblob(4)) || hex(randomblob(4)) || hex(randomblob(4))), ?, ?, ?, ?, ?, '', '', NULL, ?, '[]', 0, 0, 0, 0, 'unknown')`
       )
-        .bind(catId, name, href, desc || '', logo || '', createTime || 0)
+        .bind(catId, name, href, desc || '', detailValue, logo || '', createTime || 0)
         .run();
     },
   } as any;

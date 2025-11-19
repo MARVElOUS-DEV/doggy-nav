@@ -245,10 +245,10 @@ export class DataMigration {
   async migrateBookmarks(mongoBookmarks: any[]): Promise<void> {
     const insertBookmark = this.db.prepare(`
       INSERT INTO bookmarks (
-        id, category_id, name, href, description, logo, author_name, author_url,
+        id, category_id, name, href, description, detail, logo, author_name, author_url,
         audit_time, create_time, tags, view_count, star_count, status, is_favorite,
         url_status, last_url_check, response_time, audience_visibility, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const insertBookmarkRolePermission = this.db.prepare(`
@@ -276,6 +276,7 @@ export class DataMigration {
           bookmark.name || '',
           bookmark.href || '',
           bookmark.desc || '',
+          bookmark.detail || bookmark.desc || '',
           bookmark.logo || '',
           bookmark.authorName || '',
           bookmark.authorUrl || '',

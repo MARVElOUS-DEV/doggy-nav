@@ -196,7 +196,7 @@
   "enter_recommender_name": "Enter the name you want to promote",
   "recommender_website": "🔗 Recommender Website",
   "enter_recommender_url": "Enter the link you want to promote",
-  "website_details": "📝 Website Details",
+  "website_details": "📝 Website Details(markdown support)",
   "enter_website_details": "Enter website details",
   "submitting": "Submitting...",
   "submit_recommendation": "Submit Recommendation",

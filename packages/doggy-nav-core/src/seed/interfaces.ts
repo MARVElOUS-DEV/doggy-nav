@@ -30,6 +30,7 @@ export interface BookmarkData {
   name: string;
   href: string;
   desc?: string;
+  detail?: string;
   logo?: string;
   createTime?: number; // Chrome time
 }

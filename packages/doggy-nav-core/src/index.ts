@@ -1,3 +1,4 @@
+export * from './utils/timeUtil';
 export * from './types/types';
 export * from './dto/pagination';
 export * from './repositories/GroupRepository';

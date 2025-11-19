@@ -50,6 +50,7 @@ export default class D1NavRepository implements NavRepository {
       name: String(r.name),
       href: r.href ?? null,
       desc: r.description ?? null,
+      detail: r.detail ?? null,
       logo: r.logo ?? null,
       authorName: r.author_name ?? null,
       authorUrl: r.author_url ?? null,

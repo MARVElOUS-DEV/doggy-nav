@@ -1,6 +1,6 @@
 import { PipelineStage, Types } from 'mongoose';
 import { parseHTML } from '../../utils/reptileHelper';
-import { nowToChromeTime } from '../../utils/timeUtil';
+import { nowToChromeTime } from 'doggy-nav-core';
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
 import { buildAudienceFilterEx } from '../utils/audience';
@@ -336,6 +336,7 @@ export default class NavController extends Controller {
         const category = await ctx.model.Category.findOne({ _id: nav.categoryId });
         if (category) {
           const navObj: any = nav.toObject();
+          navObj.detail = nav.detail ?? navObj.detail ?? null;
           navObj.categoryName = category.name;
           if (isAuthenticated) {
             const userInfo = this.getUserInfo();
@@ -348,6 +349,7 @@ export default class NavController extends Controller {
           this.success(navObj);
         } else {
           const navObj: any = nav.toObject();
+          navObj.detail = nav.detail ?? navObj.detail ?? null;
           if (isAuthenticated) {
             const userInfo = this.getUserInfo();
             const fav = await ctx.model.Favorite.findOne({

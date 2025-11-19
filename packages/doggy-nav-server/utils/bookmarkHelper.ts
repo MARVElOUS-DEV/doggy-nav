@@ -7,7 +7,7 @@ import * as cheerio from 'cheerio';
 import mongoose from 'mongoose';
 import navModel from '../app/model/nav';
 import categoryModel from '../app/model/category';
-import { dateToChromeTime } from './timeUtil';
+import { dateToChromeTime } from 'doggy-nav-core';
 import { globalRootCategoryId, privateCategoryName } from '../constants';
 import mongoCfg from '../config/mongodb';
 import { getFaviconSrv, isAbsoluteUrl } from './reptileHelper';

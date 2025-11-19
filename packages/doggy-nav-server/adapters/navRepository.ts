@@ -10,6 +10,7 @@ function mapDocToNav(doc: any): NavItem {
     name: source.name,
     href: source.href ?? null,
     desc: source.desc ?? null,
+    detail: source.detail ?? null,
     logo: source.logo ?? null,
     authorName: source.authorName ?? null,
     authorUrl: source.authorUrl ?? null,

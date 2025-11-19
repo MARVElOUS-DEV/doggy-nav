@@ -196,7 +196,7 @@
   "enter_recommender_name": "填写你推广的名称",
   "recommender_website": "🔗 推荐人网站",
   "enter_recommender_url": "填写你要推广的链接",
-  "website_details": "📝 网站详情",
+  "website_details": "📝 网站详情(支持markdown）",
   "enter_website_details": "输入网站详情",
   "submitting": "提交中...",
   "submit_recommendation": "提交推荐",
