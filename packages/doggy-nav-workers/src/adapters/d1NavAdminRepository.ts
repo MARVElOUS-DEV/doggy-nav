@@ -17,8 +17,8 @@ export default class D1NavAdminRepository implements NavAdminRepository {
 
     await this.db
       .prepare(
-        `INSERT INTO bookmarks (id, category_id, name, href, description, logo, author_name, author_url, create_time, tags, audience_visibility, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO bookmarks (id, category_id, name, href, description, detail, logo, author_name, author_url, create_time, tags, audience_visibility, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id,
@@ -26,6 +26,7 @@ export default class D1NavAdminRepository implements NavAdminRepository {
         String(input.name),
         String(input.href),
         input.desc || '',
+        input.detail ?? input.desc ?? '',
         input.logo || '',
         input.authorName || '',
         input.authorUrl || '',
@@ -74,6 +75,10 @@ export default class D1NavAdminRepository implements NavAdminRepository {
     if (input.desc !== undefined) {
       fields.push('description = ?');
       params.push(input.desc || '');
+    }
+    if (input.detail !== undefined) {
+      fields.push('detail = ?');
+      params.push(input.detail ?? '');
     }
     if (input.logo !== undefined) {
       fields.push('logo = ?');

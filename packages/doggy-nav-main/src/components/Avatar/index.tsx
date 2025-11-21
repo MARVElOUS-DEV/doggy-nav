@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Dropdown, Avatar as ArcoAvatar, Button, Image, Menu } from '@arco-design/web-react';
+import { User as UserIcon, LogOut } from 'lucide-react';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
 import { authStateAtom, authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
 import { useTranslation } from 'react-i18next';
-import type { User } from '@/types';
+import { User } from '@/types';
 
 interface UserAvatarProps {
   size?: number;
@@ -54,13 +55,13 @@ export default function UserAvatar({
         <Menu.Item key="profile" onClick={handleProfile}>
           <div className="flex items-center justify-between py-1">
             <span className="mr-3 text-theme-foreground">{t('profile')}</span>
-            <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
+            <UserIcon className="text-lg text-theme-muted-foreground" size={18} />
           </div>
         </Menu.Item>
         <Menu.Item key="logout" onClick={handleLogout}>
           <div className="flex items-center justify-between py-1">
             <span className="mr-3 text-theme-foreground">{t('sign_out')}</span>
-            <i className="iconfont icon-logout text-lg text-theme-muted-foreground"></i>
+            <LogOut className="text-lg text-theme-muted-foreground" size={18} />
           </div>
         </Menu.Item>
       </>
@@ -68,7 +69,7 @@ export default function UserAvatar({
       <Menu.Item key="login" onClick={handleLogin}>
         <div className="flex items-center justify-between py-1">
           <span className="mr-3 text-theme-foreground">{t('sign_in')}</span>
-          <i className="iconfont icon-user text-lg text-theme-muted-foreground"></i>
+          <UserIcon className="text-lg text-theme-muted-foreground" size={18} />
         </div>
       </Menu.Item>
     );

@@ -4,6 +4,7 @@ import { getDI } from '../ioc/helpers';
 import { responses } from '../utils/responses';
 import { publicRoute, createAuthMiddleware, requireRole } from '../middleware/auth';
 import type { NavAdminService } from 'doggy-nav-core';
+import { chromeTimeToDate } from 'doggy-nav-core';
 
 export const navRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -70,7 +71,7 @@ navRoutes.get('/ranking', publicRoute(), async (c) => {
       : `c.audience_visibility = 'public'`;
     const statusSql = isAuthenticated ? '1=1' : 'b.status = 0';
 
-    const baseSelect = `SELECT b.id, b.category_id, b.name, b.href, b.description, b.logo, b.author_name, b.author_url,
+    const baseSelect = `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
                                b.audit_time, b.create_time, b.tags, b.view_count, b.star_count, b.status
                         FROM bookmarks b
                         LEFT JOIN categories c ON c.id = b.category_id
@@ -83,11 +84,13 @@ navRoutes.get('/ranking', publicRoute(), async (c) => {
         name: String(r.name),
         href: r.href ?? null,
         desc: r.description ?? null,
+        detail: r.detail ?? null,
         logo: r.logo ?? null,
         authorName: r.author_name ?? null,
         authorUrl: r.author_url ?? null,
         auditTime: r.audit_time ?? null,
         createTime: r.create_time ? Number(r.create_time) : null,
+        createTimeDate: chromeTimeToDate(r.create_time ? Number(r.create_time) : null),
         tags: (() => {
           try {
             return JSON.parse(r.tags || '[]');
@@ -145,7 +148,7 @@ navRoutes.get('/random', publicRoute(), async (c) => {
 
     const rs = await c.env.DB
       .prepare(
-        `SELECT b.id, b.category_id, b.name, b.href, b.description, b.logo, b.author_name, b.author_url,
+        `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
                 b.audit_time, b.create_time, b.tags, b.view_count, b.star_count, b.status
          FROM bookmarks b
          LEFT JOIN categories c ON c.id = b.category_id
@@ -162,11 +165,13 @@ navRoutes.get('/random', publicRoute(), async (c) => {
       name: String(r.name),
       href: r.href ?? null,
       desc: r.description ?? null,
+      detail: r.detail ?? null,
       logo: r.logo ?? null,
       authorName: r.author_name ?? null,
       authorUrl: r.author_url ?? null,
       auditTime: r.audit_time ?? null,
       createTime: r.create_time ? Number(r.create_time) : null,
+      createTimeDate: chromeTimeToDate(r.create_time ? Number(r.create_time) : null),
       tags: (() => {
         try {
           return JSON.parse(r.tags || '[]');
@@ -214,11 +219,13 @@ navRoutes.get('/', publicRoute(), async (c) => {
         name: String(row.name),
         href: row.href ?? null,
         desc: row.description ?? null,
+        detail: row.detail ?? null,
         logo: row.logo ?? null,
         authorName: row.author_name ?? null,
         authorUrl: row.author_url ?? null,
         auditTime: row.audit_time ?? null,
         createTime: row.create_time ? Number(row.create_time) : null,
+        createTimeDate: chromeTimeToDate(row.create_time ? Number(row.create_time) : null),
         tags: (() => {
           try {
             return JSON.parse(row.tags || '[]');
@@ -284,7 +291,7 @@ navRoutes.get('/', publicRoute(), async (c) => {
 
       const listRs = await c.env.DB
         .prepare(
-          `SELECT b.id, b.category_id, b.name, b.href, b.description, b.logo, b.author_name, b.author_url,
+          `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
                   b.audit_time, b.create_time, b.tags, b.view_count, b.star_count, b.status,
                   c.name as category_name
            FROM bookmarks b LEFT JOIN categories c ON c.id = b.category_id
@@ -311,11 +318,13 @@ navRoutes.get('/', publicRoute(), async (c) => {
         name: String(r.name),
         href: r.href ?? null,
         desc: r.description ?? null,
+        detail: r.detail ?? null,
         logo: r.logo ?? null,
         authorName: r.author_name ?? null,
         authorUrl: r.author_url ?? null,
         auditTime: r.audit_time ?? null,
         createTime: r.create_time ? Number(r.create_time) : null,
+        createTimeDate: chromeTimeToDate(r.create_time ? Number(r.create_time) : null),
         tags: (() => {
           try {
             return JSON.parse(r.tags || '[]');
@@ -397,7 +406,7 @@ navRoutes.get('/find', publicRoute(), async (c) => {
       ? `audience_visibility != 'hide'`
       : `audience_visibility = 'public'`;
 
-    const navSql = `SELECT id, category_id, name, href, description, logo, author_name, author_url,
+    const navSql = `SELECT id, category_id, name, href, description, detail, logo, author_name, author_url,
                     audit_time, create_time, tags, view_count, star_count, status
                     FROM bookmarks
                     WHERE ${statusSql} AND ${navVisibilitySql} AND category_id IN (${placeholders})
@@ -418,11 +427,13 @@ navRoutes.get('/find', publicRoute(), async (c) => {
         name: String(r.name),
         href: r.href ?? null,
         desc: r.description ?? null,
+        detail: r.detail ?? null,
         logo: r.logo ?? null,
         authorName: r.author_name ?? null,
         authorUrl: r.author_url ?? null,
         auditTime: r.audit_time ?? null,
         createTime: r.create_time ? Number(r.create_time) : null,
+        createTimeDate: chromeTimeToDate(r.create_time ? Number(r.create_time) : null),
         tags: (() => {
           try {
             return JSON.parse(r.tags || '[]');
@@ -534,7 +545,7 @@ navRoutes.get('/reptile', async (c) => {
         logo = `${u.protocol}${logo}`;
       }
     } catch {}
-    return c.json(responses.ok({ name, href: target, desc, logo }));
+    return c.json(responses.ok({ name, href: target, desc, detail: desc, logo }));
   } catch (err) {
     console.error('reptile error:', err);
     return c.json(responses.serverError('获取网站信息失败'), 500);
@@ -545,13 +556,14 @@ navRoutes.get('/reptile', async (c) => {
 navRoutes.post('/', publicRoute(), async (c) => {
   try {
     const body = await c.req.json();
-    const { name, href, desc, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
+    const { name, href, desc, detail, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
     const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
     try {
       const res = await (svc as any).create({
         name,
         href,
         desc,
+        detail,
         logo,
         categoryId,
         tags: Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined,
@@ -574,13 +586,14 @@ navRoutes.post('/', publicRoute(), async (c) => {
 navRoutes.put('/', createAuthMiddleware({ required: true }), async (c) => {
   try {
     const body = await c.req.json();
-    const { id, name, href, desc, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
+    const { id, name, href, desc, detail, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
     if (!id) return c.json(responses.badRequest('id required'), 400);
     const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
     const res = await (svc as any).update(String(id), {
       name,
       href,
       desc,
+      detail,
       logo,
       categoryId,
       tags: Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined,

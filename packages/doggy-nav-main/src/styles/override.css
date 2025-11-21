@@ -83,9 +83,13 @@
   .arco-select-view {
     border-radius: 0.75rem;
     height: 100%;
+    display: flex;
+    align-items: center;
   }
   .arco-input-tag-view {
     height: 100%;
+    display: flex;
+    align-items: center;
   }
 }
 
@@ -127,5 +131,10 @@
 
 .profile-input .arco-input-group > .arco-input-inner-wrapper {
   border-radius: 0.75rem; 
+}
+
+.arco-space-item {
+  display: flex;
+  align-items: center;
 }
 

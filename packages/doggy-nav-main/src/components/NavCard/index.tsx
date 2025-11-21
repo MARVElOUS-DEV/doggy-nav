@@ -28,6 +28,7 @@ export default function AppNavItem({
   const [isStar, setIsStar] = useState(false);
   const [isFavorite, setIsFavorite] = useState(data.isFavorite || false);
   const [viewCount, setViewCount] = useState<number>(data.view || 0);
+  const [starCount, setStarCount] = useState<number>(data.star || 0);
   const [intersectionRef, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const urlStatus = useUrlStatus(data.href, isVisible);
   const authorRef = useRef<HTMLSpanElement>(null);
@@ -60,8 +61,11 @@ export default function AppNavItem({
   }, [data.authorName]);
 
   const handleNavStar = () => {
+    if (isStar) return; // Already starred, do nothing
+    
     onHandleNavStar(data, () => {
-      setIsStar(!isStar);
+      setIsStar(true);
+      setStarCount((prev) => prev + 1);
     });
   };
 
@@ -275,8 +279,9 @@ export default function AppNavItem({
               />
               <StarButton
                 isStarred={isStar}
-                starCount={data.star}
+                starCount={starCount}
                 onToggle={handleNavStar}
+                disabled={isStar}
                 variant="icon-only"
               />
               <ViewCounter viewCount={viewCount} />

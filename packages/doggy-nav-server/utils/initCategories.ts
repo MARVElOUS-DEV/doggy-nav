@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import categoryModel from '../app/model/category';
 import navModel from '../app/model/nav';
-import { dateToChromeTime } from './timeUtil';
+import { dateToChromeTime } from 'doggy-nav-core';
 import { privateCategoryName, globalRootCategoryId } from '../constants';
 import mongoCfg from '../config/mongodb';
 

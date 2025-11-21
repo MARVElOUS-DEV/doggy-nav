@@ -1,4 +1,4 @@
-import { chromeTimeToDate, dateToChromeTime } from '../../utils/timeUtil';
+import { chromeTimeToDate, dateToChromeTime } from 'doggy-nav-core';
 
 export default function (app: any) {
   const mongoose = app.mongoose;

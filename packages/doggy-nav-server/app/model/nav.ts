@@ -1,4 +1,4 @@
-import { chromeTimeToDate, dateToChromeTime } from '../../utils/timeUtil';
+import { chromeTimeToDate, dateToChromeTime } from 'doggy-nav-core';
 
 export default function (app: any) {
   const mongoose = app.mongoose;
@@ -11,6 +11,10 @@ export default function (app: any) {
       // 网站url
       href: String,
       desc: String,
+      detail: {
+        type: String,
+        default: '',
+      },
       logo: String,
       authorName: String,
       authorUrl: String,

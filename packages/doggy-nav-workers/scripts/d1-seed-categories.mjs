@@ -131,10 +131,11 @@ const writers = {
     );
     return Boolean(out?.[0]?.results?.[0]?.id);
   },
-  insertBookmark: async (catId, { name, href, desc, logo, createTime }) => {
-    execSql(`INSERT INTO bookmarks (id, category_id, name, href, description, logo, author_name, author_url, audit_time, create_time, tags, view_count, star_count, status, is_favorite, url_status)
+  insertBookmark: async (catId, { name, href, desc, detail, logo, createTime }) => {
+    const detailValue = detail || desc || '';
+    execSql(`INSERT INTO bookmarks (id, category_id, name, href, description, detail, logo, author_name, author_url, audit_time, create_time, tags, view_count, star_count, status, is_favorite, url_status)
             VALUES (lower(hex(randomblob(4)) || hex(randomblob(4)) || hex(randomblob(4))),
-                    '${escapeSql(catId)}','${escapeSql(name)}','${escapeSql(href)}','${escapeSql(desc || '')}','${escapeSql(logo || '')}',
+                    '${escapeSql(catId)}','${escapeSql(name)}','${escapeSql(href)}','${escapeSql(desc || '')}','${escapeSql(detailValue)}','${escapeSql(logo || '')}',
                     '', '', NULL, ${createTime || 0}, '[]', 0, 0, 0, 0, 'unknown')`);
   },
 };

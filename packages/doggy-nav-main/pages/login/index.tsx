@@ -9,6 +9,7 @@ import { setAccessExpEpochMs } from '@/utils/session';
 import type { LoginFormValues, OAuthProvider } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { GitHubIcon, GoogleIcon, LinuxDoIcon } from '@/components/OAuthIcons';
+import { User, Lock, LogIn } from 'lucide-react';
 
 const FormItem = Form.Item;
 
@@ -172,7 +173,7 @@ export default function LoginPage() {
                     className="bg-white dark:bg-gray-700 bg-opacity-60 dark:bg-opacity-90 border-white dark:border-gray-500 border-opacity-40 dark:border-opacity-60 backdrop-filter backdrop-blur-md rounded-xl text-gray-900 dark:text-gray-100 hover:bg-opacity-70 dark:hover:bg-opacity-95 transition-all duration-300 focus:bg-opacity-80 dark:focus:bg-opacity-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                     prefix={
                       <span className="w-5 h-5 flex items-center justify-center">
-                        <i className="iconfont icon-user text-gray-400 dark:text-gray-300"></i>
+                        <User className="text-gray-400 dark:text-gray-300" size={20} />
                       </span>
                     }
                   />
@@ -197,7 +198,7 @@ export default function LoginPage() {
                     className="bg-white dark:bg-gray-700 bg-opacity-60 dark:bg-opacity-90 border-white dark:border-gray-500 border-opacity-40 dark:border-opacity-60 backdrop-filter backdrop-blur-md rounded-xl text-gray-900 dark:text-gray-100 hover:bg-opacity-70 dark:hover:bg-opacity-95 transition-all duration-300 focus:bg-opacity-80 dark:focus:bg-opacity-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                     prefix={
                       <span className="w-5 h-5 flex items-center justify-center">
-                        <i className="iconfont icon-lock text-gray-400 dark:text-gray-300"></i>
+                        <Lock className="text-gray-400 dark:text-gray-300" size={20} />
                       </span>
                     }
                   />
@@ -212,10 +213,10 @@ export default function LoginPage() {
                       size="large"
                       className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 border-none rounded-xl font-semibold text-white shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm"
                     >
-                      <>
-                        <i className="iconfont icon-login"></i>
+                      <div className="flex items-center justify-center">
+                        <LogIn className="mr-2" size={20} />
                         {t('sign_in_button')}
-                      </>
+                      </div>
                     </Button>
                   </motion.div>
                 </FormItem>

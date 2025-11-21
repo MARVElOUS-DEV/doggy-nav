@@ -9,6 +9,9 @@ import { RecommendFormValues } from '@/types';
 import { categoriesAtom, tagsAtom, isAuthenticatedAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
 import { OVERVIEW } from '@/utils/localCategories';
+import MarkdownEditor from '@/components/MarkdownEditor';
+import MarkdownContent from '@/components/MarkdownContent';
+import { Eye } from 'lucide-react';
 
 const FormItem = Form.Item;
 
@@ -23,6 +26,8 @@ export default function Recommend() {
   );
   const [form] = Form.useForm();
   const { t } = useTranslation('translation');
+  const detailPreview = Form.useWatch('detail', form) ?? '';
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   const addNav = async (values: RecommendFormValues) => {
     setLoading(true);
@@ -35,6 +40,7 @@ export default function Recommend() {
       await axios.post(API_NAV_ADD, values);
       Message.success(t('thank_you_support'));
       form.resetFields();
+      setIsPreviewMode(false);
     } catch (error) {
       Message.error(`${error}`);
     } finally {
@@ -50,10 +56,12 @@ export default function Recommend() {
       const { logo, name, desc } = (await axios.get<{ logo?: string; name: string; desc: string }>(
         `${API_NAV_REPTILE}?url=${url}`
       )) as any;
+      const currentDetail = form.getFieldValue('detail');
       form.setFieldsValue({
         logo: logo ?? `https://www.google.com/s2/favicons?domain=${url}`,
         name,
         desc,
+        detail: currentDetail ? currentDetail : desc,
       });
     } catch (e) {
       Message.error(t('request_timeout'));
@@ -123,6 +131,9 @@ export default function Recommend() {
     ],
   };
 
+  const inputClass =
+    'h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-theme-primary dark:focus:border-theme-primary focus:ring-theme-primary/20 dark:focus:ring-theme-primary/20 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100';
+
   return (
     <div className="p-8">
       <div className="container mx-auto max-w-7xl text-theme-foreground border border-theme-border rounded-xl shadow-md transition-colors">
@@ -179,7 +190,7 @@ export default function Recommend() {
                       onBlur={getNavInfo}
                       aria-busy={formLoading}
                       suffix={formLoading ? <Spin size={16} /> : null}
-                      className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-purple-200 dark:focus:ring-purple-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className={inputClass}
                     />
                   </FormItem>
                 </motion.div>
@@ -190,10 +201,7 @@ export default function Recommend() {
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   <FormItem label={t('website_name')} field="name" rules={rules.name}>
-                    <Input
-                      placeholder={t('enter_website_name')}
-                      className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-blue-200 dark:focus:ring-blue-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    />
+                    <Input placeholder={t('enter_website_name')} className={inputClass} />
                   </FormItem>
                 </motion.div>
 
@@ -203,10 +211,7 @@ export default function Recommend() {
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
                   <FormItem label={t('website_logo')} field="logo" rules={rules.logo}>
-                    <Input
-                      placeholder={t('enter_website_logo')}
-                      className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-pink-400 dark:focus:border-pink-500 focus:ring-pink-200 dark:focus:ring-pink-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    />
+                    <Input placeholder={t('enter_website_logo')} className={inputClass} />
                   </FormItem>
                 </motion.div>
 
@@ -217,10 +222,7 @@ export default function Recommend() {
                   className="md:col-span-2"
                 >
                   <FormItem label={t('website_description')} field="desc" rules={rules.desc}>
-                    <Input
-                      placeholder={t('enter_website_description')}
-                      className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-orange-400 dark:focus:border-orange-500 focus:ring-orange-200 dark:focus:ring-orange-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    />
+                    <Input placeholder={t('enter_website_description')} className={inputClass} />
                   </FormItem>
                 </motion.div>
 
@@ -237,7 +239,7 @@ export default function Recommend() {
                     <Select
                       placeholder={t('select')}
                       showSearch
-                      className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-indigo-200 dark:focus:ring-indigo-800 rounded-xl transition-all duration-300 category-select bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className={`recommend-sel-container category-select ${inputClass}`}
                     >
                       {renderCategories(categories, t)}
                     </Select>
@@ -253,12 +255,11 @@ export default function Recommend() {
                     <FormItem
                       label={t('website_group', { defaultValue: '👥 Group' })}
                       field={'audience.allowGroups'}
-                      className="pt-[1em]"
                     >
                       <Select
                         mode="multiple"
                         placeholder={t('select')}
-                        className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-indigo-200 dark:focus:ring-indigo-800 rounded-xl transition-all duration-300 category-select bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className={`recommend-sel-container category-select ${inputClass}`}
                       >
                         {groups.map((g) => (
                           <Select.Option key={g.id} value={g.id}>
@@ -275,18 +276,13 @@ export default function Recommend() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
                 >
-                  <FormItem
-                    label={t('website_tags')}
-                    field="tags"
-                    rules={rules.tags}
-                    className={groups.length > 0 ? undefined : 'pt-[1em]'}
-                  >
+                  <FormItem label={t('website_tags')} field="tags" rules={rules.tags} className="pt-[1em]">
                     <Select
                       mode="multiple"
                       showSearch
                       allowCreate
                       placeholder={t('enter_website_tags')}
-                      className="recommend-sel-container h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-200 dark:focus:ring-green-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className={`recommend-sel-container ${inputClass}`}
                     >
                       {tags.map((item) => (
                         <Select.Option key={item.name} value={item.name}>
@@ -307,10 +303,7 @@ export default function Recommend() {
                     field="authorName"
                     rules={rules.authorName}
                   >
-                    <Input
-                      placeholder={t('enter_recommender_name')}
-                      className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-purple-200 dark:focus:ring-purple-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    />
+                    <Input placeholder={t('enter_recommender_name')} className={inputClass} />
                   </FormItem>
                 </motion.div>
 
@@ -324,10 +317,7 @@ export default function Recommend() {
                     field="authorUrl"
                     rules={rules.authorUrl}
                   >
-                    <Input
-                      placeholder={t('enter_recommender_url')}
-                      className="h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-blue-200 dark:focus:ring-blue-800 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    />
+                    <Input placeholder={t('enter_recommender_url')} className={inputClass} />
                   </FormItem>
                 </motion.div>
 
@@ -337,11 +327,65 @@ export default function Recommend() {
                   transition={{ duration: 0.5, delay: 0.9 }}
                   className="md:col-span-2"
                 >
-                  <FormItem label={t('website_details')} field="detail">
-                    <Input.TextArea
-                      placeholder={t('enter_website_details')}
-                      className="h-24 border-2 border-gray-200 dark:border-gray-600 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-200 dark:focus:ring-green-800 rounded-xl transition-all duration-300 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    />
+                  <div className="mb-2 flex items-center justify-between">
+                    <label className="text-sm font-medium text-theme-foreground">
+                      {t('website_details')}
+                    </label>
+                    <div className="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+                      <button
+                        type="button"
+                        onClick={() => setIsPreviewMode(false)}
+                        className={`flex items-center gap-1 rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                          !isPreviewMode
+                            ? 'bg-white text-theme-primary shadow-sm dark:bg-gray-700'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                      >
+                        {t('back_to_edit', { defaultValue: 'Edit' })}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsPreviewMode(true)}
+                        className={`flex items-center gap-1 rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                          isPreviewMode
+                            ? 'bg-white text-theme-primary shadow-sm dark:bg-gray-700'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                      >
+                        <Eye size={14} />
+                        {t('markdown_preview', { defaultValue: 'Preview' })}
+                      </button>
+                    </div>
+                  </div>
+
+                  <FormItem
+                    field="detail"
+                    noStyle
+                    getValueFromEvent={(value: string | undefined) => value ?? ''}
+                  >
+                    {isPreviewMode ? (
+                      <div className="min-h-[400px] rounded-2xl border-2 border-dashed border-theme-border bg-theme-background/50 p-6">
+                        <MarkdownContent
+                          value={detailPreview}
+                          className="prose prose-sm dark:prose-invert max-w-none"
+                          fallback={
+                            <div className="flex h-full flex-col items-center justify-center text-theme-muted-foreground">
+                              <p>
+                                {t('markdown_preview_empty', {
+                                  defaultValue: 'Start typing to see the live preview.',
+                                })}
+                              </p>
+                            </div>
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <MarkdownEditor
+                        placeholder={t('enter_website_details')}
+                        height={400}
+                        className="w-full"
+                      />
+                    )}
                   </FormItem>
                 </motion.div>
               </div>

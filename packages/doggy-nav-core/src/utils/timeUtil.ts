@@ -5,11 +5,11 @@
  * Difference: 11644473600 seconds (from 1601 to 1970)
  */
 
-export const chromeTimeToDate = (chromeTime: number): Date | null => {
+export const chromeTimeToDate = (chromeTime: number | null | undefined): Date | null => {
   if (!chromeTime || typeof chromeTime !== 'number') {
     return null;
   }
-  const chromeEpochStart = 11644473600; // 秒
+  const chromeEpochStart = 11644473600; // Seconds
   const unixTimestamp = (chromeTime / 1000000) - chromeEpochStart;
 
   return new Date(unixTimestamp * 1000);
@@ -20,7 +20,7 @@ export const dateToChromeTime = (date: Date): number => {
     throw new Error('Invalid date parameter');
   }
 
-  const chromeEpochStart = 11644473600; // 秒
+  const chromeEpochStart = 11644473600; // Seconds
   const unixTimestamp = Math.floor(date.getTime() / 1000);
   return (unixTimestamp + chromeEpochStart) * 1000000;
 };

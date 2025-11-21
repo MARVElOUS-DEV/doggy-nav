@@ -4,6 +4,7 @@ export interface NavAdminCreateInput {
   name: string;
   href: string;
   desc?: string | null;
+  detail?: string | null;
   logo?: string | null;
   categoryId?: string | null;
   tags?: string[];
@@ -16,6 +17,7 @@ export interface NavAdminUpdateInput {
   name?: string;
   href?: string;
   desc?: string | null;
+  detail?: string | null;
   logo?: string | null;
   categoryId?: string | null;
   tags?: string[];
