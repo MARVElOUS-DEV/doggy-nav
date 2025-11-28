@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { openDB } from 'idb';
 import { v4 as uuidv4 } from 'uuid';
+import { Message, Modal, Spin, Empty, Button } from '@arco-design/web-react';
 
 import Toolbar from './Toolbar';
 import FilterBar, { FolderTreeNode } from './FilterBar';
@@ -8,16 +9,27 @@ import BookmarkGraphCanvas from './BookmarkGraphCanvas';
 import type { Position } from './BookmarkGraphCanvasConfig';
 import { applyDefaultLayout } from './layout';
 import { parseBookmarks, generateBookmarksHtml, BookmarkGraphNode } from './utils/bookmarkParser';
+import useHistory from './hooks/useHistory';
 
 const DB_NAME = 'bookmark-graph-db';
 const STORE_NAME = 'graph-state';
 
 const EditorContent = () => {
-  const [nodes, setNodes] = useState<BookmarkGraphNode[]>([]);
+  const {
+    state: nodes,
+    setState: setNodes,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    reset: resetNodes,
+  } = useHistory<BookmarkGraphNode[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [activeFolderIds, setActiveFolderIds] = useState<Set<string>>(new Set());
   const [layoutVersion, setLayoutVersion] = useState(0);
   const [viewState, setViewState] = useState<{ scale: number; position: Position } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Load from IDB on mount
   useEffect(() => {
@@ -34,7 +46,7 @@ const EditorContent = () => {
           | undefined;
 
         if (savedNodes) {
-          setNodes(savedNodes);
+          resetNodes(savedNodes);
 
           const folderNodes = savedNodes.filter((n) => n.type === 'folder');
           if (folderNodes.length > 0) {
@@ -127,10 +139,10 @@ const EditorContent = () => {
       if (viewState) {
         await db.put(STORE_NAME, viewState, 'view');
       }
-      alert('Saved successfully!');
+      Message.success('Saved successfully!');
     } catch (error) {
       console.error('Failed to save', error);
-      alert('Failed to save');
+      Message.error('Failed to save');
     }
   }, [nodes, viewState]);
 
@@ -143,39 +155,51 @@ const EditorContent = () => {
         if (content) {
           const parsedNodes = parseBookmarks(content);
 
+          const processImport = () => {
+            if (nodes.length > 0) {
+              // Shift new nodes to avoid exact overlap
+              const shiftedNodes = parsedNodes.map((n) => ({
+                ...n,
+                position: { x: n.position.x + 50, y: n.position.y + 50 },
+              }));
+              setNodes((prev) => [...prev, ...shiftedNodes]);
+
+              // Ensure newly imported folders are visible in the filter
+              const newFolderIds = shiftedNodes.filter((n) => n.type === 'folder').map((n) => n.id);
+              if (newFolderIds.length > 0) {
+                setActiveFolderIds((prev) => {
+                  const next = new Set(prev);
+                  newFolderIds.forEach((id) => next.add(id));
+                  return next;
+                });
+              }
+            } else {
+              const laidOut = applyDefaultLayout(parsedNodes);
+              setNodes(laidOut);
+
+              // Default: show all folders for a fresh import
+              const folderNodes = laidOut.filter((n) => n.type === 'folder');
+              if (folderNodes.length > 0) {
+                setActiveFolderIds(new Set(folderNodes.map((n) => n.id)));
+              }
+            }
+            Message.success(`Imported ${parsedNodes.length} bookmarks`);
+          };
+
           if (nodes.length > 0) {
-            if (!confirm('This will merge with existing bookmarks. Continue?')) return;
-            // Shift new nodes to avoid exact overlap
-            const shiftedNodes = parsedNodes.map((n) => ({
-              ...n,
-              position: { x: n.position.x + 50, y: n.position.y + 50 },
-            }));
-            setNodes((prev) => [...prev, ...shiftedNodes]);
-
-            // Ensure newly imported folders are visible in the filter
-            const newFolderIds = shiftedNodes.filter((n) => n.type === 'folder').map((n) => n.id);
-            if (newFolderIds.length > 0) {
-              setActiveFolderIds((prev) => {
-                const next = new Set(prev);
-                newFolderIds.forEach((id) => next.add(id));
-                return next;
-              });
-            }
+            Modal.confirm({
+              title: 'Merge Bookmarks',
+              content: 'This will merge the imported bookmarks with existing ones. Continue?',
+              onOk: processImport,
+            });
           } else {
-            const laidOut = applyDefaultLayout(parsedNodes);
-            setNodes(laidOut);
-
-            // Default: show all folders for a fresh import
-            const folderNodes = laidOut.filter((n) => n.type === 'folder');
-            if (folderNodes.length > 0) {
-              setActiveFolderIds(new Set(folderNodes.map((n) => n.id)));
-            }
+            processImport();
           }
         }
       };
       reader.readAsText(file);
     },
-    [nodes, setNodes]
+    [nodes]
   );
 
   // Export
@@ -188,6 +212,7 @@ const EditorContent = () => {
     a.download = 'bookmarks.html';
     a.click();
     URL.revokeObjectURL(url);
+    Message.success('Exported bookmarks');
   }, [nodes]);
 
   // Add Folder needs to be visible
@@ -204,47 +229,57 @@ const EditorContent = () => {
     setNodes((nds) => nds.concat(newFolder));
     // Auto-select new folder so it appears
     setActiveFolderIds((prev) => new Set(prev).add(id));
-  }, [setNodes]);
+    Message.success('New folder added');
+  }, []);
 
   // Auto Layout
   const handleAutoLayout = useCallback(() => {
     setNodes((nds) => applyDefaultLayout(nds));
     setLayoutVersion((v) => v + 1);
-  }, [setNodes]);
+  }, []);
 
   // Clear
   const handleClear = useCallback(() => {
-    if (confirm('Are you sure you want to clear all bookmarks?')) {
-      setNodes([]);
-    }
-  }, [setNodes]);
+    Modal.confirm({
+      title: 'Clear All',
+      content: 'Are you sure you want to clear all bookmarks?',
+      okButtonProps: { status: 'danger' },
+      onOk: () => {
+        setNodes([]);
+        Message.success('Cleared all bookmarks');
+      },
+    });
+  }, []);
 
   const handleClearStorage = useCallback(async () => {
-    if (!confirm('This will delete the saved bookmark graph data from this browser. Continue?')) {
-      return;
-    }
+    Modal.confirm({
+      title: 'Clear Storage',
+      content: 'This will delete the saved bookmark graph data from this browser. Continue?',
+      okButtonProps: { status: 'danger' },
+      onOk: async () => {
+        try {
+          const db = await openDB(DB_NAME, 1, {
+            upgrade(db) {
+              if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME);
+              }
+            },
+          });
 
-    try {
-      const db = await openDB(DB_NAME, 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains(STORE_NAME)) {
-            db.createObjectStore(STORE_NAME);
-          }
-        },
-      });
+          await db.clear(STORE_NAME);
 
-      await db.clear(STORE_NAME);
+          resetNodes([]);
+          setActiveFolderIds(new Set());
+          setViewState(null);
+          setLayoutVersion((v) => v + 1);
 
-      setNodes([]);
-      setActiveFolderIds(new Set());
-      setViewState(null);
-      setLayoutVersion((v) => v + 1);
-
-      alert('Saved data cleared from this browser.');
-    } catch (error) {
-      console.error('Failed to clear storage', error);
-      alert('Failed to clear saved data');
-    }
+          Message.success('Saved data cleared from this browser.');
+        } catch (error) {
+          console.error('Failed to clear storage', error);
+          Message.error('Failed to clear saved data');
+        }
+      },
+    });
   }, []);
 
   // Extract All Folders for Filter Bar (flattened list)
@@ -339,8 +374,13 @@ const EditorContent = () => {
   const handleViewChange = useCallback((view: { scale: number; position: Position }) => {
     setViewState(view);
   }, []);
+
   if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spin dot tip="Loading..." />
+      </div>
+    );
   }
 
   return (
@@ -353,6 +393,12 @@ const EditorContent = () => {
         onSave={handleSave}
         onAutoLayout={handleAutoLayout}
         onClearStorage={handleClearStorage}
+        searchTerm={searchTerm}
+        onSearch={setSearchTerm}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       <FilterBar
@@ -361,13 +407,28 @@ const EditorContent = () => {
         onToggleFolder={toggleFolder}
         onToggleAll={toggleAllFolders}
       />
-      <BookmarkGraphCanvas
-        nodes={nodes}
-        setNodes={setNodes}
-        layoutVersion={layoutVersion}
-        initialView={viewState ?? undefined}
-        onViewChange={handleViewChange}
-      />
+
+      {nodes.length === 0 ? (
+        <div className="flex items-center justify-center h-full">
+          <Empty description="No bookmarks found. Import some or create a new folder.">
+            <Button
+              type="primary"
+              onClick={() => document.querySelector<HTMLButtonElement>('.tooltip-trigger')?.click()}
+            >
+              Import Bookmarks
+            </Button>
+          </Empty>
+        </div>
+      ) : (
+        <BookmarkGraphCanvas
+          nodes={nodes}
+          setNodes={setNodes}
+          layoutVersion={layoutVersion}
+          initialView={viewState ?? undefined}
+          onViewChange={handleViewChange}
+          searchTerm={searchTerm}
+        />
+      )}
     </div>
   );
 };

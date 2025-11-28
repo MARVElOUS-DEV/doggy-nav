@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Stage, Layer, Line } from 'react-konva';
+import { Stage, Layer, Line, Group } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 
 import type { BookmarkGraphNode } from './utils/bookmarkParser';
@@ -77,6 +77,7 @@ interface BookmarkGraphCanvasProps {
   layoutVersion: number;
   initialView?: ViewState;
   onViewChange?: (view: ViewState) => void;
+  searchTerm?: string;
 }
 
 const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
@@ -85,6 +86,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
   layoutVersion,
   initialView,
   onViewChange,
+  searchTerm = '',
 }) => {
   const [stageScale, setStageScale] = useState(() => initialView?.scale ?? 1);
   const [stagePosition, setStagePosition] = useState<Position>(
@@ -100,6 +102,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
   const [folderPages, setFolderPages] = useState<Record<string, number>>({});
   const [reparentSourceFolderId, setReparentSourceFolderId] = useState<string | null>(null);
 
+  // ... (resize effect) ...
   useEffect(() => {
     const handleResize = () => {
       setStageSize({ width: window.innerWidth, height: window.innerHeight });
@@ -131,6 +134,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
     return result;
   }, [nodes, nodesById]);
 
+  // ... (reparentFolder, handleNodeDragEnd, etc.) ...
   const reparentFolder = useCallback(
     (sourceId: string, targetId: string) => {
       if (sourceId === targetId) return;
@@ -379,6 +383,29 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
     return () => window.removeEventListener('mouseup', handleWindowMouseUp);
   }, []);
 
+  // Search matching logic
+  const matchingNodeIds = useMemo(() => {
+    if (!searchTerm) return null; // null means no search active (all visible)
+    const lower = searchTerm.toLowerCase();
+    const matches = new Set<string>();
+
+    nodes.forEach((node) => {
+      const labelMatch = node.data.label.toLowerCase().includes(lower);
+      const urlMatch = node.data.url?.toLowerCase().includes(lower);
+      if (labelMatch || urlMatch) {
+        matches.add(node.id);
+        // Also match all ancestors
+        let parent = node.parentNode;
+        while (parent) {
+          matches.add(parent);
+          const pNode = nodesById.get(parent);
+          parent = pNode?.parentNode;
+        }
+      }
+    });
+    return matches;
+  }, [nodes, searchTerm, nodesById]);
+
   const visibleNodes = useMemo(() => nodes.filter((n) => !n.hidden), [nodes]);
   const folderNodes = useMemo(
     () => visibleNodes.filter((n) => n.type === 'folder'),
@@ -448,7 +475,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
   );
 
   const connectorLines = useMemo(() => {
-    const lines: { id: string; points: number[] }[] = [];
+    const lines: { id: string; points: number[]; isDimmed: boolean }[] = [];
     const bookmarkIdsOnPage = new Set(bookmarkNodes.map((n) => n.id));
 
     visibleNodes.forEach((child) => {
@@ -471,15 +498,18 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
       const fromY = parentPos.y + parentSize.height;
       const toX = childPos.x + childSize.width / 2;
       const toY = childPos.y;
+      
+      const isDimmed = matchingNodeIds ? (!matchingNodeIds.has(child.id)) : false;
 
       lines.push({
         id: `${parent.id}-${child.id}`,
         points: [fromX, fromY, toX, toY],
+        isDimmed
       });
     });
 
     return lines;
-  }, [visibleNodes, nodesById, absolutePositions, bookmarkNodes]);
+  }, [visibleNodes, nodesById, absolutePositions, bookmarkNodes, matchingNodeIds]);
 
   return (
     <Stage
@@ -498,10 +528,11 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
           <Line
             key={line.id}
             points={line.points}
-            stroke="#94A3B8"
+            stroke={line.isDimmed ? "#E2E8F0" : "#94A3B8"}
             strokeWidth={3}
             lineCap="round"
             lineJoin="round"
+            opacity={line.isDimmed ? 0.3 : 1}
           />
         ))}
 
@@ -511,44 +542,48 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
           const meta = folderPageMeta.get(node.id);
           const totalPages = meta?.totalPages ?? 1;
           const currentPage = folderCurrentPages.get(node.id) ?? 0;
+          const isDimmed = matchingNodeIds ? !matchingNodeIds.has(node.id) : false;
 
           return (
-            <FolderNodeCanvas
-              key={node.id}
-              node={node}
-              x={pos.x}
-              y={pos.y}
-              isSelected={isSelected}
-              onDragEnd={(evt) => handleNodeDragEnd(node.id, evt)}
-              onClick={() => handleNodeClick(node.id)}
-              page={currentPage}
-              totalPages={totalPages}
-              onPageChange={(newPage) => {
-                setFolderPages((prev) => ({
-                  ...prev,
-                  [node.id]: Math.max(0, Math.min(newPage, totalPages - 1)),
-                }));
-              }}
-              isReparentSource={reparentSourceFolderId === node.id}
-              onJunctionClick={() => handleFolderJunctionClick(node.id)}
-            />
+            <Group key={node.id} opacity={isDimmed ? 0.3 : 1}>
+                <FolderNodeCanvas
+                node={node}
+                x={pos.x}
+                y={pos.y}
+                isSelected={isSelected}
+                onDragEnd={handleNodeDragEnd}
+                onClick={handleNodeClick}
+                page={currentPage}
+                totalPages={totalPages}
+                onPageChange={(newPage) => {
+                    setFolderPages((prev) => ({
+                    ...prev,
+                    [node.id]: Math.max(0, Math.min(newPage, totalPages - 1)),
+                    }));
+                }}
+                isReparentSource={reparentSourceFolderId === node.id}
+                onJunctionClick={() => handleFolderJunctionClick(node.id)}
+                />
+            </Group>
           );
         })}
 
         {bookmarkNodes.map((node) => {
           const pos = absolutePositions.get(node.id) ?? node.position;
           const isSelected = selectedNodeId === node.id;
+          const isDimmed = matchingNodeIds ? !matchingNodeIds.has(node.id) : false;
 
           return (
-            <BookmarkNodeCanvas
-              key={node.id}
-              node={node}
-              x={pos.x}
-              y={pos.y}
-              isSelected={isSelected}
-              onDragEnd={(evt) => handleNodeDragEnd(node.id, evt)}
-              onClick={() => handleNodeClick(node.id)}
-            />
+            <Group key={node.id} opacity={isDimmed ? 0.3 : 1}>
+                <BookmarkNodeCanvas
+                node={node}
+                x={pos.x}
+                y={pos.y}
+                isSelected={isSelected}
+                onDragEnd={handleNodeDragEnd}
+                onClick={handleNodeClick}
+                />
+            </Group>
           );
         })}
       </Layer>

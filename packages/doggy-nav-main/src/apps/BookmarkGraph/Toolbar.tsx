@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Upload, Download, FolderPlus, Save, Trash, LayoutGrid, Database } from 'lucide-react';
+import { Upload, Download, FolderPlus, Save, Trash, LayoutGrid, Database, Undo, Redo } from 'lucide-react';
+import { Input } from '@arco-design/web-react';
 
 interface ToolbarProps {
   onImport: (file: File) => void;
@@ -9,6 +10,12 @@ interface ToolbarProps {
   onSave: () => void;
   onAutoLayout: () => void;
   onClearStorage: () => void;
+  searchTerm: string;
+  onSearch: (term: string) => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -19,6 +26,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onSave,
   onAutoLayout,
   onClearStorage,
+  searchTerm,
+  onSearch,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,6 +55,47 @@ const Toolbar: React.FC<ToolbarProps> = ({
         ref={fileInputRef}
         onChange={handleFileChange}
       />
+      
+      <div className="mr-2">
+        <Input.Search
+          allowClear
+          placeholder="Search..."
+          style={{ width: 200, borderRadius: '9999px' }}
+          value={searchTerm}
+          onChange={(val) => onSearch(val)}
+          className="rounded-full"
+        />
+      </div>
+
+      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+      
+      <button
+        onClick={onUndo}
+        disabled={!canUndo}
+        className={`p-2 rounded-full transition-colors ${
+          canUndo 
+            ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200' 
+            : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+        }`}
+        title="Undo"
+      >
+        <Undo size={20} />
+      </button>
+
+      <button
+        onClick={onRedo}
+        disabled={!canRedo}
+        className={`p-2 rounded-full transition-colors ${
+          canRedo 
+            ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200' 
+            : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+        }`}
+        title="Redo"
+      >
+        <Redo size={20} />
+      </button>
+
+      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
 
       <button
         onClick={() => fileInputRef.current?.click()}

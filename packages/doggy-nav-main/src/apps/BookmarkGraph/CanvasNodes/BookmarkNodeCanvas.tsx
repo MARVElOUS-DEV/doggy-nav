@@ -10,12 +10,12 @@ interface BookmarkNodeCanvasProps {
   x: number;
   y: number;
   isSelected: boolean;
-  onDragStart?: (evt: KonvaEventObject<DragEvent>) => void;
-  onDragEnd: (evt: KonvaEventObject<DragEvent>) => void;
-  onClick: () => void;
+  onDragStart?: (nodeId: string, evt: KonvaEventObject<DragEvent>) => void;
+  onDragEnd: (nodeId: string, evt: KonvaEventObject<DragEvent>) => void;
+  onClick: (nodeId: string) => void;
 }
 
-const BookmarkNodeCanvas: React.FC<BookmarkNodeCanvasProps> = ({
+const BookmarkNodeCanvas: React.FC<BookmarkNodeCanvasProps> = React.memo(({
   node,
   x,
   y,
@@ -24,14 +24,26 @@ const BookmarkNodeCanvas: React.FC<BookmarkNodeCanvasProps> = ({
   onDragEnd,
   onClick,
 }) => {
+  const handleDragStart = React.useCallback((evt: KonvaEventObject<DragEvent>) => {
+      if (onDragStart) onDragStart(node.id, evt);
+  }, [node.id, onDragStart]);
+
+  const handleDragEnd = React.useCallback((evt: KonvaEventObject<DragEvent>) => {
+      onDragEnd(node.id, evt);
+  }, [node.id, onDragEnd]);
+
+  const handleClick = React.useCallback(() => {
+      onClick(node.id);
+  }, [node.id, onClick]);
+
   return (
     <Group
       x={x}
       y={y}
       draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onClick={onClick}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onClick={handleClick}
     >
       <Rect
         width={BOOKMARK_SIZE.width}
@@ -66,6 +78,6 @@ const BookmarkNodeCanvas: React.FC<BookmarkNodeCanvasProps> = ({
       )}
     </Group>
   );
-};
+});
 
 export default BookmarkNodeCanvas;

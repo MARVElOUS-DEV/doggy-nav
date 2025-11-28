@@ -16,11 +16,12 @@ const BOOKMARK_GRID_COLS = 3;
 const MAX_BOOKMARK_ROWS = Math.max(
   1,
   Math.floor(
-    (FOLDER_HEIGHT - BOOKMARK_GRID_TOP - PADDING) /
-      (BOOKMARK_SIZE.height + BOOKMARK_GRID_ROW_GAP)
+    (FOLDER_HEIGHT - BOOKMARK_GRID_TOP - PADDING) / (BOOKMARK_SIZE.height + BOOKMARK_GRID_ROW_GAP)
   )
 );
 const BOOKMARKS_PER_PAGE = BOOKMARK_GRID_COLS * MAX_BOOKMARK_ROWS;
+
+const FOLDER_Y_GAP_BOOST = 200; // Additional vertical gap between parent and child folders
 
 interface TreeNodeData {
   id: string;
@@ -97,10 +98,8 @@ export const applyDefaultLayout = (nodes: BookmarkGraphNode[]): BookmarkGraphNod
         const col = indexInPage % BOOKMARK_GRID_COLS;
         const row = Math.floor(indexInPage / BOOKMARK_GRID_COLS);
 
-        const xLocal =
-          PADDING + col * (BOOKMARK_SIZE.width + BOOKMARK_GRID_COL_GAP);
-        const yLocal =
-          BOOKMARK_GRID_TOP + row * (BOOKMARK_SIZE.height + BOOKMARK_GRID_ROW_GAP);
+        const xLocal = PADDING + col * (BOOKMARK_SIZE.width + BOOKMARK_GRID_COL_GAP);
+        const yLocal = BOOKMARK_GRID_TOP + row * (BOOKMARK_SIZE.height + BOOKMARK_GRID_ROW_GAP);
 
         const base = newNodesMap.get(bookmark.id) ?? bookmark;
 
@@ -128,7 +127,7 @@ export const applyDefaultLayout = (nodes: BookmarkGraphNode[]): BookmarkGraphNod
     // Use explicit node size so large folder rectangles do not overlap
     const treeLayout = tree<TreeNodeData>().nodeSize([
       FOLDER_WIDTH + PADDING,
-      FOLDER_HEIGHT + PADDING,
+      FOLDER_HEIGHT + PADDING + FOLDER_Y_GAP_BOOST,
     ]);
     treeLayout(root);
 
@@ -150,6 +149,7 @@ export const applyDefaultLayout = (nodes: BookmarkGraphNode[]): BookmarkGraphNod
 
     // Position folders in the subtree according to tree layout
     absLocalById.forEach((absPos, nodeId) => {
+      // Fixed: changed folderNodeId to nodeId
       const original = nodesById.get(nodeId);
       if (!original || original.type !== 'folder') return;
 
