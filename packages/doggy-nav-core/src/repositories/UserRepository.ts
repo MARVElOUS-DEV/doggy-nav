@@ -29,7 +29,7 @@ export interface AdminUserListItem {
   nickName: string;
   avatar: string;
   email: string;
-  role: 'admin' | 'default';
+  roles: string[]; // role slugs
   groups: string[]; // display names or slugs
   status: 0 | 1;
   createdAt?: string;
