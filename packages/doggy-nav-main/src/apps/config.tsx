@@ -5,6 +5,7 @@ import NewsApp from './NewsApp';
 import TranslationApp from './TranslationApp';
 import IframeContainer from '@/components/IframeContainer';
 import SettingsApp from './Settings';
+import BookmarkGraphApp from './BookmarkGraph/BookmarkGraphApp';
 
 export type AppId = string;
 
@@ -49,6 +50,7 @@ export type DesktopAppConfig = {
 };
 
 export const appsOrder: AppId[] = [
+  'bookmark-graph',
   'settings',
   'news',
   'translation',
@@ -66,6 +68,15 @@ export const appsConfig: Record<AppId, DesktopAppConfig> = {
     shouldOpenWindow: true,
     defaultRect: { x: 220, y: 120, width: 780, height: 560 },
     render: (ctx) => <SettingsApp ctx={ctx} />,
+  },
+  'bookmark-editor': {
+    id: 'bookmark-graph',
+    open: false,
+    title: 'Bookmark Editor',
+    icon: '/app-icons/tools.png',
+    shouldOpenWindow: true,
+    defaultRect: { x: 100, y: 80, width: 1024, height: 768 },
+    render: () => <BookmarkGraphApp />,
   },
   news: {
     id: 'news',

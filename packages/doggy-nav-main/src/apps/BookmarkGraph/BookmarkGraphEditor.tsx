@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { openDB } from 'idb';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, Modal, Spin, Empty, Button } from '@arco-design/web-react';
@@ -23,12 +23,36 @@ const EditorContent = () => {
     canRedo,
     reset: resetNodes,
   } = useHistory<BookmarkGraphNode[]>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [activeFolderIds, setActiveFolderIds] = useState<Set<string>>(new Set());
   const [layoutVersion, setLayoutVersion] = useState(0);
   const [viewState, setViewState] = useState<{ scale: number; position: Position } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const handleToggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement && containerRef.current) {
+      containerRef.current.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen().catch((err) => {
+        console.error(`Error attempting to exit fullscreen: ${err.message}`);
+      });
+    }
+  }, []);
 
   // Load from IDB on mount
   useEffect(() => {
@@ -71,7 +95,7 @@ const EditorContent = () => {
       if (nds.length === 0) return nds;
 
       const nodeMap = new Map(nds.map((n) => [n.id, n]));
-      
+
       // Calculate effective visibility (Active + Ancestors)
       const visibleFolderIds = new Set(activeFolderIds);
       const addAncestors = (nodeId: string) => {
@@ -92,11 +116,11 @@ const EditorContent = () => {
         if (node.type === 'folder') {
           // Must be in our computed visible set
           if (!visibleFolderIds.has(node.id)) return false;
-          
+
           // Also ensure parent is visible (redundant if visibleFolderIds is correct, but safe)
           if (node.parentNode) {
-             // If parent isn't in visibleFolderIds, this node shouldn't be either 
-             // (guaranteed by our ancestor logic, but logic consistency check)
+            // If parent isn't in visibleFolderIds, this node shouldn't be either
+            // (guaranteed by our ancestor logic, but logic consistency check)
           }
           return true;
         }
@@ -218,38 +242,38 @@ const EditorContent = () => {
   const handleExport = useCallback(() => {
     // Filter nodes to export only currently visible nodes (based on active filter)
     // We can reuse the same logic as in the visibility effect or just check 'hidden' property if it's reliably updated
-    // The 'hidden' property is updated in the render pass (useEffect), so 'nodes' state might not always have the very latest hidden status 
+    // The 'hidden' property is updated in the render pass (useEffect), so 'nodes' state might not always have the very latest hidden status
     // if we just changed filter. But usually it should be synced.
     // However, the most robust way is to filter by the activeFolderIds set again.
 
     const visibleFolderIds = new Set(activeFolderIds);
     const addAncestors = (nodeId: string) => {
-        const node = nodes.find(n => n.id === nodeId);
-        if (node && node.parentNode) {
-            visibleFolderIds.add(node.parentNode);
-            addAncestors(node.parentNode);
-        }
+      const node = nodes.find((n) => n.id === nodeId);
+      if (node && node.parentNode) {
+        visibleFolderIds.add(node.parentNode);
+        addAncestors(node.parentNode);
+      }
     };
-    activeFolderIds.forEach(id => addAncestors(id));
+    activeFolderIds.forEach((id) => addAncestors(id));
 
-    const nodesToExport = nodes.filter(node => {
-        // Root bookmarks always visible
-        if (node.type === 'bookmark' && !node.parentNode) return true;
+    const nodesToExport = nodes.filter((node) => {
+      // Root bookmarks always visible
+      if (node.type === 'bookmark' && !node.parentNode) return true;
 
-        // Folders
-        if (node.type === 'folder') {
-            if (!visibleFolderIds.has(node.id)) return false;
-            // Check parent visibility for consistency
-            if (node.parentNode && !visibleFolderIds.has(node.parentNode)) return false;
-            return true;
-        }
-
-        // Nested Bookmarks
-        if (node.parentNode) {
-            return visibleFolderIds.has(node.parentNode);
-        }
-        
+      // Folders
+      if (node.type === 'folder') {
+        if (!visibleFolderIds.has(node.id)) return false;
+        // Check parent visibility for consistency
+        if (node.parentNode && !visibleFolderIds.has(node.parentNode)) return false;
         return true;
+      }
+
+      // Nested Bookmarks
+      if (node.parentNode) {
+        return visibleFolderIds.has(node.parentNode);
+      }
+
+      return true;
     });
 
     const html = generateBookmarksHtml(nodesToExport);
@@ -266,7 +290,7 @@ const EditorContent = () => {
   // Add Folder needs to be visible
   const handleAddFolder = useCallback(() => {
     const inputRef = React.createRef<HTMLInputElement>();
-    
+
     Modal.confirm({
       title: 'Create New Folder',
       content: (
@@ -330,40 +354,45 @@ const EditorContent = () => {
     });
   }, []);
 
-  const handleRenameNode = useCallback((nodeId: string) => {
-    // Find current name
-    const node = nodes.find(n => n.id === nodeId);
-    if (!node) return;
-    
-    const inputRef = React.createRef<HTMLInputElement>();
+  const handleRenameNode = useCallback(
+    (nodeId: string) => {
+      // Find current name
+      const node = nodes.find((n) => n.id === nodeId);
+      if (!node) return;
 
-    Modal.confirm({
-      title: 'Rename Item',
-      content: (
-        <div style={{ marginTop: 10 }}>
-          <p style={{ marginBottom: 8 }}>New Name:</p>
-          <input
-             ref={inputRef}
-             defaultValue={node.data.label}
-             className="arco-input arco-input-size-default"
-             style={{ width: '100%' }}
-          />
-        </div>
-      ),
-      onOk: () => {
-        const newName = inputRef.current?.value;
-        if (newName && newName.trim()) {
-          setNodes((nds) => nds.map(n => {
-            if (n.id === nodeId) {
-              return { ...n, data: { ...n.data, label: newName } };
-            }
-            return n;
-          }));
-          Message.success('Renamed successfully');
-        }
-      }
-    });
-  }, [nodes]);
+      const inputRef = React.createRef<HTMLInputElement>();
+
+      Modal.confirm({
+        title: 'Rename Item',
+        content: (
+          <div style={{ marginTop: 10 }}>
+            <p style={{ marginBottom: 8 }}>New Name:</p>
+            <input
+              ref={inputRef}
+              defaultValue={node.data.label}
+              className="arco-input arco-input-size-default"
+              style={{ width: '100%' }}
+            />
+          </div>
+        ),
+        onOk: () => {
+          const newName = inputRef.current?.value;
+          if (newName && newName.trim()) {
+            setNodes((nds) =>
+              nds.map((n) => {
+                if (n.id === nodeId) {
+                  return { ...n, data: { ...n.data, label: newName } };
+                }
+                return n;
+              })
+            );
+            Message.success('Renamed successfully');
+          }
+        },
+      });
+    },
+    [nodes]
+  );
 
   // Auto Layout
   const handleAutoLayout = useCallback(() => {
@@ -466,7 +495,7 @@ const EditorContent = () => {
   }
 
   return (
-    <div className="w-full h-full relative bg-gray-50 dark:bg-gray-900">
+    <div ref={containerRef} className="w-full h-full relative bg-gray-50 dark:bg-gray-900">
       <Toolbar
         onImport={handleImport}
         onExport={handleExport}
@@ -474,6 +503,8 @@ const EditorContent = () => {
         onClear={handleClear}
         onSave={handleSave}
         onAutoLayout={handleAutoLayout}
+        onToggleFullscreen={handleToggleFullscreen}
+        isFullscreen={isFullscreen}
         onClearStorage={handleClearStorage}
         searchTerm={searchTerm}
         onSearch={setSearchTerm}

@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Stage, Layer, Line, Group } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
-
 import type { BookmarkGraphNode } from './utils/bookmarkParser';
 import FolderNodeCanvas from './CanvasNodes/FolderNodeCanvas';
 import BookmarkNodeCanvas from './CanvasNodes/BookmarkNodeCanvas';
 import type { Position } from './BookmarkGraphCanvasConfig';
-import { BOOKMARK_SIZE, FOLDER_DEFAULT_SIZE } from './BookmarkGraphCanvasConfig';
+import {
+  BOOKMARK_SIZE,
+  BOOKMARKS_PER_PAGE,
+  FOLDER_DEFAULT_SIZE,
+} from './BookmarkGraphCanvasConfig';
 
 const getNodeAbsolutePosition = (
   node: BookmarkGraphNode,
@@ -49,22 +52,6 @@ const getNodeSize = (node: BookmarkGraphNode) => {
   }
   return { width: BOOKMARK_SIZE.width, height: BOOKMARK_SIZE.height };
 };
-
-// Bookmark grid & pagination constants (must stay in sync with layout.ts)
-const BOOKMARK_GRID_COLS = 3;
-const BOOKMARK_GRID_COL_GAP = 16;
-const BOOKMARK_GRID_ROW_GAP = 12;
-const BOOKMARK_GRID_TOP = 80;
-const PADDING = 20;
-
-const MAX_BOOKMARK_ROWS = Math.max(
-  1,
-  Math.floor(
-    (FOLDER_DEFAULT_SIZE.height - BOOKMARK_GRID_TOP - PADDING) /
-      (BOOKMARK_SIZE.height + BOOKMARK_GRID_ROW_GAP)
-  )
-);
-const BOOKMARKS_PER_PAGE = BOOKMARK_GRID_COLS * MAX_BOOKMARK_ROWS;
 
 interface ViewState {
   scale: number;
