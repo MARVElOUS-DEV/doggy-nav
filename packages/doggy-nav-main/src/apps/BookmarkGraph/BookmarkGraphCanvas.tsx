@@ -78,6 +78,8 @@ interface BookmarkGraphCanvasProps {
   initialView?: ViewState;
   onViewChange?: (view: ViewState) => void;
   searchTerm?: string;
+  onDeleteNode?: (nodeId: string) => void;
+  onRenameNode?: (nodeId: string) => void;
 }
 
 const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
@@ -87,6 +89,8 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
   initialView,
   onViewChange,
   searchTerm = '',
+  onDeleteNode,
+  onRenameNode,
 }) => {
   const [stageScale, setStageScale] = useState(() => initialView?.scale ?? 1);
   const [stagePosition, setStagePosition] = useState<Position>(
@@ -289,6 +293,41 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
     [reparentFolder]
   );
 
+  const handleFolderDoubleClick = useCallback(
+    (folderId: string) => {
+      const node = nodesById.get(folderId);
+      if (!node) return;
+
+      const absPos = absolutePositions.get(folderId);
+      if (!absPos) return;
+
+      const folderSize = getNodeSize(node);
+      const stageW = stageSize.width;
+      const stageH = stageSize.height;
+
+      // Calculate desired scale to fit folder with some padding
+      const padding = 40;
+      const scaleX = stageW / (folderSize.width + padding * 5);
+      const scaleY = stageH / (folderSize.height + padding * 2);
+      const newScale = Math.min(scaleX, scaleY, 1.3); // Don't zoom in too much (max 1.3)
+
+      // Calculate position to center the folder
+      // Center of folder in stage coordinates:
+      // folderCenterX * scale + stageX = stageW / 2
+      // stageX = stageW / 2 - folderCenterX * scale
+
+      const folderCenterX = absPos.x + folderSize.width / 2 + padding * 2;
+      const folderCenterY = absPos.y + folderSize.height / 2 + padding;
+
+      const newX = stageW / 2 - folderCenterX * newScale;
+      const newY = stageH / 2 - folderCenterY * newScale;
+
+      setStageScale(newScale);
+      setStagePosition({ x: newX, y: newY });
+    },
+    [nodesById, absolutePositions, stageSize]
+  );
+
   const handleStageMouseDown = useCallback((evt: KonvaEventObject<MouseEvent>) => {
     const stage = evt.target.getStage();
     if (!stage) return;
@@ -476,13 +515,13 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
 
   const connectorLines = useMemo(() => {
     const lines: { id: string; points: number[]; isDimmed: boolean }[] = [];
-    const bookmarkIdsOnPage = new Set(bookmarkNodes.map((n) => n.id));
+    // We only want to draw lines between folders, NOT between folders and bookmarks
 
     visibleNodes.forEach((child) => {
       if (!child.parentNode) return;
 
-      // Only draw connectors for bookmark nodes that are currently rendered
-      if (child.type === 'bookmark' && !bookmarkIdsOnPage.has(child.id)) return;
+      // SKIP bookmarks - no lines for them
+      if (child.type === 'bookmark') return;
 
       const parent = nodesById.get(child.parentNode);
       if (!parent || parent.hidden) return;
@@ -498,18 +537,18 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
       const fromY = parentPos.y + parentSize.height;
       const toX = childPos.x + childSize.width / 2;
       const toY = childPos.y;
-      
-      const isDimmed = matchingNodeIds ? (!matchingNodeIds.has(child.id)) : false;
+
+      const isDimmed = matchingNodeIds ? !matchingNodeIds.has(child.id) : false;
 
       lines.push({
         id: `${parent.id}-${child.id}`,
         points: [fromX, fromY, toX, toY],
-        isDimmed
+        isDimmed,
       });
     });
 
     return lines;
-  }, [visibleNodes, nodesById, absolutePositions, bookmarkNodes, matchingNodeIds]);
+  }, [visibleNodes, nodesById, absolutePositions, matchingNodeIds]);
 
   return (
     <Stage
@@ -528,7 +567,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
           <Line
             key={line.id}
             points={line.points}
-            stroke={line.isDimmed ? "#E2E8F0" : "#94A3B8"}
+            stroke={line.isDimmed ? '#E2E8F0' : '#94A3B8'}
             strokeWidth={3}
             lineCap="round"
             lineJoin="round"
@@ -546,7 +585,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
 
           return (
             <Group key={node.id} opacity={isDimmed ? 0.3 : 1}>
-                <FolderNodeCanvas
+              <FolderNodeCanvas
                 node={node}
                 x={pos.x}
                 y={pos.y}
@@ -556,14 +595,17 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
                 page={currentPage}
                 totalPages={totalPages}
                 onPageChange={(newPage) => {
-                    setFolderPages((prev) => ({
+                  setFolderPages((prev) => ({
                     ...prev,
                     [node.id]: Math.max(0, Math.min(newPage, totalPages - 1)),
-                    }));
+                  }));
                 }}
                 isReparentSource={reparentSourceFolderId === node.id}
                 onJunctionClick={() => handleFolderJunctionClick(node.id)}
-                />
+                onDelete={() => onDeleteNode?.(node.id)}
+                onRename={() => onRenameNode?.(node.id)}
+                onDoubleClick={() => handleFolderDoubleClick(node.id)}
+              />
             </Group>
           );
         })}
@@ -575,14 +617,16 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
 
           return (
             <Group key={node.id} opacity={isDimmed ? 0.3 : 1}>
-                <BookmarkNodeCanvas
+              <BookmarkNodeCanvas
                 node={node}
                 x={pos.x}
                 y={pos.y}
                 isSelected={isSelected}
                 onDragEnd={handleNodeDragEnd}
                 onClick={handleNodeClick}
-                />
+                onDelete={() => onDeleteNode?.(node.id)}
+                onRename={() => onRenameNode?.(node.id)}
+              />
             </Group>
           );
         })}

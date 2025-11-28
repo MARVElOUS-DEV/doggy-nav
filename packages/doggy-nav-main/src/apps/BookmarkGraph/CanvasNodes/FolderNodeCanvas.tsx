@@ -1,5 +1,5 @@
-import React from 'react';
-import { Group, Rect, Text } from 'react-konva';
+import React, { useState } from 'react';
+import { Group, Rect, Text, Label, Tag } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 
 import type { BookmarkGraphNode } from '../utils/bookmarkParser';
@@ -18,6 +18,9 @@ interface FolderNodeCanvasProps {
   onPageChange?: (page: number) => void;
   isReparentSource?: boolean;
   onJunctionClick?: () => void;
+  onDelete?: () => void;
+  onRename?: () => void;
+  onDoubleClick?: () => void;
 }
 
 const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
@@ -34,7 +37,12 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
     onPageChange,
     isReparentSource,
     onJunctionClick,
+    onDelete,
+    onRename,
+    onDoubleClick,
   }) => {
+    const [hoveredBtn, setHoveredBtn] = useState<'rename' | 'delete' | 'junction' | null>(null);
+
     const width =
       node.style && typeof node.style.width === 'number'
         ? (node.style.width as number)
@@ -47,6 +55,16 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
     const currentPage = page ?? 0;
     const pages = totalPages ?? 1;
     const showPager = pages > 1 && onPageChange;
+
+    // Layout Calculations
+    const junctionX = (width - 20) / 2;
+    
+    // Pager (if visible) is at: x = width - 132 (width 120)
+    // Right margin = 12
+    const rightStart = showPager ? width - 132 - 12 : width - 12;
+    
+    const deleteX = rightStart - 24;
+    const renameX = deleteX - 12 - 24; // 12px gap
 
     const handleDragStart = React.useCallback(
       (evt: KonvaEventObject<DragEvent>) => {
@@ -66,6 +84,28 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
       onClick(node.id);
     }, [node.id, onClick]);
 
+    const handleDblClick = React.useCallback((evt: KonvaEventObject<MouseEvent>) => {
+      if (onDoubleClick) {
+        // Stop event propagation so it doesn't trigger stage double clicks if any
+        evt.cancelBubble = true;
+        onDoubleClick();
+      }
+    }, [onDoubleClick]);
+
+    const renderTooltip = (text: string, tx: number, ty: number) => (
+      <Label x={tx} y={ty} listening={false}>
+        <Tag
+          fill="#1F2937"
+          pointerDirection="down"
+          pointerWidth={8}
+          pointerHeight={5}
+          cornerRadius={4}
+          opacity={0.9}
+        />
+        <Text text={text} fontSize={11} padding={6} fill="#F9FAFB" />
+      </Label>
+    );
+
     return (
       <Group
         x={x}
@@ -74,6 +114,7 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onClick={handleClick}
+        onDblClick={handleDblClick}
       >
         <Rect
           width={width}
@@ -97,13 +138,18 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
           fontSize={14}
           fontStyle="bold"
           fill="#111827"
-          width={width - 180}
+          width={junctionX - 16}
           ellipsis
         />
         <Text x={8} y={40} text="Drag bookmarks here" fontSize={11} fill="#9CA3AF" />
 
         {onJunctionClick && (
-          <Group x={width - 164} y={6}>
+          <Group 
+            x={junctionX} 
+            y={6}
+            onMouseEnter={() => setHoveredBtn('junction')}
+            onMouseLeave={() => setHoveredBtn(null)}
+          >
             <Rect
               width={20}
               height={20}
@@ -124,6 +170,40 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
               fill={isReparentSource ? '#FFFFFF' : '#1F2937'}
               listening={false}
             />
+          </Group>
+        )}
+
+        {/* Rename Button */}
+        {isSelected && onRename && (
+          <Group
+            x={renameX}
+            y={4}
+            onClick={(e) => {
+              e.cancelBubble = true;
+              onRename();
+            }}
+            onMouseEnter={() => setHoveredBtn('rename')}
+            onMouseLeave={() => setHoveredBtn(null)}
+          >
+            <Rect width={24} height={24} cornerRadius={4} fill="transparent" />
+            <Text x={4} y={4} text="✎" fontSize={16} fill="#4B5563" />
+          </Group>
+        )}
+
+        {/* Delete Button */}
+        {isSelected && onDelete && (
+          <Group
+            x={deleteX}
+            y={4}
+            onClick={(e) => {
+              e.cancelBubble = true;
+              onDelete();
+            }}
+            onMouseEnter={() => setHoveredBtn('delete')}
+            onMouseLeave={() => setHoveredBtn(null)}
+          >
+            <Rect width={24} height={24} cornerRadius={4} fill="transparent" />
+            <Text x={6} y={4} text="✕" fontSize={16} fill="#EF4444" />
           </Group>
         )}
 
@@ -172,6 +252,11 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
             />
           </Group>
         )}
+
+        {/* Tooltips */}
+        {hoveredBtn === 'junction' && renderTooltip('Reparent', junctionX + 10, -5)}
+        {hoveredBtn === 'rename' && renderTooltip('Rename', renameX + 12, -5)}
+        {hoveredBtn === 'delete' && renderTooltip('Delete', deleteX + 12, -5)}
       </Group>
     );
   }

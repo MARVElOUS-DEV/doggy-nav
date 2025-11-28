@@ -1,6 +1,12 @@
 import React, { useRef } from 'react';
 import { Upload, Download, FolderPlus, Save, Trash, LayoutGrid, Database, Undo, Redo } from 'lucide-react';
-import { Input } from '@arco-design/web-react';
+import { Input, TreeSelect } from '@arco-design/web-react';
+
+export interface FolderTreeNode {
+  id: string;
+  label: string;
+  children?: FolderTreeNode[];
+}
 
 interface ToolbarProps {
   onImport: (file: File) => void;
@@ -16,6 +22,10 @@ interface ToolbarProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  // Filter props
+  folderTree: FolderTreeNode[];
+  activeFolderIds: Set<string>;
+  onFilterChange: (ids: string[]) => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -32,6 +42,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onRedo,
   canUndo,
   canRedo,
+  folderTree,
+  activeFolderIds,
+  onFilterChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,6 +58,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
       fileInputRef.current.value = '';
     }
   };
+
+  const mapTreeData = (nodes: FolderTreeNode[]): any[] => {
+    return nodes.map(node => ({
+      key: node.id,
+      title: node.label,
+      value: node.id,
+      children: node.children ? mapTreeData(node.children) : [],
+    }));
+  };
+
+  const treeData = React.useMemo(() => mapTreeData(folderTree), [folderTree]);
+  const selectedKeys = React.useMemo(() => Array.from(activeFolderIds), [activeFolderIds]);
 
   return (
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-gray-800 shadow-lg rounded-full px-4 py-2 flex items-center gap-2 border border-gray-200 dark:border-gray-700">
@@ -60,10 +85,28 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <Input.Search
           allowClear
           placeholder="Search..."
-          style={{ width: 200, borderRadius: '9999px' }}
+          style={{ width: 320, borderRadius: '9999px' }}
           value={searchTerm}
           onChange={(val) => onSearch(val)}
-          className="rounded-full"
+          className="rounded-full toolbar-search"
+          addBefore={
+            <TreeSelect
+              treeData={treeData}
+              treeCheckable
+              showCheckedStrategy={TreeSelect.SHOW_ALL}
+              placeholder="Filter"
+              style={{ width: 120, border: 'none', background: 'transparent' }}
+              bordered={false}
+              value={selectedKeys}
+              onChange={(val) => onFilterChange(val as string[])}
+              maxTagCount={0}
+              triggerProps={{
+                autoAlignPopupWidth: false,
+                autoAlignPopupMinWidth: true,
+                position: 'bl',
+              }}
+            />
+          }
         />
       </div>
 
