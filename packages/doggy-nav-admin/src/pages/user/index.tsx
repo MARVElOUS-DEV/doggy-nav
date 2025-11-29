@@ -97,16 +97,17 @@ const UserPage: React.FC = () => {
     {
       title: '角色',
       dataIndex: 'roles',
-      render: (roles: string[]) => {
-        if (!roles || !Array.isArray(roles)) return '-';
-        return roles.join(', ');
+      render: (_dom, { roles }) => {
+        const arr = Array.isArray(roles) ? roles : [];
+        if (arr.length > 0) return arr.join(', ');
+        return '-';
       },
     },
     {
       title: '用户组',
       dataIndex: 'groups',
       hideInSearch: true,
-      render: (groups: string[]) => {
+      render: (_dom, { groups }) => {
         if (!groups || !Array.isArray(groups) || groups.length === 0)
           return '-';
         return groups.join(', ');

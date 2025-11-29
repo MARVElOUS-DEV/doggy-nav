@@ -5,6 +5,7 @@ export type DockItem = {
   key: string;
   label: string;
   iconSrc: string;
+  iconClass?: string;
   onClick?: () => void;
   href?: string;
   running?: boolean;
@@ -42,7 +43,10 @@ export default function Dock({ items }: { items: DockItem[] }) {
   const barScaleY = 1;
 
   return (
-    <div id="desktop-dock" className="pointer-events-none fixed left-0 right-0 bottom-4 z-[60] flex justify-center">
+    <div
+      id="desktop-dock"
+      className="pointer-events-none fixed left-0 right-0 bottom-4 z-[60] flex justify-center"
+    >
       <div
         ref={containerRef}
         onPointerMove={onMove}
@@ -114,7 +118,12 @@ function DockButton({ item, mouseX }: { item: DockItem; mouseX: number | null })
             {item.label}
           </div>
         </div>
-        <Image src={item.iconSrc} alt={item.label} fill className="object-contain" />
+        <Image
+          src={item.iconSrc}
+          alt={item.label}
+          fill
+          className={`${item.iconClass ?? ''} object-contain`}
+        />
         {item.running && (
           <span
             className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"

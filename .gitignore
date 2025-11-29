@@ -14,6 +14,7 @@ typings/**/**
 **/dist/*
 feat.md
 CLAUDE*
+GEMINI*
 .serena/*
 .factory/*
 openspec/*

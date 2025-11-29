@@ -706,6 +706,41 @@ async function fetchProfile(
   };
 }
 
+async function ensureProviderGroup(db: D1Database, userId: string, provider: OAuthProvider) {
+  if (provider !== 'linuxdo') return;
+  try {
+    const row = await db
+      .prepare('SELECT id FROM groups WHERE slug = ? LIMIT 1')
+      .bind('linuxdo')
+      .first<any>();
+    const groupId = row?.id ? String(row.id) : null;
+    if (!groupId) return;
+    await db
+      .prepare('INSERT OR IGNORE INTO user_groups (user_id, group_id) VALUES (?, ?)')
+      .bind(userId, groupId)
+      .run();
+  } catch (e) {
+    console.warn('[oauth] failed to ensure provider group membership', e);
+  }
+}
+
+async function ensureDefaultUserRole(db: D1Database, userId: string) {
+  try {
+    const row = await db
+      .prepare('SELECT id FROM roles WHERE slug = ? LIMIT 1')
+      .bind('user')
+      .first<any>();
+    const roleId = row?.id ? String(row.id) : null;
+    if (!roleId) return;
+    await db
+      .prepare('INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)')
+      .bind(userId, roleId)
+      .run();
+  } catch (e) {
+    console.warn('[oauth] failed to ensure default user role', e);
+  }
+}
+
 async function findOrCreateFromProvider(
   c: any,
   profile: {
@@ -723,12 +758,16 @@ async function findOrCreateFromProvider(
   const existing = await linkRepo.findByProviderUser(profile.provider, profile.providerId);
   if (existing) {
     const user = await userRepo.getById(existing.userId);
-    if (user) return user;
+    if (user) {
+      await ensureProviderGroup(c.env.DB, user.id, profile.provider);
+      return user;
+    }
   }
 
   // Try by email
   const email = profile.emails?.find((e) => !!e.value)?.value;
   let user = email ? await userRepo.getByEmail(email!) : null;
+  let isNewUser = false;
 
   if (!user) {
     // Create user with random password
@@ -751,6 +790,7 @@ async function findOrCreateFromProvider(
       nickName: profile.displayName || profile.username || '',
       avatar: profile.avatar,
     });
+    isNewUser = true;
   }
 
   await linkRepo.createLink({
@@ -758,6 +798,11 @@ async function findOrCreateFromProvider(
     provider: profile.provider,
     providerUserId: profile.providerId,
   });
+
+  if (isNewUser) {
+    await ensureDefaultUserRole(c.env.DB, user.id);
+  }
+  await ensureProviderGroup(c.env.DB, user.id, profile.provider);
 
   return user;
 }

@@ -69,6 +69,7 @@ function DesktopInner() {
           key: id,
           label: cfg.title || id,
           iconSrc: cfg.icon,
+          iconClass: cfg.iconClass,
           running,
           onClick: () => {
             if (id === 'launchpad') {
