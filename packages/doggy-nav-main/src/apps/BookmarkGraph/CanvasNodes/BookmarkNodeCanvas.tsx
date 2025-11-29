@@ -70,7 +70,7 @@ const BookmarkNodeCanvas: React.FC<BookmarkNodeCanvasProps> = React.memo(({
         height={BOOKMARK_SIZE.height}
         cornerRadius={8}
         fill="#FFFFFF"
-        stroke={isSelected ? '#3B82F6' : '#E5E7EB'}
+        stroke={isSelected ? '#3B82F6' : '#94A3B8'}
         strokeWidth={2}
       />
       <Text
@@ -90,7 +90,7 @@ const BookmarkNodeCanvas: React.FC<BookmarkNodeCanvasProps> = React.memo(({
           y={32}
           text={node.data.url}
           fontSize={11}
-          fill="#6B7280"
+          fill="#4B5563"
           width={BOOKMARK_SIZE.width - 70}
           wrap="none"
           ellipsis

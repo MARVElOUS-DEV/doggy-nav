@@ -554,7 +554,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
           <Line
             key={line.id}
             points={line.points}
-            stroke={line.isDimmed ? '#E2E8F0' : '#94A3B8'}
+            stroke={line.isDimmed ? '#CBD5E1' : '#475569'}
             strokeWidth={3}
             lineCap="round"
             lineJoin="round"

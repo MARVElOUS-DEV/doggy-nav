@@ -34,6 +34,7 @@ export type DesktopAppConfig = {
   rect?: { x: number; y: number; width: number; height: number };
   z?: number;
   icon: string;
+  iconClass?: string;
   shouldOpenWindow: boolean;
   openByDefault?: boolean;
   defaultRect?: { x: number; y: number; width: number; height: number };
@@ -50,7 +51,7 @@ export type DesktopAppConfig = {
 };
 
 export const appsOrder: AppId[] = [
-  'bookmark-graph',
+  'bookmark-editor',
   'settings',
   'news',
   'translation',
@@ -74,6 +75,7 @@ export const appsConfig: Record<AppId, DesktopAppConfig> = {
     open: false,
     title: 'Bookmark Editor',
     icon: '/app-icons/tools.png',
+    iconClass: 'p-[3px]',
     shouldOpenWindow: true,
     defaultRect: { x: 100, y: 80, width: 1024, height: 768 },
     render: () => <BookmarkGraphApp />,

@@ -120,7 +120,7 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
           width={width}
           height={height}
           cornerRadius={8}
-          stroke={isSelected ? '#2563EB' : '#94A3B8'}
+          stroke={isSelected ? '#2563EB' : '#64748B'}
           strokeWidth={3}
           dash={[8, 4]}
           fill="rgba(249,250,251,0.8)"
@@ -141,7 +141,7 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
           width={junctionX - 16}
           ellipsis
         />
-        <Text x={8} y={40} text="Drag bookmarks here" fontSize={11} fill="#9CA3AF" />
+        <Text x={8} y={40} text="Drag bookmarks here" fontSize={11} fill="#6B7280" />
 
         {onJunctionClick && (
           <Group 
@@ -155,7 +155,7 @@ const FolderNodeCanvas: React.FC<FolderNodeCanvasProps> = React.memo(
               height={20}
               cornerRadius={10}
               fill={isReparentSource ? '#2563EB' : '#E5E7EB'}
-              stroke={isReparentSource ? '#1D4ED8' : '#94A3B8'}
+              stroke={isReparentSource ? '#1D4ED8' : '#64748B'}
               strokeWidth={1.5}
               onClick={(e: { cancelBubble: boolean }) => {
                 e.cancelBubble = true;
