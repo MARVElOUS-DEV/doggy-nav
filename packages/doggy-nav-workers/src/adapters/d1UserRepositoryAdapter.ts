@@ -62,12 +62,18 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
     }
     if (fields.length) {
       fields.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')");
-      await this.db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).bind(...params, userId).run();
+      await this.db
+        .prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`)
+        .bind(...params, userId)
+        .run();
     }
     return this.getProfile(userId);
   }
 
-  async adminList(filter: AdminUserListFilter, page: PageQuery): Promise<{ list: AdminUserListItem[]; total: number }> {
+  async adminList(
+    filter: AdminUserListFilter,
+    page: PageQuery
+  ): Promise<{ list: AdminUserListItem[]; total: number }> {
     const pageSize = Math.min(Math.max(Number(page.pageSize ?? 10) || 10, 1), 100);
     const pageNumber = Math.max(Number(page.pageNumber ?? 1) || 1, 1);
     const offset = (pageNumber - 1) * pageSize;
@@ -108,20 +114,23 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
     const data: AdminUserListItem[] = [];
     for (const r of listRows) {
       const id = String(r.id);
-      const roles = await this.getUserRoleSlugs(id);
-      const role: 'admin' | 'default' = roles.includes('admin') || roles.includes('sysadmin') ? 'admin' : 'default';
+      const roleSlugs = await this.getUserRoleSlugs(id);
       const groupRows = await this.db
-        .prepare(`SELECT g.display_name, g.slug FROM groups g JOIN user_groups ug ON ug.group_id = g.id WHERE ug.user_id = ?`)
+        .prepare(
+          `SELECT g.display_name, g.slug FROM groups g JOIN user_groups ug ON ug.group_id = g.id WHERE ug.user_id = ?`
+        )
         .bind(id)
         .all<any>();
-      const groups = (groupRows.results || []).map((g: any) => g.display_name || g.slug).filter(Boolean);
+      const groups = (groupRows.results || [])
+        .map((g: any) => g.display_name || g.slug)
+        .filter(Boolean);
       data.push({
         id,
         account: String(r.username),
         nickName: r.nick_name || r.username,
         avatar: r.avatar || '',
         email: r.email,
-        role,
+        roles: roleSlugs,
         groups,
         status: r.is_active ? 1 : 0,
         createdAt: r.created_at || undefined,
@@ -151,7 +160,8 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
     const groupsIds = (groupsIdsRs.results || []).map((x: any) => String(x.group_id));
 
     const roleSlugs = await this.getUserRoleSlugs(id);
-    const role: 'admin' | 'default' = roleSlugs.includes('admin') || roleSlugs.includes('sysadmin') ? 'admin' : 'default';
+    const role: 'admin' | 'default' =
+      roleSlugs.includes('admin') || roleSlugs.includes('sysadmin') ? 'admin' : 'default';
     return {
       id: String(r.id),
       account: String(r.username),
@@ -171,9 +181,17 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
     await this.db
       .prepare(
         `INSERT INTO users (id, username, email, password_hash, nick_name, phone, is_active)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`
+        VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
-      .bind(id, input.account, input.email, passwordHash, input.nickName || '', input.phone || '', input.status ? 1 : 0)
+      .bind(
+        id,
+        input.account,
+        input.email,
+        passwordHash,
+        input.nickName || '',
+        input.phone || '',
+        input.status ? 1 : 0
+      )
       .run();
 
     if (Array.isArray(input.roles)) {
@@ -194,28 +212,51 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
   async adminUpdate(id: string, input: AdminUpdateUserInput): Promise<boolean> {
     const fields: string[] = [];
     const params: any[] = [];
-    if (input.account !== undefined) { fields.push('username = ?'); params.push(input.account); }
-    if (input.email !== undefined) { fields.push('email = ?'); params.push(input.email); }
+    if (input.account !== undefined) {
+      fields.push('username = ?');
+      params.push(input.account);
+    }
+    if (input.email !== undefined) {
+      fields.push('email = ?');
+      params.push(input.email);
+    }
     if (input.password !== undefined) {
       const hash = await PasswordUtils.hashPassword(input.password);
-      fields.push('password_hash = ?'); params.push(hash);
+      fields.push('password_hash = ?');
+      params.push(hash);
     }
-    if (input.status !== undefined) { fields.push('is_active = ?'); params.push(input.status ? 1 : 0); }
-    if (input.nickName !== undefined) { fields.push('nick_name = ?'); params.push(input.nickName ?? ''); }
-    if (input.phone !== undefined) { fields.push('phone = ?'); params.push(input.phone ?? ''); }
+    if (input.status !== undefined) {
+      fields.push('is_active = ?');
+      params.push(input.status ? 1 : 0);
+    }
+    if (input.nickName !== undefined) {
+      fields.push('nick_name = ?');
+      params.push(input.nickName ?? '');
+    }
+    if (input.phone !== undefined) {
+      fields.push('phone = ?');
+      params.push(input.phone ?? '');
+    }
     if (fields.length) {
       fields.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')");
-      await this.db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).bind(...params, id).run();
+      await this.db
+        .prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`)
+        .bind(...params, id)
+        .run();
     }
     if (input.roles) {
       await this.db.prepare('DELETE FROM user_roles WHERE user_id = ?').bind(id).run();
       const stmt = this.db.prepare('INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)');
-      for (const rid of input.roles) { await stmt.bind(id, rid).run(); }
+      for (const rid of input.roles) {
+        await stmt.bind(id, rid).run();
+      }
     }
     if (input.groups) {
       await this.db.prepare('DELETE FROM user_groups WHERE user_id = ?').bind(id).run();
       const stmt = this.db.prepare('INSERT INTO user_groups (user_id, group_id) VALUES (?, ?)');
-      for (const gid of input.groups) { await stmt.bind(id, gid).run(); }
+      for (const gid of input.groups) {
+        await stmt.bind(id, gid).run();
+      }
     }
     return true;
   }
@@ -226,14 +267,16 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
     const del = this.db.prepare('DELETE FROM users WHERE id = ?');
     for (const id of ids) {
       const res = await del.bind(id).run();
-      ok = ok && (res.meta.rows_written > 0);
+      ok = ok && res.meta.rows_written > 0;
     }
     return ok;
   }
 
   private async getUserRoleSlugs(userId: string): Promise<string[]> {
     const rs = await this.db
-      .prepare(`SELECT r.slug FROM roles r JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?`)
+      .prepare(
+        `SELECT r.slug FROM roles r JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?`
+      )
       .bind(userId)
       .all<any>();
     const rows: any[] = rs.results || [];
@@ -242,7 +285,9 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
 
   private async getUserGroupSlugs(userId: string): Promise<string[]> {
     const rs = await this.db
-      .prepare(`SELECT g.slug FROM groups g JOIN user_groups ug ON ug.group_id = g.id WHERE ug.user_id = ?`)
+      .prepare(
+        `SELECT g.slug FROM groups g JOIN user_groups ug ON ug.group_id = g.id WHERE ug.user_id = ?`
+      )
       .bind(userId)
       .all<any>();
     const rows: any[] = rs.results || [];
@@ -258,13 +303,21 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
       .all<any>();
     const fromRoles: string[] = [];
     for (const r of rolePermsRs.results || []) {
-      try { fromRoles.push(...(JSON.parse(r.permissions || '[]') as string[])); } catch {}
+      try {
+        fromRoles.push(...(JSON.parse(r.permissions || '[]') as string[]));
+      } catch {}
     }
     const userRow = await this.db
       .prepare(`SELECT extra_permissions FROM users WHERE id = ? LIMIT 1`)
       .bind(userId)
       .first<any>();
-    const extras: string[] = (() => { try { return JSON.parse(userRow?.extra_permissions || '[]'); } catch { return []; } })();
+    const extras: string[] = (() => {
+      try {
+        return JSON.parse(userRow?.extra_permissions || '[]');
+      } catch {
+        return [];
+      }
+    })();
     return Array.from(new Set([...fromRoles, ...extras]));
   }
 }

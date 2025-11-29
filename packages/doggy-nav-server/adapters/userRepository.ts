@@ -81,21 +81,39 @@ export class MongooseUserRepository implements UserRepository {
     if (typeof filter.status === 'boolean') where.isActive = filter.status;
     const skip = page.pageSize * page.pageNumber - page.pageSize;
     const [users, total] = await Promise.all([
-      this.User.find(where).skip(skip).limit(page.pageSize).sort({ _id: -1 }).select('-__v').populate('groups', 'slug displayName').lean(),
+      this.User.find(where)
+        .skip(skip)
+        .limit(page.pageSize)
+        .sort({ _id: -1 })
+        .select('-__v')
+        .populate('groups', 'slug displayName')
+        .populate('roles', 'slug')
+        .lean(),
       this.User.countDocuments(where),
     ]);
-    const list: AdminUserListItem[] = (users as any[]).map((u: any) => ({
-      id: u._id?.toString?.() || u.id,
-      account: u.username,
-      nickName: u.nickName || u.username,
-      avatar: u.avatar || '',
-      email: u.email,
-      role: Array.isArray(u.roles) && u.roles.length > 0 ? 'admin' : 'default',
-      groups: Array.isArray(u.groups) ? (u.groups as any[]).map((g: any) => g?.displayName || g?.slug || '').filter(Boolean) : [],
-      status: u.isActive ? 1 : 0,
-      createdAt: toISO(u.createdAt),
-      updatedAt: toISO(u.updatedAt),
-    }));
+    const list: AdminUserListItem[] = (users as any[]).map((u: any) => {
+      const roleSlugs = Array.isArray(u.roles)
+        ? (u.roles as any[])
+            .map((r: any) => (typeof r === 'string' ? r : r?.slug || ''))
+            .filter(Boolean)
+        : [];
+      return {
+        id: u._id?.toString?.() || u.id,
+        account: u.username,
+        nickName: u.nickName || u.username,
+        avatar: u.avatar || '',
+        email: u.email,
+        roles: roleSlugs,
+        groups: Array.isArray(u.groups)
+          ? (u.groups as any[])
+              .map((g: any) => g?.displayName || g?.slug || '')
+              .filter(Boolean)
+          : [],
+        status: u.isActive ? 1 : 0,
+        createdAt: toISO(u.createdAt),
+        updatedAt: toISO(u.updatedAt),
+      };
+    });
     return { list, total };
   }
 
