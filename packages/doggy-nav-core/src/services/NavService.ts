@@ -37,6 +37,8 @@ function normalizePage(page: PageQuery) {
   return { pageSize, pageNumber };
 }
 
+import { dateToChromeTime } from '../utils/timeUtil';
+
 export class NavService {
   constructor(
     private readonly repo: NavRepository,
@@ -59,6 +61,20 @@ export class NavService {
     let effFilter: NavListFilter = { ...filter };
     if (!isAuthenticated) {
       effFilter.status = 0;
+    }
+
+    // If year is provided, calculate the chrome time range
+    if (filter?.year) {
+      const startOfYear = new Date(filter.year, 0, 1);
+      const endOfYear = new Date(filter.year + 1, 0, 1);
+      const startChrome = dateToChromeTime(startOfYear);
+      const endChrome = dateToChromeTime(endOfYear);
+
+      effFilter.createTimeStart = startChrome;
+      effFilter.createTimeEnd = endChrome;
+
+      // Remove year from filter as it is not a direct field
+      delete effFilter.year;
     }
 
     // Allowed categories via audience

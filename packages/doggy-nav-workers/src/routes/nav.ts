@@ -15,6 +15,7 @@ navRoutes.get('/list', publicRoute(), async (c) => {
     const status = c.req.query('status');
     const name = c.req.query('name') || undefined;
     const categoryId = c.req.query('categoryId') || undefined;
+    const year = c.req.query('year') ? Number(c.req.query('year')) : undefined;
 
     const svc = getDI(c).resolve(TOKENS.NavService);
     const user = (c as any).get?.('user');
@@ -45,6 +46,7 @@ navRoutes.get('/list', publicRoute(), async (c) => {
         ...(status !== undefined ? { status: Number(status) } : {}),
         ...(name ? { name } : {}),
         ...(categoryId ? { categoryId } : {}),
+        ...(year ? { year } : {}),
       },
       auth
     );

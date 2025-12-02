@@ -54,6 +54,17 @@ export class MongooseNavRepository implements NavRepository {
     if (filter?.status !== undefined) cond.status = Number(filter.status);
     if (filter?.categoryId) cond.categoryId = { $eq: filter.categoryId };
     if (filter?.name) cond.name = { $regex: new RegExp(filter.name, 'i') };
+    
+    // Date range filtering using Chrome time
+    if (filter?.createTimeStart !== undefined || filter?.createTimeEnd !== undefined) {
+      cond.createTime = {};
+      if (filter.createTimeStart !== undefined) {
+        cond.createTime.$gte = filter.createTimeStart;
+      }
+      if (filter.createTimeEnd !== undefined) {
+        cond.createTime.$lt = filter.createTimeEnd;
+      }
+    }
 
     // If userIdForFavorites provided, enrich with isFavorite flag via aggregation
     if (userIdForFavorites) {

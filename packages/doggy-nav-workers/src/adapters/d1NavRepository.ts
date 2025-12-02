@@ -26,6 +26,14 @@ export default class D1NavRepository implements NavRepository {
       where.push('b.name LIKE ?');
       params.push(`%${filter.name}%`);
     }
+    if (filter?.createTimeStart !== undefined) {
+      where.push('b.create_time >= ?');
+      params.push(filter.createTimeStart);
+    }
+    if (filter?.createTimeEnd !== undefined) {
+      where.push('b.create_time < ?');
+      params.push(filter.createTimeEnd);
+    }
 
     const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
 

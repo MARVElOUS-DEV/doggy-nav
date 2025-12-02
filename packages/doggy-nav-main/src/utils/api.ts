@@ -51,6 +51,7 @@ const api = {
     status?: number;
     categoryId?: string;
     name?: string;
+    year?: number;
   }): Promise<{ data: NavItem[]; total: number; pageNumber: number }> =>
     axios.get(API_NAV_LIST, { params }),
 

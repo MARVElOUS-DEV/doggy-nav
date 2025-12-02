@@ -10,6 +10,8 @@ interface TimelineContainerProps {
   onYearClick?: (year: number) => void;
   selectedYear?: number;
   selectedItem?: TimelineItemType;
+  onSearch?: (term: string) => void;
+  isSearching?: boolean;
 }
 
 export default function TimelineContainer({
@@ -18,15 +20,20 @@ export default function TimelineContainer({
   onYearClick,
   selectedYear,
   selectedItem,
+  onSearch,
+  isSearching = false,
 }: TimelineContainerProps) {
   const [expandedYear, setExpandedYear] = useState<number | null>(selectedYear || null);
+  const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
-  const observer = useRef<IntersectionObserver | null>(null);
 
-  const handleYearToggle = useCallback((year: number) => {
-    setExpandedYear(prev => prev === year ? null : year);
-    onYearClick?.(year);
-  }, [onYearClick]);
+  const handleYearToggle = useCallback(
+    (year: number) => {
+      setExpandedYear((prev) => (prev === year ? null : year));
+      onYearClick?.(year);
+    },
+    [onYearClick]
+  );
 
   const handleItemScroll = useCallback((itemId: string) => {
     const element = document.getElementById(`timeline-item-${itemId}`);
@@ -34,7 +41,7 @@ export default function TimelineContainer({
       element.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
-        inline: 'nearest'
+        inline: 'nearest',
       });
     }
   }, []);
@@ -44,6 +51,17 @@ export default function TimelineContainer({
       setExpandedYear(selectedYear);
     }
   }, [selectedYear]);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (onSearch) {
+        onSearch(searchTerm);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, onSearch]);
 
   return (
     <div
@@ -57,6 +75,8 @@ export default function TimelineContainer({
         expandedYear={expandedYear}
         onYearToggle={handleYearToggle}
         onItemScroll={handleItemScroll}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
       />
 
       <div className="relative">
@@ -73,7 +93,7 @@ export default function TimelineContainer({
                 animate={{
                   opacity: 1,
                   height: 'auto',
-                  transition: { duration: 0.3, ease: 'easeInOut' }
+                  transition: { duration: 0.3, ease: 'easeInOut' },
                 }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
