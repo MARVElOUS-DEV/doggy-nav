@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, ArrowUp, ArrowDown, Calendar } from 'lucide-react';
+import { Search, Calendar } from 'lucide-react';
 import { TimelineYear } from '@/types/timeline';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +8,8 @@ interface TimelineControlsProps {
   expandedYear: number | null;
   onYearToggle: (year: number) => void;
   onItemScroll: (itemId: string) => void;
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
 }
 
 export default function TimelineControls({
@@ -16,11 +17,10 @@ export default function TimelineControls({
   expandedYear,
   onYearToggle,
   onItemScroll,
+  searchTerm,
+  onSearchChange,
 }: TimelineControlsProps) {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [sortBy, setSortBy] = React.useState<'date' | 'title'>('date');
-  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
 
   const handleJumpToYear = (year: number) => {
     onYearToggle(year);
@@ -33,16 +33,6 @@ export default function TimelineControls({
     }
   };
 
-  const filteredYears = years.filter(year => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return year.items.some(item =>
-      item.title.toLowerCase().includes(searchLower) ||
-      item.description?.toLowerCase().includes(searchLower) ||
-      item.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-    );
-  });
-
   return (
     <div className="mb-8 space-y-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
@@ -53,30 +43,10 @@ export default function TimelineControls({
               type="text"
               placeholder={t('search_placeholder')}
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => onSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
               aria-label={t('search_tooltip')}
             />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'date' | 'title')}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500"
-              aria-label={t('sort_by')}
-            >
-              <option value="date">{t('sort_by_date')}</option>
-              <option value="title">{t('sort_by_title')}</option>
-            </select>
-
-            <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              aria-label={t(sortOrder === 'asc' ? 'sort_ascending' : 'sort_descending')}
-            >
-              {sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
-            </button>
           </div>
         </div>
       </div>
@@ -86,7 +56,7 @@ export default function TimelineControls({
           <Calendar className="w-4 h-4" />
           <span>{t('quick_jump')}:</span>
         </div>
-        {filteredYears.map((year) => (
+        {years.map((year) => (
           <motion.button
             key={year.year}
             onClick={() => handleJumpToYear(year.year)}
@@ -104,7 +74,7 @@ export default function TimelineControls({
         ))}
       </div>
 
-      {filteredYears.length === 0 && (
+      {years.length === 0 && (
         <div className="text-center py-8">
           <p className="text-gray-500 dark:text-gray-400">{t('no_websites_found')}</p>
         </div>

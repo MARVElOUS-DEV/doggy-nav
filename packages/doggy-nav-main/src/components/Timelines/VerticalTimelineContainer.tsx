@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Calendar, ExternalLink } from 'lucide-react';
 import { TimelineItem as TimelineItemType } from '@/types/timeline';
+import Link from 'next/link';
 import DoggyImage from '../DoggyImage';
 import { useTranslation } from 'react-i18next';
 import api from '@/utils/api';
@@ -23,36 +24,48 @@ export default function VerticalTimelineContainer({
   const { t } = useTranslation('translation');
 
   // Filter items based on search term
-  const filteredItems = items.filter(item => {
+  const filteredItems = items.filter((item) => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
     return (
       item.title.toLowerCase().includes(searchLower) ||
       item.description?.toLowerCase().includes(searchLower) ||
       item.category?.toLowerCase().includes(searchLower) ||
-      item.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      item.tags?.some((tag) => tag.toLowerCase().includes(searchLower))
     );
   });
 
   // Sort items by date (newest first)
-  const sortedItems = [...filteredItems].sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  const sortedItems = [...filteredItems].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  const handleItemClick = useCallback(async (item: TimelineItemType) => {
-    onItemSelect?.(item);
-  }, [onItemSelect]);
+  const handleItemClick = useCallback(
+    async (item: TimelineItemType) => {
+      onItemSelect?.(item);
+    },
+    [onItemSelect]
+  );
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-3 sm:px-0" role="region" aria-label={t('vertical_timeline')}>
+    <div
+      className="w-full max-w-2xl mx-auto px-3 sm:px-0"
+      role="region"
+      aria-label={t('vertical_timeline')}
+    >
       {/* Header */}
       <div className="mb-6 text-center">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           {year} {t('year_collection_timeline')}
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-          {t('total_websites', { count: items.length })}
-        </p>
+        <div className="mt-2 text-center">
+          <Link
+            href="/timeline"
+            className="text-theme-primary hover:underline font-medium inline-flex items-center"
+          >
+            {t('view_full_timeline')} <span className="ml-1">→</span>
+          </Link>
+        </div>
       </div>
 
       {/* Search */}
@@ -91,8 +104,12 @@ export default function VerticalTimelineContainer({
           {sortedItems.length === 0 ? (
             <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-lg">{t('no_matching_websites')}</p>
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">{t('try_other_keywords')}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-lg">
+                {t('no_matching_websites')}
+              </p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+                {t('try_other_keywords')}
+              </p>
             </div>
           ) : (
             sortedItems.map((item, index) => {
@@ -130,12 +147,7 @@ export default function VerticalTimelineContainer({
                       {/* Website Icon */}
                       {item.logo && (
                         <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
-                          <DoggyImage 
-                            logo={item.logo}
-                            name={item.title}
-                            width={40}
-                            height={40}
-                          />
+                          <DoggyImage logo={item.logo} name={item.title} width={40} height={40} />
                           <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs">
                             {item.title.charAt(0).toUpperCase()}
                           </div>

@@ -24,7 +24,7 @@ export default class NavController extends Controller {
 
   async list() {
     const { ctx } = this;
-    const { status = 0, categoryId, name } = ctx.query;
+    const { status = 0, categoryId, name, year } = ctx.query;
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
     const query = this.getSanitizedQuery();
     const page = { pageSize: query.pageSize, pageNumber: query.pageNumber } as any;
@@ -48,6 +48,7 @@ export default class NavController extends Controller {
         status: status !== undefined && status !== '' ? Number(status) : undefined,
         categoryId: categoryId ? String(categoryId) : undefined,
         name: name ? String(name) : undefined,
+        year: year ? Number(year) : undefined,
       },
       auth
     );
@@ -143,7 +144,11 @@ export default class NavController extends Controller {
   }
 
   // Helper method to send submission notifications
-  private async sendSubmissionNotifications(navItemName: string, submitterEmail: string, submitterName?: string) {
+  private async sendSubmissionNotifications(
+    navItemName: string,
+    submitterEmail: string,
+    submitterName?: string
+  ) {
     try {
       const emailService = this.ctx.service.email;
 
@@ -223,7 +228,9 @@ export default class NavController extends Controller {
 
       // Don't send notifications if submitter email is not available
       if (!submitterEmail) {
-        this.ctx.logger.warn(`No submitter email for nav item ${navItem._id}, skipping notifications`);
+        this.ctx.logger.warn(
+          `No submitter email for nav item ${navItem._id}, skipping notifications`
+        );
         return;
       }
 

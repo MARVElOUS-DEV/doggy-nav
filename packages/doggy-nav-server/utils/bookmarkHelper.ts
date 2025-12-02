@@ -2,15 +2,13 @@ import { platform } from 'os';
 import { URL } from 'url';
 import fs from 'fs';
 import path from 'path';
-import request from 'request';
-import * as cheerio from 'cheerio';
 import mongoose from 'mongoose';
 import navModel from '../app/model/nav';
 import categoryModel from '../app/model/category';
 import { dateToChromeTime } from 'doggy-nav-core';
 import { globalRootCategoryId, privateCategoryName } from '../constants';
 import mongoCfg from '../config/mongodb';
-import { getFaviconSrv, isAbsoluteUrl } from './reptileHelper';
+import { getFaviconSrv, parseHTML } from './reptileHelper';
 
 const map = new Map();
 let categorySchema;
@@ -26,42 +24,38 @@ async function getBookmarkRoots(path) {
 }
 
 async function getLogo(url) {
-  const { origin, hostname } = new URL(url);
-  if (map.has(origin)) {
-    return map.get(origin);
+  try {
+    const { origin, hostname } = new URL(url);
+    if (map.has(origin)) {
+      return map.get(origin);
+    }
+    
+    const result = await parseHTML(url);
+    let final = '';
+
+    if (result && result.logo) {
+      final = result.logo;
+      console.log('logo,', origin, final);
+    } else {
+      console.error(`获取${url} 站点logo icon失败, result is null`);
+      final = getFaviconSrv(hostname);
+    }
+
+    map.set(origin, final);
+    return final;
+  } catch (e) {
+    console.error(`Error processing logo for ${url}: ${e}`);
+    try {
+      const { origin, hostname } = new URL(url);
+      const fallback = getFaviconSrv(hostname);
+      map.set(origin, fallback);
+      return fallback;
+    } catch {
+      return '/default-web.png';
+    }
   }
-  return new Promise(resolve => {
-    request(origin, { timeout: 6000, followAllRedirects: true }, (error, _responseData, body) => {
-      if (!error && body) {
-        const $ = cheerio.load(body);
-        let logo = '';
-        let final = '';
-        if ($('link[rel="icon"]').length) {
-          logo = $('link[rel="icon"]').eq(0).attr('href');
-        } else if ($('link[rel*="shortcut"]').length) {
-          logo = $('link[rel*="shortcut"]').eq(0).attr('href');
-        } else if ($('link[rel*="-icon"]').length) {
-          logo = $('link[rel*="-icon"]').eq(0).attr('href');
-        }
-        console.log('logo,', origin, logo);
-        if (!logo) {
-          final = getFaviconSrv(hostname);
-        } else {
-          final = logo;
-          if (!isAbsoluteUrl(logo)) {
-            final = logo.startsWith('/') ? `${origin}${logo}` : `${origin}/${logo}`;
-          }
-        }
-        map.set(origin, final);
-        resolve(final);
-      } else {
-        console.error(`获取${url} 站点logo icon失败,error= ${error}`);
-        map.set(origin, getFaviconSrv(hostname));
-        resolve(getFaviconSrv(hostname));
-      }
-    });
-  });
 }
+
 
 async function recursive(children, parentId) {
   for (let index = 0; index < children.length; index++) {

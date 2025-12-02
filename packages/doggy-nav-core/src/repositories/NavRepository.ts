@@ -5,6 +5,9 @@ export interface NavListFilter {
   status?: number;
   categoryId?: string;
   name?: string;
+  year?: number;
+  createTimeStart?: number;
+  createTimeEnd?: number;
 }
 
 export interface NavListOptions {
