@@ -5,17 +5,22 @@ import { useApi } from '@/hooks/useApi';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSetAtom } from 'jotai';
+import { selectedCategoryAtom } from '@/store/store';
 
 export default function NavContentsPage() {
   const router = useRouter();
   const { category } = router.query;
   const { t } = useTranslation('translation');
   const { loading, data = [], execute: findNavByCategoryAction } = useApi(api.findNavByCategory);
+  const setSelectedCategory = useSetAtom(selectedCategoryAtom);
 
   useEffect(() => {
+    if (!router.isReady) return;
     if (!category) return;
+    setSelectedCategory(category as string);
     findNavByCategoryAction(category as string);
-  }, [category, findNavByCategoryAction]);
+  }, [router.isReady, category, findNavByCategoryAction, setSelectedCategory]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl text-theme-foreground">

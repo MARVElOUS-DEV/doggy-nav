@@ -5,7 +5,7 @@ import { selectedCategoryAtom, categoriesAtom, tagsAtom, isAuthenticatedAtom } f
 import api from '@/utils/api';
 import { localCategories, OVERVIEW } from '@/utils/localCategories';
 import { useAtom, useSetAtom } from 'jotai';
-import router from 'next/router';
+import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { t } from '@/utils';
@@ -21,7 +21,7 @@ const FallbackIcon = ({ name, fontSize = 16 }: { name: string; fontSize?: number
         height: fontSize,
         fontSize: fontSize * 0.75,
         minWidth: fontSize,
-        minHeight: fontSize
+        minHeight: fontSize,
       }}
     >
       {firstLetter}
@@ -34,48 +34,63 @@ const renderMenuIcon = (category: Category, fontSize = 16) => {
   if (category.icon) {
     return <DynamicIcon iconName={category.icon} fontSize={fontSize} />;
   }
-  return <FallbackIcon name={t(category.name, { defaultValue: category.name })} fontSize={fontSize} />;
+  return (
+    <FallbackIcon name={t(category.name, { defaultValue: category.name })} fontSize={fontSize} />
+  );
 };
-
 
 export default function MenuStack({ collapse }: { collapse: boolean }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
   const [categories, setCategories] = useAtom(categoriesAtom);
   const setTags = useSetAtom(tagsAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  // Check if we're on a nav detail page where category will be set by the page itself
+  const isNavDetailPage = router.pathname === '/nav/[id]';
+
+  // Sync selected category from URL when router is ready
+  useEffect(() => {
+    if (!router.isReady) return;
+    const urlCategory = router.query.category as string | undefined;
+    if (urlCategory) {
+      setSelectedCategory(urlCategory);
+    }
+  }, [router.isReady, router.query.category, setSelectedCategory]);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const categoriesData = await api.getCategoryList();
         if (Array.isArray(categoriesData)) {
           categoriesData.unshift(...localCategories);
-          if (!selectedCategory) {
+          if (router.isReady && !selectedCategory && !router.query.category && !isNavDetailPage) {
             setSelectedCategory(categoriesData[0].id);
           }
           setCategories(categoriesData);
         }
       } catch (error) {
-        console.error("Failed to fetch categories", error);
+        console.error('Failed to fetch categories', error);
       }
     };
 
     const fetchTags = async () => {
       try {
         const { data } = await api.getTagList();
-        const options = data?.map((item) => {
-          item.value = item.name;
-          item.label = item.name;
-          return item;
-        }) || [];
+        const options =
+          data?.map((item) => {
+            item.value = item.name;
+            item.label = item.name;
+            return item;
+          }) || [];
         setTags(options);
       } catch (error) {
-        console.error("Failed to fetch tags", error);
+        console.error('Failed to fetch tags', error);
       }
     };
     fetchCategories();
     fetchTags();
-  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, router.isReady, router.query.category, isNavDetailPage]); // eslint-disable-line react-hooks/exhaustive-deps
   const onHandleSubMenuClick = async (category: Category, id: string) => {
     setSelectedCategory(id);
     router.push(category.href ?? `/navcontents?category=${id}`);
@@ -83,13 +98,13 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
   return (
     <Menu
       collapse={collapse}
-      mode={collapse ? "pop" : "vertical"}
+      mode={collapse ? 'pop' : 'vertical'}
       className="border-0 bg-transparent "
       selectedKeys={selectedCategory ? [selectedCategory] : [OVERVIEW.id]}
       tooltipProps={{ position: 'right' }}
     >
       {categories
-        .filter(category => category.showInMenu)
+        .filter((category) => category.showInMenu)
         .map((category) => {
           const hasChildren = category.children && category.children.length > 0;
 
@@ -97,7 +112,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
             return (
               <Menu.SubMenu
                 key={`${category.id}__group`}
-                className={"doggy-menu transition-all duration-200"}
+                className={'doggy-menu transition-all duration-200'}
                 title={
                   collapse ? (
                     // Collapsed mode: only show icon
@@ -132,12 +147,9 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
                   </Menu.Item>
                 )}
                 {category.children
-                  ?.filter(child => child.showInMenu)
+                  ?.filter((child) => child.showInMenu)
                   .map((child) => (
-                    <Menu.Item
-                      key={child.id}
-                      onClick={() => onHandleSubMenuClick(child, child.id)}
-                    >
+                    <Menu.Item key={child.id} onClick={() => onHandleSubMenuClick(child, child.id)}>
                       <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 rounded-xl">
                         {renderMenuIcon(child, 16)}
                         <span className="text-sm text-theme-muted-foreground group-hover:text-theme-foreground transition-colors font-medium">
