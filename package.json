@@ -10,6 +10,9 @@
     "server:check": "pnpm -F doggy-nav-server run static-check",
     "commit": "cz",
     "commit:help": "echo 'Use: pnpm commit or pnpm run commit to start interactive conventional commit'",
+    "changelog": "changelogen --output CHANGELOG.md",
+    "changelog:preview": "changelogen --dry",
+    "release": "changelogen --release",
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
     "server:dev": "pnpm -F doggy-nav-server dev",
@@ -42,6 +45,7 @@
     "is-ci": "^4.1.0"
   },
   "devDependencies": {
+    "changelogen": "^0.6.2",
     "commitizen": "^4.3.1",
     "cross-env": "^10.1.0",
     "cz-conventional-changelog": "3.3.0",
