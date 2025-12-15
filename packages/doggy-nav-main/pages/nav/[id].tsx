@@ -7,8 +7,8 @@ import { NavItem } from '@/types';
 import { useRouter } from 'next/router';
 import { IconHeartFill } from '@arco-design/web-react/icon';
 import { Eye, ThumbsUp, ArrowRight, RefreshCw } from 'lucide-react';
-import { useAtom } from 'jotai';
-import { favoritesActionsAtom, isAuthenticatedAtom } from '@/store/store';
+import { useAtom, useSetAtom } from 'jotai';
+import { favoritesActionsAtom, isAuthenticatedAtom, selectedCategoryAtom } from '@/store/store';
 import { useTranslation } from 'react-i18next';
 import DoggyImage from '@/components/DoggyImage';
 import MarkdownContent from '@/components/MarkdownContent';
@@ -47,6 +47,7 @@ export default function NavDetail() {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [, favoritesActions] = useAtom(favoritesActionsAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  const setSelectedCategory = useSetAtom(selectedCategoryAtom);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,6 +60,9 @@ export default function NavDetail() {
         setDetail(detailRes || null);
         setIsFavorite(!!detailRes?.isFavorite);
         setRandomNavList(randomRes || []);
+        if (detailRes?.categoryId) {
+          setSelectedCategory(detailRes.categoryId);
+        }
       } catch (error) {
         console.error('Failed to fetch data', error);
       } finally {
@@ -66,7 +70,7 @@ export default function NavDetail() {
       }
     };
     if (id && typeof id === 'string') fetchData();
-  }, [id]);
+  }, [id, setSelectedCategory]);
 
   const handleNavStarFn = async () => {
     if (detail) {

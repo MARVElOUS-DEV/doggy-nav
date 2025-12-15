@@ -5,7 +5,7 @@ import { selectedCategoryAtom, categoriesAtom, tagsAtom, isAuthenticatedAtom } f
 import api from '@/utils/api';
 import { localCategories, OVERVIEW } from '@/utils/localCategories';
 import { useAtom, useSetAtom } from 'jotai';
-import router from 'next/router';
+import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { t } from '@/utils';
@@ -40,17 +40,28 @@ const renderMenuIcon = (category: Category, fontSize = 16) => {
 
 export default function MenuStack({ collapse }: { collapse: boolean }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
   const [categories, setCategories] = useAtom(categoriesAtom);
   const setTags = useSetAtom(tagsAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  // Sync selected category from URL when router is ready
+  useEffect(() => {
+    if (!router.isReady) return;
+    const urlCategory = router.query.category as string | undefined;
+    if (urlCategory) {
+      setSelectedCategory(urlCategory);
+    }
+  }, [router.isReady, router.query.category, setSelectedCategory]);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const categoriesData = await api.getCategoryList();
         if (Array.isArray(categoriesData)) {
           categoriesData.unshift(...localCategories);
-          if (!selectedCategory) {
+          // Only set default if no category is selected and router is ready with no category param
+          if (router.isReady && !selectedCategory && !router.query.category) {
             setSelectedCategory(categoriesData[0].id);
           }
           setCategories(categoriesData);
@@ -75,7 +86,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
     };
     fetchCategories();
     fetchTags();
-  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, router.isReady, router.query.category]); // eslint-disable-line react-hooks/exhaustive-deps
   const onHandleSubMenuClick = async (category: Category, id: string) => {
     setSelectedCategory(id);
     router.push(category.href ?? `/navcontents?category=${id}`);
