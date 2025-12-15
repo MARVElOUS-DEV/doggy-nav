@@ -5,85 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## release-0.0.1...dev
 
-### Fixed
-- Fix left side menu active state not preserved on page refresh for nav detail pages
-- Fix login button loading spinner pushing text down
+[compare changes](https://github.com/MARVElOUS-DEV/doggy-nav/compare/release-0.0.1...dev)
 
-## [0.5.0] - 2025-12-04
+### 🚀 Enhancements
 
-### Fixed
-- Fix Next.js security issue (#65)
+- Add workers project and split common logic to a new core package etc. ([#30](https://github.com/MARVElOUS-DEV/doggy-nav/pull/30))
+- Add seeds for workers & add ci workflow for workers & web styles optimized ([#32](https://github.com/MARVElOUS-DEV/doggy-nav/pull/32))
+- Add cf pages deploy for admin web ([#43](https://github.com/MARVElOUS-DEV/doggy-nav/pull/43))
+- Add main web deploy to cloudflare pages, update main web env ([#50](https://github.com/MARVElOUS-DEV/doggy-nav/pull/50))
+- Add system version tracked & add ratelimit for server and workers &  now apps can be globally dsipalyed ([#57](https://github.com/MARVElOUS-DEV/doggy-nav/pull/57))
+- Add detail field to nav items for rich content and integrate monaco editor ([#60](https://github.com/MARVElOUS-DEV/doggy-nav/pull/60))
+- Add bookmark editor app to desktop ([#61](https://github.com/MARVElOUS-DEV/doggy-nav/pull/61))
+- Update timeline page with real data & optimze the reptile request ([#64](https://github.com/MARVElOUS-DEV/doggy-nav/pull/64))
+- Add changelog ([c325a1c](https://github.com/MARVElOUS-DEV/doggy-nav/commit/c325a1c))
 
-### Changed
-- Update dependencies (#58)
+### 🩹 Fixes
 
-### Added
-- Update timeline page with real data & optimize the reptile request (#64)
+- Update workers ci seeding ([#33](https://github.com/MARVElOUS-DEV/doggy-nav/pull/33))
+- Fix wokers ci ([#34](https://github.com/MARVElOUS-DEV/doggy-nav/pull/34))
+- Fix wokers ci 2 ([#35](https://github.com/MARVElOUS-DEV/doggy-nav/pull/35))
+- Fix wokers ci 3 ([#36](https://github.com/MARVElOUS-DEV/doggy-nav/pull/36))
+- Fix wokers ci 4 ([#37](https://github.com/MARVElOUS-DEV/doggy-nav/pull/37))
+- Fix workers server error and optimize the workflow ([#42](https://github.com/MARVElOUS-DEV/doggy-nav/pull/42))
+- Workers server update user & update workflow ([#48](https://github.com/MARVElOUS-DEV/doggy-nav/pull/48))
+- Fix common user login ([#54](https://github.com/MARVElOUS-DEV/doggy-nav/pull/54))
+- **admin web:** Fix login user menus not properly provided, admin web styles optimized ([#59](https://github.com/MARVElOUS-DEV/doggy-nav/pull/59))
+- Fix nextjs security issue ([#65](https://github.com/MARVElOUS-DEV/doggy-nav/pull/65))
+- Fix nextjs security issue ([2c3b6a1](https://github.com/MARVElOUS-DEV/doggy-nav/commit/2c3b6a1))
+- Fix menu active status when refresh the page ([6a69cfb](https://github.com/MARVElOUS-DEV/doggy-nav/commit/6a69cfb))
 
-## [0.4.0] - 2025-11-29
+### 📖 Documentation
 
-### Added
-- Add bookmark editor app to desktop (#61)
-- Add detail field to nav items for rich content and integrate Monaco editor (#60)
+- Update readme and deploy workflow ([#44](https://github.com/MARVElOUS-DEV/doggy-nav/pull/44))
 
-### Fixed
-- Fix login user menus not properly provided in admin web, admin web styles optimized (#59)
+### 📦 Build
 
-### Changed
-- Remove unused page, update admin docker file (#62)
+- Update server dockerfile ([#31](https://github.com/MARVElOUS-DEV/doggy-nav/pull/31))
+- Fix main web docker build and runtime deps ([#51](https://github.com/MARVElOUS-DEV/doggy-nav/pull/51))
+- Fix main web docker build and runtime deps ([#52](https://github.com/MARVElOUS-DEV/doggy-nav/pull/52))
+- Fix main web docker build and runtime deps ([#53](https://github.com/MARVElOUS-DEV/doggy-nav/pull/53))
 
-## [0.3.0] - 2025-11-16
+### 🏡 Chore
 
-### Added
-- Add system version tracking & rate limiting for server and workers (#57)
-- Apps can now be globally displayed (#57)
-- Add main web deploy to Cloudflare Pages (#50)
-- Add Cloudflare Pages deploy for admin web (#43)
+- Update dependencies ([#49](https://github.com/MARVElOUS-DEV/doggy-nav/pull/49))
+- Detail the deploy readme part ([#55](https://github.com/MARVElOUS-DEV/doggy-nav/pull/55))
+- Remove unused page,update admin docker file ([#62](https://github.com/MARVElOUS-DEV/doggy-nav/pull/62))
+- Update dependencies ([#58](https://github.com/MARVElOUS-DEV/doggy-nav/pull/58))
 
-### Fixed
-- Fix common user login (#54)
-- Fix main web docker build and runtime deps (#51, #52, #53)
-- Fix workers server update user & update workflow (#48)
-- Fix workers server error and optimize the workflow (#42)
+### 🤖 CI
 
-### Changed
-- Detail the deploy readme part (#55)
-- Update dependencies (#49)
+- Update ci files ([#38](https://github.com/MARVElOUS-DEV/doggy-nav/pull/38))
+- Update ci files 2 ([#39](https://github.com/MARVElOUS-DEV/doggy-nav/pull/39))
+- Update ci files 3 ([#40](https://github.com/MARVElOUS-DEV/doggy-nav/pull/40))
+- Update ci files 4 ([#41](https://github.com/MARVElOUS-DEV/doggy-nav/pull/41))
+- Update deploy workflow ([#45](https://github.com/MARVElOUS-DEV/doggy-nav/pull/45))
+- Update deploy workflow ([#46](https://github.com/MARVElOUS-DEV/doggy-nav/pull/46))
+- Update deploy workflow 3 ([#47](https://github.com/MARVElOUS-DEV/doggy-nav/pull/47))
 
-## [0.2.0] - 2025-11-07
-
-### Added
-- Add seeds for workers & CI workflow for workers (#32)
-- Add workers project and split common logic to a new core package (#30)
-- LinuxDo users automatically added to the LinuxDo group (#28)
-- Desktop page support for mobile users (#27)
-
-### Fixed
-- Fix image name not compatible to GHCR (#25, #26)
-- Fix recommend page & remove hide field of category and nav model (#23)
-- Fix category visibility enums (#22)
-- Fix OAuth login failures and update admin category form (#21)
-- Update launchpad & dock items styles (#20)
-
-### Changed
-- Add onlyFolder for category model (#24)
-- Update server dockerfile (#31)
-
-## [0.1.0] - 2025-10-24
-
-### Added
-- Add macOS-style desktop page (#18)
-- Add RBAC control & user management (#15)
-- Add translate tool draft (#17)
-
-### Fixed
-- Cookie secure fixed in production (#14)
-- Default menu i18n & view collection update & auth enhanced (#13)
-
-### Changed
-- Optimize Egg.js workers in docker env (#17)
+### ❤️ Contributors
+- Marvel ([@MARVElOUS-DEV](https://github.com/MARVElOUS-DEV))
 
 ## Initial Release
 
