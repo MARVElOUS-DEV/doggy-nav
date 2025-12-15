@@ -80,8 +80,6 @@ export default function TimelineContainer({
       />
 
       <div className="relative">
-        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-300 via-amber-100 to-transparent" />
-
         <div className="space-y-8">
           <AnimatePresence mode="wait">
             {years.map((yearData) => (

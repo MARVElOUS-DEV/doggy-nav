@@ -23,7 +23,6 @@ export default function VerticalTimelineContainer({
   const [searchTerm, setSearchTerm] = useState('');
   const { t } = useTranslation('translation');
 
-  // Filter items based on search term
   const filteredItems = items.filter((item) => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
@@ -35,7 +34,6 @@ export default function VerticalTimelineContainer({
     );
   });
 
-  // Sort items by date (newest first)
   const sortedItems = [...filteredItems].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -49,7 +47,7 @@ export default function VerticalTimelineContainer({
 
   return (
     <div
-      className="w-full max-w-2xl mx-auto px-3 sm:px-0"
+      className="w-full max-w-4xl mx-auto px-3 sm:px-0"
       role="region"
       aria-label={t('vertical_timeline')}
     >
@@ -69,7 +67,7 @@ export default function VerticalTimelineContainer({
       </div>
 
       {/* Search */}
-      <div className="mb-6 relative">
+      <div className="mb-6 relative max-w-md mx-auto">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
@@ -82,7 +80,7 @@ export default function VerticalTimelineContainer({
       </div>
 
       {/* Stats */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg p-4 mb-6 text-center">
+      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg p-4 mb-6 text-center max-w-md mx-auto">
         <div className="flex items-center justify-center space-x-4 text-sm">
           <div className="flex items-center space-x-1">
             <Calendar className="w-4 h-4" />
@@ -94,13 +92,13 @@ export default function VerticalTimelineContainer({
         </div>
       </div>
 
-      {/* Vertical Timeline */}
+      {/* Alternating Timeline */}
       <div className="relative">
-        {/* Timeline Line */}
-        <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 via-amber-300 to-amber-400"></div>
+        {/* Center Timeline Line */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 via-amber-300 to-amber-400"></div>
 
         {/* Timeline Items */}
-        <div className="space-y-6 sm:space-y-8">
+        <div className="relative">
           {sortedItems.length === 0 ? (
             <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -112,55 +110,54 @@ export default function VerticalTimelineContainer({
               </p>
             </div>
           ) : (
-            sortedItems.map((item, index) => {
-              const date = new Date(item.createdAt);
-              const month = date.getMonth() + 1;
-              const day = date.getDate();
+            <div className="grid grid-cols-2 gap-x-8 sm:gap-x-12">
+              {sortedItems.map((item, index) => {
+                const date = new Date(item.createdAt);
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const isLeft = index % 2 === 0;
+                const rowIndex = Math.floor(index / 2);
 
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="relative flex items-start group"
-                >
-                  {/* Timeline Dot */}
-                  <div className="absolute left-5 sm:left-6 w-3 h-3 sm:w-4 sm:h-4 bg-amber-500 rounded-full border-2 sm:border-4 border-white dark:border-gray-900 shadow-lg z-10 group-hover:bg-amber-400 transition-colors"></div>
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: isLeft ? -20 : 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.03 }}
+                    className={`relative group mb-4 sm:mb-6 ${isLeft ? 'col-start-1 pr-4 sm:pr-6' : 'col-start-2 pl-4 sm:pl-6'}`}
+                    style={{
+                      gridRowStart: rowIndex + 1,
+                      marginTop: !isLeft ? '2rem' : '0',
+                    }}
+                  >
+                    {/* Timeline Dot */}
+                    <div
+                      className={`absolute top-3 w-3 h-3 sm:w-4 sm:h-4 bg-amber-500 rounded-full border-2 sm:border-4 border-white dark:border-gray-900 shadow-lg z-10 group-hover:bg-amber-400 transition-colors ${
+                        isLeft ? '-right-[1.625rem] sm:-right-[1.5rem]' : '-left-[1.625rem] sm:-left-[1.5rem]'
+                      }`}
+                    ></div>
 
-                  {/* Timeline Content */}
-                  <div className="ml-12 sm:ml-16 flex-1 min-w-0">
-                    <div className="flex items-center space-x-3 mb-1">
-                      <div className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">
-                        {t('month_day_format', { month, day })}
-                      </div>
+                    {/* Connector Line */}
+                    <div
+                      className={`absolute top-4 w-4 sm:w-6 h-0.5 bg-amber-300 ${
+                        isLeft ? '-right-4 sm:-right-6' : '-left-4 sm:-left-6'
+                      }`}
+                    ></div>
+
+                    {/* Date Label */}
+                    <div className={`text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium mb-1 ${isLeft ? 'text-right' : 'text-left'}`}>
+                      {t('month_day_format', { month, day })}
                     </div>
 
+                    {/* Content Card */}
                     <div
-                      className={`flex items-center space-x-3 p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 group-hover:shadow-md ${
+                      className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 group-hover:shadow-md ${
                         selectedItem?.id === item.id
-                          ? 'bg-amber-50 dark:bg-gray-800 border-l-4 border-amber-400'
+                          ? `bg-amber-50 dark:bg-gray-800 ${isLeft ? 'border-r-4' : 'border-l-4'} border-amber-400`
                           : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      }`}
+                      } ${isLeft ? 'flex-row-reverse space-x-reverse' : ''}`}
                       onClick={() => handleItemClick(item)}
                     >
-                      {/* Website Icon */}
-                      {item.logo && (
-                        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
-                          <DoggyImage logo={item.logo} name={item.title} width={40} height={40} />
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs">
-                            {item.title.charAt(0).toUpperCase()}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Website Title */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">
-                          {item.title}
-                        </h3>
-                      </div>
-
                       {/* External Link */}
                       {item.url && (
                         <a
@@ -182,11 +179,25 @@ export default function VerticalTimelineContainer({
                           <ExternalLink className="w-4 h-4" />
                         </a>
                       )}
+
+                      {/* Website Title */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base ${isLeft ? 'text-right' : 'text-left'}`}>
+                          {item.title}
+                        </h3>
+                      </div>
+
+                      {/* Website Icon */}
+                      {item.logo && (
+                        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
+                          <DoggyImage logo={item.logo} name={item.title} width={40} height={40} />
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })
+                  </motion.div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
