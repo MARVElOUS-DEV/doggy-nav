@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { openDB } from 'idb';
 import { v4 as uuidv4 } from 'uuid';
-import { Message, Modal, Spin, Empty, Button } from '@arco-design/web-react';
+import { Message, Modal, Spin } from '@arco-design/web-react';
 
 import Toolbar, { FolderTreeNode } from './Toolbar';
 import BookmarkGraphCanvas from './BookmarkGraphCanvas';
@@ -9,9 +9,12 @@ import type { Position } from './BookmarkGraphCanvasConfig';
 import { applyDefaultLayout } from './layout';
 import { parseBookmarks, generateBookmarksHtml, BookmarkGraphNode } from './utils/bookmarkParser';
 import useHistory from './hooks/useHistory';
+import WelcomeGuideModal from './WelcomeGuideModal';
+import EmptyStateGuide from './EmptyStateGuide';
 
 const DB_NAME = 'bookmark-graph-db';
 const STORE_NAME = 'graph-state';
+const GUIDE_SEEN_KEY = 'bookmark-graph-guide-seen';
 
 const EditorContent = () => {
   const {
@@ -30,7 +33,9 @@ const EditorContent = () => {
   const [viewState, setViewState] = useState<{ scale: number; position: Position } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -40,6 +45,13 @@ const EditorContent = () => {
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
+  }, []);
+
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem(GUIDE_SEEN_KEY);
+    if (!hasSeenGuide) {
+      setShowGuideModal(true);
+    }
   }, []);
 
   const handleToggleFullscreen = useCallback(() => {
@@ -52,6 +64,19 @@ const EditorContent = () => {
         console.error(`Error attempting to exit fullscreen: ${err.message}`);
       });
     }
+  }, []);
+
+  const handleCloseGuide = useCallback(() => {
+    setShowGuideModal(false);
+    localStorage.setItem(GUIDE_SEEN_KEY, 'true');
+  }, []);
+
+  const handleShowGuide = useCallback(() => {
+    setShowGuideModal(true);
+  }, []);
+
+  const handleImportClick = useCallback(() => {
+    fileInputRef.current?.click();
   }, []);
 
   // Load from IDB on mount
@@ -496,6 +521,18 @@ const EditorContent = () => {
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-gray-50 dark:bg-gray-900">
+      <input
+        type="file"
+        accept=".html"
+        className="hidden"
+        ref={fileInputRef}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleImport(file);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }}
+      />
+
       <Toolbar
         onImport={handleImport}
         onExport={handleExport}
@@ -512,22 +549,18 @@ const EditorContent = () => {
         onRedo={redo}
         canUndo={canUndo}
         canRedo={canRedo}
+        onShowGuide={handleShowGuide}
         folderTree={folderTree}
         activeFolderIds={activeFolderIds}
         onFilterChange={handleFilterChange}
       />
 
       {nodes.length === 0 ? (
-        <div className="flex items-center justify-center h-full">
-          <Empty description="No bookmarks found. Import some or create a new folder.">
-            <Button
-              type="primary"
-              onClick={() => document.querySelector<HTMLButtonElement>('.tooltip-trigger')?.click()}
-            >
-              Import Bookmarks
-            </Button>
-          </Empty>
-        </div>
+        <EmptyStateGuide
+          onImportClick={handleImportClick}
+          onAddFolderClick={handleAddFolder}
+          onShowGuide={handleShowGuide}
+        />
       ) : (
         <BookmarkGraphCanvas
           nodes={nodes}
@@ -540,6 +573,13 @@ const EditorContent = () => {
           onRenameNode={handleRenameNode}
         />
       )}
+
+      <WelcomeGuideModal
+        visible={showGuideModal}
+        onClose={handleCloseGuide}
+        onImportClick={handleImportClick}
+        getPopupContainer={() => containerRef.current || document.body}
+      />
     </div>
   );
 };

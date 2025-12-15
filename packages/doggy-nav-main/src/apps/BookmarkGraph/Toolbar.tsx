@@ -11,6 +11,7 @@ import {
   Redo,
   Maximize,
   Minimize,
+  HelpCircle,
 } from 'lucide-react';
 import { Input, TreeSelect } from '@arco-design/web-react';
 
@@ -36,6 +37,7 @@ interface ToolbarProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  onShowGuide: () => void;
   // Filter props
   folderTree: FolderTreeNode[];
   activeFolderIds: Set<string>;
@@ -58,6 +60,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onRedo,
   canUndo,
   canRedo,
+  onShowGuide,
   folderTree,
   activeFolderIds,
   onFilterChange,
@@ -269,6 +272,16 @@ const Toolbar: React.FC<ToolbarProps> = ({
         title="Clear All"
       >
         <Trash size={20} />
+      </button>
+
+      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+
+      <button
+        onClick={onShowGuide}
+        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors"
+        title="Show Guide"
+      >
+        <HelpCircle size={20} />
       </button>
     </div>
     </>
