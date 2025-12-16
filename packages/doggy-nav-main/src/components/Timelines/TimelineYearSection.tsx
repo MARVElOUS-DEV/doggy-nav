@@ -83,10 +83,10 @@ export default function TimelineYearSection({
 
                     {/* Alternating Grid Layout */}
                     <div className="relative">
-                      {/* Center Line */}
-                      <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-300 via-amber-200 to-amber-300"></div>
+                      {/* Timeline Line - Left on mobile, Center on md+ */}
+                      <div className="absolute left-4 md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-300 via-amber-200 to-amber-300"></div>
 
-                      <div className="grid grid-cols-2 gap-x-8">
+                      <div className="flex flex-col md:grid md:grid-cols-2 md:gap-x-8">
                         {sortedQuarterItems.map((item, index) => {
                           const isLeft = index % 2 === 0;
                           const rowIndex = Math.floor(index / 2);
@@ -94,26 +94,26 @@ export default function TimelineYearSection({
                           return (
                             <motion.div
                               key={item.id}
-                              initial={{ opacity: 0, x: isLeft ? -20 : 20 }}
+                              initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ duration: 0.3, delay: index * 0.03 }}
-                              className={`relative mb-3 ${isLeft ? 'col-start-1 pr-4' : 'col-start-2 pl-4'}`}
+                              className={`relative mb-3 pl-10 md:pl-0 ${isLeft ? 'md:col-start-1 md:pr-4' : 'md:col-start-2 md:pl-4'}`}
                               style={{
                                 gridRowStart: rowIndex + 1,
                                 marginTop: !isLeft ? '1.5rem' : '0',
                               }}
                             >
-                              {/* Timeline Dot */}
+                              {/* Timeline Dot - Left on mobile, alternating on md+ */}
                               <div
-                                className={`absolute top-4 w-3 h-3 bg-amber-400 rounded-full border-2 border-white dark:border-gray-800 shadow-md z-10 ${
-                                  isLeft ? '-right-[1.375rem]' : '-left-[1.375rem]'
+                                className={`absolute top-4 w-3 h-3 bg-amber-400 rounded-full border-2 border-white dark:border-gray-800 shadow-md z-10 left-[0.625rem] ${
+                                  isLeft ? 'md:left-auto md:-right-[1.375rem]' : 'md:-left-[1.375rem]'
                                 }`}
                               ></div>
 
-                              {/* Connector Line */}
+                              {/* Connector Line - Right on mobile, alternating on md+ */}
                               <div
-                                className={`absolute top-5 w-4 h-0.5 bg-amber-200 ${
-                                  isLeft ? '-right-4' : '-left-4'
+                                className={`absolute top-5 w-4 h-0.5 bg-amber-200 left-6 ${
+                                  isLeft ? 'md:left-auto md:-right-4' : 'md:-left-4'
                                 }`}
                               ></div>
 
