@@ -544,7 +544,7 @@ const EditorContent = () => {
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full relative bg-gray-50 dark:bg-gray-900">
+    <div ref={containerRef} className="w-full h-full relative bg-gray-50 dark:bg-gray-900 overflow-hidden">
       <input
         type="file"
         accept=".html"
