@@ -6,9 +6,14 @@ import FolderNodeCanvas from './CanvasNodes/FolderNodeCanvas';
 import BookmarkNodeCanvas from './CanvasNodes/BookmarkNodeCanvas';
 import type { Position } from './BookmarkGraphCanvasConfig';
 import {
+  BOOKMARK_GRID_COL_GAP,
+  BOOKMARK_GRID_COLS,
+  BOOKMARK_GRID_ROW_GAP,
+  BOOKMARK_GRID_TOP,
   BOOKMARK_SIZE,
   BOOKMARKS_PER_PAGE,
   FOLDER_DEFAULT_SIZE,
+  PADDING,
 } from './BookmarkGraphCanvasConfig';
 
 const getNodeAbsolutePosition = (
@@ -51,6 +56,45 @@ const getNodeSize = (node: BookmarkGraphNode) => {
     return { width, height };
   }
   return { width: BOOKMARK_SIZE.width, height: BOOKMARK_SIZE.height };
+};
+
+/**
+ * Re-layout all bookmarks in a specific folder, assigning proper grid positions and pageIndex.
+ * Returns updated nodes array.
+ */
+const relayoutFolderBookmarks = (
+  nodes: BookmarkGraphNode[],
+  folderId: string
+): BookmarkGraphNode[] => {
+  const bookmarksInFolder = nodes
+    .filter((n) => n.type === 'bookmark' && n.parentNode === folderId)
+    .sort((a, b) => a.data.label.localeCompare(b.data.label));
+
+  if (bookmarksInFolder.length === 0) return nodes;
+
+  const updatedPositions = new Map<string, { position: Position; pageIndex: number }>();
+
+  bookmarksInFolder.forEach((bookmark, index) => {
+    const pageIndex = Math.floor(index / BOOKMARKS_PER_PAGE);
+    const indexInPage = index % BOOKMARKS_PER_PAGE;
+    const col = indexInPage % BOOKMARK_GRID_COLS;
+    const row = Math.floor(indexInPage / BOOKMARK_GRID_COLS);
+
+    const x = PADDING + col * (BOOKMARK_SIZE.width + BOOKMARK_GRID_COL_GAP);
+    const y = BOOKMARK_GRID_TOP + row * (BOOKMARK_SIZE.height + BOOKMARK_GRID_ROW_GAP);
+
+    updatedPositions.set(bookmark.id, { position: { x, y }, pageIndex });
+  });
+
+  return nodes.map((n) => {
+    const update = updatedPositions.get(n.id);
+    if (!update) return n;
+    return {
+      ...n,
+      position: update.position,
+      data: { ...n.data, pageIndex: update.pageIndex },
+    };
+  });
 };
 
 interface ViewState {
@@ -241,7 +285,7 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
           }
         }
 
-        return prev.map((node) => {
+        let result = prev.map((node) => {
           if (node.id !== nodeId) return node;
           const updated: BookmarkGraphNode = { ...node };
 
@@ -258,6 +302,13 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
 
           return updated;
         });
+
+        // Re-layout all bookmarks in the target folder to maintain proper grid and pagination
+        if (targetFolder) {
+          result = relayoutFolderBookmarks(result, targetFolder.id);
+        }
+
+        return result;
       });
     },
     [setNodes]
@@ -454,19 +505,14 @@ const BookmarkGraphCanvas: React.FC<BookmarkGraphCanvasProps> = ({
     const bookmarkPageIndex = new Map<string, number>();
 
     perFolder.forEach((list, folderId) => {
-      const sorted = [...list].sort(
-        (a, b) =>
-          a.position.y - b.position.y ||
-          a.position.x - b.position.x ||
-          a.data.label.localeCompare(b.data.label)
-      );
-
-      const totalPages = Math.max(1, Math.ceil(sorted.length / BOOKMARKS_PER_PAGE));
+      // Use layout-assigned data.pageIndex as the source of truth
+      // (layout.ts assigns the same grid positions for all pages, so position-based sorting is ambiguous)
+      const maxPage = list.reduce((m, n) => Math.max(m, n.data.pageIndex ?? 0), 0);
+      const totalPages = Math.max(1, maxPage + 1);
       folderMeta.set(folderId, { totalPages });
 
-      sorted.forEach((bookmark, idx) => {
-        const pageIndex = Math.floor(idx / BOOKMARKS_PER_PAGE);
-        bookmarkPageIndex.set(bookmark.id, pageIndex);
+      list.forEach((bookmark) => {
+        bookmarkPageIndex.set(bookmark.id, bookmark.data.pageIndex ?? 0);
       });
     });
 

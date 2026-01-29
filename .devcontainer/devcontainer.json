@@ -1,0 +1,27 @@
+{
+  "name": "Doggy Nav Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/doggy-nav",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "eggjs.vscode-eggjs",
+        "mongodb.mongodb-vscode"
+      ]
+    }
+  },
+
+  // Forwarding ports:
+  // 3002: Server
+  // 3001: Main (Web)
+  // 8080: Admin
+  // 27017: MongoDB
+  "forwardPorts": [3002, 3001, 8080, 27017],
+
+  // Install dependencies after creating the container
+  "postCreateCommand": "npm install -g pnpm && pnpm install"
+}

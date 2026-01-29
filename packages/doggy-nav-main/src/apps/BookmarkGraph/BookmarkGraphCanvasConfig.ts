@@ -5,6 +5,7 @@ export const BOOKMARK_SIZE = { width: 240, height: 60 } as const;
 
 // Bookmark grid & pagination constants (must stay in sync with layout.ts)
 export const BOOKMARK_GRID_COLS = 3;
+export const BOOKMARK_GRID_COL_GAP = 16;
 export const BOOKMARK_GRID_ROW_GAP = 12;
 export const BOOKMARK_GRID_TOP = 80;
 export const PADDING = 20;

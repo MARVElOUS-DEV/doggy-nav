@@ -149,7 +149,7 @@ function DesktopInner() {
       {/* Windows Area wrapper between top bar and dock */}
       <div
         id="windows-area"
-        className={`fixed left-0 right-0 z-[55] ${lpOpen ? '' : 'pointer-events-none'}`}
+        className={`fixed left-0 right-0 ${lpOpen ? 'z-[20000]' : 'z-[55] pointer-events-none'}`}
         style={{ top: topbarHeight, bottom: dockOffset }}
       >
         {/* Launchpad should cover header bar and windows area (full-screen overlay) */}

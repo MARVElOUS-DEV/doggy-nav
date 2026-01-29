@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import IframeContainer from '@/components/IframeContainer';
 import { Plus } from 'lucide-react';
 import type { DesktopCtx } from '@/apps/config';
@@ -7,6 +7,8 @@ import { Message } from '@arco-design/web-react';
 import { getRandomFallbackIcon } from '@/utils/fallbackIcons';
 import { useDesktop } from '@/apps/Desktop/DesktopStore';
 import { useGlobalAppWindow } from '@/store/GlobalAppWindowStore';
+import NavCascaderPicker from '@/components/NavCascaderPicker';
+import type { NavItem } from '@/types';
 
 export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
   const { state } = useDesktop();
@@ -60,6 +62,12 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
     () => /^https?:\/\//i.test(newUrl) && newName.trim().length > 0,
     [newUrl, newName]
   );
+
+  const handleNavSelect = useCallback((nav: NavItem) => {
+    setNewName(nav.name);
+    setNewUrl(nav.href || 'https://');
+    setNewIcon(nav.logo || '');
+  }, []);
 
   const onCreateApp = () => {
     if (!canCreate) return;
@@ -260,6 +268,25 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
             <p className="text-xs mb-4" style={{ color: 'var(--color-foreground)' }}>
               Create a new app that opens an external URL in a window.
             </p>
+            <div className="mb-4">
+              <NavCascaderPicker
+                onSelect={handleNavSelect}
+                title="Select from Navs"
+                trigger={
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-sm rounded-md border hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex items-center gap-2"
+                    style={{ borderColor: 'var(--color-border)' }}
+                  >
+                    <span>📂</span>
+                    <span>Browse Navs</span>
+                  </button>
+                }
+              />
+              <span className="ml-2 text-xs" style={{ color: 'var(--color-foreground)' }}>
+                or enter details manually below
+              </span>
+            </div>
             <div className="space-y-3">
               <label className="block">
                 <span className="text-xs" style={{ color: 'var(--color-foreground)' }}>

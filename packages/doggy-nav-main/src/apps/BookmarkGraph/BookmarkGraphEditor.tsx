@@ -11,6 +11,7 @@ import { parseBookmarks, generateBookmarksHtml, BookmarkGraphNode } from './util
 import useHistory from './hooks/useHistory';
 import WelcomeGuideModal from './WelcomeGuideModal';
 import EmptyStateGuide from './EmptyStateGuide';
+import type { NavItem } from '@/types';
 
 const DB_NAME = 'bookmark-graph-db';
 const STORE_NAME = 'graph-state';
@@ -165,23 +166,27 @@ const EditorContent = () => {
         }
       });
 
-      let laidOutPositions: Map<string, { x: number; y: number }> | null = null;
+      let laidOutMap: Map<string, { position: { x: number; y: number }; pageIndex?: number }> | null =
+        null;
       if (visibleIds.size > 0) {
         const visibleNodes = nds.filter((n) => visibleIds.has(n.id));
         const laidOut = applyDefaultLayout(visibleNodes);
-        laidOutPositions = new Map(laidOut.map((n) => [n.id, n.position]));
+        laidOutMap = new Map(
+          laidOut.map((n) => [n.id, { position: n.position, pageIndex: n.data.pageIndex }])
+        );
       }
 
       let hasChanges = false;
       const newNodes = nds.map((n) => {
         const shouldBeHidden = !visibleIds.has(n.id);
-        const laidPos = laidOutPositions?.get(n.id);
+        const laid = laidOutMap?.get(n.id);
 
-        if (laidPos || n.hidden !== shouldBeHidden) {
+        if (laid || n.hidden !== shouldBeHidden) {
           hasChanges = true;
           return {
             ...n,
-            ...(laidPos ? { position: laidPos } : {}),
+            ...(laid ? { position: laid.position } : {}),
+            ...(laid?.pageIndex !== undefined ? { data: { ...n.data, pageIndex: laid.pageIndex } } : {}),
             hidden: shouldBeHidden,
           };
         }
@@ -261,6 +266,25 @@ const EditorContent = () => {
       reader.readAsText(file);
     },
     [nodes]
+  );
+
+  const handleImportFromNav = useCallback(
+    (nav: NavItem) => {
+      const newNode: BookmarkGraphNode = {
+        id: uuidv4(),
+        position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
+        type: 'bookmark',
+        data: {
+          label: nav.name,
+          url: nav.href || undefined,
+          icon: nav.logo || undefined,
+          isFolder: false,
+        },
+      };
+      setNodes((prev) => [...prev, newNode]);
+      Message.success(`Added "${nav.name}" to graph`);
+    },
+    [setNodes]
   );
 
   // Export
@@ -520,7 +544,7 @@ const EditorContent = () => {
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full relative bg-gray-50 dark:bg-gray-900">
+    <div ref={containerRef} className="w-full h-full relative bg-gray-50 dark:bg-gray-900 overflow-hidden">
       <input
         type="file"
         accept=".html"
@@ -535,6 +559,7 @@ const EditorContent = () => {
 
       <Toolbar
         onImport={handleImport}
+        onImportFromNav={handleImportFromNav}
         onExport={handleExport}
         onAddFolder={handleAddFolder}
         onClear={handleClear}
