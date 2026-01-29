@@ -15,7 +15,17 @@ type GridEntry =
 // Paging
 const perPage = 6 * 4; // 24 icons per page
 
-export default function Launchpad({ open, onClose, withinArea = true, dockOffset = 0 }: { open: boolean; onClose: () => void; withinArea?: boolean; dockOffset?: number }) {
+export default function Launchpad({
+  open,
+  onClose,
+  withinArea = true,
+  dockOffset = 0,
+}: {
+  open: boolean;
+  onClose: () => void;
+  withinArea?: boolean;
+  dockOffset?: number;
+}) {
   const [entries, setEntries] = useState<GridEntry[]>([]);
   const [page, setPage] = useState(0);
   const [folderOpen, setFolderOpen] = useState<null | {
@@ -232,7 +242,10 @@ export default function Launchpad({ open, onClose, withinArea = true, dockOffset
         </div>
 
         {/* Dots paginator */}
-        <div className="absolute flex items-center gap-2" style={{ bottom: dockOffset }}>
+        <div
+          className="absolute left-0 right-0 flex items-center justify-center gap-2"
+          style={{ bottom: dockOffset }}
+        >
           {pages.map((_, i) => (
             <button
               key={i}

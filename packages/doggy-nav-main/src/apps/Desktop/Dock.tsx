@@ -45,7 +45,7 @@ export default function Dock({ items }: { items: DockItem[] }) {
   return (
     <div
       id="desktop-dock"
-      className="pointer-events-none fixed left-0 right-0 bottom-4 z-[60] flex justify-center"
+      className="pointer-events-none fixed left-0 right-0 bottom-4 z-[30000] flex justify-center"
     >
       <div
         ref={containerRef}

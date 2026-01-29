@@ -19,6 +19,7 @@ GEMINI*
 .factory/*
 openspec/*
 .kiro/
+.sisyphus/
 *.local
 
 .vercel
