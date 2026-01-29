@@ -12,8 +12,11 @@ import {
   Maximize,
   Minimize,
   HelpCircle,
+  Globe,
 } from 'lucide-react';
 import { Input, TreeSelect } from '@arco-design/web-react';
+import NavCascaderPicker from '@/components/NavCascaderPicker';
+import type { NavItem } from '@/types';
 
 export interface FolderTreeNode {
   id: string;
@@ -23,6 +26,7 @@ export interface FolderTreeNode {
 
 interface ToolbarProps {
   onImport: (file: File) => void;
+  onImportFromNav: (nav: NavItem) => void;
   onExport: () => void;
   onAddFolder: () => void;
   onClear: () => void;
@@ -46,6 +50,7 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = ({
   onImport,
+  onImportFromNav,
   onExport,
   onAddFolder,
   onClear,
@@ -213,6 +218,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
       >
         <Upload size={20} />
       </button>
+
+      <NavCascaderPicker
+        onSelect={onImportFromNav}
+        title="Import from Navs"
+        trigger={
+          <button
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors"
+            title="Import from Navs"
+          >
+            <Globe size={20} />
+          </button>
+        }
+      />
 
       <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
 

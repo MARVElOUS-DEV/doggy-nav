@@ -11,6 +11,7 @@ import { parseBookmarks, generateBookmarksHtml, BookmarkGraphNode } from './util
 import useHistory from './hooks/useHistory';
 import WelcomeGuideModal from './WelcomeGuideModal';
 import EmptyStateGuide from './EmptyStateGuide';
+import type { NavItem } from '@/types';
 
 const DB_NAME = 'bookmark-graph-db';
 const STORE_NAME = 'graph-state';
@@ -261,6 +262,25 @@ const EditorContent = () => {
       reader.readAsText(file);
     },
     [nodes]
+  );
+
+  const handleImportFromNav = useCallback(
+    (nav: NavItem) => {
+      const newNode: BookmarkGraphNode = {
+        id: uuidv4(),
+        position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
+        type: 'bookmark',
+        data: {
+          label: nav.name,
+          url: nav.href || undefined,
+          icon: nav.logo || undefined,
+          isFolder: false,
+        },
+      };
+      setNodes((prev) => [...prev, newNode]);
+      Message.success(`Added "${nav.name}" to graph`);
+    },
+    [setNodes]
   );
 
   // Export
@@ -535,6 +555,7 @@ const EditorContent = () => {
 
       <Toolbar
         onImport={handleImport}
+        onImportFromNav={handleImportFromNav}
         onExport={handleExport}
         onAddFolder={handleAddFolder}
         onClear={handleClear}

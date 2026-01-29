@@ -24,8 +24,10 @@ const api = {
   // Get category list
   getCategoryList: (): Promise<Category[]> => axios.get('/api/category/list'),
 
-  // Find nav by category id
-  findNavByCategory: (categoryId: string): Promise<NavItem[]> =>
+  // Find nav by category id - returns array of categories with nested nav lists
+  findNavByCategory: (
+    categoryId: string
+  ): Promise<Array<{ _id: string; id: string; name: string; list: NavItem[] }>> =>
     axios.get(`/api/nav/find?categoryId=${categoryId}`),
 
   // Find nav by id (single item)
