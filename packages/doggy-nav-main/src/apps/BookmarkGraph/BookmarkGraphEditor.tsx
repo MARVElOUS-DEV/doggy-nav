@@ -166,23 +166,27 @@ const EditorContent = () => {
         }
       });
 
-      let laidOutPositions: Map<string, { x: number; y: number }> | null = null;
+      let laidOutMap: Map<string, { position: { x: number; y: number }; pageIndex?: number }> | null =
+        null;
       if (visibleIds.size > 0) {
         const visibleNodes = nds.filter((n) => visibleIds.has(n.id));
         const laidOut = applyDefaultLayout(visibleNodes);
-        laidOutPositions = new Map(laidOut.map((n) => [n.id, n.position]));
+        laidOutMap = new Map(
+          laidOut.map((n) => [n.id, { position: n.position, pageIndex: n.data.pageIndex }])
+        );
       }
 
       let hasChanges = false;
       const newNodes = nds.map((n) => {
         const shouldBeHidden = !visibleIds.has(n.id);
-        const laidPos = laidOutPositions?.get(n.id);
+        const laid = laidOutMap?.get(n.id);
 
-        if (laidPos || n.hidden !== shouldBeHidden) {
+        if (laid || n.hidden !== shouldBeHidden) {
           hasChanges = true;
           return {
             ...n,
-            ...(laidPos ? { position: laidPos } : {}),
+            ...(laid ? { position: laid.position } : {}),
+            ...(laid?.pageIndex !== undefined ? { data: { ...n.data, pageIndex: laid.pageIndex } } : {}),
             hidden: shouldBeHidden,
           };
         }

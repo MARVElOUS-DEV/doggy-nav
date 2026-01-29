@@ -88,8 +88,13 @@ export const applyDefaultLayout = (nodes: BookmarkGraphNode[]): BookmarkGraphNod
     if (!hasFolderChildren && !hasBookmarkChildren) return;
 
     const layoutBookmarksGrid = (folderNodeId: string) => {
-      const bookmarks = bookmarkChildrenMap.get(folderNodeId) || [];
-      if (bookmarks.length === 0) return;
+      const bookmarksUnsorted = bookmarkChildrenMap.get(folderNodeId) || [];
+      if (bookmarksUnsorted.length === 0) return;
+
+      // Sort bookmarks by label for a stable, deterministic order
+      const bookmarks = [...bookmarksUnsorted].sort((a, b) =>
+        a.data.label.localeCompare(b.data.label)
+      );
 
       bookmarks.forEach((bookmark, index) => {
         const pageIndex = Math.floor(index / BOOKMARKS_PER_PAGE);

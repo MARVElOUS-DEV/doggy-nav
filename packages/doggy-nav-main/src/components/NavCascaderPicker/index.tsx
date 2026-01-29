@@ -5,6 +5,7 @@ import type { NavCascaderPickerProps } from './types';
 import CategoryColumn from './CategoryColumn';
 import NavColumn from './NavColumn';
 import api from '@/utils/api';
+import DoggyImage from '../DoggyImage';
 
 const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
   onSelect,
@@ -73,18 +74,6 @@ const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
     }
   }, [visible, categories.length, fetchCategories]);
 
-  useEffect(() => {
-    if (visible) {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          handleClose();
-        }
-      };
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [visible]);
-
   const handleOpen = useCallback(() => {
     setVisible(true);
   }, []);
@@ -96,6 +85,18 @@ const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
     setNavSearch('');
     onCancel?.();
   }, [onCancel]);
+
+  useEffect(() => {
+    if (visible) {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          handleClose();
+        }
+      };
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [visible, handleClose]);
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
@@ -170,21 +171,24 @@ const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
               style={{ borderColor: 'var(--color-border)' }}
             >
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer hover:bg-red-600" onClick={handleClose} />
+                <div
+                  className="w-3 h-3 rounded-full bg-red-500 cursor-pointer hover:bg-red-600"
+                  onClick={handleClose}
+                />
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <div className="w-3 h-3 rounded-full bg-green-500" />
               </div>
-              <span className="text-sm font-medium" style={{ color: 'var(--color-muted-foreground)' }}>
+              <span
+                className="text-sm font-medium"
+                style={{ color: 'var(--color-muted-foreground)' }}
+              >
                 {title}
               </span>
               <div className="w-16" />
             </div>
 
             {/* Content */}
-            <div
-              className="flex h-80"
-              style={{ borderColor: 'var(--color-border)' }}
-            >
+            <div className="flex h-80" style={{ borderColor: 'var(--color-border)' }}>
               <div className="w-1/2 border-r" style={{ borderColor: 'var(--color-border)' }}>
                 <CategoryColumn
                   categories={categories}
@@ -219,15 +223,13 @@ const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
               >
                 <div className="flex items-center gap-3">
                   {selectedNav.logo && (
-                    <img
-                      src={selectedNav.logo}
-                      alt=""
+                    <DoggyImage
+                      logo={selectedNav.logo}
+                      name={selectedNav.name}
                       className="w-8 h-8 rounded-lg object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
                     />
                   )}
+
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{selectedNav.name}</div>
                     <div
