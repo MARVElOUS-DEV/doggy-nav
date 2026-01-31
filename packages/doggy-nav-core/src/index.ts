@@ -46,3 +46,4 @@ export * from './security/authCookies';
 export * from './security/rateLimit';
 export * from './types/systemVersion';
 export * from './services/SystemVersionService';
+export * from './services/ImageUploadService';

@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "doggy-nav-image-service",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-01",
+  "observability": { "enabled": true },
+  "build": {
+    "command": "pnpm -F doggy-nav-core build"
+  }
+  // Configure in Cloudflare Dashboard:
+  // 1. R2 Bucket binding: IMAGES_BUCKET -> your-bucket-name
+  // 2. Variables: IMAGES_PUBLIC_URL, ALLOWED_ORIGINS, JWT_SECRET
+  // 3. Optional: IMAGE_MAX_SIZE_MB (default 3), IMAGE_USER_QUOTA_MB (default 50)
+}
