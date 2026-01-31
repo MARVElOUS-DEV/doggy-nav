@@ -1,0 +1,15 @@
+# Image Service Environment Variables
+# Copy to .dev.vars for local development
+
+# Required: JWT secret (must match your main backend)
+JWT_SECRET=your-jwt-secret-min-32-chars
+
+# Required: Public URL for serving images
+IMAGES_PUBLIC_URL=https://your-r2-public-url.com
+
+# Required: Allowed origins for CORS (comma-separated)
+ALLOWED_ORIGINS=http://localhost:3001,https://your-domain.com
+
+# Optional: Limits
+IMAGE_MAX_SIZE_MB=3
+IMAGE_USER_QUOTA_MB=50

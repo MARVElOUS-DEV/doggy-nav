@@ -104,6 +104,9 @@ export default (app: Application) => {
   // Translation routes
   router.post('/api/translate', controller.translate.translate);
 
+  // Image upload routes
+  router.post('/api/images/upload', controller.image.upload);
+
   // Prompt management routes
   router.get('/api/prompts', controller.prompt.list);
   router.post('/api/prompts', controller.prompt.add);

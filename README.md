@@ -61,6 +61,7 @@ Doggy Nav is a comprehensive navigation and bookmark management system designed 
 - **📊 Analytics Dashboard** - View counts and popularity metrics
 - **🔍 Advanced Search** - Full-text search with filters
 - **📱 Responsive Design** - Works on desktop, tablet, and mobile
+- **🖼️ Image Upload** - Markdown editor with image upload support (R2 storage)
 
 ### 🛠 Technical Features
 
@@ -97,7 +98,13 @@ Doggy Nav supports two backend stacks and multiple deployment targets (Docker, t
         ┌────────▼────────┐                 ┌───────▼──────────┐
         │   MongoDB       │                 │  Cloudflare D1   │
         │   Port: 27017   │                 │  (SQL at edge)   │
-        └─────────────────┘                 └───────────────────┘
+        └─────────────────┘                 └──────────────────┘
+
+                    ┌─────────────────────────────┐
+                    │  doggy-nav-image-service    │
+                    │  (Optional, Cloudflare R2)  │
+                    │  Standalone image uploads   │
+                    └─────────────────────────────┘
 ```
 
 ### 📁 Project Structure
@@ -105,14 +112,15 @@ Doggy Nav supports two backend stacks and multiple deployment targets (Docker, t
 ```
 doggy-nav/
 ├── packages/
-│   ├── doggy-nav-main/     # Next.js frontend application
-│   ├── doggy-nav-server/   # Egg.js backend API
-│   └── doggy-nav-admin/    # UmiJS admin panel
-│   └── doggy-nav-core/    # shared backend pkg
-│   └── doggy-nav-workers/    # cloudflare workers service
-├── deploy/                 # Deployment configurations
-├── scripts/                # Build and deployment scripts
-└── docs/                   # Documentation
+│   ├── doggy-nav-main/          # Next.js frontend application
+│   ├── doggy-nav-server/        # Egg.js backend API
+│   ├── doggy-nav-admin/         # UmiJS admin panel
+│   ├── doggy-nav-core/          # Shared backend logic
+│   ├── doggy-nav-workers/       # Cloudflare Workers service
+│   └── doggy-nav-image-service/ # Standalone R2 image upload service
+├── deploy/                      # Deployment configurations
+├── scripts/                     # Build and deployment scripts
+└── docs/                        # Documentation
 ```
 
 ## 📦 Quick Start
@@ -200,6 +208,7 @@ See `docs/DEVELOPMENT.md` for local setup, scripts, database, and environment co
 - [🚀 Deployment Guide](docs/DEPLOYMENT.md) - Cloud deployment instructions
 - [🔄 CI/CD Guide](docs/CI-CD.md) - Continuous integration setup
 - [🛠 API Documentation](docs/server/API.md) - Backend API reference
+- [🖼️ Image Upload](docs/IMAGE_UPLOAD.md) - Markdown editor image upload feature
 
 ### 🏗 Development Guides
 
@@ -207,6 +216,7 @@ See `docs/DEVELOPMENT.md` for local setup, scripts, database, and environment co
 - [Backend Development](packages/doggy-nav-server/README.md)
 - [Admin Panel Development](packages/doggy-nav-admin/README.md)
 - [Workers Development](packages/doggy-nav-workers/README.md)
+- [Image Service](packages/doggy-nav-image-service/README.md) - Standalone R2 image upload service
 
 ## 🛡 Security
 
