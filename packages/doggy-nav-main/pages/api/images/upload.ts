@@ -35,9 +35,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       formData.append('files', new Blob([buffer]), file.originalFilename || 'image');
     }
 
+    const headers: Record<string, string> = { Authorization: token };
+    const imageHostname = req.headers['x-image-hostname'];
+    if (typeof imageHostname === 'string') {
+      headers['X-Image-Hostname'] = imageHostname;
+    }
+
     const response = await fetch(`${IMAGE_SERVICE_URL}/upload`, {
       method: 'POST',
-      headers: { Authorization: token },
+      headers,
       body: formData,
     });
 

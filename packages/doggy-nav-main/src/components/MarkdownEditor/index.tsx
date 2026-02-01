@@ -23,6 +23,7 @@ interface MarkdownEditorProps {
   height?: number | string;
   className?: string;
   enableImageUpload?: boolean;
+  imageHostname?: string;
 }
 
 export default function MarkdownEditor({
@@ -32,11 +33,13 @@ export default function MarkdownEditor({
   height = 260,
   className,
   enableImageUpload = false,
+  imageHostname,
 }: MarkdownEditorProps) {
   const [isDark, setIsDark] = useState(false);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
   const { upload, uploading } = useImageUpload({
+    imageHostname,
     onSuccess: (images) => {
       const md = images.map((img) => `![image](${img.url})`).join('\n');
       insertAtCursor(md);
@@ -124,7 +127,7 @@ export default function MarkdownEditor({
     >
       {enableImageUpload && (
         <div className="flex items-center gap-1 px-2 py-1 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
-          <ImageUploadToolbar onInsert={insertAtCursor} disabled={uploading} />
+          <ImageUploadToolbar onInsert={insertAtCursor} disabled={uploading} imageHostname={imageHostname} />
         </div>
       )}
       <div style={{ height }}>

@@ -27,7 +27,16 @@ export default function Recommend() {
   const [form] = Form.useForm();
   const { t } = useTranslation('translation');
   const detailPreview = Form.useWatch('detail', form) ?? '';
+  const hrefValue = Form.useWatch('href', form) ?? '';
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+
+  const imageHostname = (() => {
+    try {
+      return hrefValue ? new URL(hrefValue).hostname : '';
+    } catch {
+      return '';
+    }
+  })();
 
   const addNav = async (values: RecommendFormValues) => {
     setLoading(true);
@@ -390,7 +399,8 @@ export default function Recommend() {
                         placeholder={t('enter_website_details')}
                         height={400}
                         className="w-full"
-                        enableImageUpload={isAuthenticated}
+                        enableImageUpload={!!imageHostname}
+                        imageHostname={imageHostname}
                       />
                     )}
                   </FormItem>
