@@ -88,6 +88,16 @@ const markdownComponents: Components = {
       {children}
     </td>
   ),
+  img: ({ src, alt, ...props }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      {...props}
+      src={src}
+      alt={alt || ''}
+      className="max-w-full h-auto rounded-lg my-4"
+      loading="lazy"
+    />
+  ),
 };
 
 interface MarkdownContentProps {
