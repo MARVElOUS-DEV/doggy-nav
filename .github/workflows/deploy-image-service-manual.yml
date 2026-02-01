@@ -36,6 +36,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME }}
           # Non-secret vars from environment
           IMAGES_PUBLIC_URL: ${{ vars.IMAGES_PUBLIC_URL }}
           ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
@@ -43,6 +44,14 @@ jobs:
           IMAGE_USER_QUOTA_MB: ${{ vars.IMAGE_USER_QUOTA_MB }}
         run: |
           set -euo pipefail
+
+          # Substitute R2 bucket name in wrangler config
+          if [ -z "${R2_BUCKET_NAME:-}" ]; then
+            echo "Error: R2_BUCKET_NAME variable is required"
+            exit 1
+          fi
+          sed -i "s/PLACEHOLDER_R2_BUCKET/${R2_BUCKET_NAME}/g" wrangler.jsonc
+
           add_var() { local k="$1"; local v="${2:-}"; if [ -n "$v" ]; then VARS+=(--var "$k:$v"); fi }
           declare -a VARS=()
           add_var IMAGES_PUBLIC_URL "${IMAGES_PUBLIC_URL:-}"

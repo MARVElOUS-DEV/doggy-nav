@@ -61,6 +61,26 @@ class R2Storage {
   }
 }
 
+// Get image endpoint
+app.get('/images/:userId/:filename', async (c) => {
+  if (!c.env.IMAGES_BUCKET) {
+    return c.json({ error: 'Image storage not configured' }, 503);
+  }
+
+  const key = `images/${c.req.param('userId')}/${c.req.param('filename')}`;
+  const object = await c.env.IMAGES_BUCKET.get(key);
+
+  if (!object) {
+    return c.notFound();
+  }
+
+  const headers = new Headers();
+  headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
+  headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+
+  return new Response(object.body, { headers });
+});
+
 // Upload endpoint
 app.post('/upload', async (c) => {
   // Auth check
