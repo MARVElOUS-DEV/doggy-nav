@@ -80,8 +80,8 @@ export class ImageUploadService {
   generateKey(userId: string, hostname: string, originalName: string): string {
     const now = new Date();
     const datetime = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    const sanitized = originalName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 50);
-    const safeHost = hostname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const sanitized = originalName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50);
+    const safeHost = hostname.replace(/[^a-zA-Z0-9-]/g, '_');
     return `images/${userId}/${safeHost}_${datetime}_${sanitized}`;
   }
 
