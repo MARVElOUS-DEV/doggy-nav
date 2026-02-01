@@ -390,6 +390,7 @@ export default function Recommend() {
                         placeholder={t('enter_website_details')}
                         height={400}
                         className="w-full"
+                        enableImageUpload={isAuthenticated}
                       />
                     )}
                   </FormItem>

@@ -26,6 +26,15 @@ const ALLOWED_TYPES = [
 // Use standalone image service if configured, otherwise use main backend
 const IMAGE_SERVICE_URL = process.env.NEXT_PUBLIC_IMAGE_SERVICE_URL || '';
 
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const res: any = await axios.get('/api/auth/token');
+    return res?.token || null;
+  } catch {
+    return null;
+  }
+}
+
 export function useImageUpload(options: UseImageUploadOptions = {}) {
   const { maxFiles = 3, maxSizeMb = 3, onSuccess, onError } = options;
   const [uploading, setUploading] = useState(false);
@@ -68,8 +77,20 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           ? `${IMAGE_SERVICE_URL}/upload`
           : '/api/images/upload';
 
+        const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' };
+
+        // For external image service, get token from backend and add Authorization header
+        if (IMAGE_SERVICE_URL) {
+          const token = await getAccessToken();
+          if (!token) {
+            onError?.('Authentication required');
+            return null;
+          }
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response: any = await axios.post(uploadUrl, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers,
           onUploadProgress: (e) => {
             if (e.total) setProgress(Math.round((e.loaded / e.total) * 100));
           },

@@ -539,6 +539,14 @@ authRoutes.get('/config', async (c) => {
   return c.json(responses.ok({ requireInviteForLocalRegister }));
 });
 
+authRoutes.get('/token', async (c) => {
+  const token = getAccessTokenFromCookies(c as any);
+  if (!token) {
+    return c.json(responses.err('Not authenticated'), 401);
+  }
+  return c.json(responses.ok({ token }));
+});
+
 authRoutes.get('/:provider', async (c) => {
   const provider = c.req.param('provider');
   const cfg = getProviderConfig(c.env, provider);

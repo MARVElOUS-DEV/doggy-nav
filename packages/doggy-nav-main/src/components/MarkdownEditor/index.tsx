@@ -31,7 +31,7 @@ export default function MarkdownEditor({
   placeholder,
   height = 260,
   className,
-  enableImageUpload = true,
+  enableImageUpload = false,
 }: MarkdownEditorProps) {
   const [isDark, setIsDark] = useState(false);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
