@@ -9,7 +9,11 @@ import {
 } from '../utils/authCookie';
 import type { AuthUserContext } from '../../types/rbac';
 import { getEnabledProviders, isProviderEnabled } from '../utils/oauth';
-import { getAppSource, getRefreshTokenFromCookies, getAccessTokenFromCookies } from '../utils/appSource';
+import {
+  getAppSource,
+  getRefreshTokenFromCookies,
+  getAccessTokenFromCookies,
+} from '../utils/appSource';
 
 export default class AuthController extends CommonController {
   private async issueCookiesForUser(user: {
@@ -175,7 +179,7 @@ export default class AuthController extends CommonController {
     const { ctx } = this;
     const token = getAccessTokenFromCookies(ctx);
     if (!token) {
-      return this.error('Not authenticated', 401);
+      return this.error('Not authenticated');
     }
     this.success({ token });
   }
