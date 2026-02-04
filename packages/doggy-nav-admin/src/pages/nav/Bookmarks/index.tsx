@@ -6,7 +6,7 @@ import request from '@/utils/request';
 import { UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { ProColumns } from '@ant-design/pro-table';
-import Editor, { Monaco } from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 import {
   Button,
   Card,
@@ -24,9 +24,10 @@ import {
   Tabs,
   Upload,
 } from 'antd';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 type RowItem = {
+  __key: string; // unique key for React
   id?: string;
   name: string;
   href: string;
@@ -101,6 +102,8 @@ function autoDetectMapping(keys: string[]): Mapping {
   };
 }
 
+let rowKeyCounter = 0;
+
 function normalizeItem(
   src: any,
   map: Mapping,
@@ -116,6 +119,7 @@ function normalizeItem(
       .filter(Boolean);
   if (!Array.isArray(tags)) tags = [];
   const item: RowItem & { createTime?: number } = {
+    __key: `row_${++rowKeyCounter}`,
     name: String(pick(map.name) ?? src?.title ?? ''),
     href: String(pick(map.href) ?? src?.url ?? ''),
     desc: pick(map.desc) ?? src?.description ?? '',
@@ -141,9 +145,16 @@ function isValidURL(u: string): boolean {
   }
 }
 
-async function saveBatch(rows: RowItem[], concurrency = 5): Promise<RowItem[]> {
+async function saveBatch(
+  rows: RowItem[],
+  onProgress?: (done: number, total: number) => void,
+  concurrency = 5,
+): Promise<RowItem[]> {
   const queue = rows.filter((r) => r.__status !== 'success');
+  const total = queue.length;
+  let done = 0;
   const active: Promise<void>[] = [];
+
   async function run(row: RowItem) {
     try {
       await request({
@@ -163,19 +174,24 @@ async function saveBatch(rows: RowItem[], concurrency = 5): Promise<RowItem[]> {
     } catch (e: any) {
       row.__status = 'failed';
       row.__error = e?.message || String(e);
+    } finally {
+      done++;
+      onProgress?.(done, total);
     }
   }
+
   async function next(): Promise<void> {
     const row = queue.shift();
     if (!row) return;
     const p = run(row).finally(() => {
-      const i = active.indexOf(p as any);
+      const i = active.indexOf(p);
       if (i >= 0) active.splice(i, 1);
     });
-    active.push(p as any);
+    active.push(p);
     if (active.length >= concurrency) await Promise.race(active);
     return next();
   }
+
   await Promise.all(
     Array.from({ length: Math.min(concurrency, queue.length || 1) }).map(() =>
       next(),
@@ -198,7 +214,6 @@ export default function BookmarksImportPage() {
     string | undefined
   >();
   const [fetchLogoOnSave, setFetchLogoOnSave] = useState<boolean>(false);
-  const monacoRef = useRef<Monaco | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingRow, setEditingRow] = useState<RowItem | null>(null);
 
@@ -223,10 +238,6 @@ export default function BookmarksImportPage() {
   const [mapping, setMapping] = useState<Mapping>(() =>
     autoDetectMapping(keys),
   );
-
-  const handleEditorMount = useCallback((_: any, monaco: Monaco) => {
-    monacoRef.current = monaco;
-  }, []);
 
   const handleFile = async (file: File) => {
     const text = await new Promise<string>((res, rej) => {
@@ -346,16 +357,8 @@ export default function BookmarksImportPage() {
     }
     setSaving(true);
     setProgress(0);
-    let done = 0;
-    const wrapped = targets.map((r) => ({
-      ...r,
-      __onDone: () => {
-        done++;
-        setProgress(Math.round((done / targets.length) * 100));
-      },
-    }));
     // optionally enrich logo lazily at save-time
-    const enriched = (wrapped as any as RowItem[]).map((r) => {
+    const enriched = targets.map((r) => {
       if (!r.logo && fetchLogoOnSave && r.href) {
         try {
           const { hostname } = new URL(r.href);
@@ -364,12 +367,13 @@ export default function BookmarksImportPage() {
       }
       return r;
     });
-    await saveBatch(enriched);
-    wrapped.forEach((w) => (w as any).__onDone());
+    await saveBatch(enriched, (done, total) => {
+      setProgress(Math.round((done / total) * 100));
+    });
     setRows([...rows]);
     setSaving(false);
-    const succ = wrapped.filter((r) => r.__status === 'success').length;
-    const fail = wrapped.filter((r) => r.__status === 'failed').length;
+    const succ = targets.filter((r) => r.__status === 'success').length;
+    const fail = targets.filter((r) => r.__status === 'failed').length;
     message.success(`完成：成功 ${succ} 条，失败 ${fail} 条`);
   };
 
@@ -383,27 +387,35 @@ export default function BookmarksImportPage() {
     // Create categories level by level
     const created = new Map<string, string>(); // guid -> id
     const pending = new Set<string>(cats.map((c) => c.guid));
-    const tryCreate = async (guid: string) => {
+    const tryCreate = async (guid: string): Promise<boolean> => {
       const c = byGuid.get(guid)!;
+      if (!c.name?.trim()) {
+        pending.delete(guid);
+        return true; // skip empty names
+      }
       const parentId = c.parentGuid
         ? created.get(c.parentGuid)
         : topParentCategoryId || GLOBAL_CATEGORY_ID;
       if (c.parentGuid && !parentId) return false; // parent not created yet
-      const res = await request({
-        url: API_CATEGORY,
-        method: 'POST',
-        data: {
-          name: c.name,
-          categoryId: parentId,
-          audience: { visibility: 'hide' },
-        },
-      });
-      const id = res?.data?.id || res?.id || res?.id;
-      if (id) {
-        created.set(guid, id);
-        c.createdId = id;
-        pending.delete(guid);
-        return true;
+      try {
+        const res = await request({
+          url: API_CATEGORY,
+          method: 'POST',
+          data: {
+            name: c.name,
+            categoryId: parentId,
+            audience: { visibility: 'hide' },
+          },
+        });
+        const id = res?.data?.id || res?.id;
+        if (id) {
+          created.set(guid, id);
+          c.createdId = id;
+          pending.delete(guid);
+          return true;
+        }
+      } catch (e: any) {
+        message.error(`创建分类 "${c.name}" 失败: ${e?.message || e}`);
       }
       return false;
     };
@@ -525,7 +537,7 @@ export default function BookmarksImportPage() {
                       return (
                         <TableCom
                           size="small"
-                          rowKey={(r) => r.href + (r.name || '')}
+                          rowKey="__key"
                           columns={columns}
                           dataSource={subNavs}
                           search={false}
@@ -550,7 +562,7 @@ export default function BookmarksImportPage() {
                                       []) as string[],
                                   );
                                   const next = rows.map((r) =>
-                                    ids.has(r.href + (r.name || ''))
+                                    ids.has(r.__key)
                                       ? { ...r, categoryId: v }
                                       : r,
                                   );
@@ -600,9 +612,8 @@ export default function BookmarksImportPage() {
                     }}
                     onFinish={(vals) => {
                       if (!editingRow) return;
-                      const key = editingRow.href + (editingRow.name || '');
                       const next = rows.map((r) =>
-                        r.href + (r.name || '') === key
+                        r.__key === editingRow.__key
                           ? {
                               ...r,
                               desc: vals.desc,
@@ -677,7 +688,6 @@ export default function BookmarksImportPage() {
                     theme="vs-dark"
                     value={editorValue}
                     onChange={(v) => setEditorValue(v ?? '')}
-                    onMount={handleEditorMount}
                     options={{ minimap: { enabled: false }, wordWrap: 'on' }}
                   />
                   <Divider />

@@ -9,6 +9,13 @@ export default () => {
     if (ctx.method === 'OPTIONS') return await next();
     const url = normalizePath(ctx.url);
 
+    // Health checks: keep this endpoint unauthenticated so load balancers can probe it.
+    if (ctx.method === 'GET' && (url === '/healthz' || url === '/api/healthz')) {
+      ctx.status = 200;
+      ctx.body = { code: 1, msg: 'ok', data: { status: 'ok' } };
+      return;
+    }
+
     // 1.Validate request source header strictly
     const hdrRaw = ctx.get('X-App-Source');
     if (!hdrRaw) return respond(ctx, 400, 'malformed request');
