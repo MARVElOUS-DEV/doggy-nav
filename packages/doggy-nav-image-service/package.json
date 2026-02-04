@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "doggy-nav-core": "workspace:*",
-    "hono": "^4.7.10"
+    "hono": "^4.11.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",
