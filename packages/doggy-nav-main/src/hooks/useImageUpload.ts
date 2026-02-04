@@ -10,6 +10,7 @@ interface UploadedImage {
 interface UseImageUploadOptions {
   maxFiles?: number;
   maxSizeMb?: number;
+  imageHostname?: string;
   onSuccess?: (images: UploadedImage[]) => void;
   onError?: (error: string) => void;
 }
@@ -36,7 +37,7 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}) {
-  const { maxFiles = 3, maxSizeMb = 3, onSuccess, onError } = options;
+  const { maxFiles = 3, maxSizeMb = 3, imageHostname, onSuccess, onError } = options;
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -78,6 +79,9 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           : '/api/images/upload';
 
         const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' };
+        if (imageHostname) {
+          headers['X-Image-Hostname'] = imageHostname;
+        }
 
         // For external image service, get token from backend and add Authorization header
         if (IMAGE_SERVICE_URL) {
@@ -108,7 +112,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         setProgress(0);
       }
     },
-    [validateFiles, onSuccess, onError]
+    [validateFiles, imageHostname, onSuccess, onError]
   );
 
   return { upload, uploading, progress, validateFiles };

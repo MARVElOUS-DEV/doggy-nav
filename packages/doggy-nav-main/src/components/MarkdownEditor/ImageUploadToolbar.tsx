@@ -8,12 +8,14 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 interface ImageUploadToolbarProps {
   onInsert: (markdown: string) => void;
   disabled?: boolean;
+  imageHostname?: string;
 }
 
-export default function ImageUploadToolbar({ onInsert, disabled }: ImageUploadToolbarProps) {
+export default function ImageUploadToolbar({ onInsert, disabled, imageHostname }: ImageUploadToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { upload, uploading, progress } = useImageUpload({
+    imageHostname,
     onSuccess: (images) => {
       const md = images.map((img) => `![image](${img.url})`).join('\n');
       onInsert(md);

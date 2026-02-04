@@ -120,7 +120,7 @@ app.post('/upload', async (c) => {
 
   if (!files.length) return c.json({ success: false, error: 'No files provided' }, 400);
 
-  const hostname = new URL(c.req.url).hostname;
+  const hostname = c.req.header('X-Image-Hostname') || new URL(c.req.url).hostname;
   const result = await service.upload(payload.userId, hostname, isAdmin ?? false, files);
 
   if (!result.success) return c.json({ success: false, error: result.error }, 400);

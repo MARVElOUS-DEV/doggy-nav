@@ -4,10 +4,6 @@ import os from 'os';
 export default () => {
   const workers = process.env.EGG_WORKERS || Math.min(os.cpus().length, 2); // 最多2个worker
   const config: PowerPartial<EggAppConfig> = {};
-  config.cluster = {
-    listen: {
-      workers: parseInt(workers, 10),
-    },
-  };
+  config.cluster = { workers: parseInt(workers, 10) };
   return config;
 };
