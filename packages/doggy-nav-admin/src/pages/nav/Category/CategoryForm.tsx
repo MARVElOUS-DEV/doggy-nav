@@ -2,6 +2,7 @@ import IconPicker from '@/components/IconPicker';
 import useProForm from '@/hooks/useProForm';
 import useProFormItem from '@/hooks/useProFormItem';
 import { API_CATEGORY, getGroups, getRoles } from '@/services/api';
+import { getCategoryDisplayName } from '@/utils/helpers';
 import request from '@/utils/request';
 import {
   ModalForm,
@@ -128,7 +129,10 @@ export default function CategoryForm(props: CategoryFormProps) {
         mode="single"
         disabled={props.selectedData?.categoryId === ''}
         options={props.categoryList.reduce(
-          (t, v) => [...t, { label: v.name, value: v.id }],
+          (t, v) => [
+            ...t,
+            { label: getCategoryDisplayName(v.name), value: v.id },
+          ],
           [],
         )}
       />

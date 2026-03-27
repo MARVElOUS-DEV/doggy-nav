@@ -16,7 +16,7 @@ export interface FeatureFlags {
  * Set to false to disable a feature, true to enable it
  */
 export const featureFlags: FeatureFlags = {
-  lang_switch: false,
+  lang_switch: true,
 };
 
 /**

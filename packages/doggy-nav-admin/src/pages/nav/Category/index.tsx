@@ -4,7 +4,7 @@ import { GLOBAL_CATEGORY_ID, GLOBAL_CATEGORY_NAME } from '@/constants';
 import CategoryForm from '@/pages/nav/Category/CategoryForm';
 import { API_CATEGORY, API_CATEGORY_LIST } from '@/services/api';
 import { CategoryModel } from '@/types/api';
-import { getIconComponent } from '@/utils/helpers';
+import { getCategoryDisplayName, getIconComponent } from '@/utils/helpers';
 import request from '@/utils/request';
 import { formatDateTime } from '@/utils/time';
 import { PlusOutlined } from '@ant-design/icons';
@@ -74,7 +74,7 @@ export default function NavAuditListPage() {
           <span style={{ marginRight: '4px' }}>
             {getIconComponent(record.icon)}
           </span>
-          <span>{record.name}</span>
+          <span>{getCategoryDisplayName(record.name)}</span>
         </>
       ),
     },

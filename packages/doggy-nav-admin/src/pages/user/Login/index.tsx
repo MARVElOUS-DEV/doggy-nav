@@ -2,17 +2,24 @@ import Footer from '@/components/Footer';
 import { login } from '@/services/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import ProForm, { ProFormText } from '@ant-design/pro-form';
-import { Link, history, useLocation, useModel } from '@umijs/max';
+import { Link, history, useLocation } from '@umijs/max';
 import { message } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './index.less';
 
 const goto = (search: URLSearchParams) => {
+  const redirect = search.get('redirect');
+  const nextPath =
+    redirect && redirect.startsWith('/') && !redirect.startsWith('//')
+      ? redirect
+      : '/';
+
+  if (typeof window !== 'undefined') {
+    window.location.replace(nextPath);
+    return;
+  }
   if (!history) return;
-  setTimeout(() => {
-    const redirect = search.get('redirect');
-    history.push(redirect || '/');
-  }, 10);
+  history.push(nextPath);
 };
 
 const Login: React.FC = () => {
@@ -20,7 +27,6 @@ const Login: React.FC = () => {
   const { search: searchStr } = useLocation();
   const search = new URLSearchParams(searchStr);
   const formRef = useRef<any>();
-  const { setInitialState } = useModel('@@initialState');
 
   // Handle Enter key press
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -68,13 +74,6 @@ const Login: React.FC = () => {
       if (res?.data) {
         const defaultloginSuccessMessage = '登录成功！';
         message.success(defaultloginSuccessMessage);
-        // Refresh initial state so access roles update immediately
-        try {
-          await setInitialState?.((s: any) => ({
-            ...s,
-            currentUser: res?.data?.user,
-          }));
-        } catch {}
         goto(search);
         return;
       } // 如果失败去设置用户错误信息

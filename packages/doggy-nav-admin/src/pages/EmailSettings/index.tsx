@@ -56,7 +56,7 @@ export default function EmailSettingsPage() {
         form.resetFields();
       }
     } catch (error) {
-      message.error('Failed to load email settings');
+      message.error('加载邮件设置失败');
     }
   };
 
@@ -69,9 +69,9 @@ export default function EmailSettingsPage() {
         await updateEmailSettings(values);
         setHasSettings(true);
       }
-      message.success('Email settings updated successfully');
+      message.success('邮件设置保存成功');
     } catch (error) {
-      message.error('Failed to update email settings');
+      message.error('更新邮件设置失败');
     } finally {
       setLoading(false);
     }
@@ -81,9 +81,9 @@ export default function EmailSettingsPage() {
     setTestLoading(true);
     try {
       await testEmailSettings({});
-      message.success('Test email sent successfully');
+      message.success('测试邮件发送成功');
     } catch (error) {
-      message.error('Failed to send test email');
+      message.error('发送测试邮件失败');
     } finally {
       setTestLoading(false);
     }
@@ -93,10 +93,10 @@ export default function EmailSettingsPage() {
 
   return (
     <PageContainer header={{ title: false }}>
-      <Title level={2}>Email Notification Settings</Title>
+      <Title level={2}>邮件通知设置</Title>
 
       <Alert
-        message="Only users with sysadmin role can access and modify these settings."
+        message="仅 sysadmin 角色用户可访问并修改这些设置。"
         type="info"
         showIcon
         style={{ marginBottom: '20px' }}
@@ -114,14 +114,14 @@ export default function EmailSettingsPage() {
           adminEmails: [],
         }}
       >
-        <Title level={3}>SMTP Configuration</Title>
+        <Title level={3}>SMTP 配置</Title>
 
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               name="smtpHost"
-              label="SMTP Host"
-              rules={[{ required: true, message: 'Please enter SMTP host' }]}
+              label="SMTP 服务器"
+              rules={[{ required: true, message: '请输入 SMTP 服务器地址' }]}
             >
               <Input placeholder="smtp.example.com" />
             </Form.Item>
@@ -129,8 +129,8 @@ export default function EmailSettingsPage() {
           <Col span={12}>
             <Form.Item
               name="smtpPort"
-              label="SMTP Port"
-              rules={[{ required: true, message: 'Please enter SMTP port' }]}
+              label="SMTP 端口"
+              rules={[{ required: true, message: '请输入 SMTP 端口' }]}
             >
               <Input type="number" placeholder="587" />
             </Form.Item>
@@ -141,7 +141,7 @@ export default function EmailSettingsPage() {
           <Col span={12}>
             <Form.Item
               name="smtpSecure"
-              label="Use SSL/TLS"
+              label="启用 SSL/TLS"
               valuePropName="checked"
             >
               <Switch />
@@ -150,10 +150,8 @@ export default function EmailSettingsPage() {
           <Col span={12}>
             <Form.Item
               name="smtpUser"
-              label="SMTP Username"
-              rules={[
-                { required: true, message: 'Please enter SMTP username' },
-              ]}
+              label="SMTP 用户名"
+              rules={[{ required: true, message: '请输入 SMTP 用户名' }]}
             >
               <Input placeholder="your-email@example.com" />
             </Form.Item>
@@ -164,24 +162,22 @@ export default function EmailSettingsPage() {
           <Col span={24}>
             <Form.Item
               name="smtpPass"
-              label="SMTP Password"
-              rules={[
-                { required: true, message: 'Please enter SMTP password' },
-              ]}
+              label="SMTP 密码"
+              rules={[{ required: true, message: '请输入 SMTP 密码' }]}
             >
-              <Input.Password placeholder="Enter SMTP password" />
+              <Input.Password placeholder="请输入 SMTP 密码" />
             </Form.Item>
           </Col>
         </Row>
 
-        <Title level={3}>Sender Configuration</Title>
+        <Title level={3}>发件人配置</Title>
 
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               name="fromName"
-              label="From Name"
-              rules={[{ required: true, message: 'Please enter sender name' }]}
+              label="发件人名称"
+              rules={[{ required: true, message: '请输入发件人名称' }]}
             >
               <Input placeholder="Doggy Nav" />
             </Form.Item>
@@ -189,11 +185,11 @@ export default function EmailSettingsPage() {
           <Col span={12}>
             <Form.Item
               name="fromAddress"
-              label="From Address"
+              label="发件邮箱"
               rules={[
                 {
                   required: true,
-                  message: 'Please enter sender email address',
+                  message: '请输入发件邮箱地址',
                 },
               ]}
             >
@@ -206,23 +202,21 @@ export default function EmailSettingsPage() {
           <Col span={12}>
             <Form.Item
               name="replyTo"
-              label="Reply To Address"
-              rules={[
-                { required: true, message: 'Please enter reply-to address' },
-              ]}
+              label="回复邮箱"
+              rules={[{ required: true, message: '请输入回复邮箱地址' }]}
             >
               <Input placeholder="support@example.com" />
             </Form.Item>
           </Col>
         </Row>
 
-        <Title level={3}>Notification Settings</Title>
+        <Title level={3}>通知配置</Title>
 
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               name="enableNotifications"
-              label="Enable Notifications"
+              label="启用通知"
               valuePropName="checked"
             >
               <Switch />
@@ -234,8 +228,8 @@ export default function EmailSettingsPage() {
           <Col span={24}>
             <Form.Item
               name="adminEmails"
-              label="Admin Emails"
-              help="Email addresses that will receive submission notifications (one per line)"
+              label="管理员邮箱"
+              help="接收提交通知的邮箱地址，每行一个"
             >
               <Input.TextArea
                 rows={4}
@@ -253,7 +247,7 @@ export default function EmailSettingsPage() {
 
         {adminEmails && adminEmails.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
-            <Text strong>Admin recipients:</Text>
+            <Text strong>管理员收件人：</Text>
             <ul>
               {adminEmails.map((email, index) => (
                 <li key={index}>{email}</li>
@@ -265,31 +259,27 @@ export default function EmailSettingsPage() {
         <Form.Item>
           <Space>
             <Button type="primary" htmlType="submit" loading={loading}>
-              Save Settings
+              保存设置
             </Button>
             <Button onClick={loadSettings} loading={loading}>
-              Reset
+              重置
             </Button>
             <Button onClick={handleTestEmail} loading={testLoading}>
-              Send Test Email
+              发送测试邮件
             </Button>
           </Space>
         </Form.Item>
       </Form>
 
       <Alert
-        message="Important Notes"
+        message="注意事项"
         description={
           <div>
             <ul>
-              <li>Changes take effect immediately</li>
-              <li>Test email will be sent from the configured SMTP server</li>
-              <li>
-                Admin emails are used for receiving new submission notifications
-              </li>
-              <li>
-                Ensure SMTP credentials are correct to avoid delivery failures
-              </li>
+              <li>修改后会立即生效</li>
+              <li>测试邮件会通过当前配置的 SMTP 服务器发送</li>
+              <li>管理员邮箱用于接收新的提交通知</li>
+              <li>请确保 SMTP 凭据正确，避免邮件发送失败</li>
             </ul>
           </div>
         }

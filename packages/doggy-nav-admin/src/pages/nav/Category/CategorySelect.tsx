@@ -1,5 +1,6 @@
 import { API_CATEGORY_LIST } from '@/services/api';
 import { CategoryModel } from '@/types/api';
+import { getCategoryDisplayName } from '@/utils/helpers';
 import request from '@/utils/request';
 import type { SelectProps } from 'antd';
 import { Select } from 'antd';
@@ -49,14 +50,18 @@ export default function CategorySelect(props: CategorySelectProps) {
     return (categoryList || []).map((item) => {
       const hasChildren =
         Array.isArray(item.children) && item.children.length > 0;
+      const label = getCategoryDisplayName(item.name);
       if (!hasChildren) {
-        return { label: item.name, value: item.id };
+        return { label, value: item.id };
       }
       return {
-        label: item.name,
+        label,
         options: [
-          { label: item.name, value: item.id },
-          ...item.children.map((sub) => ({ label: sub.name, value: sub.id })),
+          { label, value: item.id },
+          ...item.children.map((sub) => ({
+            label: getCategoryDisplayName(sub.name),
+            value: sub.id,
+          })),
         ],
       } as any;
     });

@@ -20,16 +20,20 @@ export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
-  // Fetch current user info (roles included) to drive access control
-  try {
+  const fetchUserInfo = async () => {
     const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
     const currentUser = json?.data?.user || undefined;
-    if (typeof json?.data?.accessExp === 'number')
+    if (typeof json?.data?.accessExp === 'number') {
       setAccessExpEpochMs(json.data.accessExp);
-    const fetchUserInfo = async () => currentUser;
+    }
+    return currentUser;
+  };
+
+  try {
+    const currentUser = await fetchUserInfo();
     return { settings: {}, currentUser, fetchUserInfo };
   } catch {
-    return { settings: {} };
+    return { settings: {}, fetchUserInfo };
   }
 }
 

@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🩹 Fixes
 
+- Display admin category names with local Chinese labels across category tables, selectors, and audit details
 - Update workers ci seeding ([#33](https://github.com/MARVElOUS-DEV/doggy-nav/pull/33))
 - Fix wokers ci ([#34](https://github.com/MARVElOUS-DEV/doggy-nav/pull/34))
 - Fix wokers ci 2 ([#35](https://github.com/MARVElOUS-DEV/doggy-nav/pull/35))

@@ -47,6 +47,10 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
       await apiRequest({ url: '/api/auth/logout', method: 'POST' });
     } catch {}
     message.success('退出登录成功');
+    if (typeof window !== 'undefined') {
+      window.location.replace(loginPath);
+      return;
+    }
     history.push(loginPath);
   };
 

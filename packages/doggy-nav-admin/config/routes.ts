@@ -59,7 +59,7 @@ export default [
     access: 'isSysadmin',
   },
   {
-    name: '邮件通知',
+    name: '邮件通知设置',
     icon: 'mail',
     path: '/settings/email',
     component: './EmailSettings',
@@ -162,7 +162,7 @@ export const pageTitles: Record<
     showSearch: false,
   },
   '/settings/email': {
-    title: '邮件通知',
+    title: '邮件通知设置',
     subtitle: '配置 SMTP 与通知收件人',
     showUserMenu: true,
     showSearch: false,

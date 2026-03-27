@@ -157,6 +157,11 @@ export default function AppHeader({
 
       {/* Desktop Actions */}
       <div className="hidden lg:flex items-center space-x-2">
+        {/* Language Switcher */}
+        {/** @ts-ignore */}
+        <ReactIf condition={isFeatureEnabled('lang_switch')}>
+          <LanguageSwitcher />
+        </ReactIf>
         <Tooltip content={t('recommend_site')}>
           <Link
             href="/recommend"
@@ -173,11 +178,7 @@ export default function AppHeader({
             icon={<IconSearch style={{ height: 20, width: 20 }} />}
           />
         </Tooltip>
-        {/* Language Switcher */}
-        {/** @ts-ignore */}
-        <ReactIf condition={isFeatureEnabled('lang_switch')}>
-          <LanguageSwitcher />
-        </ReactIf>
+
         <div className="mr-1">
           <ThemeToggle />
         </div>

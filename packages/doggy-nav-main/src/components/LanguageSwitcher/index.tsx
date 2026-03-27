@@ -1,30 +1,63 @@
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
-import { Tooltip } from '@arco-design/web-react';
+import { Button, Dropdown, Menu, Tooltip } from '@arco-design/web-react';
+import { IconDown } from '@arco-design/web-react/icon';
+import { Languages } from 'lucide-react';
+
+const SUPPORTED_LOCALES = [
+  { value: 'zh', shortLabelKey: 'chinese_short', labelKey: 'chinese' },
+  { value: 'en', shortLabelKey: 'english_short', labelKey: 'english' },
+] as const;
 
 export default function LanguageSwitcher() {
   const router = useRouter();
   const { t } = useTranslation();
+  const currentLocale = router.locale ?? router.defaultLocale ?? 'zh';
+  const currentLanguage =
+    SUPPORTED_LOCALES.find((locale) => locale.value === currentLocale) ?? SUPPORTED_LOCALES[0];
 
-  const toggleLanguage = () => {
-    const newLocale = router.locale === 'zh' ? 'en' : 'zh';
-    router.push(router.pathname, router.asPath, { locale: newLocale });
+  const changeLanguage = (locale: (typeof SUPPORTED_LOCALES)[number]['value']) => {
+    if (locale === currentLocale) {
+      return;
+    }
+
+    router.push(
+      {
+        pathname: router.pathname,
+        query: router.query,
+      },
+      router.asPath,
+      { locale }
+    );
   };
 
-  const currentLang = router.locale === 'zh' ? t('chinese_short') : t('english_short');
-  const nextLang = router.locale === 'zh' ? t('english') : t('chinese');
+  const languageMenu = (
+    <Menu selectedKeys={[currentLanguage.value]}>
+      {SUPPORTED_LOCALES.map((locale) => (
+        <Menu.Item key={locale.value} onClick={() => changeLanguage(locale.value)}>
+          <div className="flex items-center justify-between min-w-[96px] gap-3">
+            <span>{t(locale.labelKey)}</span>
+            <span className="text-xs text-theme-muted-foreground">{t(locale.shortLabelKey)}</span>
+          </div>
+        </Menu.Item>
+      ))}
+    </Menu>
+  );
 
   return (
-    <Tooltip content={`${t('language_switch_to')} ${nextLang}`}>
-      <button
-        onClick={toggleLanguage}
-        className="p-2 rounded-full hover:bg-theme-muted transition-colors flex items-center justify-center min-w-[40px]"
-        aria-label={`${t('language_switch_to')} ${nextLang}`}
-      >
-        <span className="text-sm font-medium text-theme-muted-foreground">
-          {currentLang}
-        </span>
-      </button>
+    <Tooltip content={t('language')}>
+      <Dropdown droplist={languageMenu} trigger="click" position="bl">
+        <Button
+          className="app-header-action h-10 !px-3 !flex items-center gap-1.5"
+          aria-label={t('language')}
+        >
+          <Languages size={16} className="text-theme-muted-foreground" />
+          <span className="text-sm font-medium text-theme-muted-foreground">
+            {t(currentLanguage.shortLabelKey)}
+          </span>
+          <IconDown className="text-xs text-theme-muted-foreground" />
+        </Button>
+      </Dropdown>
     </Tooltip>
   );
 }
