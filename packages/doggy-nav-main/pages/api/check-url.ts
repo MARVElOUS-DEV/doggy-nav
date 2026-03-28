@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { probeUrlAvailability } from '../../lib/urlAvailability';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -14,32 +15,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const startTime = Date.now();
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const response = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+    const result = await probeUrlAvailability(url, {
+      timeoutMs: 5000,
+      init: {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+        },
       },
     });
-
-    clearTimeout(timeoutId);
-    const responseTime = Date.now() - startTime;
-    // Treat 401/403 as accessible because the server is reachable but requires auth
-    const isAuthProtected = response.status === 401 || response.status === 403;
-    res.status(200).json({
-      accessible: response.ok || isAuthProtected,
-      status: response.status,
-      responseTime,
-    });
+    res.status(200).json(result);
   } catch (error) {
-    const responseTime = Date.now() - startTime;
     res.status(200).json({
       accessible: false,
       status: 0,
-      responseTime,
+      responseTime: Date.now() - startTime,
+      checkedVia: 'HEAD',
     });
   }
 }

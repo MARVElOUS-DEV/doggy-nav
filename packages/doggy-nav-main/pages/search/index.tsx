@@ -75,7 +75,7 @@ export default function SearchResultsPage() {
 
   if (!query) {
     return (
-      <div className="main p-4 rounded-xl bg-theme-background text-theme-foreground border border-theme-border transition-colors">
+      <div className="main rounded-2xl bg-theme-background text-theme-foreground border border-theme-border shadow-lg p-8 transition-colors">
         <div className="text-center py-8">
           <Title heading={4}>{t('input_keyword_to_search')}</Title>
           <p className="text-theme-muted-foreground">{t('please_enter_search_term_to_see_results')}</p>
@@ -85,7 +85,7 @@ export default function SearchResultsPage() {
   }
 
   return (
-    <div className="main p-4 rounded-xl bg-theme-background text-theme-foreground transition-colors">
+    <div className="main rounded-2xl bg-theme-background text-theme-foreground border border-theme-border shadow-lg p-8 transition-colors">
       {/* Optimized Loading Overlay */}
       {loading && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">

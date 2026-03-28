@@ -1,3 +1,5 @@
+import { probeUrlAvailability } from '../../lib/urlAvailability';
+
 // Cloudflare Pages Function: proxy /api/* to backend and implement Next-only endpoints
 export const onRequest = async (context: any) => {
   const { request, env } = context;
@@ -21,29 +23,29 @@ export const onRequest = async (context: any) => {
     }
     const start = Date.now();
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const resp = await fetch(target, {
-        method: 'HEAD',
-        signal: controller.signal,
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      const result = await probeUrlAvailability(target, {
+        timeoutMs: 5000,
+        init: {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+          },
         },
       });
-      clearTimeout(timeout);
-      const ms = Date.now() - start;
-      const isAuth = resp.status === 401 || resp.status === 403;
-      const body = JSON.stringify({
-        accessible: resp.ok || isAuth,
-        status: resp.status,
-        responseTime: ms,
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
       });
-      return new Response(body, { status: 200, headers: { 'Content-Type': 'application/json' } });
     } catch (e) {
-      const ms = Date.now() - start;
-      const body = JSON.stringify({ accessible: false, status: 0, responseTime: ms });
-      return new Response(body, { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(
+        JSON.stringify({
+          accessible: false,
+          status: 0,
+          responseTime: Date.now() - start,
+          checkedVia: 'HEAD',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
     }
   }
 

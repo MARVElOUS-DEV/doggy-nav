@@ -133,7 +133,7 @@ export default function NavDetail() {
       <div className="container p-4 mx-auto max-w-7xl text-theme-foreground transition-colors">
         <Row gutter={32} className="site-info mt-8">
           <Col md={8} xs={24} className="item">
-            <div className="rounded-xl shadow-lg p-4 border border-theme-border bg-theme-background">
+            <div className="rounded-2xl shadow-lg p-4 border border-theme-border bg-theme-background">
               <div className="h-40 md:h-44 flex items-center justify-center bg-theme-muted border border-theme-border rounded-lg">
                 <BoxSkeleton className="w-20 h-20 md:w-24 md:h-24" />
               </div>
@@ -161,7 +161,7 @@ export default function NavDetail() {
 
         <Row gutter={32} className="random-section mt-12">
           <Col span={24}>
-            <div className="rounded-xl shadow-lg border border-theme-border overflow-hidden bg-theme-background">
+            <div className="rounded-2xl shadow-lg border border-theme-border overflow-hidden bg-theme-background">
               <div className="flex justify-between items-center p-6 border-b border-theme-border">
                 <BoxSkeleton className="h-6 w-48" />
                 <BoxSkeleton className="h-6 w-6 rounded-full" />
@@ -175,7 +175,7 @@ export default function NavDetail() {
 
         <Row gutter={32} className="site-detail mt-12 mb-12">
           <Col span={24}>
-            <div className="rounded-xl shadow-lg p-8 border border-theme-border bg-theme-background">
+            <div className="rounded-2xl shadow-lg p-8 border border-theme-border bg-theme-background">
               <BoxSkeleton className="h-7 w-40 mb-4" />
               <BoxSkeleton className="h-5 w-full mb-2" />
               <BoxSkeleton className="h-5 w-11/12" />
@@ -190,7 +190,7 @@ export default function NavDetail() {
     <div className="container p-4 mx-auto max-w-7xl text-theme-foreground transition-colors">
       <Row gutter={32} className="site-info mt-8">
         <Col md={8} xs={24} className="item">
-          <div className="shiny left rounded-xl shadow-lg p-4 relative border border-theme-border bg-theme-background transition-colors">
+          <div className="shiny left rounded-2xl shadow-lg p-4 relative border border-theme-border bg-theme-background transition-colors">
             <div className="img-wrap h-40 md:h-44 flex items-center justify-center bg-theme-color border border-theme-border rounded-lg transition-colors">
               <DoggyImage
                 logo={detail.logo}
@@ -318,7 +318,7 @@ export default function NavDetail() {
 
       <Row gutter={32} className="random-section mt-12">
         <Col span={24}>
-          <div className="app-card bg-theme-background text-theme-foreground rounded-xl shadow-lg border border-theme-border overflow-hidden transition-colors">
+          <div className="app-card bg-theme-background text-theme-foreground rounded-2xl shadow-lg border border-theme-border overflow-hidden transition-colors">
             <div className="app-card-header flex justify-between items-center p-6 border-b border-theme-border">
               <h3 className="app-card-title m-0 text-xl font-bold">{t('random_websites')}</h3>
               <div className="app-card-extra">
@@ -364,7 +364,7 @@ export default function NavDetail() {
 
       <Row gutter={32} className="site-detail mt-12 mb-12">
         <Col span={24}>
-          <div className="detail bg-theme-background text-theme-foreground rounded-xl shadow-lg p-8 border border-theme-border transition-colors">
+          <div className="detail bg-theme-background text-theme-foreground rounded-2xl shadow-lg p-8 border border-theme-border transition-colors">
             <h2 className="text-2xl font-bold mb-4">{t('detailed_info')}</h2>
             <div className="detail text-base leading-relaxed">
               <MarkdownContent

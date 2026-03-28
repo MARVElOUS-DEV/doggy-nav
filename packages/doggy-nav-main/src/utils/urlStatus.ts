@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect } from 'react';
+import { probeUrlAvailability } from '@/lib/urlAvailability';
 
 export type UrlStatus = 'checking' | 'accessible' | 'inaccessible' | 'unknown';
 
@@ -105,28 +106,12 @@ export const checkUrlAccessibility = async (url: string): Promise<UrlStatusInfo>
 
   const startTime = Date.now();
 
-  // Try direct client-side HEAD request
+  // Try direct client-side HTTP probing first.
   try {
-    // Use a lightweight HEAD request to check accessibility directly from the browser
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-    const response = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
-      },
-    });
-
-    clearTimeout(timeoutId);
-
-    // Treat 401/403 as accessible because the server is reachable but requires auth
-    const isAuthProtected = response.status === 401 || response.status === 403;
-
+    const probeResult = await probeUrlAvailability(url, { timeoutMs: 5000 });
     const result: UrlStatusInfo = {
-      status: response.ok || isAuthProtected ? 'accessible' : 'inaccessible',
-      responseTime: Date.now() - startTime,
+      status: probeResult.accessible ? 'accessible' : 'inaccessible',
+      responseTime: probeResult.responseTime,
       timestamp: Date.now(),
       checked: true,
     };
@@ -135,38 +120,34 @@ export const checkUrlAccessibility = async (url: string): Promise<UrlStatusInfo>
     saveCacheWithDebounce();
     return result;
   } catch (error) {
-    // If it's a CORS or network error, try the backend proxy as fallback
-    if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('CORS') || error.message.includes('Network'))) {
-      console.warn(`Direct fetch failed for ${url}, trying backend proxy fallback`, error);
+    console.warn(`Direct fetch failed for ${url}, trying backend proxy fallback`, error);
 
-      try {
-        // Fallback to backend proxy for CORS-restricted URLs (e.g., intranet URLs)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const response = await fetch(`/api/check-url?url=${encodeURIComponent(url)}`, {
-          method: 'GET',
-          signal: controller.signal,
-          credentials: 'same-origin'
-        });
+      const response = await fetch(`/api/check-url?url=${encodeURIComponent(url)}`, {
+        method: 'GET',
+        signal: controller.signal,
+        credentials: 'same-origin',
+      });
 
-        clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-        const backendResult = await response.json();
+      const backendResult = await response.json();
 
-        const result: UrlStatusInfo = {
-          status: backendResult.accessible ? 'accessible' : 'inaccessible',
-          responseTime: backendResult.responseTime,
-          timestamp: Date.now(),
-          checked: true,
-        };
+      const result: UrlStatusInfo = {
+        status: backendResult.accessible ? 'accessible' : 'inaccessible',
+        responseTime: backendResult.responseTime,
+        timestamp: Date.now(),
+        checked: true,
+      };
 
-        statusCache.set(url, result);
-        saveCacheWithDebounce();
-        return result;
-      } catch (backendError) {
-        console.warn(`Backend proxy also failed for ${url}`, backendError);
-      }
+      statusCache.set(url, result);
+      saveCacheWithDebounce();
+      return result;
+    } catch (backendError) {
+      console.warn(`Backend proxy also failed for ${url}`, backendError);
     }
 
     // If both direct and fallback fail, mark as inaccessible
@@ -191,7 +172,7 @@ export const useUrlStatus = (url: string, enabled = true) => {
   useLayoutEffect(() => {
     // Load cache from localStorage on module initialization
     loadCacheFromStorage();
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (!url || !enabled) return;
