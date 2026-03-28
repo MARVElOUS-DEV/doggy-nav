@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import React from 'react';
@@ -14,8 +14,8 @@ interface DoggyImageProps {
   [key: string]: any;
 }
 
-export default function DoggyImage({
-  logo = getRandomFallbackIcon(),
+function DoggyImage({
+  logo,
   name = 'logo',
   width = 20,
   height = 20,
@@ -23,7 +23,11 @@ export default function DoggyImage({
   fallbackSrc,
   ...rest
 }: DoggyImageProps) {
-  const [logoSrc, setLogoSrc] = useState(logo);
+  const [logoSrc, setLogoSrc] = useState(() => logo || fallbackSrc || getRandomFallbackIcon());
+
+  useEffect(() => {
+    setLogoSrc(logo || fallbackSrc || getRandomFallbackIcon());
+  }, [fallbackSrc, logo]);
 
   const handleLogoError = () => {
     setLogoSrc(fallbackSrc ?? getRandomFallbackIcon());
@@ -41,6 +45,8 @@ export default function DoggyImage({
     />
   );
 }
+
+export default React.memo(DoggyImage);
 
 interface DynamicIconProps {
   iconName?: string;

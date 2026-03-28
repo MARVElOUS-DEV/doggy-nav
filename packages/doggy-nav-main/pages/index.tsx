@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Spin } from '@arco-design/web-react';
+import dynamic from 'next/dynamic';
 import Affiche from '@/components/Affiche';
 import NavRankingList from '@/components/NavRankingList';
-import StatsChart from '@/components/StatsChart';
 import VerticalTimelineContainer from '@/components/Timelines/VerticalTimelineContainer';
 import api from '@/utils/api';
 import { createTimelineData } from '@/utils/timelineData';
@@ -10,14 +10,60 @@ import { chromeMicroToISO } from '@/utils/time';
 import { useAtom, useAtomValue } from 'jotai';
 import { categoriesAtom, navRankingAtom, isAuthenticatedAtom } from '@/store/store';
 import Link from 'next/link';
-import { TimelineItem as TimelineItemType } from '@/types/timeline';
+import { TimelineItem as TimelineItemType, TimelineYear } from '@/types/timeline';
 import { useTranslation } from 'react-i18next';
+import useIntersectionObserver from '@/hooks/useIntersectionObserver';
+
+function DeferredSectionPlaceholder({
+  title,
+  description,
+  minHeight = 'min-h-[320px]',
+}: {
+  title: string;
+  description: string;
+  minHeight?: string;
+}) {
+  return (
+    <div
+      className={`bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border flex items-center justify-center ${minHeight}`}
+    >
+      <div className="text-center">
+        <Spin size={32} />
+        <p className="mt-4 text-lg font-semibold text-theme-foreground">{title}</p>
+        <p className="mt-2 text-theme-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+const LazyStatsChart = dynamic(() => import('@/components/StatsChart'), {
+  ssr: false,
+  loading: () => (
+    <DeferredSectionPlaceholder
+      title="Loading statistics"
+      description="Preparing charts for this page."
+    />
+  ),
+});
+
+function createEmptyCurrentYearData(year: number): TimelineYear {
+  return {
+    year,
+    items: [],
+    totalWebsites: 0,
+    color: '',
+    position: { x: 0, y: 0, z: 0, rotation: 0 },
+    featuredWebsites: [],
+  };
+}
 
 export default function HomePage() {
   const [navRanking, setNavRanking] = useAtom(navRankingAtom);
-  const [loading, setLoading] = useState(false);
+  const [rankingLoading, setRankingLoading] = useState(true);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [timelineLoaded, setTimelineLoaded] = useState(false);
   const { t } = useTranslation('translation');
-  const [currentYearData, setCurrentYearData] = useState<any>(null);
+  const [currentYearData, setCurrentYearData] = useState<TimelineYear | null>(null);
   const currentYear = new Date().getFullYear();
   const categories = useAtomValue(categoriesAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
@@ -30,50 +76,132 @@ export default function HomePage() {
   const [selectedItem, setSelectedItem] = useState<TimelineItemType | undefined>();
   const [totalNavCount, setTotalNavCount] = useState(0);
   const [totalViews, setTotalViews] = useState(0);
+  const [shouldLoadTimeline, setShouldLoadTimeline] = useState(false);
+  const [shouldLoadChart, setShouldLoadChart] = useState(false);
+  const [timelineRef, isTimelineVisible] = useIntersectionObserver({
+    rootMargin: '320px 0px',
+    threshold: 0,
+  });
+  const [chartRef, isChartVisible] = useIntersectionObserver({
+    rootMargin: '320px 0px',
+    threshold: 0,
+  });
 
-  // Initial data fetch - nav ranking and timeline data
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    let cancelled = false;
+
+    const fetchRanking = async () => {
       try {
         const navRankingData = await api.getNavRanking();
-        setNavRanking(navRankingData);
-
-        // Fetch nav list and build timeline data TODO: add more action
-        const list = await api.getNavAll({ pageSize: 100, pageNumber: 1 });
-        const normalized = (list?.data || []).map((n) => ({
-          ...n,
-          createTime: chromeMicroToISO(n.createTime) || n.createTime,
-        }));
-        const timelineData = createTimelineData(normalized, true);
-        const currentYear = new Date().getFullYear();
-        const cy = timelineData.find((y) => y.year === currentYear);
-        setCurrentYearData(
-          cy || {
-            year: currentYear,
-            items: [],
-            totalWebsites: 0,
-            color: '',
-            position: { x: 0, y: 0, z: 0, rotation: 0 },
-            featuredWebsites: [],
-          }
-        );
-
-        // Fetch statistics for cards
-        setTotalNavCount(list?.total || 0);
-        const totalViewsSum = normalized.reduce(
-          (sum: number, nav: any) => sum + (nav.view || 0),
-          0
-        );
-        setTotalViews(totalViewsSum);
+        if (!cancelled) {
+          setNavRanking(navRankingData);
+        }
       } catch (error) {
         console.error('Failed to fetch data', error);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setRankingLoading(false);
+        }
       }
     };
-    fetchData();
+
+    fetchRanking();
+
+    return () => {
+      cancelled = true;
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (isTimelineVisible) {
+      setShouldLoadTimeline(true);
+    }
+  }, [isTimelineVisible]);
+
+  useEffect(() => {
+    if (isChartVisible) {
+      setShouldLoadChart(true);
+    }
+  }, [isChartVisible]);
+
+  useEffect(() => {
+    if (rankingLoading || shouldLoadTimeline) {
+      return;
+    }
+
+    const fallbackTimer = window.setTimeout(() => {
+      setShouldLoadTimeline(true);
+    }, 400);
+
+    return () => {
+      window.clearTimeout(fallbackTimer);
+    };
+  }, [rankingLoading, shouldLoadTimeline]);
+
+  useEffect(() => {
+    if (rankingLoading || shouldLoadChart) {
+      return;
+    }
+
+    const fallbackTimer = window.setTimeout(() => {
+      setShouldLoadChart(true);
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(fallbackTimer);
+    };
+  }, [rankingLoading, shouldLoadChart]);
+
+  useEffect(() => {
+    if (!shouldLoadTimeline || timelineLoaded) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchTimer = window.setTimeout(async () => {
+      if (cancelled) {
+        return;
+      }
+
+      setTimelineLoading(true);
+
+      try {
+        const list = await api.getNavAll({ pageSize: 100, pageNumber: 1 });
+        const normalized = (list?.data || []).map((nav) => ({
+          ...nav,
+          createTime: chromeMicroToISO(nav.createTime) || nav.createTime,
+        }));
+        const timelineData = createTimelineData(normalized, true);
+        const currentYearTimeline =
+          timelineData.find((yearData) => yearData.year === currentYear) ||
+          createEmptyCurrentYearData(currentYear);
+        const totalViewsSum = normalized.reduce((sum, nav) => sum + (nav.view || 0), 0);
+
+        if (!cancelled) {
+          setCurrentYearData(currentYearTimeline);
+          setTotalNavCount(list?.total || 0);
+          setTotalViews(totalViewsSum);
+        }
+      } catch (error) {
+        console.error('Failed to fetch deferred home page data', error);
+
+        if (!cancelled) {
+          setCurrentYearData(createEmptyCurrentYearData(currentYear));
+        }
+      } finally {
+        if (!cancelled) {
+          setTimelineLoading(false);
+          setTimelineLoaded(true);
+        }
+      }
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(fetchTimer);
+    };
+  }, [currentYear, shouldLoadTimeline, timelineLoaded]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     // Navigation keys
@@ -157,7 +285,16 @@ export default function HomePage() {
         </div>
 
         {/* Top Rankings Section */}
-        {!loading && (
+        {rankingLoading ? (
+          <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
+            <div className="flex justify-center items-center py-16">
+              <div className="text-center">
+                <Spin size={32} />
+                <p className="mt-4 text-theme-muted-foreground">{t('loading_content')}</p>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-theme-foreground mb-2">
@@ -171,19 +308,15 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <Spin size={40} />
-              <p className="mt-4 text-theme-muted-foreground">{t('loading_content')}</p>
-            </div>
-          </div>
-        )}
-
         {/* Timeline Section */}
-        {!loading && (
-          <div className="bg-theme-background rounded-2xl shadow-lg p-8 my-8 border border-theme-border">
+        <div ref={timelineRef} className="my-8">
+          {!shouldLoadTimeline || timelineLoading || !timelineLoaded ? (
+            <DeferredSectionPlaceholder
+              title={t('timeline')}
+              description={t('loading_timeline')}
+            />
+          ) : (
+          <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
             {currentYearData && currentYearData.items && currentYearData.items.length > 0 ? (
               <VerticalTimelineContainer
                 year={currentYear}
@@ -206,13 +339,23 @@ export default function HomePage() {
               </div>
             )}
           </div>
-        )}
+          )}
+        </div>
 
         {/* Statistics Chart Section */}
-        {!loading && navRanking && <StatsChart data={navRanking} />}
+        <div ref={chartRef} className="mb-8">
+          {!shouldLoadChart || rankingLoading ? (
+            <DeferredSectionPlaceholder
+              title={t('data_statistics')}
+              description={t('loading_content')}
+            />
+          ) : navRanking ? (
+            <LazyStatsChart data={navRanking} />
+          ) : null}
+        </div>
 
         {/* Stats Section */}
-        {!loading && (
+        {timelineLoaded && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
               <div className="text-3xl font-bold">{totalNavCount.toLocaleString()}</div>
@@ -230,7 +373,7 @@ export default function HomePage() {
         )}
 
         {/* Footer CTA */}
-        {!loading && (
+        {!rankingLoading && (
           <div className="mt-12 text-center">
             <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
               <h3 className="text-2xl font-bold text-theme-foreground mb-4">

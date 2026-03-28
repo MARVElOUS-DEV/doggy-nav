@@ -3,6 +3,7 @@ import { Tooltip } from '@arco-design/web-react';
 import { Eye, ThumbsUp } from 'lucide-react';
 import DoggyImage from './DoggyImage';
 import dayjs from 'dayjs';
+import React from 'react';
 import { NavItem } from '@/types';
 
 interface NavRankingProps {
@@ -10,7 +11,7 @@ interface NavRankingProps {
   countType?: 'createTimeDate' | 'view' | 'star';
 }
 
-export default function NavRanking({ data, countType = 'createTimeDate' }: NavRankingProps) {
+function NavRanking({ data, countType = 'createTimeDate' }: NavRankingProps) {
   const formatAttr = (value: string | number) => {
     if (countType === 'createTimeDate') {
       return dayjs(value).format('YYYY-MM-DD');
@@ -41,3 +42,5 @@ export default function NavRanking({ data, countType = 'createTimeDate' }: NavRa
     </Link>
   );
 }
+
+export default React.memo(NavRanking);

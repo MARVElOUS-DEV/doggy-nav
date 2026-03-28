@@ -1,6 +1,7 @@
 import NavRanking from './NavRanking';
 import { NavItem } from '@/types';
 import { useTranslation } from 'react-i18next';
+import React from 'react';
 
 interface NavRankingListProps {
   data: {
@@ -10,7 +11,7 @@ interface NavRankingListProps {
   };
 }
 
-export default function NavRankingList({ data }: NavRankingListProps) {
+function NavRankingList({ data }: NavRankingListProps) {
   const { t } = useTranslation();
 
   return (
@@ -53,3 +54,5 @@ export default function NavRankingList({ data }: NavRankingListProps) {
     </div>
   );
 }
+
+export default React.memo(NavRankingList);
