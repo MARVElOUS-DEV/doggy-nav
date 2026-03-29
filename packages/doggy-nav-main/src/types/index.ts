@@ -104,3 +104,13 @@ export interface Affiche {
   active: boolean;
   order?: number | null;
 }
+
+export interface SiteSettings {
+  siteTitle?: string | null;
+  logoUrl?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  seoKeywords?: string[];
+  copyrightText?: string | null;
+  feedbackUrl?: string | null;
+}

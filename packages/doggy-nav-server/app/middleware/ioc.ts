@@ -1,4 +1,4 @@
-import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, FavoriteFolderService, InviteCodeService, EmailSettingsService, ApplicationService, RoleService, UserService, TranslateService, PromptService, AfficheService } from 'doggy-nav-core';
+import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, FavoriteFolderService, InviteCodeService, EmailSettingsService, SiteSettingsService, ApplicationService, RoleService, UserService, TranslateService, PromptService, AfficheService } from 'doggy-nav-core';
 import { TOKENS } from '../core/ioc';
 import MongooseGroupRepository from '../../adapters/groupRepository';
 import MongooseCategoryRepository from '../../adapters/categoryRepository';
@@ -8,6 +8,7 @@ import MongooseFavoriteCommandRepository from '../../adapters/favoriteCommandRep
 import MongooseFavoriteFolderRepository from '../../adapters/favoriteFolderRepository';
 import MongooseInviteCodeRepository from '../../adapters/inviteCodeRepository';
 import MongooseEmailSettingsRepository from '../../adapters/emailSettingsRepository';
+import MongooseSiteSettingsRepository from '../../adapters/siteSettingsRepository';
 import MongooseApplicationRepository from '../../adapters/applicationRepository';
 import MongooseRoleRepository from '../../adapters/roleRepository';
 import MongooseUserRepository from '../../adapters/userRepository';
@@ -28,6 +29,7 @@ export default function ioc() {
     di.register(TOKENS.FavoriteFolderService, () => new FavoriteFolderService(new MongooseFavoriteFolderRepository(ctx)));
     di.register(TOKENS.InviteCodeService, () => new InviteCodeService(new MongooseInviteCodeRepository(ctx)));
     di.register(TOKENS.EmailSettingsService, () => new EmailSettingsService(new MongooseEmailSettingsRepository(ctx)));
+    di.register(TOKENS.SiteSettingsService, () => new SiteSettingsService(new MongooseSiteSettingsRepository(ctx)));
     di.register(TOKENS.ApplicationService, () => new ApplicationService(new MongooseApplicationRepository(ctx)));
     di.register(TOKENS.RoleService, () => new RoleService(new MongooseRoleRepository(ctx)));
     di.register(TOKENS.UserService, () => new UserService(new MongooseUserRepository(ctx)));

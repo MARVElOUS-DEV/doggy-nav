@@ -3,10 +3,12 @@ import { IconPlus, IconArrowUp, IconCustomerService } from '@arco-design/web-rea
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 export default function RightSideToolbar() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { resolvedSiteSettings } = useSiteSettings();
   const [popupVisible, setPopupVisible] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -16,7 +18,12 @@ export default function RightSideToolbar() {
   };
 
   const handleCustomerService = () => {
-    window.open('https://github.com/MARVElOUS-DEV/doggy-nav', '_blank');
+    const url = resolvedSiteSettings.feedbackUrl;
+    if (url.startsWith('/')) {
+      router.push(url);
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleMouseEnter = () => {

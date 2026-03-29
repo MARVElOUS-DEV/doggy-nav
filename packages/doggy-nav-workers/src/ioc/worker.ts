@@ -12,6 +12,7 @@ import {
   UserAuthService,
   RoleService,
   EmailSettingsService,
+  SiteSettingsService,
   ApplicationService,
   NavAdminService,
   PromptService,
@@ -30,6 +31,7 @@ import { D1UserRepository } from '../adapters/d1UserRepository';
 import D1UserRepositoryAdapter from '../adapters/d1UserRepositoryAdapter';
 import D1AuthRepositoryAdapter from '../adapters/d1AuthRepositoryAdapter';
 import D1EmailSettingsRepositoryAdapter from '../adapters/d1EmailSettingsRepositoryAdapter';
+import D1SiteSettingsRepositoryAdapter from '../adapters/d1SiteSettingsRepositoryAdapter';
 import D1ApplicationRepositoryAdapter from '../adapters/d1ApplicationRepositoryAdapter';
 import D1NavAdminRepository from '../adapters/d1NavAdminRepository';
 import D1PromptRepository from '../adapters/d1PromptRepository';
@@ -71,6 +73,7 @@ export function createWorkerContainer(env: Env) {
   c.register(TOKENS.AuthService, () => new UserAuthService(new D1AuthRepositoryAdapter(env.DB)));
   c.register(TOKENS.RoleService, () => new RoleService(new D1RoleRepository(env.DB)));
   c.register(TOKENS.EmailSettingsService, () => new EmailSettingsService(new D1EmailSettingsRepositoryAdapter(env.DB)));
+  c.register(TOKENS.SiteSettingsService, () => new SiteSettingsService(new D1SiteSettingsRepositoryAdapter(env.DB)));
   c.register(TOKENS.ApplicationService, () => new ApplicationService(new D1ApplicationRepositoryAdapter(env.DB)));
   c.register(TOKENS.NavAdminService, () => new NavAdminService(new D1NavAdminRepository(env.DB)));
   c.register(TOKENS.PromptService, () => new PromptService(new D1PromptRepository(env.DB)));

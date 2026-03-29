@@ -2,9 +2,11 @@ import { Tooltip } from '@arco-design/web-react';
 import { useApiEffect } from '@/hooks/useApi';
 import api from '@/utils/api';
 import type { SystemVersionInfo } from '@/types';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 export default function AppFooter() {
   const { data: systemVersion } = useApiEffect<SystemVersionInfo>(api.getSystemVersion, []);
+  const { resolvedSiteSettings } = useSiteSettings();
 
   return (
     <footer className="mt-4 text-xs text-theme-muted-foreground">
@@ -37,6 +39,9 @@ export default function AppFooter() {
               Checked at {new Date(systemVersion.checkedAt).toLocaleTimeString()}
             </span>
           )}
+          {resolvedSiteSettings.copyrightText ? (
+            <span className="opacity-80">{resolvedSiteSettings.copyrightText}</span>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-2 text-[11px] sm:text-xs">

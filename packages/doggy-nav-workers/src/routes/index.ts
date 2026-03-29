@@ -18,6 +18,7 @@ import aiRoutes from './ai';
 import promptRoutes from './prompt';
 import systemRoutes from './system';
 import afficheRoutes from './affiche';
+import siteSettingsRoutes from './siteSettings';
 
 export type Env = {
   DB: D1Database;
@@ -66,6 +67,7 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/translate', translateRoutes);
   app.route('/api/prompts', promptRoutes);
   app.route('/api/affiches', afficheRoutes);
+  app.route('/api/site-settings', siteSettingsRoutes);
   app.route('/api/migration', migrationRoutes);
   app.route('/api/seed', seedRoutes);
   app.route('/api/system', systemRoutes);

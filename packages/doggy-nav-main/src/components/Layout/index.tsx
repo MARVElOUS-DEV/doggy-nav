@@ -17,6 +17,7 @@ import RightSideToolbar from '../RightSideToolbar';
 import LightbulbRope from '../LightBulb';
 import router from 'next/router';
 import AppFooter from '../Footer';
+import SiteMetadataHead from '../SiteMetadataHead';
 
 export default function RootLayout({
   children,
@@ -102,6 +103,7 @@ export default function RootLayout({
   return (
     <I18nextProvider i18n={i18n}>
       <ConfigProvider componentConfig={{ Menu: { theme } }}>
+        <SiteMetadataHead />
         <div className="flex h-screen">
           {/* Sidebar (desktop only) */}
           {!isMobile && (

@@ -21,6 +21,7 @@ export default (app: Application) => {
 
   // System / version info
   router.get('/api/system/version', controller.system.version);
+  router.get('/api/site-settings/public', controller.siteSettings.getPublic);
 
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
@@ -129,4 +130,6 @@ export default (app: Application) => {
   router.put('/api/email-settings', controller.emailSettings.update);
   router.post('/api/email-settings/test', controller.emailSettings.test);
   router.get('/api/email-settings/health', controller.emailSettings.health);
+  router.get('/api/site-settings', controller.siteSettings.get);
+  router.put('/api/site-settings', controller.siteSettings.update);
 };

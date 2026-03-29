@@ -58,6 +58,13 @@ export default [
     access: 'isSysadmin',
   },
   {
+    name: '站点定制',
+    icon: 'setting',
+    path: '/settings/site',
+    component: './SiteSettings',
+    access: 'isAdmin',
+  },
+  {
     name: '邮件通知设置',
     icon: 'mail',
     path: '/settings/email',
@@ -157,6 +164,12 @@ export const pageTitles: Record<
   '/settings/email': {
     title: '邮件通知设置',
     subtitle: '配置 SMTP 与通知收件人',
+    showUserMenu: true,
+    showSearch: false,
+  },
+  '/settings/site': {
+    title: '站点定制',
+    subtitle: '配置站点品牌、SEO 与反馈入口',
     showUserMenu: true,
     showSearch: false,
   },

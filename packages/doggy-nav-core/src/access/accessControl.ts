@@ -80,6 +80,12 @@ export const routePermissions: RoutePermission[] = [
     require: { level: 'public' },
     description: 'Get backend system version / commit metadata',
   },
+  {
+    method: 'GET',
+    path: '/api/site-settings/public',
+    require: { level: 'public' },
+    description: 'Get public site customization settings',
+  },
 
   // User profile
   {
@@ -600,6 +606,18 @@ export const routePermissions: RoutePermission[] = [
     path: '/api/email-settings/health',
     require: { anyRole: ['sysadmin'] },
     description: 'Email service health check',
+  },
+  {
+    method: 'GET',
+    path: '/api/site-settings',
+    require: { anyRole: ['admin'] },
+    description: 'Get site customization settings',
+  },
+  {
+    method: 'PUT',
+    path: '/api/site-settings',
+    require: { anyRole: ['admin'] },
+    description: 'Update site customization settings',
   },
 ];
 

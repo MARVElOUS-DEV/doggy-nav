@@ -85,6 +85,21 @@ jest.mock('../ioc/worker', () => {
         validate: jest.fn().mockResolvedValue({ valid: true, errors: [] }),
       };
 
+      const mockSiteSettingsService = {
+        get: jest.fn().mockResolvedValue({
+          siteTitle: 'Doggy Nav Workers',
+          logoUrl: 'https://example.com/logo.png',
+          seoTitle: 'Workers SEO',
+          seoDescription: 'Workers description',
+          seoKeywords: ['doggy', 'workers'],
+          copyrightText: 'Copyright Workers',
+          feedbackUrl: 'https://example.com/feedback',
+        }),
+        update: jest.fn().mockResolvedValue({
+          siteTitle: 'Doggy Nav Workers',
+        }),
+      };
+
       return {
         resolve: (token: any) => {
           // Return mock services for testing
@@ -104,6 +119,9 @@ jest.mock('../ioc/worker', () => {
               // Add any other methods that ApplicationService might have
               verifyClientSecret: jest.fn().mockResolvedValue(true),
             };
+          }
+          if (token === TOKENS.SiteSettingsService) {
+            return mockSiteSettingsService;
           }
           // For other tokens, return empty mock objects
           return {};
@@ -224,6 +242,31 @@ describe('Doggy Nav Worker API', () => {
       expect(data.data).toHaveProperty('currentCommitId');
       expect(data.data).toHaveProperty('hasNewVersion');
     });
+  });
+
+  describe('Site Settings', () => {
+    it('should return public site settings', async () => {
+      const response = await app.request('/api/site-settings/public', {
+        headers: { 'X-App-Source': 'main' },
+      });
+      expect(response.status).toBe(200);
+
+      const data = await response.json();
+      expect(data.code).toBe(1);
+      expect(data.data.siteTitle).toBe('Doggy Nav Workers');
+      expect(data.data.feedbackUrl).toBe('https://example.com/feedback');
+    });
+
+    it('should require auth for admin site settings route', async () => {
+      const response = await app.request('/api/site-settings', {
+        headers: { 'X-App-Source': 'admin' },
+      });
+      expect(response.status).toBe(401);
+
+      const data = await response.json();
+      expect(data.data).toBeNull();
+    });
+
   });
 
   describe('Authentication', () => {

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🚀 Enhancements
 
+- Add site customization management across admin, server, workers, and main web, including editable branding, SEO defaults, copyright text, and feedback URL
 - Add workers project and split common logic to a new core package etc. ([#30](https://github.com/MARVElOUS-DEV/doggy-nav/pull/30))
 - Add seeds for workers & add ci workflow for workers & web styles optimized ([#32](https://github.com/MARVElOUS-DEV/doggy-nav/pull/32))
 - Add cf pages deploy for admin web ([#43](https://github.com/MARVElOUS-DEV/doggy-nav/pull/43))

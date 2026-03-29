@@ -19,6 +19,8 @@ import ReactIf from '../ReactIf';
 import { useRouter } from 'next/router';
 import { useAtom } from 'jotai';
 import { searchModalOpenAtom } from '@/store/store';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { useEffect, useState } from 'react';
 
 interface AppHeaderProps {
   onHandleShowMenu: () => void;
@@ -34,6 +36,52 @@ export default function AppHeader({
   const { t } = useTranslation('translation');
   const [showSearch, setShowSearch] = useAtom(searchModalOpenAtom);
   const router = useRouter();
+  const { siteSettings, resolvedSiteSettings } = useSiteSettings();
+  const [logoLoadFailed, setLogoLoadFailed] = useState(false);
+
+  useEffect(() => {
+    setLogoLoadFailed(false);
+  }, [siteSettings?.logoUrl]);
+
+  const hasCustomLogo = Boolean(siteSettings?.logoUrl) && !logoLoadFailed;
+  const showCustomTitle = Boolean(siteSettings?.siteTitle?.trim());
+
+  const renderFallbackLogo = () => (
+    <>
+      <Image
+        src="/logo-nav-black.png"
+        alt={resolvedSiteSettings.siteTitle}
+        width={150}
+        height={40}
+        priority
+        className="dark:hidden hidden lg:block transition-all duration-200 h-12"
+      />
+      <Image
+        src="/logo-nav-black.png"
+        alt={resolvedSiteSettings.siteTitle}
+        width={100}
+        height={30}
+        priority
+        className="dark:hidden lg:hidden transition-all duration-200"
+      />
+      <Image
+        src="/logo-nav-white.png"
+        alt={resolvedSiteSettings.siteTitle}
+        width={150}
+        height={40}
+        priority
+        className="hidden dark:lg:block transition-all duration-200 h-12"
+      />
+      <Image
+        src="/logo-nav-white.png"
+        alt={resolvedSiteSettings.siteTitle}
+        width={100}
+        height={30}
+        priority
+        className="dark:block hidden lg:hidden transition-all duration-200"
+      />
+    </>
+  );
 
   const mobileDropdownMenu = (
     <Menu>
@@ -98,38 +146,22 @@ export default function AppHeader({
           </div>
 
           <Link href="/" className="flex items-center">
-            <Image
-              src="/logo-nav-black.png"
-              alt="logo"
-              width={150}
-              height={40}
-              priority
-              className="dark:hidden hidden lg:block transition-all duration-200 h-12"
-            />
-            <Image
-              src="/logo-nav-black.png"
-              alt="logo"
-              width={100}
-              height={30}
-              priority
-              className="dark:hidden lg:hidden transition-all duration-200"
-            />
-            <Image
-              src="/logo-nav-white.png"
-              alt="logo"
-              width={150}
-              height={40}
-              priority
-              className="hidden dark:lg:block transition-all duration-200 h-12"
-            />
-            <Image
-              src="/logo-nav-white.png"
-              alt="logo"
-              width={100}
-              height={30}
-              priority
-              className="dark:block hidden lg:hidden transition-all duration-200"
-            />
+            {hasCustomLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={siteSettings?.logoUrl || ''}
+                alt={resolvedSiteSettings.siteTitle}
+                className="h-10 w-auto max-w-[150px] object-contain transition-all duration-200 lg:h-12"
+                onError={() => setLogoLoadFailed(true)}
+              />
+            ) : (
+              renderFallbackLogo()
+            )}
+            {showCustomTitle ? (
+              <span className="ml-3 hidden text-lg font-semibold tracking-tight text-theme-foreground sm:inline-block">
+                {resolvedSiteSettings.siteTitle}
+              </span>
+            ) : null}
           </Link>
         </div>
 

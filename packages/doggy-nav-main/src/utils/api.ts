@@ -9,6 +9,7 @@ import type {
   OAuthProvider,
   SystemVersionInfo,
   Affiche,
+  SiteSettings,
 } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
@@ -166,6 +167,10 @@ const api = {
 
   // Affiche / announcements
   getActiveAffiches: (): Promise<Affiche[]> => axios.get('/api/affiches/active'),
+
+  // Site customization
+  getPublicSiteSettings: (): Promise<SiteSettings | null> =>
+    axios.get('/api/site-settings/public'),
 };
 
 export default api;

@@ -1,3 +1,4 @@
+import App, { type AppContext } from 'next/app';
 import { Provider as JotaiProvider } from 'jotai';
 import { useEffect, type ReactElement, type ReactNode } from 'react';
 import type { NextPage } from 'next';
@@ -11,6 +12,8 @@ import { useRouter } from 'next/router';
 import { startProactiveAuthRefresh } from '@/utils/session';
 import { GlobalAppWindowProvider } from '@/store/GlobalAppWindowStore';
 import { WindowZProvider } from '@/store/WindowZStore';
+import { SiteSettingsProvider } from '@/context/SiteSettingsContext';
+import type { SiteSettings } from '@/types';
 
 import './global.css';
 
@@ -25,7 +28,9 @@ export default function MyApp({
   pageProps,
 }: {
   Component: NextPageWithLayout;
-  pageProps: AppProps;
+  pageProps: AppProps['pageProps'] & {
+    initialSiteSettings?: SiteSettings | null;
+  };
 }) {
   const router = useRouter();
 
@@ -48,14 +53,56 @@ export default function MyApp({
         <SpeedInsights />
       </ReactIf>
       <JotaiProvider>
-        <WindowZProvider>
-          <GlobalAppWindowProvider>
-            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-            {/* @ts-ignore */}
-            {getLayout(<Component {...pageProps} />)}
-          </GlobalAppWindowProvider>
-        </WindowZProvider>
+        <SiteSettingsProvider value={pageProps.initialSiteSettings}>
+          <WindowZProvider>
+            <GlobalAppWindowProvider>
+              {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+              {/* @ts-ignore */}
+              {getLayout(<Component {...pageProps} />)}
+            </GlobalAppWindowProvider>
+          </WindowZProvider>
+        </SiteSettingsProvider>
       </JotaiProvider>
     </>
   );
 }
+
+MyApp.getInitialProps = async (appContext: AppContext) => {
+  const appProps = await App.getInitialProps(appContext);
+  const headers: Record<string, string> = {
+    'X-App-Source': 'main',
+  };
+
+  if (process.env.DOGGY_SERVER_CLIENT_SECRET) {
+    headers['x-client-secret'] = process.env.DOGGY_SERVER_CLIENT_SECRET;
+  }
+
+  const endpoint =
+    typeof window === 'undefined'
+      ? `${process.env.DOGGY_SERVER || 'http://localhost:3002'}/api/site-settings/public`
+      : '/api/site-settings/public';
+
+  let initialSiteSettings: SiteSettings | null = null;
+
+  try {
+    const response = await fetch(endpoint, {
+      headers,
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      initialSiteSettings = payload?.code === 1 ? (payload.data ?? null) : null;
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Failed to prefetch site settings', error);
+    }
+  }
+
+  return {
+    ...appProps,
+    pageProps: {
+      ...appProps.pageProps,
+      initialSiteSettings,
+    },
+  };
+};
