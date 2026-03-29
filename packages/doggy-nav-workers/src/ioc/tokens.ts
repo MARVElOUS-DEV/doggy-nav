@@ -6,7 +6,6 @@ import type {
   FavoriteCommandService,
   FavoriteFolderService,
   InviteCodeService,
-  TagService,
   TranslateService,
   UserService,
   UserAuthService,
@@ -26,7 +25,6 @@ export const TOKENS = {
   FavoriteCommandService: Symbol('FavoriteCommandService') as Token<FavoriteCommandService>,
   FavoriteFolderService: Symbol('FavoriteFolderService') as Token<FavoriteFolderService>,
   InviteCodeService: Symbol('InviteCodeService') as Token<InviteCodeService>,
-  TagService: Symbol('TagService') as Token<TagService>,
   TranslateService: Symbol('TranslateService') as Token<TranslateService>,
   UserService: Symbol('UserService') as Token<UserService>,
   AuthService: Symbol('AuthService') as Token<UserAuthService>,
@@ -41,5 +39,4 @@ export const TOKENS = {
   CategoryRepo: Symbol('CategoryRepo') as Token<any>,
   NavRepo: Symbol('NavRepo') as Token<any>,
   GroupRepo: Symbol('GroupRepo') as Token<any>,
-  TagRepo: Symbol('TagRepo') as Token<any>,
 };

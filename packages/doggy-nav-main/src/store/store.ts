@@ -14,6 +14,7 @@ export const navRankingAtom = atom<{ view: NavItem[]; star: NavItem[]; news: Nav
 export const showMenuTypeAtom = atom(true);
 export const mobileAtom = atom(false);
 export const manualCollapseAtom = atom<boolean | null>(null); // null = no manual action, true/false = manual action
+export const searchModalOpenAtom = atom(false);
 export const favoritesAtom = atom<NavItem[]>([]);
 export const themeAtom = atom<'light' | 'dark'>('light');
 

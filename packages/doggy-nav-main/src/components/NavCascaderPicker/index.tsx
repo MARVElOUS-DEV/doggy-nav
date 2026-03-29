@@ -12,6 +12,7 @@ const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
   onCancel,
   trigger,
   title = 'Select Navigation',
+  selectedTags = [],
 }) => {
   const [visible, setVisible] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -49,7 +50,9 @@ const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
 
     setNavsLoading(true);
     try {
-      const data = await api.findNavByCategory(categoryId);
+      const data = await api.findNavByCategory(categoryId, {
+        tags: selectedTags,
+      });
       const items: NavItem[] = [];
       if (Array.isArray(data)) {
         data.forEach((cat: { list?: NavItem[] }) => {
@@ -66,7 +69,13 @@ const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
     } finally {
       setNavsLoading(false);
     }
-  }, []);
+  }, [selectedTags]);
+
+  useEffect(() => {
+    navsCacheRef.current.clear();
+    setNavItems([]);
+    setSelectedNav(null);
+  }, [selectedTags]);
 
   useEffect(() => {
     if (visible && categories.length === 0) {

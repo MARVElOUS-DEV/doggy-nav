@@ -2,6 +2,7 @@ import type { AuthContext, NavItem, Audience, Visibility } from '../types/types'
 import type { PageQuery, PageResult } from '../dto/pagination';
 import type { NavRepository, NavListFilter } from '../repositories/NavRepository';
 import type { CategoryRepository } from '../repositories/CategoryRepository';
+import { normalizeTagFilters } from '../utils/tagUtil';
 
 function isSysAdmin(roles?: string[]) {
   const r = Array.isArray(roles) ? roles : [];
@@ -59,6 +60,12 @@ export class NavService {
     // - unauthenticated: only status=0 (pass)
     // - authenticated: if no status provided, allow status 0 or undefined
     let effFilter: NavListFilter = { ...filter };
+    const normalizedTags = normalizeTagFilters(filter?.tags);
+    if (normalizedTags.length > 0) {
+      effFilter.tags = normalizedTags;
+    } else {
+      delete effFilter.tags;
+    }
     if (!isAuthenticated) {
       effFilter.status = 0;
     }

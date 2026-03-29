@@ -11,7 +11,6 @@ import type {
   ApplicationService,
   RoleService,
   UserService,
-  TagService,
   TranslateService,
   AfficheService,
 } from 'doggy-nav-core';
@@ -28,7 +27,6 @@ export const TOKENS = {
   ApplicationService: Symbol('ApplicationService') as Token<ApplicationService>,
   RoleService: Symbol('RoleService') as Token<RoleService>,
   UserService: Symbol('UserService') as Token<UserService>,
-  TagService: Symbol('TagService') as Token<TagService>,
   TranslateService: Symbol('TranslateService') as Token<TranslateService>,
   PromptService: Symbol('PromptService') as Token<any>,
   AfficheService: Symbol('AfficheService') as Token<AfficheService>,

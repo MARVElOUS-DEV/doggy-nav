@@ -103,7 +103,6 @@ export interface EmailSettings {
 export interface Tag {
   id: ID;
   name: string;
-  parentName?: string | null;
 }
 
 export interface FavoriteFolder {

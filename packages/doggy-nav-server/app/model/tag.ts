@@ -4,7 +4,6 @@ export default function(app: any) {
 
   const TagSchema = new Schema({
     name: String,
-    parentName: String,
   }, { collection: 'tag' });
 
   TagSchema.index({ name: 1 }, { unique: true, background: true, dropDups: true });

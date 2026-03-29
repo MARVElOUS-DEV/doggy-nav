@@ -130,7 +130,7 @@ export default function RootLayout({
               className="flex-1 overflow-y-auto glass-light dark:glass-dark"
             >
               <div className="p-4">
-                <div className="min-h-screen bg-theme-background transition-colors flex flex-col">
+                <div className="rounded-t-[1rem] min-h-screen bg-theme-background transition-colors flex flex-col">
                   <div className="flex-1">{children}</div>
                   <AppFooter />
                 </div>

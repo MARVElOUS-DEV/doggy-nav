@@ -7,8 +7,13 @@ import VerticalTimelineContainer from '@/components/Timelines/VerticalTimelineCo
 import api from '@/utils/api';
 import { createTimelineData } from '@/utils/timelineData';
 import { chromeMicroToISO } from '@/utils/time';
-import { useAtom, useAtomValue } from 'jotai';
-import { categoriesAtom, navRankingAtom, isAuthenticatedAtom } from '@/store/store';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import {
+  categoriesAtom,
+  navRankingAtom,
+  isAuthenticatedAtom,
+  searchModalOpenAtom,
+} from '@/store/store';
 import Link from 'next/link';
 import { TimelineItem as TimelineItemType, TimelineYear } from '@/types/timeline';
 import { useTranslation } from 'react-i18next';
@@ -67,6 +72,7 @@ export default function HomePage() {
   const currentYear = new Date().getFullYear();
   const categories = useAtomValue(categoriesAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const setSearchModalOpen = useSetAtom(searchModalOpenAtom);
   const handleTryGotoDesktop = () => {
     // Trigger driver hint on LightbulbRope
     if (typeof window !== 'undefined') {
@@ -209,11 +215,7 @@ export default function HomePage() {
       switch (e.key) {
         case 'f':
           e.preventDefault();
-          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-          if (searchInput) {
-            searchInput.focus();
-            searchInput.select();
-          }
+          setSearchModalOpen(true);
           break;
         case 'j':
           e.preventDefault();
@@ -234,7 +236,7 @@ export default function HomePage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800"
+      className="min-h-screen overflow-hidden rounded-t-[1rem] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800"
       onKeyDown={onKeyDown}
       tabIndex={-1}
       role="application"
@@ -267,12 +269,13 @@ export default function HomePage() {
                       {t('login_explore')}
                     </Link>
                   )}
-                  <Link
-                    href="/search"
-                    className="bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300"
+                  <button
+                    type="button"
+                    onClick={() => setSearchModalOpen(true)}
+                    className="cursor-pointer bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300"
                   >
                     {t('search_websites')}
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -311,34 +314,31 @@ export default function HomePage() {
         {/* Timeline Section */}
         <div ref={timelineRef} className="my-8">
           {!shouldLoadTimeline || timelineLoading || !timelineLoaded ? (
-            <DeferredSectionPlaceholder
-              title={t('timeline')}
-              description={t('loading_timeline')}
-            />
+            <DeferredSectionPlaceholder title={t('timeline')} description={t('loading_timeline')} />
           ) : (
-          <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
-            {currentYearData && currentYearData.items && currentYearData.items.length > 0 ? (
-              <VerticalTimelineContainer
-                year={currentYear}
-                items={currentYearData.items}
-                onItemSelect={setSelectedItem}
-                selectedItem={selectedItem}
-              />
-            ) : (
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-theme-foreground mb-2">
-                  {t('no_websites_collected_this_year')}
-                </h2>
-                <p className="text-theme-muted-foreground mb-6">{t('submit_worthwhile_sites')}</p>
-                <Link
-                  href="/recommend"
-                  className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
-                >
-                  {t('submit_website')}
-                </Link>
-              </div>
-            )}
-          </div>
+            <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
+              {currentYearData && currentYearData.items && currentYearData.items.length > 0 ? (
+                <VerticalTimelineContainer
+                  year={currentYear}
+                  items={currentYearData.items}
+                  onItemSelect={setSelectedItem}
+                  selectedItem={selectedItem}
+                />
+              ) : (
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-theme-foreground mb-2">
+                    {t('no_websites_collected_this_year')}
+                  </h2>
+                  <p className="text-theme-muted-foreground mb-6">{t('submit_worthwhile_sites')}</p>
+                  <Link
+                    href="/recommend"
+                    className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
+                  >
+                    {t('submit_website')}
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

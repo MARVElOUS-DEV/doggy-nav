@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Menu, Tooltip } from '@arco-design/web-react';
-import { IconDown } from '@arco-design/web-react/icon';
 import { Languages } from 'lucide-react';
 
 const SUPPORTED_LOCALES = [
@@ -48,15 +47,10 @@ export default function LanguageSwitcher() {
     <Tooltip content={t('language')}>
       <Dropdown droplist={languageMenu} trigger="click" position="bl">
         <Button
-          className="app-header-action h-10 !px-3 !flex items-center gap-1.5"
+          className="app-header-action text-2xl cursor-pointer !flex items-center justify-center w-10 h-10"
           aria-label={t('language')}
-        >
-          <Languages size={16} className="text-theme-muted-foreground" />
-          <span className="text-sm font-medium text-theme-muted-foreground">
-            {t(currentLanguage.shortLabelKey)}
-          </span>
-          <IconDown className="text-xs text-theme-muted-foreground" />
-        </Button>
+          icon={<Languages size={16} className="text-theme-muted-foreground" />}
+        />
       </Dropdown>
     </Tooltip>
   );

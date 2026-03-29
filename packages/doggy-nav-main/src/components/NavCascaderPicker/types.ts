@@ -5,6 +5,7 @@ export interface NavCascaderPickerProps {
   onCancel?: () => void;
   trigger?: React.ReactNode;
   title?: string;
+  selectedTags?: string[];
 }
 
 export interface CategoryColumnProps {

@@ -1,6 +1,6 @@
 import { PipelineStage, Types } from 'mongoose';
 import { parseHTML } from '../../utils/reptileHelper';
-import { nowToChromeTime } from 'doggy-nav-core';
+import { nowToChromeTime, normalizeTagFiltersFromQuery, normalizeTags } from 'doggy-nav-core';
 import Controller from '../core/base_controller';
 import type { AuthUserContext } from '../../types/rbac';
 import { buildAudienceFilterEx } from '../utils/audience';
@@ -24,7 +24,7 @@ export default class NavController extends Controller {
 
   async list() {
     const { ctx } = this;
-    const { status = 0, categoryId, name, year } = ctx.query;
+    const { status = 0, categoryId, name, year, tags } = ctx.query;
     const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
     const query = this.getSanitizedQuery();
     const page = { pageSize: query.pageSize, pageNumber: query.pageNumber } as any;
@@ -48,6 +48,7 @@ export default class NavController extends Controller {
         status: status !== undefined && status !== '' ? Number(status) : undefined,
         categoryId: categoryId ? String(categoryId) : undefined,
         name: name ? String(name) : undefined,
+        tags: normalizeTagFiltersFromQuery(tags),
         year: year ? Number(year) : undefined,
       },
       auth
@@ -128,6 +129,7 @@ export default class NavController extends Controller {
   async add() {
     this.ctx.request.body.status = NAV_STATUS.wait;
     this.ctx.request.body.createTime = nowToChromeTime();
+    this.ctx.request.body.tags = normalizeTags(this.ctx.request.body.tags);
 
     try {
       await super.add();
@@ -185,9 +187,8 @@ export default class NavController extends Controller {
 
   async edit() {
     this.ctx.request.body.updateTime = new Date();
-    const { tags } = this.ctx.request.body;
-    if (Array.isArray(tags)) {
-      await this.ctx.service.tag.addMultiTag(tags);
+    if (this.ctx.request.body.tags !== undefined) {
+      this.ctx.request.body.tags = normalizeTags(this.ctx.request.body.tags);
     }
     await super.update();
   }
@@ -204,15 +205,8 @@ export default class NavController extends Controller {
         return;
       }
 
-      const { tags } = navItem;
-
       // Send notifications based on audit result
       await this.sendAuditNotifications(navItem, status, reason);
-
-      if (status === NAV_STATUS.pass) {
-        // 批量添加tag
-        await this.ctx.service.tag.addMultiTag(tags);
-      }
 
       await super.update();
     } catch (error: any) {
@@ -256,7 +250,8 @@ export default class NavController extends Controller {
   async info() {
     const { request, model } = this.ctx;
     try {
-      const { categoryId } = request.query;
+      const { categoryId, tags } = request.query;
+      const normalizedTags = normalizeTagFiltersFromQuery(tags);
       const resData: any = [];
       // 取所有子分类， apply audience-based filtering
       const isAuthenticated = this.isAuthenticated();
@@ -274,6 +269,15 @@ export default class NavController extends Controller {
       const navFindParam: any = {
         categoryId: { $in: categoryIds },
       };
+      if (normalizedTags.length > 0) {
+        navFindParam.tags = {
+          $elemMatch: {
+            $in: normalizedTags.map(
+              (tag) => new RegExp(`^${tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')
+            ),
+          },
+        };
+      }
 
       // Filter by status and apply audience visibility for navs
       if (isAuthenticated) {
@@ -325,7 +329,9 @@ export default class NavController extends Controller {
 
   async get() {
     const { ctx } = this;
-    const { id, keyword } = ctx.query;
+    const query = this.getSanitizedQuery();
+    const { id, keyword, categoryId, tags } = query;
+    const normalizedTags = normalizeTagFiltersFromQuery(tags);
 
     if (id) {
       const isAuthenticated = this.isAuthenticated();
@@ -370,16 +376,45 @@ export default class NavController extends Controller {
       } else {
         this.success(nav);
       }
-    } else if (keyword) {
-      const reg = new RegExp(keyword, 'i');
-      let { pageSize = 10, pageNumber = 1 } = ctx.query;
-      pageSize = Number(pageSize);
-      pageNumber = Number(pageNumber);
+    } else if (keyword || categoryId || normalizedTags.length > 0) {
+      const reg = keyword
+        ? new RegExp(String(keyword).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+        : null;
+      let pageSize = Number(query.pageSize ?? query.limit ?? 10);
+      let pageNumber = Number(query.pageNumber ?? query.page ?? 1);
+      pageSize = Math.min(Math.max(pageSize || 10, 1), 100);
+      pageNumber = Math.max(pageNumber || 1, 1);
       const skipNumber = pageSize * pageNumber - pageSize;
 
-      const searchQuery: any = {
-        name: { $regex: reg },
-      };
+      const searchQuery: any = {};
+
+      if (reg) {
+        searchQuery.name = { $regex: reg };
+      }
+
+      if (normalizedTags.length > 0) {
+        searchQuery.tags = {
+          $elemMatch: {
+            $in: normalizedTags.map(
+              (tag) => new RegExp(`^${tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')
+            ),
+          },
+        };
+      }
+
+      if (categoryId) {
+        const categoryFilterBase: any = {
+          $or: [{ categoryId }, { _id: categoryId }],
+        };
+        const userCtx = ctx.state.userinfo as AuthUserContext | undefined;
+        const categoryFilter = buildAudienceFilterEx(categoryFilterBase, userCtx);
+        const categoryDocs = await ctx.model.Category.find(categoryFilter).select('_id');
+        const categoryIds = categoryDocs.map((item: any) => item._id.toString());
+
+        searchQuery.categoryId = {
+          $in: categoryIds,
+        };
+      }
 
       // Align status filtering with list() and enforce audience rules
       const isAuthenticated = this.isAuthenticated();
@@ -432,6 +467,8 @@ export default class NavController extends Controller {
           pageNumber: Math.ceil(total / pageSize),
         });
       }
+    } else {
+      this.error('id, keyword, categoryId, or tags required');
     }
   }
 

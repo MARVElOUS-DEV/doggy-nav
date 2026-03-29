@@ -26,6 +26,14 @@ export default class D1NavRepository implements NavRepository {
       where.push('b.name LIKE ?');
       params.push(`%${filter.name}%`);
     }
+    if (Array.isArray(filter?.tags) && filter.tags.length > 0) {
+      const tagWhere = filter.tags.map(() => `EXISTS (
+        SELECT 1 FROM json_each(COALESCE(b.tags, '[]')) jt
+        WHERE lower(trim(jt.value)) = lower(?)
+      )`).join(' OR ');
+      where.push(`(${tagWhere})`);
+      params.push(...filter.tags);
+    }
     if (filter?.createTimeStart !== undefined) {
       where.push('b.create_time >= ?');
       params.push(filter.createTimeStart);

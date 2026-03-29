@@ -75,9 +75,6 @@ export default (app: Application) => {
   router.post('/api/nav/:id/view', controller.nav.incrementView);
   router.post('/api/nav/:id/star', controller.nav.incrementStar);
 
-  router.post('/api/tag', controller.tag.add);
-  router.delete('/api/tag', controller.tag.remove);
-  router.put('/api/tag', controller.tag.update);
   router.get('/api/tag/list', controller.tag.getList);
 
   // URL Checker routes

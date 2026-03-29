@@ -3,5 +3,5 @@ import { createApiHandler } from '../../../lib/apiHandler';
 export default createApiHandler({
   method: 'GET',
   endpoint: '/api/nav',
-  paramNames: ['categoryId', 'page', 'limit', 'keyword']
+  paramNames: ['categoryId', 'page', 'limit', 'keyword', 'tags']
 });

@@ -3,14 +3,29 @@ import AppNavList from '@/components/AppNavList';
 import api from '@/utils/api';
 import { useApi } from '@/hooks/useApi';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSetAtom } from 'jotai';
 import { selectedCategoryAtom } from '@/store/store';
 
 export default function NavContentsPage() {
   const router = useRouter();
-  const { category } = router.query;
+  const { category, tags } = router.query;
+  const selectedTags = useMemo(() => {
+    if (Array.isArray(tags)) {
+      return tags
+        .flatMap((item) => String(item).split(','))
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+    if (typeof tags === 'string') {
+      return tags
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+    return [] as string[];
+  }, [tags]);
   const { t } = useTranslation('translation');
   const { loading, data = [], execute: findNavByCategoryAction } = useApi(api.findNavByCategory);
   const setSelectedCategory = useSetAtom(selectedCategoryAtom);
@@ -19,8 +34,10 @@ export default function NavContentsPage() {
     if (!router.isReady) return;
     if (!category) return;
     setSelectedCategory(category as string);
-    findNavByCategoryAction(category as string);
-  }, [router.isReady, category, findNavByCategoryAction, setSelectedCategory]);
+    findNavByCategoryAction(category as string, {
+      tags: selectedTags,
+    });
+  }, [router.isReady, category, selectedTags, findNavByCategoryAction, setSelectedCategory]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl text-theme-foreground">

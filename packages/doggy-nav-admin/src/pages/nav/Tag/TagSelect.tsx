@@ -10,7 +10,7 @@ interface TagSelectProps extends SelectProps<any> {
 }
 
 export default function TagSelect(props: TagSelectProps) {
-  const { onChange, value, valueKey = 'id', ...restProps } = props;
+  const { onChange, value, valueKey = 'name', ...restProps } = props;
   const [tagList, setTagList] = useState<TagModel[]>([]);
   const [internalValue, setInternalValue] = useState<any[]>([]);
 
@@ -23,7 +23,7 @@ export default function TagSelect(props: TagSelectProps) {
         method: 'GET',
       });
       if (isMounted && Array.isArray(data.data)) {
-        setTagList(data?.data);
+        setTagList(data.data);
       }
     }
 

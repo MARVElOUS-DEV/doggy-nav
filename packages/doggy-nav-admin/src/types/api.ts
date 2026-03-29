@@ -8,6 +8,7 @@ export interface CategoryModel {
 export interface TagModel {
   id: string;
   name: string;
+  count?: number;
 }
 
 export interface ApiResponse {

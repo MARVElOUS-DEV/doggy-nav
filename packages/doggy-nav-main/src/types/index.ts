@@ -36,7 +36,7 @@ export interface NavItem {
 export interface Tag {
   id: string;
   name: string;
-  parentName?: string;
+  count?: number;
   value?: string;
   label?: string;
 }

@@ -4,7 +4,7 @@ import { getDI } from '../ioc/helpers';
 import { responses } from '../utils/responses';
 import { publicRoute, createAuthMiddleware, requireRole } from '../middleware/auth';
 import type { NavAdminService } from 'doggy-nav-core';
-import { chromeTimeToDate } from 'doggy-nav-core';
+import { chromeTimeToDate, normalizeTagFiltersFromQuery, normalizeTags } from 'doggy-nav-core';
 
 export const navRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -16,6 +16,7 @@ navRoutes.get('/list', publicRoute(), async (c) => {
     const name = c.req.query('name') || undefined;
     const categoryId = c.req.query('categoryId') || undefined;
     const year = c.req.query('year') ? Number(c.req.query('year')) : undefined;
+    const tags = normalizeTagFiltersFromQuery(c.req.query('tags'));
 
     const svc = getDI(c).resolve(TOKENS.NavService);
     const user = (c as any).get?.('user');
@@ -45,6 +46,7 @@ navRoutes.get('/list', publicRoute(), async (c) => {
       {
         ...(status !== undefined ? { status: Number(status) } : {}),
         ...(name ? { name } : {}),
+        ...(tags.length > 0 ? { tags } : {}),
         ...(categoryId ? { categoryId } : {}),
         ...(year ? { year } : {}),
       },
@@ -198,7 +200,9 @@ navRoutes.get('/random', publicRoute(), async (c) => {
 navRoutes.get('/', publicRoute(), async (c) => {
   try {
     const id = c.req.query('id');
-    const keyword = c.req.query('keyword');
+    const keyword = c.req.query('keyword') || undefined;
+    const categoryId = c.req.query('categoryId') || undefined;
+    const tags = normalizeTagFiltersFromQuery(c.req.query('tags'));
     if (id) {
       const user = (c as any).get?.('user');
       const isAuthenticated = !!user;
@@ -260,7 +264,7 @@ navRoutes.get('/', publicRoute(), async (c) => {
 
       return c.json(responses.ok(nav));
     }
-    if (keyword) {
+    if (keyword || categoryId || tags.length > 0) {
       // Support both (pageSize/pageNumber) and (limit/page) param styles
       const pageSize = Math.min(
         Math.max(Number(c.req.query('pageSize') ?? c.req.query('limit') ?? 10) || 10, 1),
@@ -278,8 +282,42 @@ navRoutes.get('/', publicRoute(), async (c) => {
         ? `c.audience_visibility != 'hide'`
         : `c.audience_visibility = 'public'`;
       const statusSql = isAuthenticated ? '1=1' : 'b.status = 0';
+      const whereClauses = [
+        statusSql,
+        navVisibilitySql,
+        `(b.category_id IS NULL OR ${catVisibilitySql})`,
+      ];
+      const whereParams: Array<string | number> = [];
 
-      const baseWhere = `WHERE ${statusSql} AND ${navVisibilitySql} AND (b.category_id IS NULL OR ${catVisibilitySql}) AND b.name LIKE ?`;
+      if (keyword) {
+        whereClauses.push(`b.name LIKE ?`);
+        whereParams.push(`%${keyword}%`);
+      }
+
+      if (categoryId) {
+        whereClauses.push(
+          `b.category_id IN (
+            SELECT id FROM categories WHERE id = ? OR category_id = ?
+          )`
+        );
+        whereParams.push(categoryId, categoryId);
+      }
+
+      if (tags.length > 0) {
+        whereClauses.push(
+          ...tags.map(
+            () =>
+              `EXISTS (
+                SELECT 1
+                FROM json_each(COALESCE(b.tags, '[]')) jt
+                WHERE lower(trim(jt.value)) = lower(?)
+              )`
+          )
+        );
+        whereParams.push(...tags);
+      }
+
+      const baseWhere = `WHERE ${whereClauses.join(' AND ')}`;
 
       const countRs = await c.env.DB
         .prepare(
@@ -287,7 +325,7 @@ navRoutes.get('/', publicRoute(), async (c) => {
            FROM bookmarks b LEFT JOIN categories c ON c.id = b.category_id
            ${baseWhere}`
         )
-        .bind(`%${keyword}%`)
+        .bind(...whereParams)
         .all<any>();
       const total = Number(countRs.results?.[0]?.cnt || 0);
 
@@ -300,7 +338,7 @@ navRoutes.get('/', publicRoute(), async (c) => {
            ${baseWhere}
            ORDER BY b.updated_at DESC LIMIT ? OFFSET ?`
         )
-        .bind(`%${keyword}%`, pageSize, offset)
+        .bind(...whereParams, pageSize, offset)
         .all<any>();
       const rows: any[] = listRs.results || [];
 
@@ -343,7 +381,7 @@ navRoutes.get('/', publicRoute(), async (c) => {
 
       return c.json(responses.ok({ data, total, pageNumber: Math.ceil(total / pageSize) }));
     }
-    return c.json(responses.badRequest('id or keyword required'), 400);
+    return c.json(responses.badRequest('id, keyword, categoryId, or tags required'), 400);
   } catch (err) {
     console.error('Worker nav get error:', err);
     return c.json(responses.serverError(), 500);
@@ -354,6 +392,7 @@ navRoutes.get('/', publicRoute(), async (c) => {
 navRoutes.get('/find', publicRoute(), async (c) => {
   try {
     const categoryId = c.req.query('categoryId');
+    const tags = normalizeTagFiltersFromQuery(c.req.query('tags'));
     if (!categoryId) return c.json(responses.badRequest('categoryId required'), 400);
     const db = c.env.DB;
 
@@ -407,16 +446,23 @@ navRoutes.get('/find', publicRoute(), async (c) => {
     const navVisibilitySql = isAuthenticated
       ? `audience_visibility != 'hide'`
       : `audience_visibility = 'public'`;
+    const tagSql = tags.length
+      ? ` AND (${tags
+          .map(
+            () => `EXISTS (SELECT 1 FROM json_each(COALESCE(tags, '[]')) jt WHERE lower(trim(jt.value)) = lower(?))`
+          )
+          .join(' OR ')})`
+      : '';
 
     const navSql = `SELECT id, category_id, name, href, description, detail, logo, author_name, author_url,
                     audit_time, create_time, tags, view_count, star_count, status
                     FROM bookmarks
-                    WHERE ${statusSql} AND ${navVisibilitySql} AND category_id IN (${placeholders})
+                    WHERE ${statusSql} AND ${navVisibilitySql} AND category_id IN (${placeholders})${tagSql}
                     ORDER BY updated_at DESC`;
 
     const navRs = await db
       .prepare(navSql)
-      .bind(...params)
+      .bind(...params, ...tags)
       .all<any>();
     const navRows: any[] = navRs.results || [];
 
@@ -568,7 +614,11 @@ navRoutes.post('/', publicRoute(), async (c) => {
         detail,
         logo,
         categoryId,
-        tags: Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined,
+        tags: Array.isArray(tags)
+          ? normalizeTags(tags)
+          : typeof tags === 'string'
+            ? normalizeTags(tags.split(','))
+            : undefined,
         authorName,
         authorUrl,
         audience,
@@ -598,7 +648,11 @@ navRoutes.put('/', createAuthMiddleware({ required: true }), async (c) => {
       detail,
       logo,
       categoryId,
-      tags: Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined,
+      tags: Array.isArray(tags)
+        ? normalizeTags(tags)
+        : typeof tags === 'string'
+          ? normalizeTags(tags.split(','))
+          : undefined,
       authorName,
       authorUrl,
       audience,

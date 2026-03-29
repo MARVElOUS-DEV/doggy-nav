@@ -36,7 +36,6 @@ export default [
     path: '/nav/category',
     component: './nav/Category',
   },
-  { name: '标签列表', icon: 'tag', path: '/nav/tag', component: './nav/Tag' },
   {
     name: '用户管理',
     icon: 'user',
@@ -128,12 +127,6 @@ export const pageTitles: Record<
   '/nav/category': {
     title: '分类管理',
     subtitle: '管理网站分类',
-    showUserMenu: true,
-    showSearch: false,
-  },
-  '/nav/tag': {
-    title: '标签管理',
-    subtitle: '管理网站标签',
     showUserMenu: true,
     showSearch: false,
   },
