@@ -211,6 +211,8 @@
   "enter_recommender_url": "Enter the link you want to promote",
   "website_details": "📝 Website Details(markdown support)",
   "enter_website_details": "Enter website details",
+  "back_to_edit": "Edit",
+  "markdown_preview": "Preview",
   "submitting": "Submitting...",
   "submit_recommendation": "Submit Recommendation",
   "thank_you_contribution": "Thank you for your contribution, let's build a better web navigation together!",

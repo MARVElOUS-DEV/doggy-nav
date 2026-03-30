@@ -121,9 +121,9 @@ export default function MarkdownEditor({
   return (
     <div
       className={`relative overflow-hidden rounded-2xl border-2 border-gray-200 bg-white transition-colors duration-300 dark:border-gray-600 dark:bg-gray-800 ${className || ''}`}
-      onPaste={handlePaste}
-      onDrop={handleDrop}
-      onDragOver={(e) => enableImageUpload && e.preventDefault()}
+      onPaste={enableImageUpload ? handlePaste : undefined}
+      onDrop={enableImageUpload ? handleDrop : undefined}
+      onDragOver={enableImageUpload ? (e) => e.preventDefault() : undefined}
     >
       {enableImageUpload && (
         <div className="flex items-center gap-1 px-2 py-1 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">

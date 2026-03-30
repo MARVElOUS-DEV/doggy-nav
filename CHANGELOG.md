@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🩹 Fixes
 
+- Align nav detail image uploads with the standalone image service in admin, add drag and paste support there, prevent anonymous recommend-page image upload traffic, and i18n the recommend detail editor controls
 - Display admin category names with local Chinese labels across category tables, selectors, and audit details
 - Update workers ci seeding ([#33](https://github.com/MARVElOUS-DEV/doggy-nav/pull/33))
 - Fix wokers ci ([#34](https://github.com/MARVElOUS-DEV/doggy-nav/pull/34))

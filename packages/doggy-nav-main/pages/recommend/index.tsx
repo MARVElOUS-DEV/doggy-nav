@@ -356,7 +356,7 @@ export default function Recommend() {
                             : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                       >
-                        {t('back_to_edit', { defaultValue: 'Edit' })}
+                        {t('back_to_edit')}
                       </button>
                       <button
                         type="button"
@@ -368,7 +368,7 @@ export default function Recommend() {
                         }`}
                       >
                         <Eye size={14} />
-                        {t('markdown_preview', { defaultValue: 'Preview' })}
+                        {t('markdown_preview')}
                       </button>
                     </div>
                   </div>
@@ -386,9 +386,7 @@ export default function Recommend() {
                           fallback={
                             <div className="flex h-full flex-col items-center justify-center text-theme-muted-foreground">
                               <p>
-                                {t('markdown_preview_empty', {
-                                  defaultValue: 'Start typing to see the live preview.',
-                                })}
+                                {t('markdown_preview_empty')}
                               </p>
                             </div>
                           }
@@ -399,7 +397,7 @@ export default function Recommend() {
                         placeholder={t('enter_website_details')}
                         height={400}
                         className="w-full"
-                        enableImageUpload={!!imageHostname}
+                        enableImageUpload={!!imageHostname && isAuthenticated}
                         imageHostname={imageHostname}
                       />
                     )}

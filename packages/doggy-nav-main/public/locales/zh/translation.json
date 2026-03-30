@@ -211,6 +211,8 @@
   "enter_recommender_url": "填写你要推广的链接",
   "website_details": "📝 网站详情(支持markdown）",
   "enter_website_details": "输入网站详情",
+  "back_to_edit": "编辑",
+  "markdown_preview": "预览",
   "submitting": "提交中...",
   "submit_recommendation": "提交推荐",
   "thank_you_contribution": "感谢您的贡献，让我们一起打造更好的网络导航！",

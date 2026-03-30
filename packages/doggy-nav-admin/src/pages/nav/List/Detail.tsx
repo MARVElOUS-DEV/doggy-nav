@@ -39,6 +39,7 @@ const ALLOWED_TYPES = [
 ];
 const MAX_FILES = 3;
 const MAX_SIZE_MB = 3;
+const IMAGE_SERVICE_URL = process.env.UMI_APP_IMAGE_SERVICE_URL || '';
 
 type NavRecord = {
   id: string;
@@ -175,6 +176,13 @@ export default function NavDetailEditorPage() {
   const [uploading, setUploading] = useState(false);
   const [navRecord, setNavRecord] = useState<NavRecord | null>(null);
   const [detail, setDetail] = useState('');
+  const imageHostname = useMemo(() => {
+    try {
+      return navRecord?.href ? new URL(navRecord.href).hostname : '';
+    } catch {
+      return '';
+    }
+  }, [navRecord?.href]);
 
   const insertAtCursor = useCallback((text: string) => {
     const activeEditor = editorRef.current;
@@ -267,6 +275,20 @@ export default function NavDetailEditorPage() {
     return null;
   }, []);
 
+  const getImageUploadAccessToken = useCallback(async () => {
+    const response: any = await request({
+      url: '/api/auth/token',
+      method: 'GET',
+    });
+
+    const token = response?.data?.token || response?.token;
+    if (!token) {
+      throw new Error('获取图片服务认证信息失败');
+    }
+
+    return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+  }, []);
+
   const uploadImages = useCallback(
     async (files: File[]) => {
       const validationError = validateFiles(files);
@@ -280,10 +302,23 @@ export default function NavDetailEditorPage() {
         const formData = new FormData();
         files.forEach((file) => formData.append('files', file));
 
-        const response = await fetch('/api/images/upload', {
+        const uploadUrl = IMAGE_SERVICE_URL
+          ? `${IMAGE_SERVICE_URL.replace(/\/$/, '')}/upload`
+          : '/api/images/upload';
+        const headers: Record<string, string> = defaultHeaders();
+
+        if (imageHostname) {
+          headers['X-Image-Hostname'] = imageHostname;
+        }
+
+        if (IMAGE_SERVICE_URL) {
+          headers.Authorization = await getImageUploadAccessToken();
+        }
+
+        const response = await fetch(uploadUrl, {
           method: 'POST',
-          credentials: 'include',
-          headers: defaultHeaders(),
+          credentials: IMAGE_SERVICE_URL ? 'omit' : 'include',
+          headers,
           body: formData,
         });
         const result = await response.json();
@@ -307,13 +342,47 @@ export default function NavDetailEditorPage() {
         setUploading(false);
       }
     },
-    [insertAtCursor, validateFiles],
+    [getImageUploadAccessToken, imageHostname, insertAtCursor, validateFiles],
   );
 
   const handleFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
       event.target.value = '';
+      await uploadImages(files);
+    },
+    [uploadImages],
+  );
+
+  const handlePaste = useCallback(
+    async (event: React.ClipboardEvent<HTMLDivElement>) => {
+      const items = Array.from(event.clipboardData.items);
+      const files = items
+        .filter((item) => item.type.startsWith('image/'))
+        .map((item) => item.getAsFile())
+        .filter((file): file is File => file !== null);
+
+      if (!files.length) {
+        return;
+      }
+
+      event.preventDefault();
+      await uploadImages(files);
+    },
+    [uploadImages],
+  );
+
+  const handleDrop = useCallback(
+    async (event: React.DragEvent<HTMLDivElement>) => {
+      const files = Array.from(event.dataTransfer.files).filter((file) =>
+        file.type.startsWith('image/'),
+      );
+
+      if (!files.length) {
+        return;
+      }
+
+      event.preventDefault();
       await uploadImages(files);
     },
     [uploadImages],
@@ -461,7 +530,12 @@ export default function NavDetailEditorPage() {
             }
             bodyStyle={{ padding: 0 }}
           >
-            <div style={{ borderTop: '1px solid #f0f0f0' }}>
+            <div
+              style={{ borderTop: '1px solid #f0f0f0' }}
+              onPaste={handlePaste}
+              onDrop={handleDrop}
+              onDragOver={(event) => event.preventDefault()}
+            >
               <div
                 style={{
                   display: 'flex',
@@ -474,7 +548,7 @@ export default function NavDetailEditorPage() {
                 }}
               >
                 <Text type="secondary">
-                  在这里编辑 Markdown，上传图片后会直接插入到当前光标位置。
+                  在这里编辑 Markdown，支持按钮上传、拖拽和粘贴图片到光标位置。
                 </Text>
                 <Button
                   icon={<UploadOutlined />}
