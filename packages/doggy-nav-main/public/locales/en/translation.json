@@ -9,6 +9,8 @@
   "most_likes": "Most Likes",
   "switch_to_dark_mode": "Switch to dark mode",
   "switch_to_light_mode": "Switch to light mode",
+  "light_mode": "Light",
+  "dark_mode": "Dark",
   "search_placeholder": "Search websites...",
   "search_tooltip": "Search websites",
   "clear_search": "Clear search",

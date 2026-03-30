@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Dropdown, Avatar as ArcoAvatar, Button, Image, Menu } from '@arco-design/web-react';
 import { User as UserIcon, LogOut } from 'lucide-react';
 import { useAtom } from 'jotai';
@@ -48,29 +48,36 @@ export default function UserAvatar({
   const isAuthed = authState.isAuthenticated && !!authState.user;
   const user = authState.user as User | undefined;
 
+  const renderMenuItemContent = (label: string, icon: ReactNode) => (
+    <div className="flex items-center py-1">
+      <span className="mr-3 text-theme-muted-foreground">{icon}</span>
+      <span className="text-theme-foreground">{label}</span>
+    </div>
+  );
+
   // Build menu items for use in both dropdown and inline menu modes
   const menuItems =
     isAuthed && user ? (
       <>
         <Menu.Item key="profile" onClick={handleProfile}>
-          <div className="flex items-center justify-between py-1">
-            <span className="mr-3 text-theme-foreground">{t('profile')}</span>
+          {renderMenuItemContent(
+            t('profile'),
             <UserIcon className="text-lg text-theme-muted-foreground" size={18} />
-          </div>
+          )}
         </Menu.Item>
         <Menu.Item key="logout" onClick={handleLogout}>
-          <div className="flex items-center justify-between py-1">
-            <span className="mr-3 text-theme-foreground">{t('sign_out')}</span>
+          {renderMenuItemContent(
+            t('sign_out'),
             <LogOut className="text-lg text-theme-muted-foreground" size={18} />
-          </div>
+          )}
         </Menu.Item>
       </>
     ) : (
       <Menu.Item key="login" onClick={handleLogin}>
-        <div className="flex items-center justify-between py-1">
-          <span className="mr-3 text-theme-foreground">{t('sign_in')}</span>
+        {renderMenuItemContent(
+          t('sign_in'),
           <UserIcon className="text-lg text-theme-muted-foreground" size={18} />
-        </div>
+        )}
       </Menu.Item>
     );
 

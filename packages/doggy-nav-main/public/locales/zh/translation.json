@@ -9,6 +9,8 @@
   "most_likes": "点赞最多导航",
   "switch_to_dark_mode": "切换到深色模式",
   "switch_to_light_mode": "切换到浅色模式",
+  "light_mode": "浅色",
+  "dark_mode": "深色",
   "search_placeholder": "搜索网站...",
   "search_tooltip": "搜索网站",
   "clear_search": "清除搜索",

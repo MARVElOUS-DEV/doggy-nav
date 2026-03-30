@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search as SearchIcon } from 'lucide-react';
+import { Languages, Palette, Search as SearchIcon } from 'lucide-react';
 import { Tooltip, Button, Dropdown, Menu } from '@arco-design/web-react';
 import Search from '../Search';
 import LanguageSwitcher from '../LanguageSwitcher';
@@ -99,16 +99,22 @@ export default function AppHeader({
       </Menu.Item>
       {isFeatureEnabled('lang_switch') && (
         <Menu.Item key="language">
-          <div className="flex items-center justify-between py-1">
-            <span className="mr-3 text-theme-foreground">{t('language')}</span>
-            <LanguageSwitcher />
+          <div className="flex items-center justify-between gap-3 py-1">
+            <div className="flex items-center min-w-0">
+              <Languages className="text-lg mr-3 text-theme-muted-foreground" size={18} />
+              <span className="text-theme-foreground">{t('language')}</span>
+            </div>
+            <LanguageSwitcher variant="compact" />
           </div>
         </Menu.Item>
       )}
       <Menu.Item key="theme">
-        <div className="flex items-center justify-between py-1">
-          <span className="mr-3 text-theme-foreground">{t('theme')}</span>
-          <ThemeToggle />
+        <div className="flex items-center justify-between gap-3 py-1">
+          <div className="flex items-center min-w-0">
+            <Palette className="text-lg mr-3 text-theme-muted-foreground" size={18} />
+            <span className="text-theme-foreground">{t('theme')}</span>
+          </div>
+          <ThemeToggle variant="compact" />
         </div>
       </Menu.Item>
       <UserAvatar asMenuItems />
