@@ -19,10 +19,12 @@ import promptRoutes from './prompt';
 import systemRoutes from './system';
 import afficheRoutes from './affiche';
 import siteSettingsRoutes from './siteSettings';
+import imageRoutes from './images';
 
 export type Env = {
   DB: D1Database;
   JWT_SECRET?: string;
+  IMAGE_SERVICE_URL?: string;
   NODE_ENV?: string;
   ALLOWED_ORIGINS?: string;
   RATE_LIMIT_ENABLED?: string;
@@ -68,6 +70,7 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/prompts', promptRoutes);
   app.route('/api/affiches', afficheRoutes);
   app.route('/api/site-settings', siteSettingsRoutes);
+  app.route('/api/images', imageRoutes);
   app.route('/api/migration', migrationRoutes);
   app.route('/api/seed', seedRoutes);
   app.route('/api/system', systemRoutes);

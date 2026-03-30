@@ -19,6 +19,11 @@ export default [
     component: './nav/Audit',
   },
   {
+    path: '/nav/list/:id/detail',
+    component: './nav/List/Detail',
+    hideInMenu: true,
+  },
+  {
     name: '导航列表',
     icon: 'send',
     path: '/nav/list',
@@ -198,3 +203,26 @@ export const pageTitles: Record<
     showSearch: false,
   },
 };
+
+export function resolvePageTitle(pathname: string) {
+  if (pageTitles[pathname]) {
+    return pageTitles[pathname];
+  }
+
+  if (/^\/nav\/list\/[^/]+\/detail$/.test(pathname)) {
+    return {
+      title: '编辑导航详情',
+      subtitle: '维护导航详情 Markdown 内容与图片',
+      showUserMenu: true,
+      showSearch: false,
+    };
+  }
+
+  return {
+    title: '页面',
+    subtitle: '页面管理',
+    showUserMenu: true,
+    showSearch: false,
+    actions: [],
+  };
+}

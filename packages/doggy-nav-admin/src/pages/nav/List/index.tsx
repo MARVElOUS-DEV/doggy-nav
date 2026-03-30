@@ -6,8 +6,10 @@ import TagSelect from '@/pages/nav/Tag/TagSelect';
 import { API_NAV, API_NAV_LIST } from '@/services/api';
 import request from '@/utils/request';
 import { formatDateTime } from '@/utils/time';
+import { FileTextOutlined } from '@ant-design/icons';
 import { ProColumns } from '@ant-design/pro-table';
-import { Button, message, Modal, Popconfirm, Space, Tag } from 'antd';
+import { history } from '@umijs/max';
+import { Button, message, Modal, Popconfirm, Space, Tag, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
 
 function RandomColorTag({ children }) {
@@ -174,6 +176,17 @@ export default function NavListPage() {
                 >
                   编辑
                 </a>,
+                <Tooltip key="edit-detail" title="编辑详情">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<FileTextOutlined />}
+                    key="edit-detail"
+                    onClick={() =>
+                      history.push(`/nav/list/${record.id}/detail`)
+                    }
+                  />
+                </Tooltip>,
                 <Popconfirm
                   key="delete"
                   title={'确定删除吗?'}

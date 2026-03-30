@@ -2,7 +2,7 @@ import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
 import '@ant-design/v5-patch-for-react-19';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
-import { pageTitles } from '../config/routes';
+import { resolvePageTitle } from '../config/routes';
 import ContentHeader from './components/ContentHeader';
 import apiRequest, { requestConfigure } from './utils/request';
 import {
@@ -48,13 +48,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     menuHeaderRender: (logo) => logo,
     headerRender: () => {
       const pathname = history.location.pathname;
-      const pageInfo = pageTitles[pathname] || {
-        title: '页面',
-        subtitle: '页面管理',
-        showUserMenu: true,
-        showSearch: false,
-        actions: [],
-      };
+      const pageInfo = resolvePageTitle(pathname);
 
       return (
         <div className="admin-header-wrapper">

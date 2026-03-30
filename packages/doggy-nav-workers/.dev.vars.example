@@ -27,6 +27,10 @@ AI_PROVIDER=xxx
 AI_BASE_URL=https://openai.com
 AI_MODEL=gpt-5
 
+# Optional image upload proxy target for /api/images/upload when using workers backend
+# Example: IMAGE_SERVICE_URL=http://127.0.0.1:8788
+IMAGE_SERVICE_URL=
+
 # System version / Git metadata (optional)
 SERVER_COMMIT_ID=
 GIT_REPO_SLUG=MARVElOUS-DEV/doggy-nav
@@ -40,5 +44,4 @@ GITHUB_TOKEN=
 #   wrangler secret put GITHUB_CLIENT_SECRET
 #   wrangler secret put LINUXDO_CLIENT_SECRET
 #   wrangler secret put AI_API_KEY
-
 
