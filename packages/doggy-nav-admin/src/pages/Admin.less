@@ -1,0 +1,289 @@
+.admin-overview-card {
+  height: 100%;
+
+  .ant-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: 100%;
+  }
+
+  .ant-typography {
+    color: white;
+  }
+}
+
+.admin-overview-card__header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.admin-overview-card__intro {
+  flex: 1 1 360px;
+}
+
+.admin-overview-card__eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 10px;
+}
+
+.admin-overview-card__description {
+  margin-bottom: 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.admin-overview-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 12px;
+  flex: 1 1 320px;
+}
+
+.admin-overview-pill-stat {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  span {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  strong {
+    display: block;
+    font-size: 24px;
+    line-height: 1.1;
+    color: white;
+  }
+}
+
+.admin-tag-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .ant-input-search {
+    flex: 1 1 280px;
+  }
+
+  .ant-input-affix-wrapper,
+  .ant-input-group-addon,
+  .ant-input {
+    border: none !important;
+  }
+}
+
+.admin-tag-toolbar__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-tag-toolbar__clear {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+}
+
+.admin-tag-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-tag-chip {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 999px;
+  color: white;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &.is-active {
+    outline: 1px solid rgba(255, 255, 255, 0.56);
+    transform: translateY(-2px);
+  }
+}
+
+.admin-tag-chip--placeholder {
+  width: 120px;
+  height: 42px;
+  cursor: default;
+  background: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: none !important;
+  animation: adminTagPulse 1.2s ease-in-out infinite;
+}
+
+.admin-tag-chip__name {
+  font-weight: 600;
+}
+
+.admin-tag-chip__count {
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.18);
+  font-size: 12px;
+}
+
+.admin-tag-empty {
+  margin: auto 0;
+
+  .ant-empty-description {
+    color: rgba(255, 255, 255, 0.76);
+  }
+}
+
+.admin-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-insight-tile {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
+
+  span {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1.2;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    display: block;
+    margin-top: 10px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+}
+
+.admin-tag-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-tag-ranking__title {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 700;
+  color: white;
+}
+
+.admin-tag-ranking__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-tag-ranking__row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  color: white;
+}
+
+.admin-tag-ranking__index {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-tag-ranking__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-tag-ranking__value {
+  font-weight: 700;
+}
+
+.admin-tag-ranking__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.admin-tag-ranking__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.48), white);
+}
+
+.admin-tag-ranking__empty {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.admin-tag-footnote {
+  display: inline-flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+@keyframes adminTagPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-overview-card__stats,
+  .admin-insight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-tag-toolbar {
+    align-items: stretch;
+  }
+}

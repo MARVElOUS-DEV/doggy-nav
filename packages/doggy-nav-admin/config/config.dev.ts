@@ -8,6 +8,14 @@ const serverTarget = (() => {
   return s.startsWith('http') ? s : `http://${s}`;
 })();
 const devClientSecret = process.env.DOGGY_SERVER_CLIENT_SECRET;
+const clientEnv = {
+  'process.env.UMI_APP_COPY_RIGHT_TEXT': JSON.stringify(
+    process.env.UMI_APP_COPY_RIGHT_TEXT || '',
+  ),
+  'process.env.UMI_APP_IMAGE_SERVICE_URL': JSON.stringify(
+    process.env.UMI_APP_IMAGE_SERVICE_URL || '',
+  ),
+};
 
 export default defineConfig({
   antd: {},
@@ -25,7 +33,5 @@ export default defineConfig({
       headers: devClientSecret ? { 'x-client-secret': devClientSecret } : {},
     },
   },
-  define: {
-    'process.env': process.env,
-  },
+  define: clientEnv,
 });

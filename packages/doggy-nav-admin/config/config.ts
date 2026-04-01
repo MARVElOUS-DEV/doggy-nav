@@ -9,6 +9,14 @@ const serverTarget = (() => {
 })();
 const devClientSecret =
   process.env.DOGGY_SERVER_CLIENT_SECRET || process.env.SERVER_CLIENT_SECRET;
+const clientEnv = {
+  'process.env.UMI_APP_COPY_RIGHT_TEXT': JSON.stringify(
+    process.env.UMI_APP_COPY_RIGHT_TEXT || '',
+  ),
+  'process.env.UMI_APP_IMAGE_SERVICE_URL': JSON.stringify(
+    process.env.UMI_APP_IMAGE_SERVICE_URL || '',
+  ),
+};
 
 export default defineConfig({
   antd: {},
@@ -20,6 +28,7 @@ export default defineConfig({
   routes,
   npmClient: 'pnpm',
   esbuildMinifyIIFE: true,
+  define: clientEnv,
   proxy:
     process.env.NODE_ENV === 'development'
       ? {
