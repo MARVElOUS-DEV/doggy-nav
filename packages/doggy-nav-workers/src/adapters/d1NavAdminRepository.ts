@@ -11,9 +11,11 @@ export default class D1NavAdminRepository implements NavAdminRepository {
 
   async create(input: NavAdminCreateInput): Promise<{ id: string }> {
     const id = newId24();
-    const createTime = nowChromeTime(); // Chrome-like high-precision epoch ticks
+    const createTime =
+      typeof input.createTime === 'number' ? input.createTime : nowChromeTime();
     const vis = (input.audience?.visibility as any) || 'public';
     const tagsJson = JSON.stringify(Array.isArray(input.tags) ? input.tags : []);
+    const status = typeof input.status === 'number' ? input.status : 1;
 
     await this.db
       .prepare(
@@ -33,7 +35,7 @@ export default class D1NavAdminRepository implements NavAdminRepository {
         createTime,
         tagsJson,
         vis,
-        1 // wait for audit by default (server parity)
+        status
       )
       .run();
 

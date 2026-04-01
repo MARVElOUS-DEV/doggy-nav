@@ -14,6 +14,10 @@ import { GlobalAppWindowProvider } from '@/store/GlobalAppWindowStore';
 import { WindowZProvider } from '@/store/WindowZStore';
 import { SiteSettingsProvider } from '@/context/SiteSettingsContext';
 import type { SiteSettings } from '@/types';
+import {
+  readCachedSiteSettings,
+  writeCachedSiteSettings,
+} from '@/utils/siteSettingsCache';
 
 import './global.css';
 
@@ -43,6 +47,12 @@ export default function MyApp({
   useEffect(() => {
     startProactiveAuthRefresh();
   }, []);
+
+  useEffect(() => {
+    if (pageProps.initialSiteSettings !== undefined) {
+      writeCachedSiteSettings(pageProps.initialSiteSettings ?? null);
+    }
+  }, [pageProps.initialSiteSettings]);
 
   // Use the layout defined at the page level, if available
   const getLayout =
@@ -84,6 +94,19 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
 
   let initialSiteSettings: SiteSettings | null = null;
 
+  if (typeof window !== 'undefined') {
+    const cached = readCachedSiteSettings();
+    if (cached !== undefined) {
+      return {
+        ...appProps,
+        pageProps: {
+          ...appProps.pageProps,
+          initialSiteSettings: cached,
+        },
+      };
+    }
+  }
+
   try {
     const response = await fetch(endpoint, {
       headers,
@@ -91,6 +114,9 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
     if (response.ok) {
       const payload = await response.json();
       initialSiteSettings = payload?.code === 1 ? (payload.data ?? null) : null;
+      if (typeof window !== 'undefined') {
+        writeCachedSiteSettings(initialSiteSettings);
+      }
     }
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {

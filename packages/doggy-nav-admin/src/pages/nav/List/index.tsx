@@ -118,6 +118,7 @@ export default function NavListPage() {
         public: { text: '公开' },
         authenticated: { text: '登录可见' },
         restricted: { text: '受限' },
+        hide: { text: '隐藏' },
       },
     },
     {

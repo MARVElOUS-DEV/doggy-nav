@@ -10,6 +10,8 @@ export interface NavAdminCreateInput {
   tags?: string[];
   authorName?: string | null;
   authorUrl?: string | null;
+  createTime?: number | null;
+  status?: number;
   audience?: Audience;
 }
 

@@ -34,6 +34,7 @@ export default [
     icon: 'upload',
     path: '/nav/bookmarks',
     component: './nav/Bookmarks',
+    access: 'isSysadmin',
   },
   {
     name: '分类列表',

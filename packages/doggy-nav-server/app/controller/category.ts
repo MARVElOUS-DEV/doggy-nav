@@ -14,6 +14,61 @@ export default class CategoryController extends Controller {
     return 'Category';
   }
 
+  private getEffectiveRoles(): string[] {
+    const user = this.ctx.state.userinfo as AuthUserContext | undefined;
+    return Array.isArray(user?.effectiveRoles) && user!.effectiveRoles!.length > 0
+      ? user!.effectiveRoles!
+      : Array.isArray(user?.roles)
+        ? user!.roles!
+        : [];
+  }
+
+  private isSysadminUser(): boolean {
+    return this.getEffectiveRoles().includes('sysadmin');
+  }
+
+  private denyHiddenManage(message = '隐藏分类仅允许 sysadmin 管理') {
+    this.ctx.status = 403;
+    this.error(message);
+  }
+
+  private async ensureHiddenCategoryAccess(options: {
+    currentId?: string;
+    requestedAudience?: any;
+    parentCategoryId?: string;
+  }) {
+    if (this.isSysadminUser()) return true;
+
+    const { currentId, requestedAudience, parentCategoryId } = options;
+
+    if (requestedAudience?.visibility === 'hide') {
+      this.denyHiddenManage('隐藏分类仅允许 sysadmin 创建或修改');
+      return false;
+    }
+
+    if (currentId && Types.ObjectId.isValid(currentId)) {
+      const current = await this.ctx.model.Category.findOne({ _id: currentId });
+      if (current?.audience?.visibility === 'hide') {
+        this.denyHiddenManage('隐藏分类仅允许 sysadmin 管理');
+        return false;
+      }
+    }
+
+    if (
+      parentCategoryId &&
+      parentCategoryId !== globalRootCategoryId &&
+      Types.ObjectId.isValid(parentCategoryId)
+    ) {
+      const parent = await this.ctx.model.Category.findOne({ _id: parentCategoryId });
+      if (parent?.audience?.visibility === 'hide') {
+        this.denyHiddenManage('隐藏分类下的子分类仅允许 sysadmin 管理');
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   // visibility order from least to most restrictive
   private visibilityRank(v?: string) {
     const order: Record<string, number> = {
@@ -82,6 +137,14 @@ export default class CategoryController extends Controller {
     const { ctx } = this;
     const body = this.getSanitizedBody();
     const { categoryId, audience } = body || {};
+    if (
+      !(await this.ensureHiddenCategoryAccess({
+        requestedAudience: audience,
+        parentCategoryId: categoryId,
+      }))
+    ) {
+      return;
+    }
     if (categoryId && categoryId !== globalRootCategoryId && Types.ObjectId.isValid(categoryId)) {
       const parent = await ctx.model.Category.findOne({ _id: categoryId });
       if (parent) {
@@ -98,6 +161,15 @@ export default class CategoryController extends Controller {
     const { ctx } = this;
     const body = this.getSanitizedBody();
     const { id } = body || {};
+    if (
+      !(await this.ensureHiddenCategoryAccess({
+        currentId: id,
+        requestedAudience: body?.audience,
+        parentCategoryId: body?.categoryId,
+      }))
+    ) {
+      return;
+    }
     if (id) {
       const current = await ctx.model.Category.findOne({ _id: id });
       if (current) {
@@ -125,6 +197,9 @@ export default class CategoryController extends Controller {
     const { ctx } = this;
     try {
       const { id } = ctx.request.body;
+      if (!(await this.ensureHiddenCategoryAccess({ currentId: id }))) {
+        return;
+      }
       const data = await Promise.all([
         ctx.model.Category.deleteOne({ _id: id }),
         ctx.model.Category.deleteOne({ categoryId: id }),

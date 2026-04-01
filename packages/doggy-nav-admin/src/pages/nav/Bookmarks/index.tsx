@@ -1,762 +1,611 @@
-import TableCom from '@/components/TableCom';
 import { GLOBAL_CATEGORY_ID } from '@/constants';
-import CategorySelect from '@/pages/nav/Category/CategorySelect';
 import { API_CATEGORY, API_NAV } from '@/services/api';
 import request from '@/utils/request';
-import { UploadOutlined } from '@ant-design/icons';
-import { PageContainer } from '@ant-design/pro-layout';
-import type { ProColumns } from '@ant-design/pro-table';
-import Editor from '@monaco-editor/react';
 import {
+  FolderOpenOutlined,
+  LinkOutlined,
+  ReloadOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+import { PageContainer } from '@ant-design/pro-layout';
+import {
+  Alert,
   Button,
   Card,
   Col,
-  Divider,
-  Drawer,
-  Form,
+  Descriptions,
+  Empty,
   Input,
-  message,
   Progress,
   Row,
-  Select,
   Space,
+  Statistic,
   Switch,
-  Tabs,
+  Table,
+  Tag,
+  Tree,
+  Typography,
   Upload,
+  message,
 } from 'antd';
-import React, { useCallback, useMemo, useState } from 'react';
+import type { ColumnsType } from 'antd/es/table';
+import { useMemo, useState } from 'react';
+import {
+  buildBookmarkImportIndex,
+  parseBookmarkHtml,
+  type BookmarkImportBookmark,
+  type BookmarkImportFolder,
+  type BookmarkImportNode,
+} from './bookmarkImport';
 
-type RowItem = {
-  __key: string; // unique key for React
-  id?: string;
-  name: string;
-  href: string;
-  desc?: string;
-  tags?: string[];
-  logo?: string;
-  categoryId?: string; // backend category id after creation/mapping
-  categoryGuid?: string; // source folder guid
-  __status?: 'pending' | 'success' | 'failed' | 'skipped';
-  __error?: string;
+type SaveSummary = {
+  rootCategoryId: string;
+  rootCategoryName: string;
+  successCount: number;
+  failureCount: number;
 };
 
-type Mapping = {
-  name?: string;
-  href?: string;
-  desc?: string;
-  tags?: string;
-  logo?: string;
-  categoryId?: string; // unused for derived mapping
-  typeKey?: string; // e.g. 'type'
-  guidKey?: string; // e.g. 'guid' or 'id'
-  childrenKey?: string; // e.g. 'children'
-  typeFolderValue?: string; // e.g. 'folder'
-  typeUrlValue?: string; // e.g. 'url'
-  dateAddedKey?: string; // e.g. 'date_added'
-};
-
-type CatItem = {
-  guid: string;
-  name: string;
-  parentGuid?: string | null;
-  createdId?: string; // backend category id after creation
-};
-
-function parseJSONSafe(text: string): any | null {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
+function readFileAsText(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
 }
 
-// reserved helper if needed in the future
-// function flattenNodes(input: any, childrenKey = 'children'): any[] {
-//   if (Array.isArray(input)) return input.flatMap(n => flattenNodes(n, childrenKey));
-//   if (input && typeof input === 'object') {
-//     const children = Array.isArray((input as any)[childrenKey]) ? (input as any)[childrenKey] : [];
-//     const cur = { ...input };
-//     delete (cur as any)[childrenKey];
-//     return [cur, ...children.flatMap((n: any) => flattenNodes(n, childrenKey))];
-//   }
-//   return [];
-// }
-
-function autoDetectMapping(keys: string[]): Mapping {
-  const k = (s: string) =>
-    keys.find((x) => x.toLowerCase() === s) ||
-    keys.find((x) => x.toLowerCase().includes(s));
-  return {
-    name: k('name') || k('title') || k('text'),
-    href: k('href') || k('url') || k('link'),
-    desc: k('desc') || k('description') || k('summary'),
-    tags: k('tags') || k('tag'),
-    logo: k('logo') || k('icon') || k('favicon'),
-    categoryId: undefined,
-    typeKey: k('type') || 'type',
-    guidKey: k('guid') || k('id') || 'guid',
-    childrenKey: k('children') || 'children',
-    typeFolderValue: 'folder',
-    typeUrlValue: 'url',
-    dateAddedKey: k('date_added') || k('created') || undefined,
-  };
-}
-
-let rowKeyCounter = 0;
-
-function normalizeItem(
-  src: any,
-  map: Mapping,
-  defaults: Partial<RowItem>,
-  parentGuid?: string | null,
-): RowItem {
-  const pick = (key?: string) => (key ? src?.[key] : undefined);
-  let tags = pick(map.tags) ?? src?.tags;
-  if (typeof tags === 'string')
-    tags = tags
-      .split(',')
-      .map((s: string) => s.trim())
-      .filter(Boolean);
-  if (!Array.isArray(tags)) tags = [];
-  const item: RowItem & { createTime?: number } = {
-    __key: `row_${++rowKeyCounter}`,
-    name: String(pick(map.name) ?? src?.title ?? ''),
-    href: String(pick(map.href) ?? src?.url ?? ''),
-    desc: pick(map.desc) ?? src?.description ?? '',
-    tags,
-    logo: pick(map.logo) ?? src?.icon ?? '',
-    categoryId: undefined,
-    categoryGuid: parentGuid || undefined,
-    __status: 'pending',
-  } as RowItem;
-  const dateAdded = pick(map.dateAddedKey as any) ?? src?.date_added;
-  if (typeof dateAdded === 'number') {
-    (item as any).createTime = dateAdded;
-  }
-  return item;
-}
-
-function isValidURL(u: string): boolean {
-  try {
-    new URL(u);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function saveBatch(
-  rows: RowItem[],
-  onProgress?: (done: number, total: number) => void,
-  concurrency = 5,
-): Promise<RowItem[]> {
-  const queue = rows.filter((r) => r.__status !== 'success');
-  const total = queue.length;
-  let done = 0;
-  const active: Promise<void>[] = [];
-
-  async function run(row: RowItem) {
-    try {
-      await request({
-        url: API_NAV,
-        method: 'POST',
-        data: {
-          name: row.name,
-          href: row.href,
-          desc: row.desc,
-          tags: row.tags,
-          logo: row.logo,
-          categoryId: row.categoryId,
-        },
-      });
-      row.__status = 'success';
-      row.__error = undefined;
-    } catch (e: any) {
-      row.__status = 'failed';
-      row.__error = e?.message || String(e);
-    } finally {
-      done++;
-      onProgress?.(done, total);
-    }
-  }
-
-  async function next(): Promise<void> {
-    const row = queue.shift();
-    if (!row) return;
-    const p = run(row).finally(() => {
-      const i = active.indexOf(p);
-      if (i >= 0) active.splice(i, 1);
-    });
-    active.push(p);
-    if (active.length >= concurrency) await Promise.race(active);
-    return next();
-  }
-
-  await Promise.all(
-    Array.from({ length: Math.min(concurrency, queue.length || 1) }).map(() =>
-      next(),
-    ),
+function resolveResponseId(response: any) {
+  return (
+    response?.data?.id || response?.id || response?.data?._id || response?._id
   );
-  return rows;
+}
+
+function createFallbackFavicon(url: string) {
+  try {
+    const { hostname } = new URL(url);
+    return `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
+  } catch {
+    return '';
+  }
 }
 
 export default function BookmarksImportPage() {
-  const [editorValue, setEditorValue] = useState<string>('[]');
-  const [rows, setRows] = useState<RowItem[]>([]);
-  const [cats, setCats] = useState<CatItem[]>([]);
-
-  const [subSelections, setSubSelections] = useState<
-    Record<string, React.Key[]>
-  >({});
+  const [importNodes, setImportNodes] = useState<BookmarkImportNode[]>([]);
+  const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
+  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [selectedKey, setSelectedKey] = useState<string>();
+  const [rootCategoryName, setRootCategoryName] = useState('我的书签导入');
+  const [fillMissingLogo, setFillMissingLogo] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [progress, setProgress] = useState<number>(0);
-  const [topParentCategoryId, setTopParentCategoryId] = useState<
-    string | undefined
-  >();
-  const [fetchLogoOnSave, setFetchLogoOnSave] = useState<boolean>(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingRow, setEditingRow] = useState<RowItem | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [saveErrors, setSaveErrors] = useState<string[]>([]);
+  const [saveSummary, setSaveSummary] = useState<SaveSummary | null>(null);
 
-  const sample = useMemo(() => {
-    const json = parseJSONSafe(editorValue);
-    if (!json || typeof json !== 'object') return {};
-    // Handle Chrome bookmarks structure: roots.{bookmark_bar, other, synced}.children
-    const roots = (json as any).roots;
-    if (roots && typeof roots === 'object') {
-      const bb = roots.bookmark_bar?.children || [];
-      const other = roots.other?.children || [];
-      const synced = roots.synced?.children || [];
-      const first = [...bb, ...other, ...synced][0];
-      return first || {};
-    }
-    // Fallback to array/object
-    if (Array.isArray(json)) return json[0] || {};
-    return json || {};
-  }, [editorValue]);
-
-  const keys = useMemo(() => Object.keys(sample || {}), [sample]);
-  const [mapping, setMapping] = useState<Mapping>(() =>
-    autoDetectMapping(keys),
+  const importIndex = useMemo(
+    () => buildBookmarkImportIndex(importNodes),
+    [importNodes],
   );
 
-  const handleFile = async (file: File) => {
-    const text = await new Promise<string>((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(String(r.result || ''));
-      r.onerror = rej;
-      r.readAsText(file);
+  const checkedKeySet = useMemo(() => new Set(checkedKeys), [checkedKeys]);
+
+  const selectedBookmarks = useMemo(
+    () =>
+      importIndex.bookmarks.filter((bookmark) =>
+        checkedKeySet.has(bookmark.key),
+      ),
+    [checkedKeySet, importIndex.bookmarks],
+  );
+
+  const requiredFolders = useMemo(() => {
+    const folderKeySet = new Set<string>();
+    selectedBookmarks.forEach((bookmark) => {
+      bookmark.ancestorFolderKeys.forEach((folderKey) =>
+        folderKeySet.add(folderKey),
+      );
     });
-    setEditorValue(text);
-    message.success('文件已加载到编辑器');
+
+    return Array.from(folderKeySet)
+      .map((folderKey) => importIndex.nodeMap.get(folderKey))
+      .filter(
+        (node): node is BookmarkImportFolder =>
+          !!node && node.type === 'folder',
+      )
+      .sort((left, right) => left.depth - right.depth);
+  }, [importIndex.nodeMap, selectedBookmarks]);
+
+  const activeNode = useMemo(
+    () => (selectedKey ? importIndex.nodeMap.get(selectedKey) : undefined),
+    [importIndex.nodeMap, selectedKey],
+  );
+
+  const treeData = useMemo(() => {
+    const build = (nodes: BookmarkImportNode[]): any[] =>
+      nodes.map((node) => ({
+        key: node.key,
+        title: (
+          <Space size={8}>
+            {node.type === 'folder' ? (
+              <FolderOpenOutlined style={{ color: '#1677ff' }} />
+            ) : (
+              <LinkOutlined style={{ color: '#52c41a' }} />
+            )}
+            <span>{node.title}</span>
+            {node.type === 'bookmark' ? (
+              <Typography.Text
+                type="secondary"
+                style={{ maxWidth: 320 }}
+                ellipsis={{ tooltip: node.url }}
+              >
+                {node.url}
+              </Typography.Text>
+            ) : (
+              <Tag color="blue">{node.children.length} items</Tag>
+            )}
+          </Space>
+        ),
+        children: node.type === 'folder' ? build(node.children) : undefined,
+      }));
+
+    return build(importNodes);
+  }, [importNodes]);
+
+  const selectedTableColumns = useMemo<ColumnsType<BookmarkImportBookmark>>(
+    () => [
+      {
+        title: '书签名称',
+        dataIndex: 'title',
+        render: (_, record) => (
+          <Space direction="vertical" size={0}>
+            <Typography.Text strong>{record.title}</Typography.Text>
+            <Typography.Text type="secondary">
+              {record.ancestorFolderKeys.length
+                ? record.ancestorFolderKeys
+                    .map((key) => importIndex.nodeMap.get(key)?.title)
+                    .filter(Boolean)
+                    .join(' / ')
+                : rootCategoryName.trim() || '我的书签导入'}
+            </Typography.Text>
+          </Space>
+        ),
+      },
+      {
+        title: '链接',
+        dataIndex: 'url',
+        ellipsis: true,
+        render: (value: string) => (
+          <Typography.Text ellipsis={{ tooltip: value }}>
+            {value}
+          </Typography.Text>
+        ),
+      },
+      {
+        title: '图标',
+        dataIndex: 'icon',
+        width: 120,
+        render: (value: string | undefined, record) =>
+          value ? (
+            <img
+              alt={record.title}
+              src={value}
+              style={{ width: 20, height: 20, objectFit: 'contain' }}
+            />
+          ) : (
+            <Typography.Text type="secondary">Auto</Typography.Text>
+          ),
+      },
+    ],
+    [importIndex.nodeMap, rootCategoryName],
+  );
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      const text = await readFileAsText(file);
+      const parsedNodes = parseBookmarkHtml(text);
+      const parsedIndex = buildBookmarkImportIndex(parsedNodes);
+      const suggestedName = file.name.replace(/\.[^.]+$/, '').trim();
+
+      setImportNodes(parsedNodes);
+      setCheckedKeys(parsedIndex.allKeys);
+      setExpandedKeys(parsedIndex.defaultExpandedKeys);
+      setSelectedKey(parsedIndex.allKeys[0]);
+      setRootCategoryName(suggestedName || '我的书签导入');
+      setSaveErrors([]);
+      setSaveSummary(null);
+
+      message.success(
+        `已解析 ${parsedIndex.bookmarks.length} 条书签，${parsedIndex.folders.length} 个文件夹`,
+      );
+    } catch (error: any) {
+      message.error(error?.message || '导入失败，请确认文件格式正确');
+    }
+
     return false;
   };
 
-  const applyMapping = useCallback(() => {
-    const json = parseJSONSafe(editorValue);
-    if (!json) {
-      message.error('JSON 解析失败');
+  const handleSave = async () => {
+    const finalRootName = rootCategoryName.trim();
+    if (!finalRootName) {
+      message.warning('请先填写导入后的根分类名称');
       return;
     }
-    // Determine entry nodes list (Chrome roots or direct array/tree)
-    let entries: any[] = [];
-    if (json && typeof json === 'object' && (json as any).roots) {
-      const roots = (json as any).roots;
-      entries = [
-        ...(roots.bookmark_bar?.children || []),
-        ...(roots.other?.children || []),
-        ...(roots.synced?.children || []),
-      ];
-    } else if (Array.isArray(json)) {
-      entries = json;
-    } else {
-      entries = [json];
-    }
-    // Walk tree to extract folders->categories and url->navs
-    const typeKey = mapping.typeKey || 'type';
-    const guidKey = mapping.guidKey || 'guid';
-    const childrenKey = mapping.childrenKey || 'children';
-    const typeFolderValue = mapping.typeFolderValue || 'folder';
-    const typeUrlValue = mapping.typeUrlValue || 'url';
-    const catList: CatItem[] = [];
-    const navList: RowItem[] = [];
-    const walk = (node: any, parentGuid: string | null) => {
-      if (!node || typeof node !== 'object') return;
-      const nodeType = node[typeKey];
-      const children = Array.isArray(node[childrenKey])
-        ? node[childrenKey]
-        : [];
-      const guid = String(node[guidKey] ?? node.id ?? '') || undefined;
-      if (nodeType === typeFolderValue && guid) {
-        const name = String(node[mapping.name || 'name'] ?? node.name ?? '');
-        catList.push({ guid, name, parentGuid });
-        children.forEach((c: any) => walk(c, guid));
-        return;
-      }
-      // url item
-      if (nodeType === typeUrlValue || node[mapping.href || 'url']) {
-        navList.push(normalizeItem(node, mapping, {}, parentGuid));
-      }
-    };
-    entries.forEach((n: any) => walk(n, null));
-    // Dedup navs by href
-    const seen = new Set<string>();
-    const deDuped = navList.filter((r) => {
-      if (!r.href) return false;
-      const key = r.href.trim();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-    setCats(catList);
-    setRows(deDuped);
-    message.success(
-      `解析成功：分类 ${catList.length} 个，网址 ${deDuped.length} 条`,
-    );
-  }, [editorValue, mapping]);
-
-  const formatEditor = () => {
-    try {
-      const obj = JSON.parse(editorValue);
-      setEditorValue(JSON.stringify(obj, null, 2));
-    } catch {
-      message.warning('不是合法的 JSON，无法格式化');
-    }
-  };
-
-  const validateRows = (list: RowItem[]) => {
-    let invalid = 0;
-    const updated = list.map((r) => {
-      if (!r.name || !r.href || !isValidURL(r.href)) {
-        r.__status = 'skipped';
-        invalid++;
-      }
-      return r;
-    });
-    if (invalid)
-      message.warning(
-        `有 ${invalid} 条记录缺少必填或 URL 不合法，已标记为跳过`,
-      );
-    setRows(updated);
-  };
-
-  function getFaviconSrv(host: string) {
-    // Lightweight service to avoid CORS; server uses a similar helper
-    return `https://icons.duckduckgo.com/ip3/${host}.ico`;
-  }
-
-  const onSaveNavs = async (onlyFailed = false, filterGuid?: string) => {
-    const targets = rows.filter(
-      (r) =>
-        (!filterGuid || r.categoryGuid === filterGuid) &&
-        r.__status !== 'skipped' &&
-        (!onlyFailed ? r.__status !== 'success' : r.__status === 'failed'),
-    );
-    if (!targets.length) {
-      message.info('没有需要保存的记录');
+    if (!selectedBookmarks.length) {
+      message.warning('请至少选择一条书签再保存');
       return;
     }
+
     setSaving(true);
     setProgress(0);
-    // optionally enrich logo lazily at save-time
-    const enriched = targets.map((r) => {
-      if (!r.logo && fetchLogoOnSave && r.href) {
-        try {
-          const { hostname } = new URL(r.href);
-          r.logo = getFaviconSrv(hostname);
-        } catch {}
-      }
-      return r;
-    });
-    await saveBatch(enriched, (done, total) => {
-      setProgress(Math.round((done / total) * 100));
-    });
-    setRows([...rows]);
-    setSaving(false);
-    const succ = targets.filter((r) => r.__status === 'success').length;
-    const fail = targets.filter((r) => r.__status === 'failed').length;
-    message.success(`完成：成功 ${succ} 条，失败 ${fail} 条`);
-  };
+    setSaveErrors([]);
+    setSaveSummary(null);
 
-  const saveCategories = async () => {
-    if (!cats.length) {
-      message.info('无分类可保存');
-      return;
-    }
-    const byGuid = new Map<string, CatItem>();
-    cats.forEach((c) => byGuid.set(c.guid, c));
-    // Create categories level by level
-    const created = new Map<string, string>(); // guid -> id
-    const pending = new Set<string>(cats.map((c) => c.guid));
-    const tryCreate = async (guid: string): Promise<boolean> => {
-      const c = byGuid.get(guid)!;
-      if (!c.name?.trim()) {
-        pending.delete(guid);
-        return true; // skip empty names
+    const totalSteps = 1 + requiredFolders.length + selectedBookmarks.length;
+    let finishedSteps = 0;
+    const tickProgress = () => {
+      finishedSteps += 1;
+      setProgress(Math.round((finishedSteps / totalSteps) * 100));
+    };
+
+    try {
+      const rootResponse = await request({
+        url: API_CATEGORY,
+        method: 'POST',
+        data: {
+          name: finalRootName,
+          categoryId: GLOBAL_CATEGORY_ID,
+          description: 'Imported from bookmarks HTML',
+          showInMenu: true,
+          audience: { visibility: 'hide' },
+        },
+      });
+      const rootCategoryId = resolveResponseId(rootResponse);
+
+      if (!rootCategoryId) {
+        throw new Error('创建根分类失败');
       }
-      const parentId = c.parentGuid
-        ? created.get(c.parentGuid)
-        : topParentCategoryId || GLOBAL_CATEGORY_ID;
-      if (c.parentGuid && !parentId) return false; // parent not created yet
-      try {
-        const res = await request({
+
+      tickProgress();
+
+      const folderCategoryIds = new Map<string, string>();
+      for (const folder of requiredFolders) {
+        const parentCategoryId = folder.parentKey
+          ? folderCategoryIds.get(folder.parentKey) || rootCategoryId
+          : rootCategoryId;
+        const response = await request({
           url: API_CATEGORY,
           method: 'POST',
           data: {
-            name: c.name,
-            categoryId: parentId,
+            name: folder.title,
+            categoryId: parentCategoryId,
+            showInMenu: true,
             audience: { visibility: 'hide' },
           },
         });
-        const id = res?.data?.id || res?.id;
-        if (id) {
-          created.set(guid, id);
-          c.createdId = id;
-          pending.delete(guid);
-          return true;
+        const createdId = resolveResponseId(response);
+
+        if (!createdId) {
+          throw new Error(`创建分类 "${folder.title}" 失败`);
         }
-      } catch (e: any) {
-        message.error(`创建分类 "${c.name}" 失败: ${e?.message || e}`);
+
+        folderCategoryIds.set(folder.key, createdId);
+        tickProgress();
       }
-      return false;
-    };
-    let progressGuard = 0;
-    while (pending.size && progressGuard < 10000) {
-      progressGuard++;
-      let progressed = false;
-      for (const guid of Array.from(pending)) {
-        const ok = await tryCreate(guid);
-        if (ok) progressed = true;
-      }
-      if (!progressed) break;
-    }
-    setCats([...cats]);
-    if (pending.size) {
-      message.error(
-        `部分分类未创建成功：剩余 ${pending.size} 个（可能缺少父级）`,
-      );
-    } else {
-      message.success(`分类创建完成：${created.size} 个`);
-    }
-    // map category ids onto rows by categoryGuid
-    if (created.size) {
-      const nextRows = rows.map((r) => ({
-        ...r,
-        categoryId: r.categoryGuid ? created.get(r.categoryGuid) : r.categoryId,
+
+      const bookmarkFailures: string[] = [];
+      let successCount = 0;
+      let failureCount = 0;
+      let cursor = 0;
+      const tasks = selectedBookmarks.map((bookmark) => ({
+        ...bookmark,
+        categoryId: bookmark.ancestorFolderKeys.length
+          ? folderCategoryIds.get(
+              bookmark.ancestorFolderKeys[
+                bookmark.ancestorFolderKeys.length - 1
+              ],
+            ) || rootCategoryId
+          : rootCategoryId,
+        logo:
+          bookmark.icon ||
+          (fillMissingLogo ? createFallbackFavicon(bookmark.url) : ''),
       }));
-      setRows(nextRows);
+
+      const worker = async () => {
+        while (cursor < tasks.length) {
+          const task = tasks[cursor];
+          cursor += 1;
+
+          try {
+            await request({
+              url: API_NAV,
+              method: 'POST',
+              data: {
+                name: task.title,
+                href: task.url,
+                desc: task.title,
+                logo: task.logo,
+                categoryId: task.categoryId,
+                createTime: task.addDate,
+                status: 0,
+                audience: { visibility: 'hide' },
+              },
+            });
+            successCount += 1;
+          } catch (error: any) {
+            failureCount += 1;
+            bookmarkFailures.push(
+              `${task.title}${error?.message ? `: ${error.message}` : ''}`,
+            );
+          } finally {
+            tickProgress();
+          }
+        }
+      };
+
+      await Promise.all(
+        Array.from({
+          length: Math.min(4, tasks.length || 1),
+        }).map(() => worker()),
+      );
+
+      setSaveErrors(bookmarkFailures);
+      setSaveSummary({
+        rootCategoryId,
+        rootCategoryName: finalRootName,
+        successCount,
+        failureCount,
+      });
+
+      if (failureCount > 0) {
+        message.warning(
+          `导入完成，成功 ${successCount} 条，失败 ${failureCount} 条`,
+        );
+      } else {
+        message.success(`导入完成，共保存 ${successCount} 条书签`);
+      }
+    } catch (error: any) {
+      message.error(error?.message || '导入保存失败');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const columns = useMemo<ProColumns<RowItem>[]>(
-    () => [
-      { title: '名称', dataIndex: 'name', width: 220, ellipsis: true },
-      { title: '链接', dataIndex: 'href', width: 320, ellipsis: true },
-      {
-        title: '状态',
-        dataIndex: '__status',
-        width: 100,
-        valueType: 'select',
-        valueEnum: {
-          pending: { text: '待处理' },
-          success: { text: '成功' },
-          failed: { text: '失败' },
-          skipped: { text: '跳过' },
-        },
-      },
-      {
-        title: '操作',
-        valueType: 'option',
-        width: 100,
-        render: (_, record) => [
-          <a
-            key="edit"
-            onClick={() => {
-              setEditingRow(record);
-              setDrawerOpen(true);
-            }}
-          >
-            编辑
-          </a>,
-        ],
-      },
-    ],
-    [],
-  );
-
-  const catColumns = useMemo<ProColumns<CatItem>[]>(
-    () => [
-      { title: '名称', dataIndex: 'name', width: 220 },
-      { title: 'GUID', dataIndex: 'guid', width: 220 },
-      { title: '父级GUID', dataIndex: 'parentGuid', width: 220 },
-      { title: '创建后 id', dataIndex: 'createdId', width: 260 },
-    ],
-    [],
-  );
-
   return (
     <PageContainer>
-      <Tabs
-        defaultActiveKey="preview"
-        items={[
-          {
-            key: 'preview',
-            label: '预览',
-            children: (
+      <Space direction="vertical" size={16} style={{ display: 'flex' }}>
+        <Alert
+          type="info"
+          showIcon
+          message="该页面仅用于 sysadmin 管理隐藏书签导入。导入后的分类和书签都会以隐藏可见性保存，不会出现在公共导航中。"
+        />
+
+        <Card>
+          <Space
+            direction="vertical"
+            size={16}
+            style={{ display: 'flex', width: '100%' }}
+          >
+            <Upload.Dragger
+              beforeUpload={handleFileUpload}
+              showUploadList={false}
+              accept=".html,.htm,text/html"
+              disabled={saving}
+            >
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined />
+              </p>
+              <p className="ant-upload-text">上传浏览器导出的书签 HTML 文件</p>
+              <p className="ant-upload-hint">
+                支持 Chrome、Edge、Safari、Firefox 等常见导出格式
+              </p>
+            </Upload.Dragger>
+
+            <Row gutter={16}>
+              <Col xs={24} md={8}>
+                <Card size="small">
+                  <Statistic
+                    title="文件夹"
+                    value={importIndex.folders.length}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} md={8}>
+                <Card size="small">
+                  <Statistic
+                    title="书签"
+                    value={importIndex.bookmarks.length}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} md={8}>
+                <Card size="small">
+                  <Statistic
+                    title="已选择书签"
+                    value={selectedBookmarks.length}
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col xs={24} md={14}>
+                <Input
+                  value={rootCategoryName}
+                  onChange={(event) => setRootCategoryName(event.target.value)}
+                  placeholder="导入后的根分类名称"
+                  disabled={saving}
+                  addonBefore="根分类"
+                />
+              </Col>
+              <Col xs={24} md={10}>
+                <Space>
+                  <span>补全缺失图标</span>
+                  <Switch
+                    checked={fillMissingLogo}
+                    onChange={setFillMissingLogo}
+                    disabled={saving}
+                  />
+                </Space>
+              </Col>
+            </Row>
+
+            <Space wrap>
+              <Button
+                onClick={() => setCheckedKeys(importIndex.allKeys)}
+                disabled={!importIndex.allKeys.length || saving}
+              >
+                全选
+              </Button>
+              <Button
+                onClick={() => setCheckedKeys([])}
+                disabled={!importIndex.allKeys.length || saving}
+              >
+                清空选择
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => setExpandedKeys(importIndex.defaultExpandedKeys)}
+                disabled={!importIndex.allKeys.length || saving}
+              >
+                重置展开
+              </Button>
+              <Button
+                type="primary"
+                onClick={handleSave}
+                disabled={!selectedBookmarks.length}
+                loading={saving}
+              >
+                保存已选择书签
+              </Button>
+            </Space>
+
+            {saving ? <Progress percent={progress} /> : null}
+          </Space>
+        </Card>
+
+        {!importNodes.length ? (
+          <Card>
+            <Empty description="上传 HTML 文件后，在这里预览并筛选要保存的书签" />
+          </Card>
+        ) : (
+          <Row gutter={16} align="stretch">
+            <Col xs={24} xl={10}>
               <Card
-                title={
-                  <Space>
-                    <span>分类与下属网址预览</span>
-                    <span>顶级父级（可选）：</span>
-                    <CategorySelect
-                      value={topParentCategoryId}
-                      onChange={setTopParentCategoryId}
-                    />
-                    <Button type="primary" onClick={saveCategories}>
-                      保存分类
-                    </Button>
-                    <span>保存时抓取图标</span>
-                    <Switch
-                      checked={fetchLogoOnSave}
-                      onChange={setFetchLogoOnSave}
-                    />
-                  </Space>
+                title="导入树"
+                extra={
+                  <Typography.Text type="secondary">
+                    勾选书签或整个文件夹，系统只会保存选中的书签和必需的目录层级
+                  </Typography.Text>
                 }
               >
-                {saving && <Progress percent={progress} />}
-                <TableCom
-                  rowKey={(r) => r.guid}
-                  columns={catColumns}
-                  dataSource={cats}
-                  search={false}
-                  pagination={{ pageSize: 10 }}
-                  expandable={{
-                    expandedRowRender: (record) => {
-                      const subNavs = rows.filter(
-                        (r) => r.categoryGuid === record.guid,
-                      );
-                      return (
-                        <TableCom
-                          size="small"
-                          rowKey="__key"
-                          columns={columns}
-                          dataSource={subNavs}
-                          search={false}
-                          pagination={{ pageSize: 8 }}
-                          rowSelection={{
-                            selectedRowKeys: subSelections[record.guid] || [],
-                            onChange: (keys) =>
-                              setSubSelections((prev) => ({
-                                ...prev,
-                                [record.guid]: keys,
-                              })),
-                          }}
-                          editable={{ type: 'multiple' }}
-                          scroll={{ x: 'max-content' }}
-                          toolBarRender={() => [
-                            <Space key="sub-bulk">
-                              <span>批量设置分类(id)：</span>
-                              <CategorySelect
-                                onChange={(v: string) => {
-                                  const ids = new Set(
-                                    (subSelections[record.guid] ||
-                                      []) as string[],
-                                  );
-                                  const next = rows.map((r) =>
-                                    ids.has(r.__key)
-                                      ? { ...r, categoryId: v }
-                                      : r,
-                                  );
-                                  setRows(next);
-                                }}
-                              />
-                              <Button onClick={() => validateRows(subNavs)}>
-                                校验
-                              </Button>
-                              <Button
-                                type="primary"
-                                onClick={() => onSaveNavs(false, record.guid)}
-                              >
-                                保存此分类下网址
-                              </Button>
-                              <Button
-                                onClick={() => onSaveNavs(true, record.guid)}
-                              >
-                                重试失败
-                              </Button>
-                            </Space>,
-                          ]}
-                        />
-                      );
-                    },
-                  }}
-                  scroll={{ x: 'max-content' }}
-                  rowSelection={false}
+                <Tree
+                  checkable
+                  blockNode
+                  showLine
+                  selectable
+                  height={640}
+                  treeData={treeData}
+                  checkedKeys={checkedKeys}
+                  expandedKeys={expandedKeys}
+                  selectedKeys={selectedKey ? [selectedKey] : []}
+                  onCheck={(keys) =>
+                    setCheckedKeys(
+                      (Array.isArray(keys) ? keys : keys.checked).map((key) =>
+                        String(key),
+                      ),
+                    )
+                  }
+                  onExpand={(keys) =>
+                    setExpandedKeys(keys.map((key) => String(key)))
+                  }
+                  onSelect={(keys) =>
+                    setSelectedKey(keys[0] as string | undefined)
+                  }
                 />
-                <Drawer
-                  title="编辑网址"
-                  open={drawerOpen}
-                  width={520}
-                  onClose={() => setDrawerOpen(false)}
-                  destroyOnHidden
-                  footer={null}
-                >
-                  <Form
-                    layout="vertical"
-                    initialValues={{
-                      name: editingRow?.name,
-                      href: editingRow?.href,
-                      desc: editingRow?.desc,
-                      tags: (editingRow?.tags || []).join(','),
-                      logo: editingRow?.logo,
-                      categoryId: editingRow?.categoryId,
-                    }}
-                    onFinish={(vals) => {
-                      if (!editingRow) return;
-                      const next = rows.map((r) =>
-                        r.__key === editingRow.__key
-                          ? {
-                              ...r,
-                              desc: vals.desc,
-                              tags: String(vals.tags || '')
-                                .split(',')
-                                .map((s: string) => s.trim())
-                                .filter(Boolean),
-                              logo: vals.logo,
-                              categoryId: vals.categoryId,
-                            }
-                          : r,
-                      );
-                      setRows(next);
-                      setDrawerOpen(false);
-                      message.success('已更新');
-                    }}
-                  >
-                    <Form.Item label="名称" name="name">
-                      <Input disabled />
-                    </Form.Item>
-                    <Form.Item label="链接" name="href">
-                      <Input disabled />
-                    </Form.Item>
-                    <Form.Item label="描述" name="desc">
-                      <Input.TextArea rows={3} />
-                    </Form.Item>
-                    <Form.Item label="标签(逗号分隔)" name="tags">
-                      <Input />
-                    </Form.Item>
-                    <Form.Item label="Logo" name="logo">
-                      <Input />
-                    </Form.Item>
-                    <Form.Item label="分类(id)" name="categoryId">
-                      <CategorySelect />
-                    </Form.Item>
-                    <Space>
-                      <Button onClick={() => setDrawerOpen(false)}>取消</Button>
-                      <Button type="primary" htmlType="submit">
-                        保存
-                      </Button>
-                    </Space>
-                  </Form>
-                </Drawer>
               </Card>
-            ),
-          },
-          {
-            key: 'editor',
-            label: '编辑器',
-            children: (
-              <>
+            </Col>
+            <Col xs={24} xl={14}>
+              <Space direction="vertical" size={16} style={{ display: 'flex' }}>
+                <Card title="节点详情">
+                  {activeNode ? (
+                    <Descriptions column={1} size="small">
+                      <Descriptions.Item label="类型">
+                        {activeNode.type === 'folder' ? '文件夹' : '书签'}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="名称">
+                        {activeNode.title}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="路径">
+                        {activeNode.pathLabels.join(' / ')}
+                      </Descriptions.Item>
+                      {activeNode.type === 'bookmark' ? (
+                        <Descriptions.Item label="链接">
+                          <Typography.Text copyable>
+                            {activeNode.url}
+                          </Typography.Text>
+                        </Descriptions.Item>
+                      ) : (
+                        <Descriptions.Item label="子项数量">
+                          {activeNode.children.length}
+                        </Descriptions.Item>
+                      )}
+                    </Descriptions>
+                  ) : (
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description="从左侧选择一个节点查看详情"
+                    />
+                  )}
+                </Card>
+
                 <Card
-                  title="书签 JSON 编辑器"
+                  title="待保存书签"
                   extra={
-                    <Space>
-                      <Upload
-                        beforeUpload={handleFile}
-                        showUploadList={false}
-                        accept=".json"
-                      >
-                        <Button icon={<UploadOutlined />}>
-                          加载 JSON 文件
-                        </Button>
-                      </Upload>
-                      <Button onClick={formatEditor}>格式化</Button>
-                    </Space>
+                    <Typography.Text type="secondary">
+                      必需目录: {requiredFolders.length} 个
+                    </Typography.Text>
                   }
                 >
-                  <Editor
-                    height="520px"
-                    defaultLanguage="json"
-                    theme="vs-dark"
-                    value={editorValue}
-                    onChange={(v) => setEditorValue(v ?? '')}
-                    options={{ minimap: { enabled: false }, wordWrap: 'on' }}
+                  <Table<BookmarkImportBookmark>
+                    rowKey="key"
+                    columns={selectedTableColumns}
+                    dataSource={selectedBookmarks}
+                    pagination={{ pageSize: 8 }}
+                    scroll={{ x: 'max-content' }}
                   />
-                  <Divider />
-                  <Form layout="inline">
-                    <Form.Item>
-                      <Button type="primary" onClick={applyMapping}>
-                        应用并预览
-                      </Button>
-                    </Form.Item>
-                  </Form>
                 </Card>
-                <Card style={{ marginTop: 16 }} title="字段映射">
-                  <Row gutter={12}>
-                    {(
-                      [
-                        'name',
-                        'href',
-                        'desc',
-                        'tags',
-                        'logo',
-                        'categoryId',
-                      ] as (keyof Mapping)[]
-                    ).map((f) => (
-                      <Col span={12} key={f} style={{ marginBottom: 8 }}>
-                        <Space>
-                          <span style={{ width: 90, display: 'inline-block' }}>
-                            {f}
-                          </span>
-                          <Select
-                            style={{ width: 220 }}
-                            value={(mapping as any)[f]}
-                            onChange={(v) =>
-                              setMapping((m) => ({ ...m, [f]: v }))
-                            }
-                            allowClear
-                            placeholder="选择源字段"
-                            options={keys.map((k) => ({ label: k, value: k }))}
-                          />
-                        </Space>
-                      </Col>
-                    ))}
-                    {(
-                      ['typeKey', 'guidKey', 'childrenKey'] as (keyof Mapping)[]
-                    ).map((f) => (
-                      <Col span={12} key={f} style={{ marginBottom: 8 }}>
-                        <Space>
-                          <span style={{ width: 90, display: 'inline-block' }}>
-                            {f}
-                          </span>
-                          <Select
-                            style={{ width: 220 }}
-                            value={(mapping as any)[f]}
-                            onChange={(v) =>
-                              setMapping((m) => ({ ...m, [f]: v }))
-                            }
-                            allowClear
-                            placeholder="选择源字段"
-                            options={keys.map((k) => ({ label: k, value: k }))}
-                          />
-                        </Space>
-                      </Col>
-                    ))}
-                  </Row>
-                </Card>
-              </>
-            ),
-          },
-        ]}
-      />
+
+                {saveSummary ? (
+                  <Alert
+                    type={saveSummary.failureCount > 0 ? 'warning' : 'success'}
+                    showIcon
+                    message={`已创建隐藏根分类「${saveSummary.rootCategoryName}」`}
+                    description={`分类 ID: ${saveSummary.rootCategoryId}，成功保存 ${saveSummary.successCount} 条书签，失败 ${saveSummary.failureCount} 条。`}
+                  />
+                ) : null}
+
+                {saveErrors.length ? (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    message="以下书签保存失败"
+                    description={
+                      <Space direction="vertical" size={4}>
+                        {saveErrors.slice(0, 8).map((item) => (
+                          <Typography.Text key={item}>{item}</Typography.Text>
+                        ))}
+                        {saveErrors.length > 8 ? (
+                          <Typography.Text type="secondary">
+                            其余 {saveErrors.length - 8} 条失败记录已省略
+                          </Typography.Text>
+                        ) : null}
+                      </Space>
+                    }
+                  />
+                ) : null}
+              </Space>
+            </Col>
+          </Row>
+        )}
+      </Space>
     </PageContainer>
   );
 }

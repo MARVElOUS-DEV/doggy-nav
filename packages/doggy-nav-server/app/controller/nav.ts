@@ -22,6 +22,57 @@ export default class NavController extends Controller {
     return 'Nav';
   }
 
+  private getEffectiveRoles(): string[] {
+    const userCtx = this.ctx.state.userinfo as AuthUserContext | undefined;
+    return Array.isArray(userCtx?.effectiveRoles) && userCtx!.effectiveRoles!.length > 0
+      ? userCtx!.effectiveRoles!
+      : Array.isArray(userCtx?.roles)
+        ? userCtx!.roles!
+        : [];
+  }
+
+  private isSysadminUser(): boolean {
+    return this.getEffectiveRoles().includes('sysadmin');
+  }
+
+  private denyHiddenManage(message = '隐藏记录仅允许 sysadmin 管理') {
+    this.ctx.status = 403;
+    this.error(message);
+  }
+
+  private async ensureHiddenNavAccess(options: {
+    currentId?: string;
+    requestedAudience?: any;
+    categoryId?: string;
+  }) {
+    if (this.isSysadminUser()) return true;
+
+    const { currentId, requestedAudience, categoryId } = options;
+
+    if (requestedAudience?.visibility === 'hide') {
+      this.denyHiddenManage('隐藏导航仅允许 sysadmin 创建或修改');
+      return false;
+    }
+
+    if (currentId && Types.ObjectId.isValid(currentId)) {
+      const current = await this.ctx.model.Nav.findOne({ _id: currentId });
+      if (current?.audience?.visibility === 'hide') {
+        this.denyHiddenManage('隐藏导航仅允许 sysadmin 管理');
+        return false;
+      }
+    }
+
+    if (categoryId && Types.ObjectId.isValid(categoryId)) {
+      const category = await this.ctx.model.Category.findOne({ _id: categoryId });
+      if (category?.audience?.visibility === 'hide') {
+        this.denyHiddenManage('隐藏分类下的导航仅允许 sysadmin 管理');
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   async list() {
     const { ctx } = this;
     const { status = 0, categoryId, name, year, tags } = ctx.query;
@@ -127,8 +178,27 @@ export default class NavController extends Controller {
   }
 
   async add() {
-    this.ctx.request.body.status = NAV_STATUS.wait;
-    this.ctx.request.body.createTime = nowToChromeTime();
+    const body = this.getSanitizedBody();
+    if (
+      !(await this.ensureHiddenNavAccess({
+        requestedAudience: body?.audience,
+        categoryId: body?.categoryId,
+      }))
+    ) {
+      return;
+    }
+
+    const isHiddenSysadminImport =
+      this.ctx.state.requestSource === 'admin' &&
+      body?.audience?.visibility === 'hide' &&
+      this.isSysadminUser();
+
+    this.ctx.request.body.status = isHiddenSysadminImport
+      ? NAV_STATUS.pass
+      : NAV_STATUS.wait;
+    if (!(isHiddenSysadminImport && this.ctx.request.body.createTime)) {
+      this.ctx.request.body.createTime = nowToChromeTime();
+    }
     this.ctx.request.body.tags = normalizeTags(this.ctx.request.body.tags);
 
     try {
@@ -182,10 +252,24 @@ export default class NavController extends Controller {
   }
 
   async del() {
+    const body = this.getSanitizedBody();
+    if (!(await this.ensureHiddenNavAccess({ currentId: body?.id }))) {
+      return;
+    }
     await super.remove();
   }
 
   async edit() {
+    const body = this.getSanitizedBody();
+    if (
+      !(await this.ensureHiddenNavAccess({
+        currentId: body?.id,
+        requestedAudience: body?.audience,
+        categoryId: body?.categoryId,
+      }))
+    ) {
+      return;
+    }
     this.ctx.request.body.updateTime = new Date();
     if (this.ctx.request.body.tags !== undefined) {
       this.ctx.request.body.tags = normalizeTags(this.ctx.request.body.tags);

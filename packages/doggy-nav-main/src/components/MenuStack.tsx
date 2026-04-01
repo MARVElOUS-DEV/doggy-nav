@@ -95,6 +95,93 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
     setSelectedCategory(id);
     router.push(category.href ?? `/navcontents?category=${id}`);
   };
+
+  const renderMenuItem = (
+    category: Category,
+    options?: {
+      compact?: boolean;
+      showFolderHint?: boolean;
+    },
+  ) => (
+    <Menu.Item
+      key={category.id}
+      onClick={() => onHandleSubMenuClick(category, category.id)}
+      className="transition-all duration-200"
+      renderItemInTooltip={() => t(category.name, { defaultValue: category.name })}
+    >
+      {collapse ? (
+        <div className="flex items-center justify-center w-full">
+          {renderMenuIcon(category, 16)}
+        </div>
+      ) : (
+        <div
+          className={`group flex items-center gap-3 w-full ${
+            options?.compact ? 'px-2 py-2' : 'py-2.5'
+          }`}
+        >
+          {renderMenuIcon(category, 16)}
+          <span
+            className={`group-hover:text-theme-foreground transition-colors ${
+              options?.compact
+                ? 'text-sm text-theme-muted-foreground'
+                : 'font-medium'
+            }`}
+          >
+            {t(category.name, { defaultValue: category.name })}
+          </span>
+          {options?.showFolderHint && !collapse ? (
+            <span className="ml-auto text-[11px] uppercase tracking-[0.12em] text-theme-muted-foreground">
+              {t('folder_label')}
+            </span>
+          ) : (
+            <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
+          )}
+        </div>
+      )}
+    </Menu.Item>
+  );
+
+  const renderTopLevelNode = (category: Category) => {
+    const visibleChildren = (category.children || []).filter((child) => child.showInMenu);
+    const hasChildren = visibleChildren.length > 0;
+
+    if (!hasChildren) {
+      return renderMenuItem(category);
+    }
+
+    return (
+      <Menu.SubMenu
+        key={`${category.id}__group`}
+        className={'doggy-menu transition-all duration-200'}
+        title={
+          collapse ? (
+            <div className="flex items-center justify-center w-full">
+              {renderMenuIcon(category, 16)}
+            </div>
+          ) : (
+            <div className="group flex items-center gap-3 w-full py-2.5">
+              {renderMenuIcon(category, 16)}
+              <span className="group-hover:text-theme-foreground transition-colors font-medium">
+                {t(category.name, { defaultValue: category.name })}
+              </span>
+              <div className="ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium text-theme-muted-foreground border border-theme-border">
+                {visibleChildren.length}
+              </div>
+            </div>
+          )
+        }
+      >
+        {category.onlyFolder !== true && renderMenuItem(category, { compact: true })}
+        {visibleChildren.map((child) =>
+          renderMenuItem(child, {
+            compact: true,
+            showFolderHint: !!child.children?.some((item) => item.showInMenu),
+          }),
+        )}
+      </Menu.SubMenu>
+    );
+  };
+
   return (
     <Menu
       collapse={collapse}
@@ -105,89 +192,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
     >
       {categories
         .filter((category) => category.showInMenu)
-        .map((category) => {
-          const hasChildren = category.children && category.children.length > 0;
-
-          if (hasChildren) {
-            return (
-              <Menu.SubMenu
-                key={`${category.id}__group`}
-                className={'doggy-menu transition-all duration-200'}
-                title={
-                  collapse ? (
-                    // Collapsed mode: only show icon
-                    <div className="flex items-center justify-center w-full">
-                      {renderMenuIcon(category, 16)}
-                    </div>
-                  ) : (
-                    // Expanded mode: show full content
-                    <div className="group flex items-center gap-3 w-full py-2.5">
-                      {renderMenuIcon(category, 16)}
-                      <span className="group-hover:text-theme-foreground transition-colors font-medium">
-                        {t(category.name, { defaultValue: category.name })}
-                      </span>
-                      <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
-                    </div>
-                  )
-                }
-              >
-                {/* Parent category clickable unless marked as folder-only */}
-                {category.onlyFolder !== true && (
-                  <Menu.Item
-                    key={category.id}
-                    onClick={() => onHandleSubMenuClick(category, category.id)}
-                  >
-                    <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 rounded-xl">
-                      {renderMenuIcon(category, 16)}
-                      <span className="text-sm text-theme-muted-foreground group-hover:text-theme-foreground transition-colors font-medium">
-                        {t(category.name, { defaultValue: category.name })}
-                      </span>
-                      <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    </div>
-                  </Menu.Item>
-                )}
-                {category.children
-                  ?.filter((child) => child.showInMenu)
-                  .map((child) => (
-                    <Menu.Item key={child.id} onClick={() => onHandleSubMenuClick(child, child.id)}>
-                      <div className="group flex items-center gap-3 px-3 py-2.5 -mx-3 transition-all duration-200 rounded-xl">
-                        {renderMenuIcon(child, 16)}
-                        <span className="text-sm text-theme-muted-foreground group-hover:text-theme-foreground transition-colors font-medium">
-                          {t(child.name, { defaultValue: child.name })}
-                        </span>
-                        <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      </div>
-                    </Menu.Item>
-                  ))}
-              </Menu.SubMenu>
-            );
-          }
-
-          return (
-            <Menu.Item
-              key={category.id}
-              onClick={() => onHandleSubMenuClick(category, category.id)}
-              className="transition-all duration-200"
-              renderItemInTooltip={() => t(category.name, { defaultValue: category.name })}
-            >
-              {collapse ? (
-                // Collapsed mode: only show icon
-                <div className="flex items-center justify-center w-full">
-                  {renderMenuIcon(category, 16)}
-                </div>
-              ) : (
-                // Expanded mode: show full content
-                <div className="group flex items-center gap-3 w-full py-2.5">
-                  {renderMenuIcon(category, 16)}
-                  <span className="group-hover:text-theme-foreground transition-colors font-medium">
-                    {t(category.name, { defaultValue: category.name })}
-                  </span>
-                  <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
-                </div>
-              )}
-            </Menu.Item>
-          );
-        })}
+        .map((category) => renderTopLevelNode(category))}
     </Menu>
   );
 }

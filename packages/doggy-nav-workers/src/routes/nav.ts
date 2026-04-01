@@ -8,6 +8,87 @@ import { chromeTimeToDate, normalizeTagFiltersFromQuery, normalizeTags } from 'd
 
 export const navRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
 
+function getUserRoles(c: any): string[] {
+  const user = c.get?.('user');
+  return Array.isArray(user?.roles) ? user.roles : [];
+}
+
+function isSysadmin(c: any) {
+  return getUserRoles(c).includes('sysadmin');
+}
+
+function getVisibilitySql(
+  alias: string,
+  options: { isAuthenticated: boolean; isSysadmin: boolean }
+) {
+  if (options.isAuthenticated && options.isSysadmin) {
+    return '1=1';
+  }
+  return options.isAuthenticated
+    ? `${alias}.audience_visibility != 'hide'`
+    : `${alias}.audience_visibility = 'public'`;
+}
+
+function getSingleVisibilitySql(options: { isAuthenticated: boolean; isSysadmin: boolean }) {
+  if (options.isAuthenticated && options.isSysadmin) {
+    return '1=1';
+  }
+  return options.isAuthenticated
+    ? `audience_visibility != 'hide'`
+    : `audience_visibility = 'public'`;
+}
+
+async function getBookmarkRow(db: D1Database, id?: string | null) {
+  if (!id) return null;
+  return await db
+    .prepare(`SELECT id, category_id, audience_visibility FROM bookmarks WHERE id = ? LIMIT 1`)
+    .bind(String(id))
+    .first<any>();
+}
+
+async function getCategoryRow(db: D1Database, id?: string | null) {
+  if (!id) return null;
+  return await db
+    .prepare(`SELECT id, audience_visibility FROM categories WHERE id = ? LIMIT 1`)
+    .bind(String(id))
+    .first<any>();
+}
+
+async function ensureHiddenNavManageAccess(
+  c: any,
+  options: {
+    currentId?: string;
+    requestedAudience?: any;
+    categoryId?: string;
+  }
+) {
+  if (isSysadmin(c)) return null;
+
+  const { currentId, requestedAudience, categoryId } = options;
+  if (requestedAudience?.visibility === 'hide') {
+    return c.json(responses.err('Hidden navs can only be managed by sysadmin'), 403);
+  }
+
+  if (currentId) {
+    const current = await getBookmarkRow(c.env.DB, currentId);
+    if ((current?.audience_visibility || 'public') === 'hide') {
+      return c.json(responses.err('Hidden navs can only be managed by sysadmin'), 403);
+    }
+  }
+
+  if (categoryId) {
+    const category = await getCategoryRow(c.env.DB, categoryId);
+    if ((category?.audience_visibility || 'public') === 'hide') {
+      return c.json(
+        responses.err('Navs under hidden categories can only be managed by sysadmin'),
+        403
+      );
+    }
+  }
+
+  return null;
+}
+
 navRoutes.get('/list', publicRoute(), async (c) => {
   try {
     const pageSize = Math.min(Math.max(Number(c.req.query('pageSize') ?? 10), 1), 100);
@@ -67,16 +148,19 @@ navRoutes.get('/ranking', publicRoute(), async (c) => {
     const db = c.env.DB;
     const user = (c as any).get?.('user');
     const isAuthenticated = !!user;
-    const navVisibilitySql = isAuthenticated
-      ? `b.audience_visibility != 'hide'`
-      : `b.audience_visibility = 'public'`;
-    const catVisibilitySql = isAuthenticated
-      ? `c.audience_visibility != 'hide'`
-      : `c.audience_visibility = 'public'`;
+    const sysadmin = isSysadmin(c);
+    const navVisibilitySql = getVisibilitySql('b', {
+      isAuthenticated,
+      isSysadmin: sysadmin,
+    });
+    const catVisibilitySql = getVisibilitySql('c', {
+      isAuthenticated,
+      isSysadmin: sysadmin,
+    });
     const statusSql = isAuthenticated ? '1=1' : 'b.status = 0';
 
     const baseSelect = `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
-                               b.audit_time, b.create_time, b.tags, b.view_count, b.star_count, b.status
+                              b.audit_time, b.create_time, b.tags, b.view_count, b.star_count, b.status
                         FROM bookmarks b
                         LEFT JOIN categories c ON c.id = b.category_id
                         WHERE ${statusSql} AND ${navVisibilitySql} AND (b.category_id IS NULL OR ${catVisibilitySql})`;
@@ -141,24 +225,26 @@ navRoutes.get('/random', publicRoute(), async (c) => {
 
     const user = (c as any).get?.('user');
     const isAuthenticated = !!user;
+    const sysadmin = isSysadmin(c);
 
-    const navVisibilitySql = isAuthenticated
-      ? `b.audience_visibility != 'hide'`
-      : `b.audience_visibility = 'public'`;
-    const catVisibilitySql = isAuthenticated
-      ? `c.audience_visibility != 'hide'`
-      : `c.audience_visibility = 'public'`;
+    const navVisibilitySql = getVisibilitySql('b', {
+      isAuthenticated,
+      isSysadmin: sysadmin,
+    });
+    const catVisibilitySql = getVisibilitySql('c', {
+      isAuthenticated,
+      isSysadmin: sysadmin,
+    });
     const statusSql = isAuthenticated ? '1=1' : 'b.status = 0';
 
-    const rs = await c.env.DB
-      .prepare(
-        `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
+    const rs = await c.env.DB.prepare(
+      `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
                 b.audit_time, b.create_time, b.tags, b.view_count, b.star_count, b.status
          FROM bookmarks b
          LEFT JOIN categories c ON c.id = b.category_id
          WHERE ${statusSql} AND ${navVisibilitySql} AND (b.category_id IS NULL OR ${catVisibilitySql})
          ORDER BY RANDOM() LIMIT ?`
-      )
+    )
       .bind(count)
       .all<any>();
 
@@ -206,10 +292,12 @@ navRoutes.get('/', publicRoute(), async (c) => {
     if (id) {
       const user = (c as any).get?.('user');
       const isAuthenticated = !!user;
+      const sysadmin = isSysadmin(c);
 
-      const navVisibilitySql = isAuthenticated
-        ? `audience_visibility != 'hide'`
-        : `audience_visibility = 'public'`;
+      const navVisibilitySql = getSingleVisibilitySql({
+        isAuthenticated,
+        isSysadmin: sysadmin,
+      });
 
       const row = await c.env.DB.prepare(
         `SELECT * FROM bookmarks WHERE ${navVisibilitySql} AND id = ? ${!isAuthenticated ? 'AND status = 0' : ''} LIMIT 1`
@@ -270,17 +358,23 @@ navRoutes.get('/', publicRoute(), async (c) => {
         Math.max(Number(c.req.query('pageSize') ?? c.req.query('limit') ?? 10) || 10, 1),
         100
       );
-      const pageNumber = Math.max(Number(c.req.query('pageNumber') ?? c.req.query('page') ?? 1) || 1, 1);
+      const pageNumber = Math.max(
+        Number(c.req.query('pageNumber') ?? c.req.query('page') ?? 1) || 1,
+        1
+      );
       const offset = (pageNumber - 1) * pageSize;
 
       const user = (c as any).get?.('user');
       const isAuthenticated = !!user;
-      const navVisibilitySql = isAuthenticated
-        ? `b.audience_visibility != 'hide'`
-        : `b.audience_visibility = 'public'`;
-      const catVisibilitySql = isAuthenticated
-        ? `c.audience_visibility != 'hide'`
-        : `c.audience_visibility = 'public'`;
+      const sysadmin = isSysadmin(c);
+      const navVisibilitySql = getVisibilitySql('b', {
+        isAuthenticated,
+        isSysadmin: sysadmin,
+      });
+      const catVisibilitySql = getVisibilitySql('c', {
+        isAuthenticated,
+        isSysadmin: sysadmin,
+      });
       const statusSql = isAuthenticated ? '1=1' : 'b.status = 0';
       const whereClauses = [
         statusSql,
@@ -319,25 +413,23 @@ navRoutes.get('/', publicRoute(), async (c) => {
 
       const baseWhere = `WHERE ${whereClauses.join(' AND ')}`;
 
-      const countRs = await c.env.DB
-        .prepare(
-          `SELECT COUNT(1) as cnt
+      const countRs = await c.env.DB.prepare(
+        `SELECT COUNT(1) as cnt
            FROM bookmarks b LEFT JOIN categories c ON c.id = b.category_id
            ${baseWhere}`
-        )
+      )
         .bind(...whereParams)
         .all<any>();
       const total = Number(countRs.results?.[0]?.cnt || 0);
 
-      const listRs = await c.env.DB
-        .prepare(
-          `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
+      const listRs = await c.env.DB.prepare(
+        `SELECT b.id, b.category_id, b.name, b.href, b.description, b.detail, b.logo, b.author_name, b.author_url,
                   b.audit_time, b.create_time, b.tags, b.view_count, b.star_count, b.status,
                   c.name as category_name
            FROM bookmarks b LEFT JOIN categories c ON c.id = b.category_id
            ${baseWhere}
            ORDER BY b.updated_at DESC LIMIT ? OFFSET ?`
-        )
+      )
         .bind(...whereParams, pageSize, offset)
         .all<any>();
       const rows: any[] = listRs.results || [];
@@ -345,8 +437,7 @@ navRoutes.get('/', publicRoute(), async (c) => {
       // Favorites marking for authenticated users
       let favoriteSet: Set<string> | null = null;
       if (isAuthenticated && user?.id) {
-        const favRs = await c.env.DB
-          .prepare(`SELECT bookmark_id FROM favorites WHERE user_id = ?`)
+        const favRs = await c.env.DB.prepare(`SELECT bookmark_id FROM favorites WHERE user_id = ?`)
           .bind(user.id)
           .all<any>();
         favoriteSet = new Set((favRs.results || []).map((r: any) => String(r.bookmark_id)));
@@ -399,10 +490,12 @@ navRoutes.get('/find', publicRoute(), async (c) => {
     // Determine audience visibility based on auth (public route may attach user)
     const user = (c as any).get?.('user');
     const isAuthenticated = !!user;
+    const sysadmin = isSysadmin(c);
     // Category visibility filter
-    const catVisibilitySql = isAuthenticated
-      ? `audience_visibility != 'hide'`
-      : `audience_visibility = 'public'`;
+    const catVisibilitySql = getSingleVisibilitySql({
+      isAuthenticated,
+      isSysadmin: sysadmin,
+    });
 
     // 1) Load target category and its direct children (server parity: id OR parent match)
     const catsRs = await db
@@ -443,13 +536,15 @@ navRoutes.get('/find', publicRoute(), async (c) => {
 
     // Status: server shows approved (0); authenticated may also see legacy no-status, but D1 uses default 0
     const statusSql = `status = 0`;
-    const navVisibilitySql = isAuthenticated
-      ? `audience_visibility != 'hide'`
-      : `audience_visibility = 'public'`;
+    const navVisibilitySql = getSingleVisibilitySql({
+      isAuthenticated,
+      isSysadmin: sysadmin,
+    });
     const tagSql = tags.length
       ? ` AND (${tags
           .map(
-            () => `EXISTS (SELECT 1 FROM json_each(COALESCE(tags, '[]')) jt WHERE lower(trim(jt.value)) = lower(?))`
+            () =>
+              `EXISTS (SELECT 1 FROM json_each(COALESCE(tags, '[]')) jt WHERE lower(trim(jt.value)) = lower(?))`
           )
           .join(' OR ')})`
       : '';
@@ -514,31 +609,37 @@ navRoutes.get('/find', publicRoute(), async (c) => {
 });
 
 // PUT /api/nav/audit (server-compat) - stub for now
-navRoutes.put('/audit', createAuthMiddleware({ required: true }), requireRole('admin'), async (c) => {
-  try {
-    const body = await c.req.json();
-    const { id, status, reason } = body || {};
-    if (!id || typeof status !== 'number') return c.json(responses.badRequest('id and status required'), 400);
-    const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
-    const ok = await (svc as any).audit(String(id), Number(status), reason);
-    if (!ok) return c.json(responses.notFound('Nav item not found'), 404);
-    return c.json(responses.ok({ id, status }));
-  } catch (err) {
-    console.error('Worker nav audit error:', err);
-    return c.json(responses.serverError(), 500);
+navRoutes.put(
+  '/audit',
+  createAuthMiddleware({ required: true }),
+  requireRole('admin'),
+  async (c) => {
+    try {
+      const body = await c.req.json();
+      const { id, status, reason } = body || {};
+      if (!id || typeof status !== 'number')
+        return c.json(responses.badRequest('id and status required'), 400);
+      const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
+      const ok = await (svc as any).audit(String(id), Number(status), reason);
+      if (!ok) return c.json(responses.notFound('Nav item not found'), 404);
+      return c.json(responses.ok({ id, status }));
+    } catch (err) {
+      console.error('Worker nav audit error:', err);
+      return c.json(responses.serverError(), 500);
+    }
   }
-});
+);
 
 // POST /api/nav/:id/view
 navRoutes.post('/:id/view', async (c) => {
   try {
     const { id } = c.req.param();
-    await c.env.DB
-      .prepare(`UPDATE bookmarks SET view_count = COALESCE(view_count,0) + 1 WHERE id = ?`)
+    await c.env.DB.prepare(
+      `UPDATE bookmarks SET view_count = COALESCE(view_count,0) + 1 WHERE id = ?`
+    )
       .bind(id)
       .run();
-    const row = await c.env.DB
-      .prepare(`SELECT view_count FROM bookmarks WHERE id = ? LIMIT 1`)
+    const row = await c.env.DB.prepare(`SELECT view_count FROM bookmarks WHERE id = ? LIMIT 1`)
       .bind(id)
       .first<any>();
     const view = typeof row?.view_count === 'number' ? row.view_count : undefined;
@@ -552,12 +653,12 @@ navRoutes.post('/:id/view', async (c) => {
 navRoutes.post('/:id/star', async (c) => {
   try {
     const { id } = c.req.param();
-    await c.env.DB
-      .prepare(`UPDATE bookmarks SET star_count = COALESCE(star_count,0) + 1 WHERE id = ?`)
+    await c.env.DB.prepare(
+      `UPDATE bookmarks SET star_count = COALESCE(star_count,0) + 1 WHERE id = ?`
+    )
       .bind(id)
       .run();
-    const row = await c.env.DB
-      .prepare(`SELECT star_count FROM bookmarks WHERE id = ? LIMIT 1`)
+    const row = await c.env.DB.prepare(`SELECT star_count FROM bookmarks WHERE id = ? LIMIT 1`)
       .bind(id)
       .first<any>();
     const star = typeof row?.star_count === 'number' ? row.star_count : undefined;
@@ -575,13 +676,17 @@ navRoutes.get('/reptile', async (c) => {
     const res = await fetch(target, { method: 'GET' });
     const html = await res.text();
     const name = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '').trim();
-    const desc =
-      (html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i)?.[1] ||
-        html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)["'][^>]*>/i)?.[1] ||
-        `试试 ${target} 吧`).trim();
+    const desc = (
+      html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i)?.[1] ||
+      html.match(
+        /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)["'][^>]*>/i
+      )?.[1] ||
+      `试试 ${target} 吧`
+    ).trim();
     const iconHref =
-      html.match(/<link[^>]+rel=["'](?:shortcut\s+icon|icon|apple-touch-icon)["'][^>]+href=["']([^"']+)["'][^>]*>/i)?.[1] ||
-      '';
+      html.match(
+        /<link[^>]+rel=["'](?:shortcut\s+icon|icon|apple-touch-icon)["'][^>]+href=["']([^"']+)["'][^>]*>/i
+      )?.[1] || '';
     let logo = iconHref;
     try {
       const u = new URL(target);
@@ -604,7 +709,27 @@ navRoutes.get('/reptile', async (c) => {
 navRoutes.post('/', publicRoute(), async (c) => {
   try {
     const body = await c.req.json();
-    const { name, href, desc, detail, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
+    const {
+      name,
+      href,
+      desc,
+      detail,
+      logo,
+      categoryId,
+      tags,
+      authorName,
+      authorUrl,
+      audience,
+      createTime,
+      status,
+    } = body || {};
+    const hiddenAccessError = await ensureHiddenNavManageAccess(c, {
+      requestedAudience: audience,
+      categoryId,
+    });
+    if (hiddenAccessError) return hiddenAccessError;
+
+    const hiddenSysadminImport = audience?.visibility === 'hide' && isSysadmin(c);
     const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
     try {
       const res = await (svc as any).create({
@@ -621,6 +746,8 @@ navRoutes.post('/', publicRoute(), async (c) => {
             : undefined,
         authorName,
         authorUrl,
+        createTime,
+        status: hiddenSysadminImport ? 0 : status,
         audience,
       });
       return c.json(responses.ok({ id: res.id }));
@@ -638,8 +765,26 @@ navRoutes.post('/', publicRoute(), async (c) => {
 navRoutes.put('/', createAuthMiddleware({ required: true }), async (c) => {
   try {
     const body = await c.req.json();
-    const { id, name, href, desc, detail, logo, categoryId, tags, authorName, authorUrl, audience } = body || {};
+    const {
+      id,
+      name,
+      href,
+      desc,
+      detail,
+      logo,
+      categoryId,
+      tags,
+      authorName,
+      authorUrl,
+      audience,
+    } = body || {};
     if (!id) return c.json(responses.badRequest('id required'), 400);
+    const hiddenAccessError = await ensureHiddenNavManageAccess(c, {
+      currentId: String(id),
+      requestedAudience: audience,
+      categoryId,
+    });
+    if (hiddenAccessError) return hiddenAccessError;
     const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
     const res = await (svc as any).update(String(id), {
       name,
@@ -671,6 +816,10 @@ navRoutes.delete('/', createAuthMiddleware({ required: true }), requireRole('adm
     const body = await c.req.json().catch(() => ({}));
     const id = body?.id;
     if (!id) return c.json(responses.badRequest('id required'), 400);
+    const hiddenAccessError = await ensureHiddenNavManageAccess(c, {
+      currentId: String(id),
+    });
+    if (hiddenAccessError) return hiddenAccessError;
     const svc = getDI(c).resolve(TOKENS.NavAdminService) as NavAdminService;
     const ok = await (svc as any).delete(String(id));
     if (!ok) return c.json(responses.notFound('Nav item not found'), 404);
