@@ -12,12 +12,15 @@ import {
   TagsOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
+import { useLocation } from '@umijs/max';
 import { Col, Empty, Input, Row, Segmented, Statistic, Typography } from 'antd';
 import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import './Admin.less';
 
 const { Title, Paragraph } = Typography;
 const TAG_PAGE_SIZE = 200;
+const INITIAL_VISIBLE_TAGS = 24;
+const LOAD_MORE_TAGS = 24;
 
 type TagViewMode = 'all' | 'popular' | 'longTail';
 
@@ -101,6 +104,7 @@ async function fetchAllTags(): Promise<{ tags: TagModel[]; total: number }> {
 }
 
 export default function AdminDashboard(): React.ReactNode {
+  const location = useLocation();
   const [categoryCount, setCategoryCount] = useState<number>(0);
   const [tagCount, setTagCount] = useState<number>(0);
   const [auditCount, setAuditCount] = useState<number>(0);
@@ -110,12 +114,13 @@ export default function AdminDashboard(): React.ReactNode {
   const [tagViewMode, setTagViewMode] = useState<TagViewMode>('all');
   const [selectedTagId, setSelectedTagId] = useState<string>('');
   const [tagLoading, setTagLoading] = useState<boolean>(true);
+  const [visibleTagLimit, setVisibleTagLimit] =
+    useState<number>(INITIAL_VISIBLE_TAGS);
 
   const mountedRef = useRef(true);
   const deferredTagKeyword = useDeferredValue(tagKeyword);
 
   useEffect(() => {
-    mountedRef.current = true;
     async function fetchCounts() {
       setTagLoading(true);
       try {
@@ -158,11 +163,31 @@ export default function AdminDashboard(): React.ReactNode {
         }
       }
     }
+
+    if (location.pathname !== '/nav/admin') return;
+
+    mountedRef.current = true;
     fetchCounts();
+
+    const handleFocus = () => {
+      if (document.visibilityState === 'visible') {
+        fetchCounts();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
     return () => {
       mountedRef.current = false;
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
     };
-  }, []);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setVisibleTagLimit(INITIAL_VISIBLE_TAGS);
+  }, [deferredTagKeyword, tagViewMode]);
 
   const maxTagCount = Number(tagList[0]?.count || 0);
   const hottestTag = tagList[0];
@@ -190,7 +215,8 @@ export default function AdminDashboard(): React.ReactNode {
         ? item.name.toLowerCase().includes(normalizedKeyword)
         : true,
     );
-  const visibleTags = filteredTags.slice(0, 24);
+  const visibleTags = filteredTags.slice(0, visibleTagLimit);
+  const hasMoreTags = filteredTags.length > visibleTagLimit;
 
   return (
     <>
@@ -269,7 +295,7 @@ export default function AdminDashboard(): React.ReactNode {
                   标签总览 <HeartTwoTone twoToneColor="#ff6b6b" />
                 </Title>
                 <Paragraph className="admin-overview-card__description">
-                  标签由系统自动聚合生成，在概览页更适合做阅读、排查和热度观察，不需要在管理端单独维护。
+                  标签由系统自动聚合生成，通常由贡献用户在推荐页补充，管理员可以在导航列表编辑中更正或生成新的标签。
                 </Paragraph>
               </div>
 
@@ -345,41 +371,58 @@ export default function AdminDashboard(): React.ReactNode {
                 ))}
               </div>
             ) : visibleTags.length ? (
-              <div className="admin-tag-grid">
-                {visibleTags.map((tag) => {
-                  const intensity = maxTagCount
-                    ? Number(tag.count || 0) / maxTagCount
-                    : 0;
+              <>
+                <div className="admin-tag-grid">
+                  {visibleTags.map((tag) => {
+                    const intensity = maxTagCount
+                      ? Number(tag.count || 0) / maxTagCount
+                      : 0;
 
-                  return (
+                    return (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        className={`admin-tag-chip ${
+                          selectedTagId === tag.id ? 'is-active' : ''
+                        }`}
+                        style={{
+                          background: `rgba(255, 255, 255, ${
+                            0.14 + intensity * 0.2
+                          })`,
+                          boxShadow: `0 10px 30px rgba(15, 23, 42, ${
+                            0.08 + intensity * 0.12
+                          })`,
+                        }}
+                        onClick={() => {
+                          setSelectedTagId(tag.id);
+                          setTagKeyword(tag.name);
+                          setTagViewMode('all');
+                        }}
+                      >
+                        <span className="admin-tag-chip__name">{tag.name}</span>
+                        <span className="admin-tag-chip__count">
+                          {tag.count || 0}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {hasMoreTags ? (
+                  <div className="admin-tag-toolbar__meta">
                     <button
-                      key={tag.id}
+                      className="admin-tag-toolbar__clear"
                       type="button"
-                      className={`admin-tag-chip ${
-                        selectedTagId === tag.id ? 'is-active' : ''
-                      }`}
-                      style={{
-                        background: `rgba(255, 255, 255, ${
-                          0.14 + intensity * 0.2
-                        })`,
-                        boxShadow: `0 10px 30px rgba(15, 23, 42, ${
-                          0.08 + intensity * 0.12
-                        })`,
-                      }}
-                      onClick={() => {
-                        setSelectedTagId(tag.id);
-                        setTagKeyword(tag.name);
-                        setTagViewMode('all');
-                      }}
+                      onClick={() =>
+                        setVisibleTagLimit(
+                          (current) => current + LOAD_MORE_TAGS,
+                        )
+                      }
                     >
-                      <span className="admin-tag-chip__name">{tag.name}</span>
-                      <span className="admin-tag-chip__count">
-                        {tag.count || 0}
-                      </span>
+                      显示更多标签
                     </button>
-                  );
-                })}
-              </div>
+                  </div>
+                ) : null}
+              </>
             ) : (
               <Empty
                 className="admin-tag-empty"

@@ -56,7 +56,10 @@ export default () => {
     }
 
     // 4.access modes
-    if (permission.require?.level === 'public') return await next();
+    if (permission.require?.level === 'public') {
+      await accessTokenVerify(ctx);
+      return await next();
+    }
     if (permission.require?.level === 'optional') {
       // In admin source, treat optional as authenticated + admin/sysadmin role
       if (ctx.state.requestSource === 'admin') {

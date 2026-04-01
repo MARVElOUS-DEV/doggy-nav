@@ -1,6 +1,6 @@
 import { API_CATEGORY_LIST } from '@/services/api';
 import { CategoryModel } from '@/types/api';
-import { getCategoryDisplayName } from '@/utils/helpers';
+import { buildCategoryOptions } from '@/utils/helpers';
 import request from '@/utils/request';
 import type { SelectProps } from 'antd';
 import { Select } from 'antd';
@@ -47,24 +47,7 @@ export default function CategorySelect(props: CategorySelectProps) {
   const currentValue = value !== undefined ? value : internalValue;
 
   const options = useMemo<SelectProps['options']>(() => {
-    return (categoryList || []).map((item) => {
-      const hasChildren =
-        Array.isArray(item.children) && item.children.length > 0;
-      const label = getCategoryDisplayName(item.name);
-      if (!hasChildren) {
-        return { label, value: item.id };
-      }
-      return {
-        label,
-        options: [
-          { label, value: item.id },
-          ...item.children.map((sub) => ({
-            label: getCategoryDisplayName(sub.name),
-            value: sub.id,
-          })),
-        ],
-      } as any;
-    });
+    return buildCategoryOptions(categoryList || []);
   }, [categoryList]);
 
   return (

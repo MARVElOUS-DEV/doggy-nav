@@ -4,7 +4,11 @@ import { GLOBAL_CATEGORY_ID, GLOBAL_CATEGORY_NAME } from '@/constants';
 import CategoryForm from '@/pages/nav/Category/CategoryForm';
 import { API_CATEGORY, API_CATEGORY_LIST } from '@/services/api';
 import { CategoryModel } from '@/types/api';
-import { getCategoryDisplayName, getIconComponent } from '@/utils/helpers';
+import {
+  buildCategoryTreeRows,
+  getCategoryDisplayName,
+  getIconComponent,
+} from '@/utils/helpers';
 import request from '@/utils/request';
 import { formatDateTime } from '@/utils/time';
 import { PlusOutlined } from '@ant-design/icons';
@@ -12,41 +16,30 @@ import { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
 
-function transformCategoryList(list: any) {
-  const newList: any = [];
-  list.map((item) => {
-    const listItem: any = { key: item.id, ...item, children: [] };
-    if (Array.isArray(item.children)) {
-      item.children.map((subItem) => {
-        listItem.children.push({ key: subItem.id, ...subItem });
-        return subItem;
-      });
-    }
-    newList.push(listItem);
-    return item;
-  });
-  return newList;
-}
+type CategoryTreeRow = CategoryModel & {
+  key: string;
+  children?: CategoryTreeRow[];
+};
 
 export default function NavAuditListPage() {
   const formProps = useTableComPopup();
   const tableRef = useRef<ActionType>();
-  const [categoryList, setCategoryList] = useState<{ key: string }[]>([]);
+  const [categoryList, setCategoryList] = useState<CategoryTreeRow[]>([]);
 
   async function onRequestData() {
     const res = await request({
       url: API_CATEGORY_LIST,
       method: 'GET',
     });
-    const data = transformCategoryList(res.data);
-    const allCates = [
-      {
-        key: GLOBAL_CATEGORY_ID,
-        id: GLOBAL_CATEGORY_ID,
-        name: GLOBAL_CATEGORY_NAME,
-        value: GLOBAL_CATEGORY_ID,
-      },
-    ].concat(data);
+    const data = buildCategoryTreeRows(res.data);
+    const rootCategory: CategoryTreeRow = {
+      key: GLOBAL_CATEGORY_ID,
+      id: GLOBAL_CATEGORY_ID,
+      name: GLOBAL_CATEGORY_NAME,
+      parentId: '',
+      children: [],
+    };
+    const allCates = [rootCategory, ...data];
     setCategoryList(allCates);
     return {
       data,

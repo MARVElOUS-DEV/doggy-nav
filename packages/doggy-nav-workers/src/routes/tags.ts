@@ -10,11 +10,16 @@ tagRoutes.get('/list', async (c) => {
     const offset = (pageNumber - 1) * pageSize;
     const user = (c as any).get?.('user');
     const isAuthenticated = !!user;
+    const isSysadmin = Array.isArray(user?.roles) && user.roles.includes('sysadmin');
     const navVisibilitySql = isAuthenticated
-      ? `b.audience_visibility != 'hide'`
+      ? isSysadmin
+        ? `1=1`
+        : `b.audience_visibility != 'hide'`
       : `b.audience_visibility = 'public'`;
     const catVisibilitySql = isAuthenticated
-      ? `c.audience_visibility != 'hide'`
+      ? isSysadmin
+        ? `1=1`
+        : `c.audience_visibility != 'hide'`
       : `c.audience_visibility = 'public'`;
     const statusSql = isAuthenticated
       ? `(b.status = 0 OR b.status IS NULL)`

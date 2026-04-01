@@ -2,7 +2,7 @@ import IconPicker from '@/components/IconPicker';
 import useProForm from '@/hooks/useProForm';
 import useProFormItem from '@/hooks/useProFormItem';
 import { API_CATEGORY, getGroups, getRoles } from '@/services/api';
-import { getCategoryDisplayName } from '@/utils/helpers';
+import { buildCategoryOptions } from '@/utils/helpers';
 import request from '@/utils/request';
 import {
   ModalForm,
@@ -12,7 +12,7 @@ import {
   ProFormSwitch,
   ProFormText,
 } from '@ant-design/pro-form';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './style.less';
 
 type CategoryFormProps = {
@@ -93,6 +93,10 @@ export default function CategoryForm(props: CategoryFormProps) {
     width: 'sm',
     tooltip: '开启后，该分类仅作为分组文件夹使用，不能直接包含网址',
   });
+  const categoryOptions = useMemo(
+    () => buildCategoryOptions(props.categoryList || []),
+    [props.categoryList],
+  );
 
   async function onFinish(values: any) {
     const audience = values?.audience || {};
@@ -128,13 +132,7 @@ export default function CategoryForm(props: CategoryFormProps) {
         {...categoryProps}
         mode="single"
         disabled={props.selectedData?.categoryId === ''}
-        options={props.categoryList.reduce(
-          (t, v) => [
-            ...t,
-            { label: getCategoryDisplayName(v.name), value: v.id },
-          ],
-          [],
-        )}
+        options={categoryOptions}
       />
       <ProFormItem {...categoryIconProps}>
         <IconPicker placeholder="选择分类图标" />
