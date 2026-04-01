@@ -19,8 +19,8 @@ The frontend application for Doggy Nav, built with Next.js 15 and modern React.
 
 ### Prerequisites
 
-- Node.js ≥ 20.17.0
-- pnpm ≥ 8.0.0
+- Node.js ≥ 24.0.0
+- pnpm 10.x
 
 ### Installation
 

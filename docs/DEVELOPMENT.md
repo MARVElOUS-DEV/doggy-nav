@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-- Node.js ≥ 20.17.0
-- pnpm ≥ 8.0.0
+- Node.js ≥ 24.0.0
+- pnpm 10.x
 - MongoDB ≥ 7.0
 - Git
 

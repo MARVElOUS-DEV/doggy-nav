@@ -17,15 +17,16 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v3
+      - uses: actions/setup-node@v6
         with:
-          version: 9
+          node-version-file: '.nvmrc'
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
 
       - name: Install deps
         run: pnpm install --frozen-lockfile

@@ -21,34 +21,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: latest
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            packages/*/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Get pnpm store directory
-        shell: bash
+      - name: Enable Corepack
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

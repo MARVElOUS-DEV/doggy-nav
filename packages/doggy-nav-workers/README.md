@@ -39,8 +39,8 @@ The worker uses a normalized SQL schema converted from MongoDB collections:
 
 ### Prerequisites
 
-- Node.js v20.17.0+
-- pnpm package manager
+- Node.js v24.0.0+
+- pnpm 10.x package manager
 - Cloudflare account with Workers enabled
 - Wrangler CLI installed
 

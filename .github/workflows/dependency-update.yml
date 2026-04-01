@@ -22,23 +22,21 @@ jobs:
           --health-retries 3
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: latest
-
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            packages/*/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
 
       - name: Update dependencies
         run: |
@@ -75,21 +73,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: latest
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            packages/*/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
 
       - name: Run security audit (baseline allowlist)
         run: |

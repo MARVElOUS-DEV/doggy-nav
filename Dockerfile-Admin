@@ -1,8 +1,8 @@
 # Multi-stage build for doggy-nav-admin (UmiJS Admin Panel)
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Install pnpm via Corepack
+RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
 
 # Install dependencies only when needed
 FROM base AS deps

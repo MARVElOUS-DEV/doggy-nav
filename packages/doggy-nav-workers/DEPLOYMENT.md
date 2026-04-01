@@ -6,8 +6,8 @@ This guide covers the deployment of the Cloudflare Workers backend for Doggy Nav
 
 ### Required Tools
 
-- [Node.js](https://nodejs.org/) (v20.17.0 or later)
-- [pnpm](https://pnpm.io/) package manager
+- [Node.js](https://nodejs.org/) (v24.0.0 or later)
+- [pnpm](https://pnpm.io/) 10.x package manager
 - [Wrangler CLI](https://developers.cloudflare.com/workers/cli-wrangler/install-update) for Cloudflare Workers
 - [Git](https://git-scm.com/) for version control
 

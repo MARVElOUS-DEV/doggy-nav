@@ -29,7 +29,7 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 ## Build, Test & Development Commands
 
-- Bootstrap the workspace with `pnpm install` (Node >= 20.17.0). Add new dependencies with `pnpm -F <package> i <name> [-D]` to keep scopes clean.
+- Bootstrap the workspace with `pnpm install` (Node >= 24.0.0). Add new dependencies with `pnpm -F <package> i <name> [-D]` to keep scopes clean.
 - Use `pnpm web:dev`, `pnpm admin:dev`, and `pnpm server:dev` for local development; each forwards to the respective package’s `dev` script.
 - Root quality gates: `pnpm lint`, `pnpm lint:fix`, `pnpm test`, and `pnpm build`.
 
