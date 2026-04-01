@@ -286,20 +286,20 @@ export default function AdminDashboard(): React.ReactNode {
             elevation="medium"
             className="admin-overview-card"
           >
-            <div className="admin-overview-card__header">
-              <div className="admin-overview-card__intro">
-                <div className="admin-overview-card__eyebrow">
+            <div className="admin-overview-card-header">
+              <div className="admin-overview-card-intro">
+                <div className="admin-overview-card-eyebrow">
                   Read-Only Tag Intelligence
                 </div>
                 <Title level={3} style={{ color: 'white', marginBottom: 12 }}>
                   标签总览 <HeartTwoTone twoToneColor="#ff6b6b" />
                 </Title>
-                <Paragraph className="admin-overview-card__description">
+                <Paragraph className="admin-overview-card-description">
                   标签由系统自动聚合生成，通常由贡献用户在推荐页补充，管理员可以在导航列表编辑中更正或生成新的标签。
                 </Paragraph>
               </div>
 
-              <div className="admin-overview-card__stats">
+              <div className="admin-overview-card-stats">
                 <div className="admin-overview-pill-stat">
                   <span>唯一标签</span>
                   <strong>{formatCompactNumber(tagCount)}</strong>
@@ -340,13 +340,13 @@ export default function AdminDashboard(): React.ReactNode {
               />
             </div>
 
-            <div className="admin-tag-toolbar__meta">
+            <div className="admin-tag-toolbar-meta">
               <span>
                 当前显示 {visibleTags.length} / {filteredTags.length} 个标签
               </span>
               {selectedTagId ? (
                 <button
-                  className="admin-tag-toolbar__clear"
+                  className="admin-tag-toolbar-clear"
                   type="button"
                   onClick={() => {
                     setSelectedTagId('');
@@ -366,7 +366,7 @@ export default function AdminDashboard(): React.ReactNode {
                 {Array.from({ length: 12 }).map((_, index) => (
                   <div
                     key={`tag-loading-${index}`}
-                    className="admin-tag-chip admin-tag-chip--placeholder"
+                    className="admin-tag-chip admin-tag-chip-placeholder"
                   />
                 ))}
               </div>
@@ -382,9 +382,7 @@ export default function AdminDashboard(): React.ReactNode {
                       <button
                         key={tag.id}
                         type="button"
-                        className={`admin-tag-chip ${
-                          selectedTagId === tag.id ? 'is-active' : ''
-                        }`}
+                        className={`admin-tag-chip ${selectedTagId === tag.id ? 'is-active' : ''}`}
                         style={{
                           background: `rgba(255, 255, 255, ${
                             0.14 + intensity * 0.2
@@ -399,8 +397,8 @@ export default function AdminDashboard(): React.ReactNode {
                           setTagViewMode('all');
                         }}
                       >
-                        <span className="admin-tag-chip__name">{tag.name}</span>
-                        <span className="admin-tag-chip__count">
+                        <span className="admin-tag-chip-name">{tag.name}</span>
+                        <span className="admin-tag-chip-count">
                           {tag.count || 0}
                         </span>
                       </button>
@@ -408,9 +406,9 @@ export default function AdminDashboard(): React.ReactNode {
                   })}
                 </div>
                 {hasMoreTags ? (
-                  <div className="admin-tag-toolbar__meta">
+                  <div className="admin-tag-toolbar-meta">
                     <button
-                      className="admin-tag-toolbar__clear"
+                      className="admin-tag-toolbar-clear"
                       type="button"
                       onClick={() =>
                         setVisibleTagLimit(
@@ -439,11 +437,11 @@ export default function AdminDashboard(): React.ReactNode {
             elevation="medium"
             className="admin-overview-card"
           >
-            <div className="admin-overview-card__eyebrow">Tag Signals</div>
+            <div className="admin-overview-card-eyebrow">Tag Signals</div>
             <Title level={4} style={{ color: 'white', marginBottom: 8 }}>
               标签洞察
             </Title>
-            <Paragraph className="admin-overview-card__description">
+            <Paragraph className="admin-overview-card-description">
               用更少的视觉层级把最热标签、长尾分布和整体使用频次读出来。
             </Paragraph>
 
@@ -477,12 +475,12 @@ export default function AdminDashboard(): React.ReactNode {
             </div>
 
             <div className="admin-tag-ranking">
-              <div className="admin-tag-ranking__title">
+              <div className="admin-tag-ranking-title">
                 <FireOutlined />
                 <span>热门标签排行</span>
               </div>
               {tagLoading ? (
-                <div className="admin-tag-ranking__empty">标签加载中...</div>
+                <div className="admin-tag-ranking-empty">标签加载中...</div>
               ) : rankingTags.length ? (
                 rankingTags.map((tag, index) => {
                   const percent = maxTagCount
@@ -490,21 +488,21 @@ export default function AdminDashboard(): React.ReactNode {
                     : 0;
 
                   return (
-                    <div key={tag.id} className="admin-tag-ranking__item">
-                      <div className="admin-tag-ranking__row">
-                        <span className="admin-tag-ranking__index">
+                    <div key={tag.id} className="admin-tag-ranking-item">
+                      <div className="admin-tag-ranking-row">
+                        <span className="admin-tag-ranking-index">
                           {String(index + 1).padStart(2, '0')}
                         </span>
-                        <span className="admin-tag-ranking__name">
+                        <span className="admin-tag-ranking-name">
                           {tag.name}
                         </span>
-                        <span className="admin-tag-ranking__value">
+                        <span className="admin-tag-ranking-value">
                           {tag.count || 0}
                         </span>
                       </div>
-                      <div className="admin-tag-ranking__track">
+                      <div className="admin-tag-ranking-track">
                         <div
-                          className="admin-tag-ranking__fill"
+                          className="admin-tag-ranking-fill"
                           style={{ width: `${percent}%` }}
                         />
                       </div>
@@ -512,7 +510,7 @@ export default function AdminDashboard(): React.ReactNode {
                   );
                 })
               ) : (
-                <div className="admin-tag-ranking__empty">暂无标签数据</div>
+                <div className="admin-tag-ranking-empty">暂无标签数据</div>
               )}
 
               <div className="admin-tag-footnote">
