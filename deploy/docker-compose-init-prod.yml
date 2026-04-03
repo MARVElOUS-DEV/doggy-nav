@@ -77,6 +77,8 @@ services:
     restart: unless-stopped
     environment:
       DOGGY_SERVER: http://server:3002
+      UMI_APP_IMAGE_SERVICE_URL: ${UMI_APP_IMAGE_SERVICE_URL:-}
+      UMI_APP_COPY_RIGHT_TEXT: ${UMI_APP_COPY_RIGHT_TEXT:-}
     ports:
       - '8080:8080'
     depends_on:

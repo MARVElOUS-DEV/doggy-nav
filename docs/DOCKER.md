@@ -110,8 +110,11 @@ docker run -d \
   --name doggy-nav-admin \
   -p 8080:8080 \
   -e DOGGY_SERVER=http://localhost:3002 \
+  -e UMI_APP_IMAGE_SERVICE_URL=https://your-image-service.example.com \
   doggy-nav-admin
 ```
+
+`UMI_APP_IMAGE_SERVICE_URL` is read by the browser from `/runtime-config.js` at container startup, so set it with `docker run -e ...` or docker-compose runtime environment variables.
 
 ## Optimization Features
 

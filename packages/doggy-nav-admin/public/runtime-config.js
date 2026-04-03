@@ -1,0 +1,1 @@
+window.__DOGGY_NAV_RUNTIME_CONFIG__ = window.__DOGGY_NAV_RUNTIME_CONFIG__ || {};

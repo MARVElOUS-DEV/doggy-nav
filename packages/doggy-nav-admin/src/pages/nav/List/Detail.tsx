@@ -1,4 +1,5 @@
 import { API_NAV } from '@/services/api';
+import { getPublicEnv } from '@/utils/publicEnv';
 import request, { defaultHeaders } from '@/utils/request';
 import {
   EyeOutlined,
@@ -39,7 +40,6 @@ const ALLOWED_TYPES = [
 ];
 const MAX_FILES = 3;
 const MAX_SIZE_MB = 3;
-const IMAGE_SERVICE_URL = process.env.UMI_APP_IMAGE_SERVICE_URL || '';
 
 type NavRecord = {
   id: string;
@@ -164,6 +164,10 @@ function MarkdownPreview({ value }: { value?: string }) {
 }
 
 export default function NavDetailEditorPage() {
+  const imageServiceUrl = useMemo(
+    () => getPublicEnv('UMI_APP_IMAGE_SERVICE_URL'),
+    [],
+  );
   const navId = useMemo(
     () => getNavIdFromPathname(history.location.pathname),
     [],
@@ -281,7 +285,7 @@ export default function NavDetailEditorPage() {
       method: 'GET',
     });
 
-    const token = response?.data?.token || response?.token;
+    const token = response?.data?.token;
     if (!token) {
       throw new Error('获取图片服务认证信息失败');
     }
@@ -302,8 +306,8 @@ export default function NavDetailEditorPage() {
         const formData = new FormData();
         files.forEach((file) => formData.append('files', file));
 
-        const uploadUrl = IMAGE_SERVICE_URL
-          ? `${IMAGE_SERVICE_URL.replace(/\/$/, '')}/upload`
+        const uploadUrl = imageServiceUrl
+          ? `${imageServiceUrl.replace(/\/+$/, '')}/upload`
           : '/api/images/upload';
         const headers: Record<string, string> = defaultHeaders();
 
@@ -311,13 +315,13 @@ export default function NavDetailEditorPage() {
           headers['X-Image-Hostname'] = imageHostname;
         }
 
-        if (IMAGE_SERVICE_URL) {
+        if (imageServiceUrl) {
           headers.Authorization = await getImageUploadAccessToken();
         }
 
         const response = await fetch(uploadUrl, {
           method: 'POST',
-          credentials: IMAGE_SERVICE_URL ? 'omit' : 'include',
+          credentials: imageServiceUrl ? 'omit' : 'include',
           headers,
           body: formData,
         });
@@ -342,7 +346,13 @@ export default function NavDetailEditorPage() {
         setUploading(false);
       }
     },
-    [getImageUploadAccessToken, imageHostname, insertAtCursor, validateFiles],
+    [
+      getImageUploadAccessToken,
+      imageHostname,
+      imageServiceUrl,
+      insertAtCursor,
+      validateFiles,
+    ],
   );
 
   const handleFileChange = useCallback(

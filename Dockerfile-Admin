@@ -39,10 +39,14 @@ COPY --from=builder /app/packages/doggy-nav-admin/dist /usr/share/nginx/html
 
 # Copy nginx configuration template
 COPY deploy/nginx-admin.conf /etc/nginx/templates/default.conf.template
+COPY deploy/admin-runtime-config.sh /docker-entrypoint.d/40-admin-runtime-config.sh
+RUN chmod +x /docker-entrypoint.d/40-admin-runtime-config.sh
 
 ENV PORT=8080
 EXPOSE 8080
 ENV DOGGY_SERVER=http://localhost:3002
+ENV UMI_APP_COPY_RIGHT_TEXT=
+ENV UMI_APP_IMAGE_SERVICE_URL=
 
 # The nginx image automatically processes templates in /etc/nginx/templates/
 # and substitutes environment variables at startup

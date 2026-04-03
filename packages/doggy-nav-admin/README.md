@@ -9,6 +9,11 @@ Umi/Ant Design admin console for Doggy Nav.
 - Lint: `pnpm -F doggy-nav-admin lint`
 - Build: `pnpm -F doggy-nav-admin build` (outputs to `dist/`)
 
+## Runtime Environment
+
+- `UMI_APP_IMAGE_SERVICE_URL`: Optional external image upload service base URL. In the Docker/nginx deployment this is injected at container startup via `/runtime-config.js`, so set it on the running container instead of expecting a static rebuild to pick up `docker run -e ...`.
+- `UMI_APP_COPY_RIGHT_TEXT`: Optional footer text, injected the same way in Docker deployments.
+
 ## Cloudflare Pages (Deployment)
 
 This package ships with:
