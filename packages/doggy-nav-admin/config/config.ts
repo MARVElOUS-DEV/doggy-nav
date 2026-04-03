@@ -25,6 +25,7 @@ export default defineConfig({
   initialState: {},
   request: {},
   layout: {},
+  headScripts: [{ src: '/runtime-config.js' }],
   routes,
   npmClient: 'pnpm',
   esbuildMinifyIIFE: true,
