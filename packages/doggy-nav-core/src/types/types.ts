@@ -112,6 +112,20 @@ export interface SiteSettings {
   updatedAt?: string;
 }
 
+export type ToolOutputDirection = 'yaml-to-json' | 'json-to-yaml';
+
+export interface ToolOutputPublication {
+  toolId: string;
+  enabled: boolean;
+  publishId: string;
+  basicAuthUsername: string;
+  hasPassword: boolean;
+  direction: ToolOutputDirection;
+  contentType: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Tag {
   id: ID;
   name: string;

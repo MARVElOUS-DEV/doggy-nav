@@ -20,7 +20,7 @@ function createApp(bindings: Env) {
   app.use('*', secureHeaders());
   // Set up DI container like in the main app
   app.use('*', async (c, next) => {
-    const di = createWorkerContainer({ DB: c.env.DB });
+    const di = createWorkerContainer({ DB: c.env.DB, JWT_SECRET: c.env.JWT_SECRET });
     c.set('di', di);
     await next();
   });

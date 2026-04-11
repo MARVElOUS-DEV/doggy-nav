@@ -277,6 +277,31 @@ export function DesktopProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Keep built-in app metadata in sync during HMR or after renames without disturbing window state.
+  useEffect(() => {
+    appsOrder.forEach((id) => {
+      const cfg = appsConfig[id];
+      if (!cfg || cfg.userApp) return;
+
+      dispatch({
+        type: 'update_app',
+        id,
+        patch: {
+          title: cfg.title,
+          icon: cfg.icon,
+          iconClass: cfg.iconClass,
+          shouldOpenWindow: cfg.shouldOpenWindow,
+          defaultRect: cfg.defaultRect,
+          expandable: cfg.expandable,
+          keepAliveOnMinimize: cfg.keepAliveOnMinimize,
+          globalWindow: cfg.globalWindow,
+          render: cfg.render,
+          externalAction: cfg.externalAction,
+        },
+      });
+    });
+  }, []);
+
   // Persist user apps to IndexedDB whenever windows/order change
   useEffect(() => {
     if (typeof window === 'undefined') return;

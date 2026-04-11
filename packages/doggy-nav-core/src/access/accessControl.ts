@@ -86,6 +86,12 @@ export const routePermissions: RoutePermission[] = [
     require: { level: 'public' },
     description: 'Get public site customization settings',
   },
+  {
+    method: 'GET',
+    path: '/api/tool-outputs/converter/published/:publishId',
+    require: { level: 'public' },
+    description: 'Get published converter output with Basic Auth',
+  },
 
   // User profile
   {
@@ -99,6 +105,24 @@ export const routePermissions: RoutePermission[] = [
     path: '/api/user/profile',
     require: { level: 'authenticated' },
     description: 'Update user profile',
+  },
+  {
+    method: 'GET',
+    path: '/api/tool-outputs/converter',
+    require: { level: 'authenticated' },
+    description: 'Get current user converter publication metadata',
+  },
+  {
+    method: 'PUT',
+    path: '/api/tool-outputs/converter',
+    require: { level: 'authenticated' },
+    description: 'Save current user converter publication',
+  },
+  {
+    method: 'DELETE',
+    path: '/api/tool-outputs/converter',
+    require: { level: 'authenticated' },
+    description: 'Delete current user converter publication',
   },
 
   {

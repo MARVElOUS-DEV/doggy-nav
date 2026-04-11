@@ -82,6 +82,11 @@ export default (appInfo: EggAppInfo) => {
     githubToken: process.env.GITHUB_TOKEN,
   };
 
+  config.toolOutput = {
+    encryptionKey: JWT_SECRET,
+    requireHttps: process.env.TOOL_OUTPUT_REQUIRE_HTTPS !== 'false',
+  };
+
   // Logger configuration for better diagnostics (tunable via env)
   config.logger = {
     dir: process.env.LOG_DIR || undefined,
@@ -239,6 +244,7 @@ export default (appInfo: EggAppInfo) => {
       '/api/auth/me',
       '/api/auth/logout',
       '/api/system/version',
+      '/api/tool-outputs/converter/published/:publishId',
     ],
   };
 

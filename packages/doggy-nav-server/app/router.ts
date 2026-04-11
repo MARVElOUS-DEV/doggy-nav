@@ -22,9 +22,13 @@ export default (app: Application) => {
   // System / version info
   router.get('/api/system/version', controller.system.version);
   router.get('/api/site-settings/public', controller.siteSettings.getPublic);
+  router.get('/api/tool-outputs/converter/published/:publishId', controller.toolOutputPublication.published);
 
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
+  router.get('/api/tool-outputs/converter', controller.toolOutputPublication.getCurrent);
+  router.put('/api/tool-outputs/converter', controller.toolOutputPublication.upsert);
+  router.delete('/api/tool-outputs/converter', controller.toolOutputPublication.remove);
   // Admin user management
   router.get('/api/user', controller.user.adminList);
   router.get('/api/user/:id', controller.user.adminGetOne);

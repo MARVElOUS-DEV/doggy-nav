@@ -20,7 +20,10 @@ app.use('*', logger());
 app.use('*', timing());
 app.use('*', secureHeaders());
 app.use('*', async (c, next) => {
-  const di = createWorkerContainer({ DB: c.env.DB });
+  const di = createWorkerContainer({
+    DB: c.env.DB,
+    JWT_SECRET: c.env.JWT_SECRET,
+  });
   c.set('di', di);
   await next();
 });

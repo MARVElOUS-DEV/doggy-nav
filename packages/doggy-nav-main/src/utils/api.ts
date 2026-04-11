@@ -10,6 +10,8 @@ import type {
   SystemVersionInfo,
   Affiche,
   SiteSettings,
+  ToolOutputDirection,
+  ToolOutputPublication,
 } from '@/types';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
@@ -171,6 +173,21 @@ const api = {
   // Site customization
   getPublicSiteSettings: (): Promise<SiteSettings | null> =>
     axios.get('/api/site-settings/public'),
+
+  getToolOutputPublication: (): Promise<ToolOutputPublication | null> =>
+    axios.get('/api/tool-outputs/converter'),
+
+  saveToolOutputPublication: (data: {
+    enabled: boolean;
+    direction: ToolOutputDirection;
+    contentType: string;
+    output: string;
+    basicAuthUsername: string;
+    basicAuthPassword?: string;
+  }): Promise<ToolOutputPublication> => axios.put('/api/tool-outputs/converter', data),
+
+  deleteToolOutputPublication: (): Promise<{ ok: boolean }> =>
+    axios.delete('/api/tool-outputs/converter'),
 };
 
 export default api;

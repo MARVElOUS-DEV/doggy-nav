@@ -43,7 +43,6 @@ function main() {
 
   // Load environment variables
   const jwtSecret = process.env.JWT_SECRET;
-
   let allValid = true;
 
   // Validate JWT secret

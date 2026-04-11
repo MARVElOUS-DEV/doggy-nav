@@ -23,6 +23,7 @@ declare module 'hono' {
 export type Env = {
   DB: D1Database;
   JWT_SECRET?: string;
+  TOOL_OUTPUT_REQUIRE_HTTPS?: string;
   NODE_ENV?: string;
   RATE_LIMIT_ENABLED?: string;
   REQUIRE_CLIENT_SECRET?: string;

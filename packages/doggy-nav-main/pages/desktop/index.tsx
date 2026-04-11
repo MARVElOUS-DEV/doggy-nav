@@ -10,6 +10,8 @@ import { useRouter } from 'next/router';
 import { DesktopCtx, type AppId } from '@/apps/config';
 import { DesktopProvider, useDesktop } from '@/apps/Desktop/DesktopStore';
 import { useGlobalAppWindow } from '@/store/GlobalAppWindowStore';
+import DesktopShortcuts, { type DesktopShortcutItem } from '@/apps/DesktopTools/DesktopShortcuts';
+import { builtInDesktopTools } from '@/apps/DesktopTools/registry';
 
 type NextPageWithLayout = NextPage & { getLayout?: (page: React.ReactNode) => React.ReactNode };
 
@@ -116,6 +118,29 @@ function DesktopInner() {
   ]);
 
   const onMenuClick = useCallback(() => actions.toggleSys(), [actions]);
+  const shortcutItems: DesktopShortcutItem[] = useMemo(
+    () =>
+      builtInDesktopTools
+        .filter((tool) => tool.shortcut?.visible !== false)
+        .sort((left, right) => (left.shortcut?.order ?? 0) - (right.shortcut?.order ?? 0))
+        .map((tool) => {
+          const windowState = state.windows[tool.id];
+          return {
+            key: tool.id,
+            label: tool.shortcut?.label ?? tool.title,
+            description: tool.shortcut?.description,
+            iconSrc: tool.icon,
+            iconClass: tool.iconClass,
+            running: !!(windowState?.open || windowState?.minimized),
+            onOpen: () => {
+              actions.closeLaunchpad();
+              actions.openWindow(tool.id);
+              actions.activateWindow(tool.id);
+            },
+          };
+        }),
+    [actions, state.windows]
+  );
 
   const wallUrl = state.wallpaper;
   const lpOpen = state.lpOpen;
@@ -144,6 +169,13 @@ function DesktopInner() {
           actions.activateWindow('wallpapers');
           actions.setSys(false);
         }}
+      />
+
+      <DesktopShortcuts
+        items={shortcutItems}
+        topOffset={topbarHeight}
+        bottomOffset={dockOffset}
+        hidden={lpOpen}
       />
 
       {/* Windows Area wrapper between top bar and dock */}

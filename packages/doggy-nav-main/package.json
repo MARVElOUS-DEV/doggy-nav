@@ -42,7 +42,8 @@
     "recharts": "^3.2.1",
     "remark-gfm": "^4.0.1",
     "three": "^0.180.0",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "yaml": "2.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -38,6 +38,13 @@ export const createApiHandler = (config: ApiConfig) => {
         headers.Cookie = req.headers.cookie;
       }
 
+      if (req.headers['x-forwarded-proto']) {
+        headers['X-Forwarded-Proto'] = req.headers['x-forwarded-proto'];
+      }
+      if (req.headers.host) {
+        headers['X-Forwarded-Host'] = req.headers.host;
+      }
+
       if (DOGGY_SERVER_CLIENT_SECRET) {
         headers['x-client-secret'] = DOGGY_SERVER_CLIENT_SECRET;
       }

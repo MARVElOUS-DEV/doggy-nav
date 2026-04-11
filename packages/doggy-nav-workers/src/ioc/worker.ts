@@ -13,6 +13,7 @@ import {
   RoleService,
   EmailSettingsService,
   SiteSettingsService,
+  ToolOutputPublicationService,
   ApplicationService,
   NavAdminService,
   PromptService,
@@ -32,13 +33,14 @@ import D1UserRepositoryAdapter from '../adapters/d1UserRepositoryAdapter';
 import D1AuthRepositoryAdapter from '../adapters/d1AuthRepositoryAdapter';
 import D1EmailSettingsRepositoryAdapter from '../adapters/d1EmailSettingsRepositoryAdapter';
 import D1SiteSettingsRepositoryAdapter from '../adapters/d1SiteSettingsRepositoryAdapter';
+import D1ToolOutputPublicationRepository from '../adapters/d1ToolOutputPublicationRepository';
 import D1ApplicationRepositoryAdapter from '../adapters/d1ApplicationRepositoryAdapter';
 import D1NavAdminRepository from '../adapters/d1NavAdminRepository';
 import D1PromptRepository from '../adapters/d1PromptRepository';
 import D1AfficheRepository from '../adapters/d1AfficheRepository';
 import { TOKENS } from './tokens';
 
-type Env = { DB: D1Database };
+type Env = { DB: D1Database; JWT_SECRET?: string };
 
 export function createWorkerContainer(env: Env) {
   const c = new Container();
@@ -72,9 +74,25 @@ export function createWorkerContainer(env: Env) {
   c.register(TOKENS.UserService, () => new UserService(new D1UserRepositoryAdapter(env.DB)));
   c.register(TOKENS.AuthService, () => new UserAuthService(new D1AuthRepositoryAdapter(env.DB)));
   c.register(TOKENS.RoleService, () => new RoleService(new D1RoleRepository(env.DB)));
-  c.register(TOKENS.EmailSettingsService, () => new EmailSettingsService(new D1EmailSettingsRepositoryAdapter(env.DB)));
-  c.register(TOKENS.SiteSettingsService, () => new SiteSettingsService(new D1SiteSettingsRepositoryAdapter(env.DB)));
-  c.register(TOKENS.ApplicationService, () => new ApplicationService(new D1ApplicationRepositoryAdapter(env.DB)));
+  c.register(
+    TOKENS.EmailSettingsService,
+    () => new EmailSettingsService(new D1EmailSettingsRepositoryAdapter(env.DB))
+  );
+  c.register(
+    TOKENS.SiteSettingsService,
+    () => new SiteSettingsService(new D1SiteSettingsRepositoryAdapter(env.DB))
+  );
+  c.register(
+    TOKENS.ToolOutputPublicationService,
+    () =>
+      new ToolOutputPublicationService(
+        new D1ToolOutputPublicationRepository(env.DB, env.JWT_SECRET || '')
+      )
+  );
+  c.register(
+    TOKENS.ApplicationService,
+    () => new ApplicationService(new D1ApplicationRepositoryAdapter(env.DB))
+  );
   c.register(TOKENS.NavAdminService, () => new NavAdminService(new D1NavAdminRepository(env.DB)));
   c.register(TOKENS.PromptService, () => new PromptService(new D1PromptRepository(env.DB)));
   c.register(TOKENS.AfficheService, () => new AfficheService(new D1AfficheRepository(env.DB)));

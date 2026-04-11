@@ -204,7 +204,10 @@ export default function AppWindow({
             </div>
 
             {/* Content */}
-            <div className="w-full h-[calc(100%-40px)] overflow-auto" onPointerDown={onActivate}>
+            <div
+              className="h-[calc(100%-40px)] w-full overflow-y-auto overflow-x-hidden"
+              onPointerDown={onActivate}
+            >
               {children}
             </div>
           </Rnd>

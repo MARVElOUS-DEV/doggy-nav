@@ -20,6 +20,7 @@ import systemRoutes from './system';
 import afficheRoutes from './affiche';
 import siteSettingsRoutes from './siteSettings';
 import imageRoutes from './images';
+import toolOutputRoutes from './toolOutputs';
 
 export type Env = {
   DB: D1Database;
@@ -46,6 +47,7 @@ export type Env = {
   GIT_REPO_SLUG?: string;
   SYSTEM_VERSION_ENABLED?: string;
   GITHUB_TOKEN?: string;
+  TOOL_OUTPUT_REQUIRE_HTTPS?: string;
 };
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>) {
@@ -70,6 +72,7 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/prompts', promptRoutes);
   app.route('/api/affiches', afficheRoutes);
   app.route('/api/site-settings', siteSettingsRoutes);
+  app.route('/api/tool-outputs', toolOutputRoutes);
   app.route('/api/images', imageRoutes);
   app.route('/api/migration', migrationRoutes);
   app.route('/api/seed', seedRoutes);

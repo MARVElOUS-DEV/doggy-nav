@@ -114,3 +114,17 @@ export interface SiteSettings {
   copyrightText?: string | null;
   feedbackUrl?: string | null;
 }
+
+export type ToolOutputDirection = 'yaml-to-json' | 'json-to-yaml';
+
+export interface ToolOutputPublication {
+  toolId: string;
+  enabled: boolean;
+  publishId: string;
+  basicAuthUsername: string;
+  hasPassword: boolean;
+  direction: ToolOutputDirection;
+  contentType: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

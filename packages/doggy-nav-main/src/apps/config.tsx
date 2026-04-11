@@ -6,6 +6,7 @@ import TranslationApp from './TranslationApp';
 import IframeContainer from '@/components/IframeContainer';
 import SettingsApp from './Settings';
 import BookmarkGraphApp from './BookmarkGraph/BookmarkGraphApp';
+import { builtInDesktopTools } from './DesktopTools/registry';
 
 export type AppId = string;
 
@@ -50,8 +51,25 @@ export type DesktopAppConfig = {
   externalAction?: (ctx: DesktopCtx) => void;
 };
 
+const builtInDesktopToolAppConfigs = Object.fromEntries(
+  builtInDesktopTools.map((tool) => [
+    tool.id,
+    {
+      id: tool.id,
+      open: false,
+      title: tool.title,
+      icon: tool.icon,
+      iconClass: tool.iconClass,
+      shouldOpenWindow: true,
+      defaultRect: tool.defaultRect,
+      render: () => tool.render(),
+    } satisfies DesktopAppConfig,
+  ])
+) as Record<AppId, DesktopAppConfig>;
+
 export const appsOrder: AppId[] = [
   'bookmark-editor',
+  ...builtInDesktopTools.map((tool) => tool.id),
   'settings',
   'news',
   'translation',
@@ -61,6 +79,7 @@ export const appsOrder: AppId[] = [
 ];
 
 export const appsConfig: Record<AppId, DesktopAppConfig> = {
+  ...builtInDesktopToolAppConfigs,
   settings: {
     id: 'settings',
     open: false,
