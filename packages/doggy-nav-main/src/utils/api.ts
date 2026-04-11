@@ -182,9 +182,10 @@ const api = {
     direction: ToolOutputDirection;
     contentType: string;
     output: string;
-    basicAuthUsername: string;
-    basicAuthPassword?: string;
   }): Promise<ToolOutputPublication> => axios.put('/api/tool-outputs/converter', data),
+
+  rotateToolOutputPublicationToken: (): Promise<ToolOutputPublication> =>
+    axios.post('/api/tool-outputs/converter/rotate-token'),
 
   deleteToolOutputPublication: (): Promise<{ ok: boolean }> =>
     axios.delete('/api/tool-outputs/converter'),

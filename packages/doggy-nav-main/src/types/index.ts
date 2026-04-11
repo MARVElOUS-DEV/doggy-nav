@@ -121,8 +121,7 @@ export interface ToolOutputPublication {
   toolId: string;
   enabled: boolean;
   publishId: string;
-  basicAuthUsername: string;
-  hasPassword: boolean;
+  subscriptionToken: string;
   direction: ToolOutputDirection;
   contentType: string;
   createdAt?: string;

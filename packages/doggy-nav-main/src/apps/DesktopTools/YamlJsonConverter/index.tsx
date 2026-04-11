@@ -1,7 +1,16 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { Message } from '@arco-design/web-react';
-import { ArrowLeftRight, Copy, Download, LoaderCircle, RefreshCw, Upload } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Copy,
+  Download,
+  LoaderCircle,
+  RefreshCw,
+  RotateCcw,
+  Share2,
+  Upload,
+} from 'lucide-react';
 import { parse as parseYaml } from 'yaml';
 import { convertJsonToFormattedYaml, convertYamlToFormattedJson } from './converter';
 import api from '@/utils/api';
@@ -31,10 +40,7 @@ type LatestRecord = {
   fetchedAt: string;
 };
 
-type PublishedEndpointHintState = {
-  url: string;
-  passwordIncluded: boolean;
-};
+const PUBLISHED_ENDPOINT_TOKEN_QUERY_PARAM = 'token';
 
 function cn(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(' ');
@@ -42,15 +48,6 @@ function cn(...values: Array<string | false | null | undefined>) {
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
-}
-
-function encodeBasicAuth(username: string, password: string) {
-  const bytes = new TextEncoder().encode(`${username}:${password}`);
-  let binary = '';
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return `Basic ${window.btoa(binary)}`;
 }
 
 function formatTimestamp(value?: string) {
@@ -66,24 +63,15 @@ function formatTimestamp(value?: string) {
   }
 }
 
-function buildPublishedEndpointUrl(publishId: string) {
+function buildPublishedEndpointUrl(publishId: string, subscriptionToken?: string) {
   if (!publishId || typeof window === 'undefined') return '';
-  return `${window.location.origin}/api/tool-outputs/converter/published/${publishId}`;
-}
-
-function buildAuthenticatedEndpointUrl(baseUrl: string, username: string, password: string) {
-  if (!baseUrl) return '';
-
-  try {
-    const url = new URL(baseUrl);
-    url.username = username;
-    if (password) {
-      url.password = password;
-    }
-    return url.toString();
-  } catch {
-    return baseUrl;
+  const url = new URL(
+    `${window.location.origin}/api/tool-outputs/converter/published/${publishId}`
+  );
+  if (subscriptionToken) {
+    url.searchParams.set(PUBLISHED_ENDPOINT_TOKEN_QUERY_PARAM, subscriptionToken);
   }
+  return url.toString();
 }
 
 function getFormatFromPublication(publication: ToolOutputPublication | null): EditorKind {
@@ -181,10 +169,12 @@ function IconActionButton({
   title,
   disabled,
   onClick,
+  children,
 }: {
   title: string;
   disabled?: boolean;
   onClick: () => void;
+  children: ReactNode;
 }) {
   return (
     <button
@@ -199,7 +189,7 @@ function IconActionButton({
       title={title}
       aria-label={title}
     >
-      <Copy className="h-4 w-4" />
+      {children}
     </button>
   );
 }
@@ -242,7 +232,9 @@ function EditorPane({
             {status === 'valid' ? 'Valid' : status === 'invalid' ? 'Invalid' : 'Ready'}
           </StatusBadge>
         </div>
-        <IconActionButton disabled={!value.trim()} onClick={onCopy} title={`Copy ${label}`} />
+        <IconActionButton disabled={!value.trim()} onClick={onCopy} title={`Copy ${label}`}>
+          <Copy className="h-4 w-4" />
+        </IconActionButton>
       </div>
 
       <textarea
@@ -269,36 +261,6 @@ function EditorPane({
             : 'Edit either side and the opposite pane stays in sync.')}
       </div>
     </section>
-  );
-}
-
-function ControlField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = 'text',
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  type?: 'text' | 'password';
-}) {
-  return (
-    <label className="flex min-w-[180px] flex-1 flex-col gap-2">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e2e8f0]/44">
-        {label}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        className="h-11 rounded-xl border bg-black/25 px-4 text-sm text-[#f8fafc] outline-none placeholder:text-[#64748b]"
-        style={{ borderColor: 'rgba(148, 163, 184, 0.14)' }}
-      />
-    </label>
   );
 }
 
@@ -333,44 +295,42 @@ function ActionButton({
   );
 }
 
-function PublishedEndpointHint({
-  endpointUrl,
-  passwordIncluded,
-  onCopy,
-}: {
-  endpointUrl: string;
-  passwordIncluded: boolean;
-  onCopy: () => void;
-}) {
+function PublishedEndpointHint({ endpointUrl }: { endpointUrl: string }) {
   return (
     <div
-      className="flex w-full items-center gap-2 rounded-xl border px-3 py-2"
+      className="w-[min(28rem,calc(100vw-3rem))] rounded-xl border px-3 py-2 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
       style={{
         borderColor: 'rgba(148, 163, 184, 0.14)',
-        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+        backgroundColor: 'rgba(17, 24, 39, 0.96)',
+        backdropFilter: 'blur(12px)',
       }}
     >
-      <div className="min-w-0 flex-1">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#e2e8f0]/42">
-          Published Endpoint
-        </div>
-        <div className="truncate text-xs text-[#cbd5e1]" title={endpointUrl}>
-          {endpointUrl}
-        </div>
-        {!passwordIncluded ? (
-          <div className="mt-1 text-[11px] text-[#fbbf24]">
-            Password hidden. Enter it manually in the URL if needed.
-          </div>
-        ) : null}
+      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#e2e8f0]/42">
+        Subscription URL
       </div>
-      <IconActionButton title="Copy published endpoint" onClick={onCopy} />
+      <div className="mt-1 break-all font-mono text-xs leading-5 text-[#cbd5e1]">{endpointUrl}</div>
+      <div className="mt-2 text-[11px] text-[#fbbf24]">
+        This URL contains the subscription token. Treat it like a password.
+      </div>
+    </div>
+  );
+}
+
+function ShareEndpointAction({ endpointUrl, onCopy }: { endpointUrl: string; onCopy: () => void }) {
+  return (
+    <div className="group relative">
+      <IconActionButton title="Copy subscription URL" onClick={onCopy}>
+        <Share2 className="h-4 w-4" />
+      </IconActionButton>
+      <div className="pointer-events-none absolute left-0 top-full z-20 mt-2 origin-top-right opacity-0 transition duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+        <PublishedEndpointHint endpointUrl={endpointUrl} />
+      </div>
     </div>
   );
 }
 
 export default function YamlJsonConverterApp() {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const endpointHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [publishFormat, setPublishFormat] = useState<EditorKind>('json');
   const [jsonInput, setJsonInput] = useState(sampleJson);
   const [yamlInput, setYamlInput] = useState(sampleYaml);
@@ -379,16 +339,12 @@ export default function YamlJsonConverterApp() {
   const [yamlError, setYamlError] = useState('');
   const [publication, setPublication] = useState<ToolOutputPublication | null>(null);
   const [publicationLoaded, setPublicationLoaded] = useState(false);
-  const [basicAuthUsername, setBasicAuthUsername] = useState('');
-  const [basicAuthPassword, setBasicAuthPassword] = useState('');
   const [savingPublication, setSavingPublication] = useState(false);
+  const [rotatingToken, setRotatingToken] = useState(false);
   const [deletingPublication, setDeletingPublication] = useState(false);
   const [fetchingLatest, setFetchingLatest] = useState(false);
   const [latestRecord, setLatestRecord] = useState<LatestRecord | null>(null);
   const [containerWidth, setContainerWidth] = useState(1160);
-  const [showPublishedEndpoint, setShowPublishedEndpoint] = useState(false);
-  const [publishedEndpointHint, setPublishedEndpointHint] =
-    useState<PublishedEndpointHintState | null>(null);
 
   const jsonStatus = jsonInput.trim() ? (jsonError ? 'invalid' : 'valid') : 'neutral';
   const yamlStatus = yamlInput.trim() ? (yamlError ? 'invalid' : 'valid') : 'neutral';
@@ -397,40 +353,24 @@ export default function YamlJsonConverterApp() {
   const selectedDirection: ToolOutputDirection =
     publishFormat === 'json' ? 'yaml-to-json' : 'json-to-yaml';
   const contentType = 'text/plain; charset=utf-8';
-  const endpointUrl = useMemo(() => {
-    return buildPublishedEndpointUrl(publication?.publishId || '');
-  }, [publication?.publishId]);
+  const shareUrl = useMemo(() => {
+    return buildPublishedEndpointUrl(
+      publication?.publishId || '',
+      publication?.subscriptionToken || ''
+    );
+  }, [publication?.publishId, publication?.subscriptionToken]);
   const recordMeta = useMemo(() => {
     if (!publication) {
       return publicationLoaded ? 'No publication saved yet.' : 'Loading publication settings...';
     }
 
     const stamp = formatTimestamp(publication.updatedAt || publication.createdAt);
-    const actor = publication.basicAuthUsername || 'unknown';
-    return `Latest published record ${stamp || 'recently'} by ${actor}`;
+    return `Latest published record ${stamp || 'recently'} with a live subscription URL`;
   }, [publication, publicationLoaded]);
-  const canPublish =
-    !currentError &&
-    !!jsonInput.trim() &&
-    !!yamlInput.trim() &&
-    !!basicAuthUsername.trim() &&
-    (!!publication?.hasPassword || !!basicAuthPassword.trim());
+  const canPublish = !currentError && !!jsonInput.trim() && !!yamlInput.trim();
   const stackedEditors = containerWidth < 980;
   const compactControls = containerWidth < 1040;
-  const stackedFieldRow = containerWidth < 760;
   const stackedActions = containerWidth < 640;
-
-  const revealPublishedEndpoint = (hint: PublishedEndpointHintState) => {
-    setPublishedEndpointHint(hint);
-    setShowPublishedEndpoint(true);
-    if (endpointHintTimerRef.current) {
-      clearTimeout(endpointHintTimerRef.current);
-    }
-    endpointHintTimerRef.current = setTimeout(() => {
-      setShowPublishedEndpoint(false);
-      endpointHintTimerRef.current = null;
-    }, 10000);
-  };
 
   const applyJsonDraft = (nextJson: string) => {
     setActiveEditor('json');
@@ -509,26 +449,14 @@ export default function YamlJsonConverterApp() {
   };
 
   const fetchLatestPublished = async () => {
-    if (!endpointUrl) {
+    if (!shareUrl) {
       Message.error('Publish the config first to create an endpoint.');
-      return;
-    }
-    if (!basicAuthUsername.trim()) {
-      Message.error('Basic Auth username is required.');
-      return;
-    }
-    if (!basicAuthPassword.trim()) {
-      Message.error('Enter the Basic Auth password to fetch the published output.');
       return;
     }
 
     setFetchingLatest(true);
     try {
-      const response = await fetch(endpointUrl, {
-        headers: {
-          Authorization: encodeBasicAuth(basicAuthUsername.trim(), basicAuthPassword),
-        },
-      });
+      const response = await fetch(shareUrl);
       const content = await response.text();
 
       if (!response.ok) {
@@ -554,14 +482,6 @@ export default function YamlJsonConverterApp() {
         Message.error('Fix the invalid editor content before publishing.');
         return;
       }
-      if (!basicAuthUsername.trim()) {
-        Message.error('Basic Auth username is required.');
-        return;
-      }
-      if (!publication?.hasPassword && !basicAuthPassword.trim()) {
-        Message.error('Basic Auth password is required.');
-        return;
-      }
       Message.error('Both JSON and YAML need content before publishing.');
       return;
     }
@@ -573,29 +493,34 @@ export default function YamlJsonConverterApp() {
         direction: selectedDirection,
         contentType,
         output: selectedOutput,
-        basicAuthUsername: basicAuthUsername.trim(),
-        basicAuthPassword: basicAuthPassword.trim() || undefined,
       });
 
       setPublication(saved);
       setPublishFormat(getFormatFromPublication(saved));
-      setBasicAuthUsername(saved.basicAuthUsername || '');
       setLatestRecord({
         content: selectedOutput,
         contentType,
         fetchedAt: new Date().toISOString(),
       });
-      revealPublishedEndpoint({
-        url: buildAuthenticatedEndpointUrl(
-          buildPublishedEndpointUrl(saved.publishId),
-          basicAuthUsername.trim(),
-          basicAuthPassword.trim()
-        ),
-        passwordIncluded: basicAuthPassword.trim().length > 0,
-      });
       Message.success(publishFormat === 'json' ? 'Published JSON saved' : 'Published YAML saved');
     } finally {
       setSavingPublication(false);
+    }
+  };
+
+  const handleRotateToken = async () => {
+    if (!publication) {
+      Message.error('Publish the config first to create a share URL.');
+      return;
+    }
+
+    setRotatingToken(true);
+    try {
+      const rotated = await api.rotateToolOutputPublicationToken();
+      setPublication(rotated);
+      Message.success('Subscription URL rotated');
+    } finally {
+      setRotatingToken(false);
     }
   };
 
@@ -605,12 +530,6 @@ export default function YamlJsonConverterApp() {
       await api.deleteToolOutputPublication();
       setPublication(null);
       setLatestRecord(null);
-      setPublishedEndpointHint(null);
-      setShowPublishedEndpoint(false);
-      if (endpointHintTimerRef.current) {
-        clearTimeout(endpointHintTimerRef.current);
-        endpointHintTimerRef.current = null;
-      }
       Message.success('Published output deleted');
     } finally {
       setDeletingPublication(false);
@@ -627,7 +546,6 @@ export default function YamlJsonConverterApp() {
 
         setPublication(current);
         setPublishFormat(getFormatFromPublication(current));
-        setBasicAuthUsername(current?.basicAuthUsername || '');
       } catch {
       } finally {
         if (active) setPublicationLoaded(true);
@@ -659,14 +577,6 @@ export default function YamlJsonConverterApp() {
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (endpointHintTimerRef.current) {
-        clearTimeout(endpointHintTimerRef.current);
-      }
-    };
   }, []);
 
   const latestRecordBody =
@@ -773,56 +683,12 @@ export default function YamlJsonConverterApp() {
               <div className="flex flex-col gap-3">
                 <div
                   className={cn(
-                    'grid gap-4',
-                    stackedFieldRow
-                      ? 'grid-cols-1'
-                      : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end'
-                  )}
-                >
-                  <ControlField
-                    label="Username"
-                    value={basicAuthUsername}
-                    onChange={setBasicAuthUsername}
-                    placeholder="admin"
-                  />
-                  <ControlField
-                    label="Password"
-                    type="password"
-                    value={basicAuthPassword}
-                    onChange={setBasicAuthPassword}
-                    placeholder={
-                      publication?.hasPassword ? 'Enter current password' : 'Minimum 8 characters'
-                    }
-                  />
-                  <div className="flex">
-                    <ActionButton
-                      tone="solid"
-                      disabled={savingPublication || !canPublish}
-                      onClick={handleSavePublication}
-                    >
-                      {savingPublication ? (
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="h-4 w-4" />
-                      )}
-                      Publish
-                    </ActionButton>
-                  </div>
-                </div>
-
-                <div
-                  className={cn(
                     'flex gap-3',
                     stackedActions ? 'flex-col' : 'flex-wrap items-center'
                   )}
                 >
                   <ActionButton
-                    disabled={
-                      fetchingLatest ||
-                      !endpointUrl ||
-                      !publication?.enabled ||
-                      !basicAuthUsername.trim()
-                    }
+                    disabled={fetchingLatest || !shareUrl || !publication?.enabled}
                     onClick={fetchLatestPublished}
                   >
                     {fetchingLatest ? (
@@ -832,9 +698,38 @@ export default function YamlJsonConverterApp() {
                     )}
                     Fetch Latest
                   </ActionButton>
+                  {publication ? (
+                    <ShareEndpointAction
+                      endpointUrl={shareUrl}
+                      onCopy={() => copyText(shareUrl, 'Subscription URL copied')}
+                    />
+                  ) : null}
+                  <ActionButton
+                    disabled={!publication || rotatingToken}
+                    onClick={handleRotateToken}
+                  >
+                    {rotatingToken ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4" />
+                    )}
+                    Rotate URL
+                  </ActionButton>
                   <ActionButton disabled={!latestRecord?.content} onClick={loadLatestIntoEditor}>
                     <Download className="h-4 w-4" />
                     Load into Editor
+                  </ActionButton>
+                  <ActionButton
+                    tone="solid"
+                    disabled={savingPublication || !canPublish}
+                    onClick={handleSavePublication}
+                  >
+                    {savingPublication ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    Publish
                   </ActionButton>
                   <ActionButton
                     disabled={!publication || deletingPublication}
@@ -848,46 +743,9 @@ export default function YamlJsonConverterApp() {
             ) : (
               <div className="flex flex-col gap-3">
                 <div className="flex items-end justify-between gap-4">
-                  <div className="flex flex-1 gap-4">
-                    <ControlField
-                      label="Username"
-                      value={basicAuthUsername}
-                      onChange={setBasicAuthUsername}
-                      placeholder="admin"
-                    />
-                    <ControlField
-                      label="Password"
-                      type="password"
-                      value={basicAuthPassword}
-                      onChange={setBasicAuthPassword}
-                      placeholder={
-                        publication?.hasPassword ? 'Enter current password' : 'Minimum 8 characters'
-                      }
-                    />
-                    <div className="flex items-end">
-                      <ActionButton
-                        tone="solid"
-                        disabled={savingPublication || !canPublish}
-                        onClick={handleSavePublication}
-                      >
-                        {savingPublication ? (
-                          <LoaderCircle className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Upload className="h-4 w-4" />
-                        )}
-                        Publish
-                      </ActionButton>
-                    </div>
-                  </div>
-
                   <div className="flex flex-wrap items-center gap-3">
                     <ActionButton
-                      disabled={
-                        fetchingLatest ||
-                        !endpointUrl ||
-                        !publication?.enabled ||
-                        !basicAuthUsername.trim()
-                      }
+                      disabled={fetchingLatest || !shareUrl || !publication?.enabled}
                       onClick={fetchLatestPublished}
                     >
                       {fetchingLatest ? (
@@ -897,9 +755,38 @@ export default function YamlJsonConverterApp() {
                       )}
                       Fetch Latest
                     </ActionButton>
+                    {publication ? (
+                      <ShareEndpointAction
+                        endpointUrl={shareUrl}
+                        onCopy={() => copyText(shareUrl, 'Subscription URL copied')}
+                      />
+                    ) : null}
+                    <ActionButton
+                      disabled={!publication || rotatingToken}
+                      onClick={handleRotateToken}
+                    >
+                      {rotatingToken ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-4 w-4" />
+                      )}
+                      Rotate URL
+                    </ActionButton>
                     <ActionButton disabled={!latestRecord?.content} onClick={loadLatestIntoEditor}>
                       <Download className="h-4 w-4" />
                       Load into Editor
+                    </ActionButton>
+                    <ActionButton
+                      tone="solid"
+                      disabled={savingPublication || !canPublish}
+                      onClick={handleSavePublication}
+                    >
+                      {savingPublication ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      Publish
                     </ActionButton>
                     <ActionButton
                       disabled={!publication || deletingPublication}
@@ -914,28 +801,6 @@ export default function YamlJsonConverterApp() {
                 </div>
               </div>
             )}
-
-            <div className="flex flex-col gap-3">
-              {showPublishedEndpoint && publishedEndpointHint?.url ? (
-                <PublishedEndpointHint
-                  endpointUrl={publishedEndpointHint.url}
-                  passwordIncluded={publishedEndpointHint.passwordIncluded}
-                  onCopy={() => copyText(publishedEndpointHint.url, 'Endpoint URL copied')}
-                />
-              ) : null}
-
-              <div
-                className="rounded-xl border px-3 py-2 text-xs leading-6"
-                style={{
-                  borderColor: 'rgba(250, 204, 21, 0.18)',
-                  backgroundColor: 'rgba(120, 53, 15, 0.16)',
-                  color: '#fcd34d',
-                }}
-              >
-                When you publish data, it is stored on our platform in encrypted form. Use at your
-                own risk.
-              </div>
-            </div>
 
             <div>
               <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e2e8f0]/38">

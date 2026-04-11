@@ -1,31 +1,46 @@
-export const TOOL_OUTPUT_PUBLICATION_BASIC_AUTH_REALM = 'Doggy Nav Tool Output';
+export const TOOL_OUTPUT_PUBLICATION_TOKEN_QUERY_PARAM = 'token';
 
-export function parseBasicAuthHeader(
-  headerValue?: string | null
-): { username: string; password: string } | null {
-  const raw = String(headerValue || '');
-  if (!raw.startsWith('Basic ')) return null;
-
-  try {
-    const bufferCtor = (globalThis as any).Buffer;
-    const decoded = bufferCtor
-      ? bufferCtor.from(raw.slice(6), 'base64').toString('utf8')
-      : atob(raw.slice(6));
-    const separatorIndex = decoded.indexOf(':');
-    if (separatorIndex < 0) return null;
-    return {
-      username: decoded.slice(0, separatorIndex),
-      password: decoded.slice(separatorIndex + 1),
-    };
-  } catch {
-    return null;
+function bytesToBase64Url(bytes: Uint8Array) {
+  const bufferCtor = (globalThis as any).Buffer;
+  if (bufferCtor) {
+    return bufferCtor.from(bytes).toString('base64url');
   }
+
+  let binary = '';
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
-export function buildBasicAuthChallengeHeader(
-  realm: string = TOOL_OUTPUT_PUBLICATION_BASIC_AUTH_REALM
-) {
-  return `Basic realm="${realm}", charset="UTF-8"`;
+export function generateToolOutputSubscriptionToken(byteLength = 24) {
+  const cryptoApi = (globalThis as any).crypto;
+  if (!cryptoApi?.getRandomValues) {
+    throw new Error('Secure random generator is not available');
+  }
+
+  const bytes = new Uint8Array(byteLength);
+  cryptoApi.getRandomValues(bytes);
+  return bytesToBase64Url(bytes);
+}
+
+export function parsePublishedToolOutputToken(tokenValue?: string | null) {
+  const token = String(tokenValue || '').trim();
+  return token || null;
+}
+
+export function secureCompareText(left?: string | null, right?: string | null) {
+  const a = String(left || '');
+  const b = String(right || '');
+  if (!a || !b || a.length !== b.length) return false;
+
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+
+  return mismatch === 0;
 }
 
 export function isHttpsLikeRequest(input: {

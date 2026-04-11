@@ -31,8 +31,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers['x-client-secret'] = DOGGY_SERVER_CLIENT_SECRET;
     }
 
-    const url = `${DOGGY_SERVER}/api/tool-outputs/converter/published/${req.query.publishId}`;
-    const response = await axios.get(url, {
+    const url = new URL(
+      `/api/tool-outputs/converter/published/${req.query.publishId}`,
+      DOGGY_SERVER
+    );
+
+    Object.entries(req.query).forEach(([key, value]) => {
+      if (key === 'publishId' || value === undefined) return;
+      if (Array.isArray(value)) {
+        value.forEach((item) => url.searchParams.append(key, item));
+        return;
+      }
+      url.searchParams.set(key, value);
+    });
+
+    const response = await axios.get(url.toString(), {
       headers,
       responseType: 'text',
       validateStatus: () => true,

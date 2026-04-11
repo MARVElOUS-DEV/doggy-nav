@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import {
-  buildBasicAuthChallengeHeader,
   isHttpsLikeRequest,
-  parseBasicAuthHeader,
+  parsePublishedToolOutputToken,
+  TOOL_OUTPUT_PUBLICATION_TOKEN_QUERY_PARAM,
   type ToolOutputPublicationService,
 } from 'doggy-nav-core';
 import { createAuthMiddleware } from '../middleware/auth';
@@ -41,13 +41,21 @@ toolOutputRoutes.put('/converter', createAuthMiddleware({ required: true }), asy
       direction: body?.direction,
       contentType: String(body?.contentType || ''),
       output: String(body?.output || ''),
-      basicAuthUsername: String(body?.basicAuthUsername || ''),
-      basicAuthPassword:
-        body?.basicAuthPassword !== undefined ? String(body.basicAuthPassword || '') : undefined,
     });
     return c.json(responses.ok(saved));
   } catch (err: any) {
     return c.json(responses.badRequest(err?.message || 'Save publication failed'), 400);
+  }
+});
+
+toolOutputRoutes.post('/converter/rotate-token', createAuthMiddleware({ required: true }), async (c) => {
+  try {
+    const user = getUser(c)!;
+    const svc = getDI(c).resolve(TOKENS.ToolOutputPublicationService) as ToolOutputPublicationService;
+    const result = await svc.rotateTokenForUser(String(user.id));
+    return c.json(responses.ok(result));
+  } catch (err: any) {
+    return c.json(responses.notFound(err?.message || 'Published output does not exist'), 404);
   }
 });
 
@@ -76,30 +84,22 @@ toolOutputRoutes.get('/converter/published/:publishId', async (c) => {
     return new Response('HTTPS is required', { status: 400 });
   }
 
-  const auth = parseBasicAuthHeader(c.req.header('Authorization'));
-  if (!auth) {
-    return new Response('Authentication required', {
-      status: 401,
-      headers: {
-        'WWW-Authenticate': buildBasicAuthChallengeHeader(),
-      },
-    });
+  const token = parsePublishedToolOutputToken(
+    c.req.query(TOOL_OUTPUT_PUBLICATION_TOKEN_QUERY_PARAM)
+  );
+  if (!token) {
+    return new Response('Subscription token required', { status: 401 });
   }
 
   try {
     const svc = getDI(c).resolve(TOKENS.ToolOutputPublicationService) as ToolOutputPublicationService;
-    const result = await svc.readPublished(c.req.param('publishId'), auth.username, auth.password);
+    const result = await svc.readPublished(c.req.param('publishId'), token);
 
     if (result.kind === 'not_found') {
       return new Response('Not Found', { status: 404 });
     }
     if (result.kind === 'unauthorized') {
-      return new Response('Invalid credentials', {
-        status: 401,
-        headers: {
-          'WWW-Authenticate': buildBasicAuthChallengeHeader(),
-        },
-      });
+      return new Response('Invalid subscription token', { status: 401 });
     }
 
     return new Response(result.data.output, {

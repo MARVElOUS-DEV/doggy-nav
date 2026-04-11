@@ -28,6 +28,7 @@ export default (app: Application) => {
   router.put('/api/user/profile', controller.user.updateProfile);
   router.get('/api/tool-outputs/converter', controller.toolOutputPublication.getCurrent);
   router.put('/api/tool-outputs/converter', controller.toolOutputPublication.upsert);
+  router.post('/api/tool-outputs/converter/rotate-token', controller.toolOutputPublication.rotateToken);
   router.delete('/api/tool-outputs/converter', controller.toolOutputPublication.remove);
   // Admin user management
   router.get('/api/user', controller.user.adminList);

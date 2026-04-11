@@ -6,8 +6,6 @@ export interface ToolOutputPublicationUpsertInput {
   direction: ToolOutputDirection;
   contentType: string;
   output: string;
-  basicAuthUsername: string;
-  basicAuthPassword?: string;
 }
 
 export interface PublishedToolOutputResolved {
@@ -30,10 +28,7 @@ export interface ToolOutputPublicationRepository {
     userId: string,
     input: ToolOutputPublicationUpsertInput
   ): Promise<ToolOutputPublication>;
+  rotateTokenByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication | null>;
   deleteByUserAndTool(userId: string, toolId: string): Promise<{ ok: boolean }>;
-  readPublishedWithBasicAuth(
-    publishId: string,
-    username: string,
-    password: string
-  ): Promise<PublishedToolOutputReadResult>;
+  readPublishedWithToken(publishId: string, token: string): Promise<PublishedToolOutputReadResult>;
 }

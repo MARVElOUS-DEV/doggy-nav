@@ -17,8 +17,9 @@ export default function (app: any) {
       encryptedOutput: { type: String, required: true },
       encryptionIv: { type: String, required: true },
       encryptionTag: { type: String, required: true },
-      basicAuthUsername: { type: String, required: true, trim: true },
-      basicAuthPasswordHash: { type: String, required: true },
+      encryptedSubscriptionToken: { type: String },
+      subscriptionTokenIv: { type: String },
+      subscriptionTokenTag: { type: String },
     },
     { collection: 'tool_output_publications', timestamps: true }
   );
@@ -34,6 +35,10 @@ export default function (app: any) {
       delete ret.encryptedOutput;
       delete ret.encryptionIv;
       delete ret.encryptionTag;
+      delete ret.encryptedSubscriptionToken;
+      delete ret.subscriptionTokenIv;
+      delete ret.subscriptionTokenTag;
+      delete ret.basicAuthUsername;
       delete ret.basicAuthPasswordHash;
     },
   });

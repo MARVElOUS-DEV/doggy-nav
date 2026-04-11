@@ -90,7 +90,7 @@ export const routePermissions: RoutePermission[] = [
     method: 'GET',
     path: '/api/tool-outputs/converter/published/:publishId',
     require: { level: 'public' },
-    description: 'Get published converter output with Basic Auth',
+    description: 'Get published converter output with subscription token',
   },
 
   // User profile
@@ -123,6 +123,12 @@ export const routePermissions: RoutePermission[] = [
     path: '/api/tool-outputs/converter',
     require: { level: 'authenticated' },
     description: 'Delete current user converter publication',
+  },
+  {
+    method: 'POST',
+    path: '/api/tool-outputs/converter/rotate-token',
+    require: { level: 'authenticated' },
+    description: 'Rotate current user converter publication subscription token',
   },
 
   {

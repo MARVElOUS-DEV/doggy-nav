@@ -30,3 +30,11 @@ BEGIN
   SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
   WHERE id = NEW.id;
 END;
+ALTER TABLE tool_output_publications
+  ADD COLUMN encrypted_subscription_token TEXT;
+
+ALTER TABLE tool_output_publications
+  ADD COLUMN subscription_token_iv TEXT;
+
+ALTER TABLE tool_output_publications
+  ADD COLUMN subscription_token_tag TEXT;

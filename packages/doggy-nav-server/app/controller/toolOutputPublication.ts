@@ -2,9 +2,9 @@ import Controller from '../core/base_controller';
 import { Inject } from '../core/inject';
 import { TOKENS } from '../core/ioc';
 import {
-  buildBasicAuthChallengeHeader,
   isHttpsLikeRequest,
-  parseBasicAuthHeader,
+  parsePublishedToolOutputToken,
+  TOOL_OUTPUT_PUBLICATION_TOKEN_QUERY_PARAM,
   type ToolOutputPublicationService,
 } from 'doggy-nav-core';
 
@@ -14,10 +14,6 @@ export default class ToolOutputPublicationController extends Controller {
 
   private getAuthenticatedUserId(): string | null {
     return this.ctx.state.userinfo?.userId ? String(this.ctx.state.userinfo.userId) : null;
-  }
-
-  private sendBasicAuthChallenge() {
-    this.ctx.set('WWW-Authenticate', buildBasicAuthChallengeHeader());
   }
 
   private isHttpsRequest(): boolean {
@@ -54,9 +50,6 @@ export default class ToolOutputPublicationController extends Controller {
         direction: body.direction,
         contentType: String(body.contentType || ''),
         output: String(body.output || ''),
-        basicAuthUsername: String(body.basicAuthUsername || ''),
-        basicAuthPassword:
-          body.basicAuthPassword !== undefined ? String(body.basicAuthPassword || '') : undefined,
       });
       this.success(result);
     } catch (error: any) {
@@ -77,6 +70,23 @@ export default class ToolOutputPublicationController extends Controller {
     this.success(result);
   }
 
+  async rotateToken() {
+    const userId = this.getAuthenticatedUserId();
+    if (!userId) {
+      this.ctx.status = 401;
+      this.error('用户未认证');
+      return;
+    }
+
+    try {
+      const result = await this.toolOutputPublicationService.rotateTokenForUser(userId);
+      this.success(result);
+    } catch (error: any) {
+      this.ctx.status = 404;
+      this.error(error?.message || '发布配置不存在');
+    }
+  }
+
   async published() {
     if (this.ctx.app.config.toolOutput?.requireHttps !== false && process.env.NODE_ENV === 'production') {
       if (!this.isHttpsRequest()) {
@@ -86,20 +96,17 @@ export default class ToolOutputPublicationController extends Controller {
       }
     }
 
-    const auth = parseBasicAuthHeader(this.ctx.get('authorization'));
-    if (!auth) {
-      this.sendBasicAuthChallenge();
+    const token = parsePublishedToolOutputToken(
+      this.ctx.query?.[TOOL_OUTPUT_PUBLICATION_TOKEN_QUERY_PARAM]
+    );
+    if (!token) {
       this.ctx.status = 401;
-      this.ctx.body = 'Authentication required';
+      this.ctx.body = 'Subscription token required';
       return;
     }
 
     const { publishId } = this.ctx.params;
-    const result = await this.toolOutputPublicationService.readPublished(
-      String(publishId || ''),
-      auth.username,
-      auth.password
-    );
+    const result = await this.toolOutputPublicationService.readPublished(String(publishId || ''), token);
 
     if (result.kind === 'not_found') {
       this.ctx.status = 404;
@@ -107,9 +114,8 @@ export default class ToolOutputPublicationController extends Controller {
       return;
     }
     if (result.kind === 'unauthorized') {
-      this.sendBasicAuthChallenge();
       this.ctx.status = 401;
-      this.ctx.body = 'Invalid credentials';
+      this.ctx.body = 'Invalid subscription token';
       return;
     }
 
