@@ -42,6 +42,14 @@ const nextConfig: NextConfig = {
     ],
   },
   webpack: (config) => {
+    const externals = Array.isArray(config.externals)
+      ? config.externals
+      : config.externals
+        ? [config.externals]
+        : [];
+
+    config.externals = [...externals, { canvas: 'canvas' }];
+
     // Enable importing SVGs as React components
     config.module.rules.push({
       test: /\.svg$/i,
