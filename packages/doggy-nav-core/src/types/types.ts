@@ -1,3 +1,5 @@
+import type { SupportPaymentSettings } from './supportPayments';
+
 export type ID = string;
 
 export interface Group {
@@ -100,6 +102,14 @@ export interface EmailSettings {
   updatedAt?: string;
 }
 
+export interface CreatorProfileSettings {
+  name?: string | null;
+  title?: string | null;
+  headline?: string | null;
+  bio?: string | null;
+  mission?: string | null;
+}
+
 export interface SiteSettings {
   siteTitle?: string | null;
   logoUrl?: string | null;
@@ -108,6 +118,8 @@ export interface SiteSettings {
   seoKeywords?: string[];
   copyrightText?: string | null;
   feedbackUrl?: string | null;
+  creatorProfile?: CreatorProfileSettings | null;
+  supportSettings?: SupportPaymentSettings | null;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -175,7 +175,7 @@ export const pageTitles: Record<
   },
   '/settings/site': {
     title: '站点定制',
-    subtitle: '配置站点品牌、SEO 与反馈入口',
+    subtitle: '配置站点品牌、SEO、About Me 与支持付款',
     showUserMenu: true,
     showSearch: false,
   },

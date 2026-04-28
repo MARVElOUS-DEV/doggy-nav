@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NextPage } from 'next';
+import { Message } from '@arco-design/web-react';
 import AuthGuard from '@/components/AuthGuard';
 import TopMenuBar from '@/apps/Desktop/TopMenuBar';
 import AppWindow, { type WindowRect } from '@/apps/Desktop/AppWindow';
@@ -41,6 +42,21 @@ function DesktopInner() {
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, []);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const status = router.query.coffee;
+    if (status !== 'success' && status !== 'cancel') return;
+
+    if (status === 'success') {
+      Message.success('Thanks for the coffee. Your support keeps this project moving.');
+    } else {
+      Message.info('Coffee checkout cancelled');
+    }
+
+    router.replace('/desktop', undefined, { shallow: true });
+  }, [router]);
 
   const dockItems: DockItem[] = useMemo(() => {
     if (!isClient) return [];

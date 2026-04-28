@@ -28,4 +28,9 @@ export type Env = {
   RATE_LIMIT_ENABLED?: string;
   REQUIRE_CLIENT_SECRET?: string;
   CLIENT_SECRET_HEADER?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_SUPPORT_BASE_URL?: string;
+  STRIPE_SUPPORT_SUCCESS_URL?: string;
+  STRIPE_SUPPORT_CANCEL_URL?: string;
+  STRIPE_SUPPORT_CREATOR_NAME?: string;
 };

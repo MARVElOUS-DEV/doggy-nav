@@ -12,6 +12,8 @@ export default function (app: any) {
       seoKeywords: [{ type: String }],
       copyrightText: { type: String, default: null },
       feedbackUrl: { type: String, default: null },
+      creatorProfile: { type: Schema.Types.Mixed, default: null },
+      supportSettings: { type: Schema.Types.Mixed, default: null },
     },
     { collection: 'site_settings', timestamps: true }
   );

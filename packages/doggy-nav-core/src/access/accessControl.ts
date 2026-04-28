@@ -92,6 +92,12 @@ export const routePermissions: RoutePermission[] = [
     require: { level: 'public' },
     description: 'Get published converter output with subscription token',
   },
+  {
+    method: 'POST',
+    path: '/api/payments/coffee/checkout',
+    require: { level: 'optional' },
+    description: 'Create a creator support Stripe Checkout Session',
+  },
 
   // User profile
   {

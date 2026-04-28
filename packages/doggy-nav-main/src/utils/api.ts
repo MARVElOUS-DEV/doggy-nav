@@ -13,6 +13,7 @@ import type {
   ToolOutputDirection,
   ToolOutputPublication,
 } from '@/types';
+import type { SupportCurrency } from '@/config/aboutMe';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
@@ -86,7 +87,11 @@ const api = {
   getTagList: (): Promise<{ data: Tag[] }> => axios.get(API_TAG_LIST),
 
   // Get current user's groups (if authenticated)
-  getGroups: (): Promise<{ data: Array<{ id: string; slug: string; displayName?: string }>; total: number; pageNumber: number }> => axios.get('/api/groups'),
+  getGroups: (): Promise<{
+    data: Array<{ id: string; slug: string; displayName?: string }>;
+    total: number;
+    pageNumber: number;
+  }> => axios.get('/api/groups'),
 
   // Add navigation (reptile)
   addNav: (data: {
@@ -171,8 +176,7 @@ const api = {
   getActiveAffiches: (): Promise<Affiche[]> => axios.get('/api/affiches/active'),
 
   // Site customization
-  getPublicSiteSettings: (): Promise<SiteSettings | null> =>
-    axios.get('/api/site-settings/public'),
+  getPublicSiteSettings: (): Promise<SiteSettings | null> => axios.get('/api/site-settings/public'),
 
   getToolOutputPublication: (): Promise<ToolOutputPublication | null> =>
     axios.get('/api/tool-outputs/converter'),
@@ -189,6 +193,11 @@ const api = {
 
   deleteToolOutputPublication: (): Promise<{ ok: boolean }> =>
     axios.delete('/api/tool-outputs/converter'),
+
+  createCoffeeCheckoutSession: (data: {
+    amount: number;
+    currency: SupportCurrency;
+  }): Promise<{ url: string }> => axios.post('/api/payments/coffee/checkout', data),
 };
 
 export default api;

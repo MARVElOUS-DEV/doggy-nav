@@ -19,6 +19,10 @@ function mapDoc(doc: any): SiteSettings {
     seoKeywords: Array.isArray(doc.seoKeywords) ? doc.seoKeywords : [],
     copyrightText: doc.copyrightText ?? null,
     feedbackUrl: doc.feedbackUrl ?? null,
+    creatorProfile:
+      doc.creatorProfile && typeof doc.creatorProfile === 'object' ? doc.creatorProfile : null,
+    supportSettings:
+      doc.supportSettings && typeof doc.supportSettings === 'object' ? doc.supportSettings : null,
     createdAt: toISO(doc.createdAt),
     updatedAt: toISO(doc.updatedAt),
   };
@@ -47,6 +51,8 @@ export class MongooseSiteSettingsRepository implements SiteSettingsRepository {
       seoKeywords: Array.isArray(input.seoKeywords) ? input.seoKeywords : [],
       copyrightText: input.copyrightText ?? null,
       feedbackUrl: input.feedbackUrl ?? null,
+      creatorProfile: input.creatorProfile ?? null,
+      supportSettings: input.supportSettings ?? null,
     };
 
     if (!doc) {

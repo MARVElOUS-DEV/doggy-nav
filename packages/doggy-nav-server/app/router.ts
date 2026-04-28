@@ -23,6 +23,7 @@ export default (app: Application) => {
   router.get('/api/system/version', controller.system.version);
   router.get('/api/site-settings/public', controller.siteSettings.getPublic);
   router.get('/api/tool-outputs/converter/published/:publishId', controller.toolOutputPublication.published);
+  router.post('/api/payments/coffee/checkout', controller.payment.createCoffeeCheckout);
 
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);

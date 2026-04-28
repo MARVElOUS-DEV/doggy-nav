@@ -1,6 +1,6 @@
 import type { SiteSettings } from '@/types';
 
-const STORAGE_KEY = 'doggy-nav:public-site-settings:v1';
+const STORAGE_KEY = 'doggy-nav:public-site-settings:v2';
 
 let siteSettingsCache: SiteSettings | null | undefined;
 

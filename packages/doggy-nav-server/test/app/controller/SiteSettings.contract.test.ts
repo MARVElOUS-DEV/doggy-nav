@@ -39,6 +39,33 @@ describe('contract: /api/site-settings', () => {
       seoKeywords: ['doggy', 'nav', 'custom'],
       copyrightText: 'Copyright 2026 My Team',
       feedbackUrl: 'https://example.com/feedback',
+      creatorProfile: {
+        name: 'Creator Name',
+        title: 'Independent builder',
+        headline: 'Building a calmer navigation experience.',
+        bio: 'A configured about-me block from site settings.',
+        mission: 'Support keeps shipping moving.',
+      },
+      supportSettings: {
+        enabled: true,
+        creatorLabel: 'Creator Name',
+        defaultCurrency: 'hkd',
+        currencies: ['usd', 'hkd'],
+        tiers: [
+          {
+            id: 'espresso',
+            label: 'Espresso',
+            description: 'A small thank-you for the idea and the craft.',
+            amounts: { usd: 300, hkd: 2500 },
+          },
+          {
+            id: 'latte',
+            label: 'Latte',
+            description: 'A steady boost for more late-night polishing.',
+            amounts: { usd: 700, hkd: 5500 },
+          },
+        ],
+      },
     };
 
     const saveRes = await app
@@ -63,6 +90,15 @@ describe('contract: /api/site-settings', () => {
     }
     if (publicRes.body?.data?.feedbackUrl !== payload.feedbackUrl) {
       throw new Error('public payload missing saved feedbackUrl');
+    }
+    if (publicRes.body?.data?.creatorProfile?.name !== payload.creatorProfile.name) {
+      throw new Error('public payload missing saved creatorProfile.name');
+    }
+    if (
+      publicRes.body?.data?.supportSettings?.defaultCurrency !==
+      payload.supportSettings.defaultCurrency
+    ) {
+      throw new Error('public payload missing saved supportSettings.defaultCurrency');
     }
   });
 

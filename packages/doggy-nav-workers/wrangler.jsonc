@@ -15,5 +15,5 @@
       "database_id": "${D1_DATABASE_ID}",
     },
   ],
-  // - Add Secrets/Vars through cloudflare dashboard (JWT_SECRET, SEED_TOKEN, etc.), refer to .dev.vars.example
+  // - Add Secrets/Vars through cloudflare dashboard (JWT_SECRET, STRIPE_SECRET_KEY, SEED_TOKEN, etc.), refer to .dev.vars.example
 }

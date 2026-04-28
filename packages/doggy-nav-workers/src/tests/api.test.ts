@@ -1,5 +1,18 @@
 import createApp from '../testApp';
 
+const mockStripeCheckoutCreate = jest.fn();
+
+jest.mock('stripe', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    checkout: {
+      sessions: {
+        create: mockStripeCheckoutCreate,
+      },
+    },
+  })),
+}));
+
 // Create a mock for responses module
 jest.mock('../utils/responses', () => ({
   responses: {
@@ -94,6 +107,33 @@ jest.mock('../ioc/worker', () => {
           seoKeywords: ['doggy', 'workers'],
           copyrightText: 'Copyright Workers',
           feedbackUrl: 'https://example.com/feedback',
+          creatorProfile: {
+            name: 'Worker Creator',
+            title: 'Independent builder',
+            headline: 'Building playful tools for the web.',
+            bio: 'A configured creator profile for tests.',
+            mission: 'Support helps fund shipping and upkeep.',
+          },
+          supportSettings: {
+            enabled: true,
+            creatorLabel: 'Worker Creator',
+            defaultCurrency: 'hkd',
+            currencies: ['usd', 'hkd'],
+            tiers: [
+              {
+                id: 'espresso',
+                label: 'Espresso',
+                description: 'A small thank-you for the idea and the craft.',
+                amounts: { usd: 300, hkd: 2500 },
+              },
+              {
+                id: 'latte',
+                label: 'Latte',
+                description: 'A steady boost for more late-night polishing.',
+                amounts: { usd: 700, hkd: 5500 },
+              },
+            ],
+          },
         }),
         update: jest.fn().mockResolvedValue({
           siteTitle: 'Doggy Nav Workers',
@@ -211,6 +251,7 @@ describe('Doggy Nav Worker API', () => {
   let mockDB: MockD1Database;
 
   beforeEach(() => {
+    mockStripeCheckoutCreate.mockReset();
     mockDB = new MockD1Database();
     app = createApp({
       DB: mockDB,
@@ -255,6 +296,8 @@ describe('Doggy Nav Worker API', () => {
       expect(data.code).toBe(1);
       expect(data.data.siteTitle).toBe('Doggy Nav Workers');
       expect(data.data.feedbackUrl).toBe('https://example.com/feedback');
+      expect(data.data.creatorProfile?.name).toBe('Worker Creator');
+      expect(data.data.supportSettings?.defaultCurrency).toBe('hkd');
     });
 
     it('should require auth for admin site settings route', async () => {
@@ -267,6 +310,37 @@ describe('Doggy Nav Worker API', () => {
       expect(data.data).toBeNull();
     });
 
+    it('should reject non-admin access for admin site settings route', async () => {
+      const { D1UserRepository } = await import('../adapters/d1UserRepository');
+      const { JWTUtils } = await import('../utils/jwtUtils');
+      const repo = new D1UserRepository(mockDB as any);
+      const user = await repo.create({
+        username: 'siteuser',
+        email: 'siteuser@example.com',
+        passwordHash: 'hash',
+        nickName: 'Site User',
+        phone: '',
+        avatar: undefined,
+      });
+      const jwtUtils = new JWTUtils('test-secret-key');
+      const tokens = await jwtUtils.generateTokenPair({
+        userId: user.id,
+        email: user.email,
+        username: user.username,
+        roles: ['user'],
+        groups: [],
+        permissions: [],
+      });
+
+      const response = await app.request('/api/site-settings', {
+        headers: {
+          'X-App-Source': 'admin',
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      });
+
+      expect(response.status).toBe(403);
+    });
   });
 
   describe('Authentication', () => {
@@ -366,6 +440,93 @@ describe('Doggy Nav Worker API', () => {
     it('should require authentication for user endpoints', async () => {
       const response = await app.request('/api/users');
       expect(response.status).toBe(401);
+    });
+  });
+
+  describe('Support Payments', () => {
+    it('creates a Stripe checkout session for HKD support tiers', async () => {
+      mockStripeCheckoutCreate.mockResolvedValue({
+        id: 'cs_test_hkd',
+        url: 'https://checkout.stripe.com/c/pay/cs_test_hkd',
+        status: 'open',
+        payment_status: 'unpaid',
+      });
+
+      const appWithStripeEnv = createApp({
+        DB: mockDB as any,
+        JWT_SECRET: 'test-secret-key',
+        NODE_ENV: 'test',
+        STRIPE_SECRET_KEY: 'sk_test_placeholder',
+      });
+
+      const response = await appWithStripeEnv.request('/api/payments/coffee/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-Source': 'main',
+        },
+        body: JSON.stringify({ amount: 2500, currency: 'hkd' }),
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.code).toBe(1);
+      expect(data.data.url).toBe('https://checkout.stripe.com/c/pay/cs_test_hkd');
+      expect(mockStripeCheckoutCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          line_items: [
+            expect.objectContaining({
+              price_data: expect.objectContaining({
+                currency: 'hkd',
+                unit_amount: 2500,
+              }),
+            }),
+          ],
+          metadata: expect.objectContaining({
+            supportCurrency: 'hkd',
+            creatorLabel: 'Worker Creator',
+          }),
+        })
+      );
+    });
+
+    it('rejects unsupported coffee amounts before talking to Stripe', async () => {
+      const appWithStripeEnv = createApp({
+        DB: mockDB as any,
+        JWT_SECRET: 'test-secret-key',
+        NODE_ENV: 'test',
+        STRIPE_SECRET_KEY: 'sk_test_placeholder',
+      });
+
+      const response = await appWithStripeEnv.request('/api/payments/coffee/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-Source': 'main',
+        },
+        body: JSON.stringify({ amount: 999 }),
+      });
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.code).toBe(400);
+      expect(data.msg).toBe('Unsupported coffee amount');
+    });
+
+    it('returns 503 when Stripe is not configured', async () => {
+      const response = await app.request('/api/payments/coffee/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-Source': 'main',
+        },
+        body: JSON.stringify({ amount: 300 }),
+      });
+
+      expect(response.status).toBe(503);
+      const data = await response.json();
+      expect(data.code).toBe(503);
+      expect(data.msg).toContain('STRIPE_SECRET_KEY');
     });
   });
 
