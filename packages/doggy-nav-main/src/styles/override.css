@@ -82,14 +82,56 @@
 .recommend-sel-container.arco-select {
   .arco-select-view {
     border-radius: 0.75rem;
-    height: 100%;
+    min-height: 100%;
     display: flex;
     align-items: center;
   }
   .arco-input-tag-view {
-    height: 100%;
     display: flex;
     align-items: center;
+  }
+}
+
+.recommend-multi-select.arco-select.arco-select-multiple {
+  .arco-select-view {
+    height: auto;
+    min-height: 3rem;
+    align-items: flex-start;
+    padding: 0.375rem 0.625rem;
+    line-height: normal;
+  }
+
+  .arco-input-tag {
+    overflow: visible;
+  }
+
+  .arco-input-tag-view,
+  .arco-input-tag-inner {
+    min-height: 2rem;
+    align-items: flex-start;
+    gap: 0.25rem;
+    overflow: visible;
+  }
+
+  .arco-input-tag-tag.arco-tag {
+    height: 1.625rem;
+    margin: 0;
+    border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card));
+    color: var(--color-foreground);
+    font-size: 0.8125rem;
+    line-height: 1.5rem;
+  }
+
+  .arco-input-tag-input,
+  .arco-input-tag-input-mirror {
+    min-height: 1.625rem;
+    line-height: 1.625rem;
+  }
+
+  .arco-select-suffix {
+    align-self: center;
   }
 }
 
@@ -137,4 +179,3 @@
   display: flex;
   align-items: center;
 }
-

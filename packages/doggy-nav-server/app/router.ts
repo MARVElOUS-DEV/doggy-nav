@@ -130,6 +130,7 @@ export default (app: Application) => {
   router.post('/v1/chat/completions', controller.ai.chatCompletions);
   // Admin-friendly alias under /api (proxied in dev)
   router.post('/api/ai/chat', controller.ai.chatCompletions);
+  router.post('/api/ai/tasks/recommendation-autofill', controller.ai.recommendationAutofill);
 
   // Email settings routes
   router.get('/api/email-settings', controller.emailSettings.get);

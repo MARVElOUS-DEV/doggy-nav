@@ -20,6 +20,7 @@ import React, { useMemo, useRef, useState } from 'react';
 
 type Prompt = {
   id: string;
+  code?: string;
   name: string;
   content: string;
   active: boolean;
@@ -30,12 +31,20 @@ const PromptPage: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<Prompt> | null>(null);
   const [form] = Form.useForm();
+  const [testPromptCode, setTestPromptCode] = useState('');
   const [testInput, setTestInput] = useState('');
   const [testLoading, setTestLoading] = useState(false);
   const [testOutput, setTestOutput] = useState('');
 
   const columns: ProColumns<Prompt>[] = useMemo(
     () => [
+      {
+        title: '代码',
+        dataIndex: 'code',
+        copyable: true,
+        width: 220,
+        render: (_, r) => r.code || 'global.default',
+      },
       { title: '名称', dataIndex: 'name' },
       {
         title: '内容',
@@ -133,8 +142,13 @@ const PromptPage: React.FC = () => {
         </Button>,
       ]}
     >
-      <Card title="测试启用 Prompt" style={{ marginBottom: 16 }}>
+      <Card title="测试 Prompt" style={{ marginBottom: 16 }}>
         <Space direction="vertical" style={{ width: '100%' }}>
+          <Input
+            placeholder="Prompt 代码，可选，如 recommendation.autofill.v1"
+            value={testPromptCode}
+            onChange={(e) => setTestPromptCode(e.target.value)}
+          />
           <Input.TextArea
             rows={4}
             placeholder="输入用户消息..."
@@ -151,7 +165,10 @@ const PromptPage: React.FC = () => {
                 try {
                   const res = await umiRequest('/api/ai/chat', {
                     method: 'POST',
-                    data: { messages: [{ role: 'user', content: testInput }] },
+                    data: {
+                      promptCode: testPromptCode.trim() || undefined,
+                      messages: [{ role: 'user', content: testInput }],
+                    },
                     headers: defaultHeaders(),
                   });
                   const content = res?.choices?.[0]?.message?.content ?? '';
@@ -166,7 +183,7 @@ const PromptPage: React.FC = () => {
               运行
             </Button>
             <Typography.Text type="secondary">
-              调用 OpenAI 兼容接口 /api/ai/chat
+              调用 /api/ai/chat；填写代码时会注入对应启用 Prompt
             </Typography.Text>
           </Space>
           {testOutput && (
@@ -233,6 +250,13 @@ const PromptPage: React.FC = () => {
         }
       >
         <Form form={form} layout="vertical" initialValues={{ active: false }}>
+          <Form.Item
+            name="code"
+            label="代码"
+            tooltip="用于业务接口选择 Prompt，例如 recommendation.autofill.v1"
+          >
+            <Input placeholder="global.default" />
+          </Form.Item>
           <Form.Item
             name="name"
             label="名称"

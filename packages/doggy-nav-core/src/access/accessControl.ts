@@ -553,6 +553,12 @@ export const routePermissions: RoutePermission[] = [
     require: { level: 'optional' },
     description: 'Chat completions (API alias)',
   },
+  {
+    method: 'POST',
+    path: '/api/ai/tasks/recommendation-autofill',
+    require: { level: 'optional' },
+    description: 'AI recommendation autofill task',
+  },
 
   // Affiche (announcement) routes
   {

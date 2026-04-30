@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { Form, Input, Select, Button, Message, Spin } from '@arco-design/web-react';
+import { useEffect, useRef, useState } from 'react';
+import { Form, Input, Select, Button, Message, Spin, Tooltip } from '@arco-design/web-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '@/utils/axios';
-import { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api';
+import api, { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api';
 import { useAtomValue } from 'jotai';
 import { RecommendFormValues } from '@/types';
 import { categoriesAtom, tagsAtom, isAuthenticatedAtom } from '@/store/store';
@@ -11,13 +11,49 @@ import { useTranslation } from 'react-i18next';
 import { OVERVIEW } from '@/utils/localCategories';
 import MarkdownEditor from '@/components/MarkdownEditor';
 import MarkdownContent from '@/components/MarkdownContent';
-import { Eye } from 'lucide-react';
+import { Eye, Search, Sparkles } from 'lucide-react';
 
 const FormItem = Form.Item;
+const URL_PATTERN =
+  /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.,@?^=%&:/~\+#]*[\w\-@?^=%&/~\+#])?/;
+
+type GeneratedField = 'name' | 'desc' | 'detail' | 'logo' | 'tags';
+type GeneratedValues = Partial<Pick<RecommendFormValues, GeneratedField>>;
+
+const generatedFields: GeneratedField[] = ['name', 'desc', 'detail', 'logo', 'tags'];
+
+const isEmptyValue = (value: unknown) => {
+  if (Array.isArray(value)) return value.length === 0;
+  return value === undefined || value === null || String(value).trim() === '';
+};
+
+const isSameValue = (left: unknown, right: unknown) => {
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return JSON.stringify(left ?? []) === JSON.stringify(right ?? []);
+  }
+  return String(left ?? '') === String(right ?? '');
+};
+
+const assignGeneratedValue = (
+  target: GeneratedValues,
+  field: GeneratedField,
+  value: GeneratedValues[GeneratedField]
+) => {
+  if (field === 'tags') {
+    if (Array.isArray(value)) target.tags = value;
+    return;
+  }
+
+  if (typeof value !== 'string') return;
+  if (field === 'name') target.name = value;
+  if (field === 'desc') target.desc = value;
+  if (field === 'detail') target.detail = value;
+  if (field === 'logo') target.logo = value;
+};
 
 export default function Recommend() {
   const [loading, setLoading] = useState(false);
-  const [formLoading, setFormLoading] = useState(false);
+  const [metadataLoading, setMetadataLoading] = useState<'scrape' | 'ai' | null>(null);
   const categories = useAtomValue(categoriesAtom);
   const tags = useAtomValue(tagsAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
@@ -29,6 +65,8 @@ export default function Recommend() {
   const detailPreview = Form.useWatch('detail', form) ?? '';
   const hrefValue = Form.useWatch('href', form) ?? '';
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const generatedValuesRef = useRef<GeneratedValues>({});
+  const formLoading = metadataLoading !== null;
 
   const imageHostname = (() => {
     try {
@@ -49,6 +87,7 @@ export default function Recommend() {
       await axios.post(API_NAV_ADD, values);
       Message.success(t('thank_you_support'));
       form.resetFields();
+      generatedValuesRef.current = {};
       setIsPreviewMode(false);
     } catch (error) {
       Message.error(`${error}`);
@@ -57,25 +96,99 @@ export default function Recommend() {
     }
   };
 
-  const getNavInfo = async () => {
-    const url = form.getFieldValue('href');
-    if (!url) return;
-    setFormLoading(true);
-    try {
-      const { logo, name, desc } = (await axios.get<{ logo?: string; name: string; desc: string }>(
-        `${API_NAV_REPTILE}?url=${url}`
-      )) as any;
-      const currentDetail = form.getFieldValue('detail');
-      form.setFieldsValue({
-        logo: logo ?? `https://www.google.com/s2/favicons?domain=${url}`,
-        name,
-        desc,
-        detail: currentDetail ? currentDetail : desc,
-      });
-    } catch (e) {
-      Message.error(t('request_timeout'));
+  const getValidatedUrl = () => {
+    const url = String(form.getFieldValue('href') ?? '').trim();
+    if (!url) {
+      Message.error(t('enter_url'));
+      return null;
     }
-    setFormLoading(false);
+    if (!URL_PATTERN.test(url)) {
+      Message.error(t('enter_correct_url'));
+      return null;
+    }
+    form.setFieldsValue({ href: url });
+    return url;
+  };
+
+  const applyGeneratedValues = (values: GeneratedValues) => {
+    const previousValues = generatedValuesRef.current;
+    const nextValues: GeneratedValues = {};
+    const appliedValues: GeneratedValues = {};
+
+    generatedFields.forEach((field) => {
+      const value = values[field];
+      if (isEmptyValue(value)) return;
+
+      const currentValue = form.getFieldValue(field);
+      const previousValue = previousValues[field];
+      if (isEmptyValue(currentValue) || isSameValue(currentValue, previousValue)) {
+        assignGeneratedValue(nextValues, field, value);
+        assignGeneratedValue(appliedValues, field, value);
+      }
+    });
+
+    if (Object.keys(nextValues).length > 0) {
+      form.setFieldsValue(nextValues);
+      generatedValuesRef.current = {
+        ...previousValues,
+        ...appliedValues,
+      };
+    }
+
+    return Object.keys(nextValues).length;
+  };
+
+  const scrapeNavInfo = async (url: string): Promise<GeneratedValues> => {
+    const { logo, name, desc } = (await axios.get<{ logo?: string; name: string; desc: string }>(
+      `${API_NAV_REPTILE}?url=${encodeURIComponent(url)}`
+    )) as any;
+    return {
+      logo: logo ?? `https://www.google.com/s2/favicons?domain=${url}`,
+      name,
+      desc,
+      detail: desc,
+    };
+  };
+
+  const getNavInfo = async () => {
+    const url = getValidatedUrl();
+    if (!url) return;
+    setMetadataLoading('scrape');
+    try {
+      const scrapedValues = await scrapeNavInfo(url);
+      applyGeneratedValues(scrapedValues);
+      Message.success(t('scrape_autofill_success'));
+    } catch (e) {
+      Message.error(t('scrape_autofill_failed'));
+    } finally {
+      setMetadataLoading(null);
+    }
+  };
+
+  const getAiNavInfo = async () => {
+    const url = getValidatedUrl();
+    if (!url) return;
+    setMetadataLoading('ai');
+    try {
+      const aiValues = await api.aiRecommendationAutofill({
+        url,
+      });
+      if (!aiValues || Object.keys(aiValues).length === 0) {
+        Message.error(t('ai_autofill_failed'));
+        return;
+      }
+
+      const appliedCount = applyGeneratedValues(aiValues);
+      if (appliedCount === 0) {
+        Message.success(t('autofill_preserved_user_edits'));
+      } else {
+        Message.success(t('ai_autofill_success'));
+      }
+    } catch (e) {
+      Message.error(t('ai_autofill_failed'));
+    } finally {
+      setMetadataLoading(null);
+    }
   };
 
   // Load user's groups when authenticated
@@ -115,8 +228,7 @@ export default function Recommend() {
     href: [
       { required: true, message: t('enter_url') },
       {
-        pattern:
-          /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.,@?^=%&:/~\+#]*[\w\-@?^=%&/~\+#])?/,
+        pattern: URL_PATTERN,
         message: t('enter_correct_url'),
       },
     ],
@@ -127,8 +239,7 @@ export default function Recommend() {
     logo: [{ required: true, message: t('enter_logo') }],
     authorUrl: [
       {
-        pattern:
-          /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.,@?^=%&:/~\+#]*[\w\-@?^=%&/~\+#])?/,
+        pattern: URL_PATTERN,
         message: t('enter_correct_url'),
       },
     ],
@@ -140,8 +251,10 @@ export default function Recommend() {
     ],
   };
 
-  const inputClass =
-    'h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-theme-primary dark:focus:border-theme-primary focus:ring-theme-primary/20 dark:focus:ring-theme-primary/20 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100';
+  const fieldChromeClass =
+    'border-2 border-gray-200 dark:border-gray-600 focus:border-theme-primary dark:focus:border-theme-primary focus:ring-theme-primary/20 dark:focus:ring-theme-primary/20 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100';
+  const inputClass = `h-12 ${fieldChromeClass}`;
+  const multiSelectClass = `min-h-12 ${fieldChromeClass}`;
 
   return (
     <div className="p-8">
@@ -196,9 +309,41 @@ export default function Recommend() {
                   <FormItem label={t('website_link')} field="href" rules={rules.href}>
                     <Input
                       placeholder={t('enter_website_url')}
-                      onBlur={getNavInfo}
                       aria-busy={formLoading}
-                      suffix={formLoading ? <Spin size={16} /> : null}
+                      suffix={
+                        <div className="flex items-center gap-1 pl-1">
+                          <Tooltip content={t('traditional_scrape')}>
+                            <button
+                              type="button"
+                              disabled={metadataLoading === 'ai'}
+                              onClick={getNavInfo}
+                              aria-label={t('traditional_scrape')}
+                              className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent p-0 text-theme-muted-foreground transition-all duration-200 hover:border-theme-primary/20 hover:bg-theme-primary/10 hover:text-theme-primary active:scale-95 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent disabled:hover:bg-transparent disabled:hover:text-theme-muted-foreground"
+                            >
+                              {metadataLoading === 'scrape' ? (
+                                <Spin size={14} />
+                              ) : (
+                                <Search size={16} className="block" />
+                              )}
+                            </button>
+                          </Tooltip>
+                          <Tooltip content={t('ai_autofill')}>
+                            <button
+                              type="button"
+                              disabled={metadataLoading === 'scrape'}
+                              onClick={getAiNavInfo}
+                              aria-label={t('ai_autofill')}
+                              className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent p-0 text-theme-primary transition-all duration-200 hover:border-theme-primary/20 hover:bg-theme-primary/10 hover:text-theme-primary active:scale-95 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent disabled:hover:bg-transparent"
+                            >
+                              {metadataLoading === 'ai' ? (
+                                <Spin size={14} />
+                              ) : (
+                                <Sparkles size={16} className="block" />
+                              )}
+                            </button>
+                          </Tooltip>
+                        </div>
+                      }
                       className={inputClass}
                     />
                   </FormItem>
@@ -269,7 +414,7 @@ export default function Recommend() {
                       <Select
                         mode="multiple"
                         placeholder={t('select')}
-                        className={`recommend-sel-container category-select ${inputClass}`}
+                        className={`recommend-sel-container recommend-multi-select category-select ${multiSelectClass}`}
                       >
                         {groups.map((g) => (
                           <Select.Option key={g.id} value={g.id}>
@@ -297,7 +442,7 @@ export default function Recommend() {
                       showSearch
                       allowCreate
                       placeholder={t('enter_website_tags')}
-                      className={`recommend-sel-container ${inputClass}`}
+                      className={`recommend-sel-container recommend-multi-select ${multiSelectClass}`}
                     >
                       {tags.map((item) => (
                         <Select.Option key={item.name} value={item.name}>
@@ -385,9 +530,7 @@ export default function Recommend() {
                           className="prose prose-sm dark:prose-invert max-w-none"
                           fallback={
                             <div className="flex h-full flex-col items-center justify-center text-theme-muted-foreground">
-                              <p>
-                                {t('markdown_preview_empty')}
-                              </p>
+                              <p>{t('markdown_preview_empty')}</p>
                             </div>
                           }
                         />

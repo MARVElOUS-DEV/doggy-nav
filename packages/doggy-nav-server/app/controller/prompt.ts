@@ -26,11 +26,12 @@ export default class PromptController extends Controller {
 
   async add() {
     const body = this.getSanitizedBody();
+    const code = String(body?.code || '').trim();
     const name = String(body?.name || '').trim();
     const content = String(body?.content || '');
     const active = Boolean(body?.active);
     if (!name || !content) return this.error('name and content required');
-    const res = await this.promptService.create(name, content, active);
+    const res = await this.promptService.create(name, content, active, code || undefined);
     this.success(res);
   }
 
@@ -39,6 +40,7 @@ export default class PromptController extends Controller {
     const id = String(body?.id || '');
     if (!id) return this.error('id is required');
     const res = await this.promptService.update(id, {
+      code: body?.code,
       name: body?.name,
       content: body?.content,
       active: body?.active,

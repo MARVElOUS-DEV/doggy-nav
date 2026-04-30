@@ -23,12 +23,13 @@ promptRoutes.get('/', createAuthMiddleware({ required: true }), requireRole('sys
 promptRoutes.post('/', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
   try {
     const body = await c.req.json();
+    const code = String(body?.code || '').trim();
     const name = String(body?.name || '').trim();
     const content = String(body?.content || '');
     const active = Boolean(body?.active);
     if (!name || !content) return c.json(responses.badRequest('name and content required'), 400);
     const svc = getDI(c).resolve(TOKENS.PromptService) as PromptService;
-    const p = await svc.create(name, content, active);
+    const p = await svc.create(name, content, active, code || undefined);
     return c.json(responses.ok(p));
   } catch (err) {
     console.error('Prompt create error:', err);
@@ -43,6 +44,7 @@ promptRoutes.put('/', createAuthMiddleware({ required: true }), requireRole('sys
     if (!id) return c.json(responses.badRequest('id required'), 400);
     const svc = getDI(c).resolve(TOKENS.PromptService) as PromptService;
     const p = await svc.update(id, {
+      code: body?.code,
       name: body?.name,
       content: body?.content,
       active: body?.active,

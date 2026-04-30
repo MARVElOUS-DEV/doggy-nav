@@ -20,11 +20,39 @@ export const API_NAV = '/api/nav';
 export const API_NAV_SEARCH = '/api/nav/search';
 export const API_NAV_ADD = '/api/nav/add';
 export const API_NAV_REPTILE = '/api/nav/reptile';
+export const API_AI_CHAT = '/api/ai/chat';
+export const API_AI_RECOMMENDATION_AUTOFILL = '/api/ai/tasks/recommendation-autofill';
 export const API_TAG_LIST = '/api/tag/list';
 export const API_NAV_RANDOM = '/api/nav/random';
 export const API_NAV_LIST = '/api/nav/list';
 
 const api = {
+  chatWithAi: (data: {
+    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+    temperature?: number;
+    max_tokens?: number;
+    max_completion_tokens?: number;
+    top_p?: number;
+    stop?: string | string[] | null;
+    frequency_penalty?: number;
+    presence_penalty?: number;
+    response_format?: unknown;
+    thinking?: Record<string, unknown>;
+    extra_body?: Record<string, unknown>;
+  }): Promise<{
+    choices?: Array<{ message?: { role?: string; content?: string } }>;
+  }> => axios.post(API_AI_CHAT, data),
+
+  aiRecommendationAutofill: (data: {
+    url: string;
+  }): Promise<{
+    name?: string;
+    desc?: string;
+    detail?: string;
+    logo?: string;
+    tags?: string[];
+  }> => axios.post(API_AI_RECOMMENDATION_AUTOFILL, data),
+
   // Get category list
   getCategoryList: (): Promise<Category[]> => axios.get('/api/category/list'),
 

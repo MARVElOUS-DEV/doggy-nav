@@ -1,10 +1,12 @@
 import type { PromptRepository } from 'doggy-nav-core';
 import type { PageQuery, PageResult } from 'doggy-nav-core';
 import type { Prompt } from 'doggy-nav-core';
+import { DEFAULT_PROMPT_CODE } from 'doggy-nav-core';
 
 function mapDocToPrompt(doc: any): Prompt {
   return {
     id: doc._id?.toString?.() ?? doc.id,
+    code: doc.code || DEFAULT_PROMPT_CODE,
     name: doc.name,
     content: doc.content ?? '',
     active: Boolean(doc.active),
@@ -42,11 +44,18 @@ export default class MongoosePromptRepository implements PromptRepository {
     return doc ? mapDocToPrompt(doc) : null;
   }
 
-  async create(input: { name: string; content: string; active?: boolean }): Promise<Prompt> {
+  async create(input: {
+    code?: string;
+    name: string;
+    content: string;
+    active?: boolean;
+  }): Promise<Prompt> {
+    const code = input.code || DEFAULT_PROMPT_CODE;
     if (input.active) {
-      await this.model.updateMany({ active: true }, { $set: { active: false } });
+      await this.model.updateMany({ code, active: true }, { $set: { active: false } });
     }
     const doc = await this.model.create({
+      code,
       name: input.name,
       content: input.content,
       active: !!input.active,
@@ -57,12 +66,18 @@ export default class MongoosePromptRepository implements PromptRepository {
 
   async update(
     id: string,
-    input: { name?: string; content?: string; active?: boolean }
+    input: { code?: string; name?: string; content?: string; active?: boolean }
   ): Promise<Prompt | null> {
-    if (input.active) {
-      await this.model.updateMany({ active: true }, { $set: { active: false } });
+    const current = await this.model.findById(id).lean().select('-__v');
+    if (!current) return null;
+    const currentCode = current.code || DEFAULT_PROMPT_CODE;
+    const code = input.code || currentCode;
+    const shouldBeActive = input.active === undefined ? Boolean(current.active) : Boolean(input.active);
+    if (shouldBeActive && (input.active || code !== currentCode)) {
+      await this.model.updateMany({ code, active: true }, { $set: { active: false } });
     }
     const patch: any = {};
+    if (input.code !== undefined) patch.code = input.code || DEFAULT_PROMPT_CODE;
     if (input.name !== undefined) patch.name = input.name;
     if (input.content !== undefined) patch.content = input.content;
     if (input.active !== undefined) patch.active = !!input.active;
@@ -84,10 +99,31 @@ export default class MongoosePromptRepository implements PromptRepository {
     return doc ? mapDocToPrompt(doc) : null;
   }
 
-  async setActive(id: string): Promise<Prompt | null> {
-    await this.model.updateMany({ active: true }, { $set: { active: false } });
+  async getActiveByCode(code: string): Promise<Prompt | null> {
     const doc = await this.model
-      .findByIdAndUpdate(id, { $set: { active: true } }, { new: true })
+      .findOne({ code: code || DEFAULT_PROMPT_CODE, active: true })
+      .lean()
+      .select('-__v');
+    return doc ? mapDocToPrompt(doc) : null;
+  }
+
+  async setActive(id: string): Promise<Prompt | null> {
+    const current = await this.model.findById(id).lean().select('-__v');
+    if (!current) return null;
+    const code = current.code || DEFAULT_PROMPT_CODE;
+    await this.model.updateMany({ code, active: true }, { $set: { active: false } });
+    const doc = await this.model
+      .findByIdAndUpdate(id, { $set: { code, active: true } }, { new: true })
+      .lean()
+      .select('-__v');
+    return doc ? mapDocToPrompt(doc) : null;
+  }
+
+  async setActiveForCode(code: string, id: string): Promise<Prompt | null> {
+    const normalizedCode = code || DEFAULT_PROMPT_CODE;
+    await this.model.updateMany({ code: normalizedCode, active: true }, { $set: { active: false } });
+    const doc = await this.model
+      .findByIdAndUpdate(id, { $set: { code: normalizedCode, active: true } }, { new: true })
       .lean()
       .select('-__v');
     return doc ? mapDocToPrompt(doc) : null;

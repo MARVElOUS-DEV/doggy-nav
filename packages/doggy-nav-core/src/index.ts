@@ -40,6 +40,7 @@ export * from './services/UserAuthService';
 export * from './repositories/UserRepository';
 export * from './services/UserService';
 export * from './services/AiService';
+export * from './services/AiRecommendationService';
 export * from './ioc';
 export * from './seed/engine';
 export * from './seed/defaults';

@@ -155,6 +155,7 @@ export type FavoriteUnionItem =
 
 export interface Prompt {
   id: ID;
+  code?: string;
   name: string;
   content: string;
   active: boolean;
