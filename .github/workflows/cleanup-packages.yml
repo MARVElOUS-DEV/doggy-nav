@@ -1,0 +1,34 @@
+name: Cleanup Old Packages
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    strategy:
+      matrix:
+        package:
+          - doggy-nav-frontend
+          - doggy-nav-server
+          - doggy-nav-admin
+
+    steps:
+      - name: Derive lowercase owner
+        id: owner
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_OWNER=$OWNER" >> $GITHUB_ENV
+
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 3
+          delete-only-untagged-versions: 'true'

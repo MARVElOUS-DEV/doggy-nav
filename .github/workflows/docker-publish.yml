@@ -62,18 +62,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.image }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-
+            type=raw,value=latest
           flavor: |
-            latest=auto
-
-      - name: Set latest tag (main branch only)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "LATEST_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.image }}:latest" >> $GITHUB_ENV
+            latest=false
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -81,9 +72,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: |
-            ${{ steps.meta.outputs.tags }}
-            ${{ env.LATEST_TAG }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: ${{ matrix.build-args }}
           cache-from: type=gha
