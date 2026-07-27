@@ -3,6 +3,7 @@ export interface Category {
   name: string;
   categoryId: string;
   createAt: number;
+  description?: string;
   icon?: string;
   children?: Category[];
   showInMenu: boolean;

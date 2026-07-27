@@ -6,7 +6,7 @@ import api from '@/utils/api';
 import { localCategories, OVERVIEW } from '@/utils/localCategories';
 import { useAtom, useSetAtom } from 'jotai';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { t } from '@/utils';
 
@@ -39,6 +39,10 @@ const renderMenuIcon = (category: Category, fontSize = 16) => {
   );
 };
 
+const containsCategory = (category: Category, categoryId: string): boolean =>
+  category.id === categoryId ||
+  !!category.children?.some((child) => containsCategory(child, categoryId));
+
 export default function MenuStack({ collapse }: { collapse: boolean }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -46,6 +50,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
   const [categories, setCategories] = useAtom(categoriesAtom);
   const setTags = useSetAtom(tagsAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
   // Check if we're on a nav detail page where category will be set by the page itself
   const isNavDetailPage = router.pathname === '/nav/[id]';
 
@@ -91,16 +96,29 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
     fetchCategories();
     fetchTags();
   }, [isAuthenticated, router.isReady, router.query.category, isNavDetailPage]); // eslint-disable-line react-hooks/exhaustive-deps
-  const onHandleSubMenuClick = async (category: Category, id: string) => {
+
+  const activeGroupKey = useMemo(() => {
+    const activeGroup = categories.find(
+      (category) =>
+        category.children?.some((child) => containsCategory(child, selectedCategory)) ||
+        (category.id === selectedCategory && category.children?.some((child) => child.showInMenu)),
+    );
+    return activeGroup ? `${activeGroup.id}__group` : '';
+  }, [categories, selectedCategory]);
+
+  useEffect(() => {
+    if (!collapse) setOpenKeys(activeGroupKey ? [activeGroupKey] : []);
+  }, [activeGroupKey, collapse]);
+
+  const onHandleSubMenuClick = (category: Category, id: string) => {
     setSelectedCategory(id);
-    router.push(category.href ?? `/navcontents?category=${id}`);
+    void router.push(category.href ?? `/navcontents?category=${id}`);
   };
 
   const renderMenuItem = (
     category: Category,
     options?: {
       compact?: boolean;
-      showFolderHint?: boolean;
     },
   ) => (
     <Menu.Item
@@ -129,13 +147,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
           >
             {t(category.name, { defaultValue: category.name })}
           </span>
-          {options?.showFolderHint && !collapse ? (
-            <span className="ml-auto text-[11px] uppercase tracking-[0.12em] text-theme-muted-foreground">
-              {t('folder_label')}
-            </span>
-          ) : (
-            <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
-          )}
+          <div className="ml-auto w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-transform group-hover:scale-125"></div>
         </div>
       )}
     </Menu.Item>
@@ -161,23 +173,29 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
           ) : (
             <div className="group flex items-center gap-3 w-full py-2.5">
               {renderMenuIcon(category, 16)}
-              <span className="group-hover:text-theme-foreground transition-colors font-medium">
-                {t(category.name, { defaultValue: category.name })}
-              </span>
-              <div className="ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium text-theme-muted-foreground border border-theme-border">
-                {visibleChildren.length}
-              </div>
+              {category.onlyFolder === true ? (
+                <span className="min-w-0 flex-1 font-medium transition-colors group-hover:text-theme-foreground">
+                  {t(category.name, { defaultValue: category.name })}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className={`-my-2 min-w-0 flex-1 self-stretch truncate py-2 text-left font-medium transition-colors group-hover:text-theme-foreground ${
+                    category.id === selectedCategory ? 'text-theme-primary' : ''
+                  }`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onHandleSubMenuClick(category, category.id);
+                  }}
+                >
+                  {t(category.name, { defaultValue: category.name })}
+                </button>
+              )}
             </div>
           )
         }
       >
-        {category.onlyFolder !== true && renderMenuItem(category, { compact: true })}
-        {visibleChildren.map((child) =>
-          renderMenuItem(child, {
-            compact: true,
-            showFolderHint: !!child.children?.some((item) => item.showInMenu),
-          }),
-        )}
+        {visibleChildren.map((child) => renderMenuItem(child, { compact: true }))}
       </Menu.SubMenu>
     );
   };
@@ -188,6 +206,9 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
       mode={collapse ? 'pop' : 'vertical'}
       className="border-0 bg-transparent "
       selectedKeys={selectedCategory ? [selectedCategory] : [OVERVIEW.id]}
+      openKeys={openKeys}
+      accordion
+      onClickSubMenu={(_, nextOpenKeys) => setOpenKeys(nextOpenKeys)}
       tooltipProps={{ position: 'right' }}
     >
       {categories

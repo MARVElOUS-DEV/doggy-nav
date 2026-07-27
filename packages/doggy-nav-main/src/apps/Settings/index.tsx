@@ -261,9 +261,9 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
       <section className="min-w-0 flex-1 overflow-auto p-3 md:p-4">
         {active === 'about' && (
           <div className="mx-auto max-w-5xl space-y-4">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+            <div className="flex flex-wrap gap-4">
               <section
-                className="rounded-lg border p-5 md:p-6"
+                className="min-w-0 flex-[27_1_420px] rounded-lg border p-5 md:p-6"
                 style={{
                   borderColor: 'var(--color-border)',
                   background:
@@ -342,7 +342,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
               </section>
 
               <section
-                className="rounded-lg border p-5 md:p-6"
+                className="min-w-0 flex-[13_1_280px] rounded-lg border p-5 md:p-6"
                 style={{
                   borderColor: 'var(--color-border)',
                   backgroundColor: 'color-mix(in srgb, var(--color-background) 96%, transparent)',
@@ -429,12 +429,12 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                       className="mt-2 max-w-2xl text-sm leading-6 opacity-80"
                       style={{ color: 'var(--color-foreground)' }}
                     >
-                      Support uses your personal Stripe checkout once the backend Stripe env is
-                      configured. This section is managed from the admin site settings page.
+                      Your support helps keep Doggy Nav running and funds thoughtful improvements,
+                      new tools, and ongoing care.
                     </p>
                   </div>
                   <div className="text-xs opacity-70" style={{ color: 'var(--color-foreground)' }}>
-                    Redirects to Stripe Checkout and returns to this desktop page
+                    Choose the amount and currency that suit you. You will return here after payment.
                   </div>
                 </div>
 
@@ -545,7 +545,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                   className="rounded border bg-transparent"
                   style={{ borderColor: 'var(--color-border)' }}
                 />
-                <span>Use global window (keeps open when navigating to other pages)</span>
+                <span>Keep window open when visiting other pages</span>
               </label>
               <div className="flex items-center gap-2">
                 <button
@@ -593,7 +593,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                   className="rounded border bg-transparent"
                   style={{ borderColor: 'var(--color-border)' }}
                 />
-                <span>Use global window (keeps open when navigating to other pages)</span>
+                <span>Keep window open when visiting other pages</span>
               </label>
               <div className="flex items-center gap-2">
                 <button
@@ -622,7 +622,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
             <div className="mb-4">
               <NavCascaderPicker
                 onSelect={handleNavSelect}
-                title="Select from Navs"
+                title="Choose from navigation"
                 trigger={
                   <button
                     type="button"
@@ -630,7 +630,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                     style={{ borderColor: 'var(--color-border)' }}
                   >
                     <span>📂</span>
-                    <span>Browse Navs</span>
+                    <span>Browse navigation</span>
                   </button>
                 }
               />
@@ -686,7 +686,7 @@ export default function SettingsApp({ ctx }: { ctx: DesktopCtx }) {
                   className="rounded border bg-transparent"
                   style={{ borderColor: 'var(--color-border)' }}
                 />
-                <span>Use global window (keeps open when navigating to other pages)</span>
+                <span>Keep window open when visiting other pages</span>
               </label>
               <div className="flex items-center gap-2">
                 <button

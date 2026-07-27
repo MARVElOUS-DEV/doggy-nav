@@ -256,9 +256,6 @@ importers:
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
-      stripe:
-        specifier: ^22.0.1
-        version: 22.0.1(@types/node@20.19.17)
       three:
         specifier: ^0.180.0
         version: 0.180.0
@@ -28119,10 +28116,6 @@ snapshots:
       min-indent: 1.0.1
 
   strip-json-comments@3.1.1: {}
-
-  stripe@22.0.1(@types/node@20.19.17):
-    optionalDependencies:
-      '@types/node': 20.19.17
 
   stripe@22.0.1(@types/node@24.10.0):
     optionalDependencies:

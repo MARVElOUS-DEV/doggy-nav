@@ -588,7 +588,7 @@ export default function YamlJsonConverterApp() {
   return (
     <div
       ref={containerRef}
-      className="flex min-h-full flex-col overflow-hidden rounded-[22px]"
+      className="flex min-h-full flex-col overflow-hidden rounded-b-2xl"
       style={{
         color: '#f8fafc',
         background:

@@ -12,7 +12,6 @@ import {
   IconMenuFold,
   IconMenuUnfold,
   IconMenu,
-  IconSearch,
 } from '@arco-design/web-react/icon';
 import { isFeatureEnabled } from '@/config/featureFlags';
 import ReactIf from '../ReactIf';
@@ -42,6 +41,18 @@ export default function AppHeader({
   useEffect(() => {
     setLogoLoadFailed(false);
   }, [siteSettings?.logoUrl]);
+
+  useEffect(() => {
+    const openSearch = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setShowSearch(true);
+      }
+    };
+
+    document.addEventListener('keydown', openSearch);
+    return () => document.removeEventListener('keydown', openSearch);
+  }, [setShowSearch]);
 
   const hasCustomLogo = Boolean(siteSettings?.logoUrl) && !logoLoadFailed;
   const showCustomTitle = Boolean(siteSettings?.siteTitle?.trim());
@@ -189,12 +200,17 @@ export default function AppHeader({
             </Link>
           </Tooltip>
 
-          <Tooltip content={t('search_tooltip')}>
+          <Tooltip content={t('search_shortcut_tooltip')}>
             <Button
-              className="app-header-action text-2xl cursor-pointer !flex items-center justify-center w-10 h-10"
-              onClick={() => setShowSearch(!showSearch)}
-              icon={<IconSearch style={{ height: 20, width: 20 }} />}
-            />
+              aria-label={t('search_shortcut_tooltip')}
+              className="app-header-action cursor-pointer !flex h-10 min-w-14 items-center justify-center px-2"
+              onClick={() => setShowSearch(true)}
+            >
+              <kbd className="pointer-events-none flex items-center gap-1 font-sans text-xs font-semibold text-theme-muted-foreground">
+                <span className="text-base leading-none">⌘</span>
+                <span>K</span>
+              </kbd>
+            </Button>
           </Tooltip>
 
           <div className="mr-1">

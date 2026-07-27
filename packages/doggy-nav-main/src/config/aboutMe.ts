@@ -23,11 +23,11 @@ export interface ResolvedSupportSettings {
 }
 
 export const ABOUT_ME_PROFILE_DEFAULTS: Required<CreatorProfileSettings> = {
-  name: 'Your Name',
-  title: 'Independent builder, bookmark curator, and desktop UX tinkerer',
+  name: 'Doggy Nav Creator',
+  title: 'Independent builder and curator of useful web tools',
   headline:
     'I built this desktop space to make browsing, collecting, and returning to good tools feel calm and personal.',
-  bio: 'Replace this paragraph with your own story. Talk about why you built Doggy Nav, the kind of tools you care about, and what you want visitors to feel when they land here.',
+  bio: 'I created Doggy Nav as a calm, playful place to discover useful websites, organize favorites, and return to them with less friction.',
   mission:
     'Small support goes straight into hosting, experiments, and new tools for this little corner of the web.',
 };
