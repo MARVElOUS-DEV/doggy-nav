@@ -22,14 +22,20 @@ export default (app: Application) => {
   // System / version info
   router.get('/api/system/version', controller.system.version);
   router.get('/api/site-settings/public', controller.siteSettings.getPublic);
-  router.get('/api/tool-outputs/converter/published/:publishId', controller.toolOutputPublication.published);
+  router.get(
+    '/api/tool-outputs/converter/published/:publishId',
+    controller.toolOutputPublication.published
+  );
   router.post('/api/payments/coffee/checkout', controller.payment.createCoffeeCheckout);
 
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
   router.get('/api/tool-outputs/converter', controller.toolOutputPublication.getCurrent);
   router.put('/api/tool-outputs/converter', controller.toolOutputPublication.upsert);
-  router.post('/api/tool-outputs/converter/rotate-token', controller.toolOutputPublication.rotateToken);
+  router.post(
+    '/api/tool-outputs/converter/rotate-token',
+    controller.toolOutputPublication.rotateToken
+  );
   router.delete('/api/tool-outputs/converter', controller.toolOutputPublication.remove);
   // Admin user management
   router.get('/api/user', controller.user.adminList);
@@ -118,6 +124,14 @@ export default (app: Application) => {
   router.put('/api/prompts', controller.prompt.update);
   router.delete('/api/prompts', controller.prompt.remove);
   router.post('/api/prompts/:id/activate', controller.prompt.setActive);
+
+  // AI provider management routes
+  router.get('/api/ai-providers', controller.aiProvider.list);
+  router.post('/api/ai-providers', controller.aiProvider.add);
+  router.put('/api/ai-providers', controller.aiProvider.update);
+  router.delete('/api/ai-providers', controller.aiProvider.remove);
+  router.post('/api/ai-providers/:id/activate', controller.aiProvider.setActive);
+  router.post('/api/ai-providers/:id/test', controller.aiProvider.test);
 
   // Affiche (announcement) routes
   router.get('/api/affiches', controller.affiche.list);

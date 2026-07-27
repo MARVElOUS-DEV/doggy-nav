@@ -94,30 +94,32 @@ function getDefaultSupportSettings(): NonNullable<
 }
 
 function normalizeSettingsResponse(response: any): SiteSettingsForm {
+  const settings = response?.data ?? response ?? {};
+
   return {
-    ...response,
-    seoKeywords: Array.isArray(response?.seoKeywords)
-      ? response.seoKeywords.join(', ')
+    ...settings,
+    seoKeywords: Array.isArray(settings.seoKeywords)
+      ? settings.seoKeywords.join(', ')
       : '',
     creatorProfile: {
-      name: response?.creatorProfile?.name || '',
-      title: response?.creatorProfile?.title || '',
-      headline: response?.creatorProfile?.headline || '',
-      bio: response?.creatorProfile?.bio || '',
-      mission: response?.creatorProfile?.mission || '',
+      name: settings.creatorProfile?.name || '',
+      title: settings.creatorProfile?.title || '',
+      headline: settings.creatorProfile?.headline || '',
+      bio: settings.creatorProfile?.bio || '',
+      mission: settings.creatorProfile?.mission || '',
     },
     supportSettings: {
       ...getDefaultSupportSettings(),
-      ...response?.supportSettings,
+      ...settings.supportSettings,
       currencies:
-        Array.isArray(response?.supportSettings?.currencies) &&
-        response.supportSettings.currencies.length > 0
-          ? response.supportSettings.currencies
+        Array.isArray(settings.supportSettings?.currencies) &&
+        settings.supportSettings.currencies.length > 0
+          ? settings.supportSettings.currencies
           : getDefaultSupportSettings().currencies,
       tiers:
-        Array.isArray(response?.supportSettings?.tiers) &&
-        response.supportSettings.tiers.length > 0
-          ? response.supportSettings.tiers
+        Array.isArray(settings.supportSettings?.tiers) &&
+        settings.supportSettings.tiers.length > 0
+          ? settings.supportSettings.tiers
           : getDefaultSupportSettings().tiers,
     },
   };

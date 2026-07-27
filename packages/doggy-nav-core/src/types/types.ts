@@ -163,6 +163,24 @@ export interface Prompt {
   updatedAt?: string;
 }
 
+export type AiProviderKind = 'openai-compatible' | 'mimo';
+
+export interface AiProvider {
+  id: ID;
+  name: string;
+  provider: AiProviderKind;
+  baseURL: string;
+  model: string;
+  active: boolean;
+  apiKeySet: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AiProviderConfig extends AiProvider {
+  apiKey: string;
+}
+
 export interface Affiche {
   id: ID;
   text: string;

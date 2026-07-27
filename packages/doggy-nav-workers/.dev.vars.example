@@ -23,17 +23,6 @@ LINUXDO_TOKEN_URL=https://connect.linux.do/oauth2/token
 LINUXDO_PROFILE_URL=https://connect.linux.do/api/user
 LINUXDO_SCOPE=profile,email
 
-# AI api
-AI_PROVIDER=openai
-AI_BASE_URL=https://api.openai.com
-AI_MODEL=gpt-5
-# Set AI_API_KEY with `wrangler secret put AI_API_KEY`.
-# Xiaomi MiMo example:
-# AI_PROVIDER=mimo
-# AI_BASE_URL=https://api.xiaomimimo.com
-# AI_MODEL=mimo-v2.5-pro
-# The shared AI service maps MiMo auth/body shape automatically.
-
 # Stripe creator support checkout
 STRIPE_SUPPORT_CREATOR_NAME=Your Name
 STRIPE_SUPPORT_BASE_URL=http://localhost:3001
@@ -56,5 +45,4 @@ GITHUB_TOKEN=
 #   wrangler secret put JWT_SECRET
 #   wrangler secret put GITHUB_CLIENT_SECRET
 #   wrangler secret put LINUXDO_CLIENT_SECRET
-#   wrangler secret put AI_API_KEY
 #   wrangler secret put STRIPE_SECRET_KEY

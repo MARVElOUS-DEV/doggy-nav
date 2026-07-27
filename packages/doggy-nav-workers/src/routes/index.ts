@@ -16,6 +16,7 @@ import translateRoutes from './translate';
 import seedRoutes from './seed';
 import aiRoutes from './ai';
 import promptRoutes from './prompt';
+import aiProviderRoutes from './aiProviders';
 import systemRoutes from './system';
 import afficheRoutes from './affiche';
 import siteSettingsRoutes from './siteSettings';
@@ -35,11 +36,6 @@ export type Env = {
   REQUIRE_CLIENT_SECRET?: string; // 'true' to enable
   CLIENT_SECRET_HEADER?: string; // default 'x-client-secret'
   CLIENT_SECRET_BYPASS?: string; // comma-separated paths
-  // AI provider envs (OpenAI-compatible)
-  AI_PROVIDER?: string;
-  AI_API_KEY?: string;
-  AI_BASE_URL?: string;
-  AI_MODEL?: string;
   // System version / repo metadata
   SERVER_COMMIT_ID?: string;
   GIT_COMMIT_SHA?: string;
@@ -76,6 +72,7 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>) {
   app.route('/api/application', applicationRoutes);
   app.route('/api/translate', translateRoutes);
   app.route('/api/prompts', promptRoutes);
+  app.route('/api/ai-providers', aiProviderRoutes);
   app.route('/api/affiches', afficheRoutes);
   app.route('/api/site-settings', siteSettingsRoutes);
   app.route('/api/tool-outputs', toolOutputRoutes);

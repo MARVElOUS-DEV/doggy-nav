@@ -1,4 +1,23 @@
-import { Container, GroupService, CategoryService, NavService, FavoriteService, FavoriteCommandService, FavoriteFolderService, InviteCodeService, EmailSettingsService, SiteSettingsService, ToolOutputPublicationService, ApplicationService, RoleService, UserService, TranslateService, PromptService, AfficheService } from 'doggy-nav-core';
+import {
+  Container,
+  GroupService,
+  CategoryService,
+  NavService,
+  FavoriteService,
+  FavoriteCommandService,
+  FavoriteFolderService,
+  InviteCodeService,
+  EmailSettingsService,
+  SiteSettingsService,
+  ToolOutputPublicationService,
+  ApplicationService,
+  RoleService,
+  UserService,
+  TranslateService,
+  PromptService,
+  AiProviderService,
+  AfficheService,
+} from 'doggy-nav-core';
 import { TOKENS } from '../core/ioc';
 import MongooseGroupRepository from '../../adapters/groupRepository';
 import MongooseCategoryRepository from '../../adapters/categoryRepository';
@@ -15,6 +34,7 @@ import MongooseRoleRepository from '../../adapters/roleRepository';
 import MongooseUserRepository from '../../adapters/userRepository';
 import GoogleTranslateProvider from '../../adapters/translateProvider';
 import MongoosePromptRepository from '../../adapters/promptRepository';
+import MongooseAiProviderRepository from '../../adapters/aiProviderRepository';
 import MongooseAfficheRepository from '../../adapters/afficheRepository';
 
 export default function ioc() {
@@ -23,21 +43,58 @@ export default function ioc() {
 
     // Services (repos are created inline using ctx for Mongoose access)
     di.register(TOKENS.GroupService, () => new GroupService(new MongooseGroupRepository(ctx)));
-    di.register(TOKENS.CategoryService, () => new CategoryService(new MongooseCategoryRepository(ctx)));
-    di.register(TOKENS.NavService, () => new NavService(new MongooseNavRepository(ctx), new MongooseCategoryRepository(ctx)));
-    di.register(TOKENS.FavoriteService, () => new FavoriteService(new MongooseFavoriteRepository(ctx)));
-    di.register(TOKENS.FavoriteCommandService, () => new FavoriteCommandService(new MongooseFavoriteCommandRepository(ctx)));
-    di.register(TOKENS.FavoriteFolderService, () => new FavoriteFolderService(new MongooseFavoriteFolderRepository(ctx)));
-    di.register(TOKENS.InviteCodeService, () => new InviteCodeService(new MongooseInviteCodeRepository(ctx)));
-    di.register(TOKENS.EmailSettingsService, () => new EmailSettingsService(new MongooseEmailSettingsRepository(ctx)));
-    di.register(TOKENS.SiteSettingsService, () => new SiteSettingsService(new MongooseSiteSettingsRepository(ctx)));
-    di.register(TOKENS.ToolOutputPublicationService, () => new ToolOutputPublicationService(new MongooseToolOutputPublicationRepository(ctx)));
-    di.register(TOKENS.ApplicationService, () => new ApplicationService(new MongooseApplicationRepository(ctx)));
+    di.register(
+      TOKENS.CategoryService,
+      () => new CategoryService(new MongooseCategoryRepository(ctx))
+    );
+    di.register(
+      TOKENS.NavService,
+      () => new NavService(new MongooseNavRepository(ctx), new MongooseCategoryRepository(ctx))
+    );
+    di.register(
+      TOKENS.FavoriteService,
+      () => new FavoriteService(new MongooseFavoriteRepository(ctx))
+    );
+    di.register(
+      TOKENS.FavoriteCommandService,
+      () => new FavoriteCommandService(new MongooseFavoriteCommandRepository(ctx))
+    );
+    di.register(
+      TOKENS.FavoriteFolderService,
+      () => new FavoriteFolderService(new MongooseFavoriteFolderRepository(ctx))
+    );
+    di.register(
+      TOKENS.InviteCodeService,
+      () => new InviteCodeService(new MongooseInviteCodeRepository(ctx))
+    );
+    di.register(
+      TOKENS.EmailSettingsService,
+      () => new EmailSettingsService(new MongooseEmailSettingsRepository(ctx))
+    );
+    di.register(
+      TOKENS.SiteSettingsService,
+      () => new SiteSettingsService(new MongooseSiteSettingsRepository(ctx))
+    );
+    di.register(
+      TOKENS.ToolOutputPublicationService,
+      () => new ToolOutputPublicationService(new MongooseToolOutputPublicationRepository(ctx))
+    );
+    di.register(
+      TOKENS.ApplicationService,
+      () => new ApplicationService(new MongooseApplicationRepository(ctx))
+    );
     di.register(TOKENS.RoleService, () => new RoleService(new MongooseRoleRepository(ctx)));
     di.register(TOKENS.UserService, () => new UserService(new MongooseUserRepository(ctx)));
     di.register(TOKENS.TranslateService, () => new TranslateService(new GoogleTranslateProvider()));
     di.register(TOKENS.PromptService, () => new PromptService(new MongoosePromptRepository(ctx)));
-    di.register(TOKENS.AfficheService, () => new AfficheService(new MongooseAfficheRepository(ctx)));
+    di.register(
+      TOKENS.AiProviderService,
+      () => new AiProviderService(new MongooseAiProviderRepository(ctx))
+    );
+    di.register(
+      TOKENS.AfficheService,
+      () => new AfficheService(new MongooseAfficheRepository(ctx))
+    );
 
     ctx.di = di;
     await next();

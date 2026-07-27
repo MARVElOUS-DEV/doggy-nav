@@ -624,6 +624,44 @@ export const routePermissions: RoutePermission[] = [
     description: 'Activate prompt',
   },
 
+  // AI provider management (sysadmin only)
+  {
+    method: 'GET',
+    path: '/api/ai-providers',
+    require: { anyRole: ['sysadmin'] },
+    description: 'List AI providers',
+  },
+  {
+    method: 'POST',
+    path: '/api/ai-providers',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Create AI provider',
+  },
+  {
+    method: 'PUT',
+    path: '/api/ai-providers',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Update AI provider',
+  },
+  {
+    method: 'DELETE',
+    path: '/api/ai-providers',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Delete AI provider',
+  },
+  {
+    method: 'POST',
+    path: '/api/ai-providers/:id/activate',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Activate AI provider',
+  },
+  {
+    method: 'POST',
+    path: '/api/ai-providers/:id/test',
+    require: { anyRole: ['sysadmin'] },
+    description: 'Test AI provider',
+  },
+
   // Email settings (sysadmin only)
   {
     method: 'GET',

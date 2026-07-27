@@ -1,8 +1,8 @@
 import {
   AiProviderError,
+  AiProviderService,
   AiService,
   buildRecommendationAutofillMessages,
-  createAiConfigFromEnv,
   DEFAULT_RECOMMENDATION_AUTOFILL_PROMPT,
   parseRecommendationAutofillContent,
   prependSystemPrompt,
@@ -10,8 +10,23 @@ import {
   RECOMMENDATION_AUTOFILL_PROMPT_CODE,
 } from 'doggy-nav-core';
 import { Controller } from 'egg';
+import { TOKENS } from '../core/ioc';
+import { Inject } from '../core/inject';
 
 export default class AiController extends Controller {
+  @Inject(TOKENS.AiProviderService)
+  private aiProviderService!: AiProviderService;
+
+  private async createAiConfig() {
+    const activeProvider = await this.aiProviderService.getActiveConfig();
+    if (!activeProvider) {
+      const err = new Error('No active AI provider configured');
+      (err as any).status = 503;
+      throw err;
+    }
+    return activeProvider;
+  }
+
   async chatCompletions() {
     const body = this.ctx.request.body as ChatCompletionRequest;
     if (!body || !Array.isArray(body.messages)) {
@@ -37,7 +52,7 @@ export default class AiController extends Controller {
     }
 
     const messages = prependSystemPrompt(body.messages, activePrompt);
-    const cfg = createAiConfigFromEnv(process.env);
+    const cfg = await this.createAiConfig();
     const ai = new AiService(cfg);
     try {
       const res = await ai.chatCompletions({
@@ -76,6 +91,11 @@ export default class AiController extends Controller {
         };
         return;
       }
+      if ((e as any)?.status === 503) {
+        this.ctx.status = 503;
+        this.ctx.body = { error: { message: e.message } };
+        return;
+      }
       throw e;
     }
   }
@@ -100,7 +120,7 @@ export default class AiController extends Controller {
       this.logger.warn('Failed to load recommendation prompt', _e);
     }
 
-    const cfg = createAiConfigFromEnv(process.env);
+    const cfg = await this.createAiConfig();
     const ai = new AiService(cfg);
     try {
       const res = await ai.chatCompletions({
@@ -142,6 +162,11 @@ export default class AiController extends Controller {
             ...(includeDetails && e.responseBody ? { providerResponse: e.responseBody } : {}),
           },
         };
+        return;
+      }
+      if ((e as any)?.status === 503) {
+        this.ctx.status = 503;
+        this.ctx.body = { error: { message: e.message } };
         return;
       }
       throw e;

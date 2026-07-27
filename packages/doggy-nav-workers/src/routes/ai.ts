@@ -3,26 +3,27 @@ import {
   AiProviderError,
   AiService,
   buildRecommendationAutofillMessages,
-  createAiConfigFromEnv,
   DEFAULT_RECOMMENDATION_AUTOFILL_PROMPT,
   parseRecommendationAutofillContent,
   prependSystemPrompt,
   RECOMMENDATION_AUTOFILL_PROMPT_CODE,
 } from 'doggy-nav-core';
-import type { ChatMessage, PromptService } from 'doggy-nav-core';
+import type { AiProviderService, ChatMessage, PromptService } from 'doggy-nav-core';
 import type { Env } from './index';
 import { getDI } from '../ioc/helpers';
 import { TOKENS } from '../ioc/tokens';
 
 const aiRoutes = new Hono<{ Bindings: Env }>();
 
-function createAiConfig(c: any) {
-  return createAiConfigFromEnv({
-    AI_PROVIDER: c.env.AI_PROVIDER,
-    AI_API_KEY: c.env.AI_API_KEY,
-    AI_BASE_URL: c.env.AI_BASE_URL,
-    AI_MODEL: c.env.AI_MODEL,
-  } as any);
+async function createAiConfig(c: any) {
+  const svc = getDI(c).resolve(TOKENS.AiProviderService) as AiProviderService;
+  const activeProvider = await svc.getActiveConfig();
+  if (!activeProvider) {
+    const err = new Error('No active AI provider configured');
+    (err as any).status = 503;
+    throw err;
+  }
+  return activeProvider;
 }
 
 function providerErrorResponse(c: any, e: AiProviderError) {
@@ -65,7 +66,7 @@ aiRoutes.post('/api/ai/chat', async (c) => {
         if (active?.content) messages = prependSystemPrompt(messages, active.content);
       } catch {}
     }
-    const cfg = createAiConfig(c);
+    const cfg = await createAiConfig(c);
     const ai = new AiService(cfg);
     const res = await ai.chatCompletions({
       model: body.model,
@@ -87,7 +88,10 @@ aiRoutes.post('/api/ai/chat', async (c) => {
     if (e instanceof AiProviderError) {
       return providerErrorResponse(c, e);
     }
-    return c.json({ error: { message: e?.message || 'inference failed' } }, 500);
+    return c.json(
+      { error: { message: e?.message || 'inference failed' } },
+      e?.status === 503 ? 503 : 500
+    );
   }
 });
 
@@ -104,7 +108,7 @@ aiRoutes.post('/api/ai/tasks/recommendation-autofill', async (c) => {
       if (active?.content) prompt = active.content;
     } catch {}
 
-    const cfg = createAiConfig(c);
+    const cfg = await createAiConfig(c);
     const ai = new AiService(cfg);
     const res = await ai.chatCompletions({
       messages: buildRecommendationAutofillMessages(
@@ -126,7 +130,10 @@ aiRoutes.post('/api/ai/tasks/recommendation-autofill', async (c) => {
     return c.json(values);
   } catch (e: any) {
     if (e instanceof AiProviderError) return providerErrorResponse(c, e);
-    return c.json({ error: { message: e?.message || 'recommendation autofill failed' } }, 500);
+    return c.json(
+      { error: { message: e?.message || 'recommendation autofill failed' } },
+      e?.status === 503 ? 503 : 500
+    );
   }
 });
 

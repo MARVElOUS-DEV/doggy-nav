@@ -17,6 +17,7 @@ import {
   ApplicationService,
   NavAdminService,
   PromptService,
+  AiProviderService,
   AfficheService,
 } from 'doggy-nav-core';
 import D1GroupRepository from '../adapters/d1GroupRepository';
@@ -37,6 +38,7 @@ import D1ToolOutputPublicationRepository from '../adapters/d1ToolOutputPublicati
 import D1ApplicationRepositoryAdapter from '../adapters/d1ApplicationRepositoryAdapter';
 import D1NavAdminRepository from '../adapters/d1NavAdminRepository';
 import D1PromptRepository from '../adapters/d1PromptRepository';
+import D1AiProviderRepository from '../adapters/d1AiProviderRepository';
 import D1AfficheRepository from '../adapters/d1AfficheRepository';
 import { TOKENS } from './tokens';
 
@@ -95,6 +97,10 @@ export function createWorkerContainer(env: Env) {
   );
   c.register(TOKENS.NavAdminService, () => new NavAdminService(new D1NavAdminRepository(env.DB)));
   c.register(TOKENS.PromptService, () => new PromptService(new D1PromptRepository(env.DB)));
+  c.register(
+    TOKENS.AiProviderService,
+    () => new AiProviderService(new D1AiProviderRepository(env.DB))
+  );
   c.register(TOKENS.AfficheService, () => new AfficheService(new D1AfficheRepository(env.DB)));
   return c;
 }
