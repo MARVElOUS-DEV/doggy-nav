@@ -3,34 +3,15 @@ import useTableComPopup from '@/components/TableCom/useTableComPopup';
 import CategorySelect from '@/pages/nav/Category/CategorySelect';
 import NavListForm from '@/pages/nav/List/NavListForm';
 import TagSelect from '@/pages/nav/Tag/TagSelect';
+import NavTagList from '@/pages/nav/components/NavTagList';
 import { API_NAV, API_NAV_LIST } from '@/services/api';
 import request from '@/utils/request';
 import { formatDateTime } from '@/utils/time';
 import { FileTextOutlined } from '@ant-design/icons';
 import { ProColumns } from '@ant-design/pro-table';
 import { history } from '@umijs/max';
-import { Button, message, Modal, Popconfirm, Space, Tag, Tooltip } from 'antd';
+import { Button, message, Modal, Popconfirm, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
-
-function RandomColorTag({ children }) {
-  const colors = [
-    'magenta',
-    'red',
-    'volcano',
-    'orange',
-    'gold',
-    'lime',
-    'green',
-    'cyan',
-    'blue',
-    'purple',
-  ];
-  return (
-    <Tag color={colors[Math.floor(Math.random() * colors.length)]}>
-      {children}
-    </Tag>
-  );
-}
 
 export default function NavListPage() {
   const tableRef = useRef<any>();
@@ -82,14 +63,9 @@ export default function NavListPage() {
       title: '网站标签',
       dataIndex: 'tags',
       width: 250,
+      ellipsis: false,
       renderFormItem: (props) => <TagSelect {...props} mode="multiple" />,
-      renderText: (text, record) => (
-        <Space>
-          {record.tags?.map((item) => (
-            <RandomColorTag key={item}>{item}</RandomColorTag>
-          ))}
-        </Space>
-      ),
+      renderText: (text, record) => <NavTagList tags={record.tags} />,
     },
     {
       title: '分类',

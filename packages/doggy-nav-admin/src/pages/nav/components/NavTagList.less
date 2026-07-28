@@ -1,0 +1,27 @@
+.nav-tag-list-trigger {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  cursor: default;
+
+  .ant-tag {
+    flex: 0 0 auto;
+    margin-inline-end: 0;
+  }
+}
+
+.nav-tag-list-popover {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 480px;
+
+  .ant-tag {
+    max-width: 100%;
+    margin-inline-end: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}

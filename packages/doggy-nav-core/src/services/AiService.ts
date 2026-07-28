@@ -344,13 +344,4 @@ export function prependSystemPrompt(
   return [{ role: 'system', content }, ...messages];
 }
 
-export function createAiConfigFromEnv(env: Record<string, string | undefined>): AiConfig {
-  return {
-    provider: env.AI_PROVIDER,
-    apiKey: env.AI_API_KEY || '',
-    baseURL: env.AI_BASE_URL || '',
-    model: env.AI_MODEL || '',
-  };
-}
-
 export default AiService;

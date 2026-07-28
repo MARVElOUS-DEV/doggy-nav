@@ -1,5 +1,6 @@
 import TableCom from '@/components/TableCom';
 import TagSelect from '@/pages/nav/Tag/TagSelect';
+import NavTagList from '@/pages/nav/components/NavTagList';
 import { API_NAV_AUDIT, API_NAV_LIST } from '@/services/api';
 import { NavStatus } from '@/types/api';
 import { getCategoryDisplayName } from '@/utils/helpers';
@@ -256,14 +257,9 @@ export default function NavAuditListPage() {
       title: '网站标签',
       dataIndex: 'tags',
       width: 250,
+      ellipsis: false,
       renderFormItem: (props) => <TagSelect {...props} mode="multiple" />,
-      renderText: (text, record) => (
-        <Space>
-          {record.tags.map((item) => (
-            <RandomColorTag key={item}>{item}</RandomColorTag>
-          ))}
-        </Space>
-      ),
+      renderText: (text, record) => <NavTagList tags={record.tags} />,
     },
 
     {

@@ -271,6 +271,7 @@ const AiProviderPage = () => {
         showIcon
         style={{ marginBottom: 16 }}
         message="主站 AI 调用使用当前启用的 Provider"
+        description="Provider 配置保存在后端数据库中；运行时不读取 AI_PROVIDER、AI_API_KEY、AI_BASE_URL 或 AI_MODEL 环境变量。"
       />
 
       <ProTable<AiProvider>

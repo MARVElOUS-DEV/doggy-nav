@@ -199,6 +199,11 @@ curl -X POST "https://<your-worker>.<account>.workers.dev/api/seed/categories?to
 
 See `docs/DEVELOPMENT.md` for local setup, scripts, database, and environment configuration.
 
+### 🤖 AI Provider Configuration
+
+Configure AI providers in the admin console and activate one provider before using AI features.
+Provider type, API key, base URL, and model are stored by the selected backend.
+
 ## 📖 Documentation
 
 ### 📚 Additional Docs
