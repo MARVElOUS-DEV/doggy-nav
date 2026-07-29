@@ -45,6 +45,7 @@ interface HeroSlideForm {
   description?: string;
   mediaType?: 'image' | 'video';
   mediaUrl?: string;
+  mediaFit?: 'cover' | 'contain';
   ctaLabel?: string;
   ctaHref?: string;
   active?: boolean;
@@ -156,7 +157,12 @@ function normalizeSettingsResponse(response: any): SiteSettingsForm {
           ? settings.supportSettings.tiers
           : getDefaultSupportSettings().tiers,
     },
-    heroSlides: Array.isArray(settings.heroSlides) ? settings.heroSlides : [],
+    heroSlides: Array.isArray(settings.heroSlides)
+      ? settings.heroSlides.map((slide: HeroSlideForm) => ({
+          ...slide,
+          mediaFit: slide.mediaFit === 'contain' ? 'contain' : 'cover',
+        }))
+      : [],
   };
 }
 
@@ -188,6 +194,7 @@ function toSubmitPayload(values: SiteSettingsForm) {
       description: slide.description?.trim() || '',
       mediaType: slide.mediaType,
       mediaUrl: slide.mediaUrl?.trim() || undefined,
+      mediaFit: slide.mediaFit || 'cover',
       ctaLabel: slide.ctaLabel?.trim() || undefined,
       ctaHref: slide.ctaHref?.trim() || undefined,
       active: !!slide.active,
@@ -511,6 +518,7 @@ export default function SiteSettingsPage() {
                               add({
                                 title: '',
                                 description: '',
+                                mediaFit: 'cover',
                                 active: true,
                                 order: fields.length,
                               })
@@ -588,7 +596,14 @@ export default function SiteSettingsPage() {
                                     field.name,
                                   ]) as HeroSlideForm | undefined;
                                   return slide?.mediaUrl ? (
-                                    <div style={{ marginBottom: 16 }}>
+                                    <div
+                                      style={{
+                                        height: 260,
+                                        marginBottom: 16,
+                                        overflow: 'hidden',
+                                        background: '#111827',
+                                      }}
+                                    >
                                       {slide.mediaType === 'video' ? (
                                         <video
                                           src={slide.mediaUrl}
@@ -596,8 +611,9 @@ export default function SiteSettingsPage() {
                                           muted
                                           style={{
                                             width: '100%',
-                                            maxHeight: 260,
-                                            objectFit: 'cover',
+                                            height: '100%',
+                                            objectFit:
+                                              slide.mediaFit || 'cover',
                                           }}
                                         />
                                       ) : (
@@ -606,8 +622,9 @@ export default function SiteSettingsPage() {
                                           alt="轮播媒体预览"
                                           style={{
                                             width: '100%',
-                                            maxHeight: 260,
-                                            objectFit: 'cover',
+                                            height: '100%',
+                                            objectFit:
+                                              slide.mediaFit || 'cover',
                                           }}
                                         />
                                       )}
@@ -703,39 +720,69 @@ export default function SiteSettingsPage() {
                               >
                                 <Input />
                               </Form.Item>
-                              <Form.Item
-                                name={[field.name, 'mediaType']}
-                                label="媒体类型"
-                                dependencies={[
-                                  ['heroSlides', field.name, 'mediaUrl'],
-                                ]}
-                                rules={[
-                                  {
-                                    validator: async (_, value) => {
-                                      const mediaUrl = form.getFieldValue([
-                                        'heroSlides',
-                                        field.name,
-                                        'mediaUrl',
-                                      ]);
-                                      if (
-                                        Boolean(value) !== Boolean(mediaUrl)
-                                      ) {
-                                        throw new Error(
-                                          '媒体类型与媒体地址必须同时填写',
-                                        );
-                                      }
-                                    },
-                                  },
-                                ]}
-                              >
-                                <Select
-                                  allowClear
-                                  options={[
-                                    { label: '图片', value: 'image' },
-                                    { label: '视频', value: 'video' },
-                                  ]}
-                                />
-                              </Form.Item>
+                              <Row gutter={16}>
+                                <Col span={12}>
+                                  <Form.Item
+                                    name={[field.name, 'mediaType']}
+                                    label="媒体类型"
+                                    dependencies={[
+                                      ['heroSlides', field.name, 'mediaUrl'],
+                                    ]}
+                                    rules={[
+                                      {
+                                        validator: async (_, value) => {
+                                          const mediaUrl = form.getFieldValue([
+                                            'heroSlides',
+                                            field.name,
+                                            'mediaUrl',
+                                          ]);
+                                          if (
+                                            Boolean(value) !== Boolean(mediaUrl)
+                                          ) {
+                                            throw new Error(
+                                              '媒体类型与媒体地址必须同时填写',
+                                            );
+                                          }
+                                        },
+                                      },
+                                    ]}
+                                  >
+                                    <Select
+                                      allowClear
+                                      options={[
+                                        { label: '图片', value: 'image' },
+                                        { label: '视频', value: 'video' },
+                                      ]}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                  <Form.Item
+                                    name={[field.name, 'mediaFit']}
+                                    label="显示方式"
+                                    extra="Cover 填满并裁剪；Contain 完整显示并保留留白。"
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: '请选择显示方式',
+                                      },
+                                    ]}
+                                  >
+                                    <Select
+                                      options={[
+                                        {
+                                          label: 'Cover（填满）',
+                                          value: 'cover',
+                                        },
+                                        {
+                                          label: 'Contain（完整显示）',
+                                          value: 'contain',
+                                        },
+                                      ]}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                              </Row>
 
                               <Row gutter={16}>
                                 <Col span={12}>

@@ -71,6 +71,7 @@ function normalizeHeroSlides(input: unknown): HeroSlideSettings[] {
 
     const mediaType = normalizeText((slide as any).mediaType);
     const mediaUrl = normalizeText((slide as any).mediaUrl);
+    const mediaFit = normalizeText((slide as any).mediaFit) || 'cover';
     const ctaLabel = normalizeText((slide as any).ctaLabel);
     const ctaHref = normalizeText((slide as any).ctaHref);
     const order = Number((slide as any).order);
@@ -83,6 +84,9 @@ function normalizeHeroSlides(input: unknown): HeroSlideSettings[] {
     }
     if (mediaUrl && !isValidUrlLike(mediaUrl)) {
       validationError(`Invalid hero slide mediaUrl at index ${index}`);
+    }
+    if (mediaFit !== 'cover' && mediaFit !== 'contain') {
+      validationError(`Invalid hero slide mediaFit at index ${index}`);
     }
     if (Boolean(ctaLabel) !== Boolean(ctaHref)) {
       validationError(`Hero slide CTA label and URL must be paired at index ${index}`);
@@ -98,6 +102,7 @@ function normalizeHeroSlides(input: unknown): HeroSlideSettings[] {
       title: normalizeText((slide as any).title) || '',
       description: normalizeText((slide as any).description) || '',
       ...(mediaType && mediaUrl ? { mediaType: mediaType as 'image' | 'video', mediaUrl } : {}),
+      mediaFit: mediaFit as 'cover' | 'contain',
       ...(ctaLabel && ctaHref ? { ctaLabel, ctaHref } : {}),
       active: Boolean((slide as any).active),
       order,

@@ -72,6 +72,7 @@ describe('contract: /api/site-settings', () => {
           description: 'See what is new.',
           mediaType: 'video',
           mediaUrl: 'https://media.example/launch.webm',
+          mediaFit: 'contain',
           ctaLabel: 'Learn more',
           ctaHref: '/launch',
           active: true,
@@ -115,6 +116,9 @@ describe('contract: /api/site-settings', () => {
     if (publicRes.body?.data?.heroSlides?.[0]?.mediaUrl !== payload.heroSlides[0].mediaUrl) {
       throw new Error('public payload missing saved hero slide');
     }
+    if (publicRes.body?.data?.heroSlides?.[0]?.mediaFit !== payload.heroSlides[0].mediaFit) {
+      throw new Error('public payload missing saved hero slide fit');
+    }
   });
 
   it('rejects malformed hero media and CTA pairs', async () => {
@@ -127,6 +131,7 @@ describe('contract: /api/site-settings', () => {
     for (const slide of [
       { mediaType: 'image', mediaUrl: 'ftp://example.com/hero.png' },
       { mediaType: 'video' },
+      { mediaFit: 'stretch' },
       { ctaLabel: 'Open' },
       { ctaHref: 'javascript:alert(1)' },
     ]) {

@@ -39,6 +39,7 @@ describe('D1SiteSettingsRepositoryAdapter hero slides', () => {
           description: '',
           mediaType: 'image',
           mediaUrl: '/hero.webp',
+          mediaFit: 'contain',
           active: true,
           order: 0,
         },
@@ -46,6 +47,7 @@ describe('D1SiteSettingsRepositoryAdapter hero slides', () => {
     });
 
     expect(JSON.parse(row.hero_slides)[0].mediaUrl).toBe('/hero.webp');
+    expect(saved.heroSlides?.[0].mediaFit).toBe('contain');
     expect(saved.heroSlides?.[0].title).toBe('Hero');
   });
 });

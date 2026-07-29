@@ -28,6 +28,7 @@ describe('SiteSettingsService hero slides', () => {
           description: ' Watch ',
           mediaType: 'video',
           mediaUrl: 'https://media.example/launch.webm',
+          mediaFit: 'contain',
           ctaLabel: ' Open ',
           ctaHref: '/launch',
           active: true,
@@ -42,6 +43,7 @@ describe('SiteSettingsService hero slides', () => {
         description: 'Watch',
         mediaType: 'video',
         mediaUrl: 'https://media.example/launch.webm',
+        mediaFit: 'contain',
         ctaLabel: 'Open',
         ctaHref: '/launch',
         active: true,
@@ -55,6 +57,7 @@ describe('SiteSettingsService hero slides', () => {
     [{ mediaType: 'image', mediaUrl: undefined }],
     [{ mediaType: undefined, mediaUrl: '/hero.png' }],
     [{ mediaType: 'image', mediaUrl: 'ftp://example.com/hero.png' }],
+    [{ mediaFit: 'stretch' }],
     [{ ctaLabel: 'Open', ctaHref: undefined }],
     [{ ctaLabel: undefined, ctaHref: 'javascript:alert(1)' }],
   ])('rejects malformed media and CTA pairs', async (partial) => {

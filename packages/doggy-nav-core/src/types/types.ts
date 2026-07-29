@@ -115,6 +115,7 @@ export interface HeroSlideSettings {
   description: string;
   mediaType?: 'image' | 'video';
   mediaUrl?: string;
+  mediaFit?: 'cover' | 'contain';
   ctaLabel?: string;
   ctaHref?: string;
   active: boolean;

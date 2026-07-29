@@ -140,6 +140,7 @@ jest.mock('../ioc/worker', () => {
               description: 'Latest release',
               mediaType: 'image',
               mediaUrl: 'https://example.com/hero.webp',
+              mediaFit: 'contain',
               active: true,
               order: 0,
             },
@@ -309,6 +310,7 @@ describe('Doggy Nav Worker API', () => {
       expect(data.data.creatorProfile?.name).toBe('Worker Creator');
       expect(data.data.supportSettings?.defaultCurrency).toBe('hkd');
       expect(data.data.heroSlides?.[0]?.mediaUrl).toBe('https://example.com/hero.webp');
+      expect(data.data.heroSlides?.[0]?.mediaFit).toBe('contain');
     });
 
     it('should require auth for admin site settings route', async () => {

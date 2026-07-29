@@ -18,6 +18,7 @@ import LightbulbRope from '../LightBulb';
 import router from 'next/router';
 import AppFooter from '../Footer';
 import SiteMetadataHead from '../SiteMetadataHead';
+import ScrollProgress from '../ScrollProgress';
 
 export default function RootLayout({
   children,
@@ -124,6 +125,7 @@ export default function RootLayout({
                 showMenuType={showMenuType}
                 onOpenMobileMenu={() => setMobileMenuOpen(true)}
               />
+              <ScrollProgress />
             </div>
 
             {/* Scrollable Content Area with Glass Effect */}

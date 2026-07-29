@@ -26,7 +26,6 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const suppressClick = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const slides = useMemo(
     () =>
@@ -47,15 +46,14 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
 
   useEffect(() => {
     root.current?.querySelectorAll('video').forEach((video) => {
-      const shouldPlay =
-        !reducedMotion && !paused && Number(video.dataset.slideIndex) === activeIndex;
+      const shouldPlay = !reducedMotion && Number(video.dataset.slideIndex) === activeIndex;
       if (shouldPlay) {
         void video.play().catch(() => undefined);
       } else {
         video.pause();
       }
     });
-  }, [activeIndex, paused, reducedMotion]);
+  }, [activeIndex, reducedMotion]);
 
   const goTo = (index: number) => {
     const target = (index + count) % count;
@@ -104,12 +102,6 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
         event.stopPropagation();
       }}
       onDragStart={(event) => event.preventDefault()}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
-      }}
       onKeyDown={(event) => {
         if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
           event.preventDefault();
@@ -171,14 +163,18 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
                 <img
                   src={slide.mediaUrl}
                   alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className={`absolute inset-0 h-full w-full ${
+                    slide.mediaFit === 'contain' ? 'object-contain' : 'object-cover'
+                  }`}
                 />
               ) : null}
               {slide.mediaType === 'video' && slide.mediaUrl ? (
                 <video
                   src={slide.mediaUrl}
                   data-slide-index={index + 1}
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className={`absolute inset-0 h-full w-full ${
+                    slide.mediaFit === 'contain' ? 'object-contain' : 'object-cover'
+                  }`}
                   muted
                   loop
                   playsInline
