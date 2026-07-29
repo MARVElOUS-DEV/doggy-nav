@@ -23,6 +23,7 @@ function mapDoc(doc: any): SiteSettings {
       doc.creatorProfile && typeof doc.creatorProfile === 'object' ? doc.creatorProfile : null,
     supportSettings:
       doc.supportSettings && typeof doc.supportSettings === 'object' ? doc.supportSettings : null,
+    heroSlides: Array.isArray(doc.heroSlides) ? doc.heroSlides : [],
     createdAt: toISO(doc.createdAt),
     updatedAt: toISO(doc.updatedAt),
   };
@@ -53,6 +54,7 @@ export class MongooseSiteSettingsRepository implements SiteSettingsRepository {
       feedbackUrl: input.feedbackUrl ?? null,
       creatorProfile: input.creatorProfile ?? null,
       supportSettings: input.supportSettings ?? null,
+      heroSlides: Array.isArray(input.heroSlides) ? input.heroSlides : [],
     };
 
     if (!doc) {

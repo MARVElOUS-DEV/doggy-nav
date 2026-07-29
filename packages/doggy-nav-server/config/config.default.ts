@@ -87,6 +87,18 @@ export default (appInfo: EggAppInfo) => {
     requireHttps: process.env.TOOL_OUTPUT_REQUIRE_HTTPS !== 'false',
   };
 
+  Object.assign(config, {
+    S3_ENDPOINT: process.env.S3_ENDPOINT,
+    S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+    S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+    S3_BUCKET: process.env.S3_BUCKET,
+    S3_REGION: process.env.S3_REGION,
+    IMAGES_PUBLIC_URL: process.env.IMAGES_PUBLIC_URL,
+    IMAGE_MAX_SIZE_MB: process.env.IMAGE_MAX_SIZE_MB,
+    VIDEO_MAX_SIZE_MB: process.env.VIDEO_MAX_SIZE_MB,
+    IMAGE_USER_QUOTA_MB: process.env.IMAGE_USER_QUOTA_MB,
+  });
+
   // Logger configuration for better diagnostics (tunable via env)
   config.logger = {
     dir: process.env.LOG_DIR || undefined,

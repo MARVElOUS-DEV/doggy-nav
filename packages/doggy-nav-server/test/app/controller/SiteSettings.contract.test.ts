@@ -66,6 +66,18 @@ describe('contract: /api/site-settings', () => {
           },
         ],
       },
+      heroSlides: [
+        {
+          title: 'Product launch',
+          description: 'See what is new.',
+          mediaType: 'video',
+          mediaUrl: 'https://media.example/launch.webm',
+          ctaLabel: 'Learn more',
+          ctaHref: '/launch',
+          active: true,
+          order: 1,
+        },
+      ],
     };
 
     const saveRes = await app
@@ -99,6 +111,35 @@ describe('contract: /api/site-settings', () => {
       payload.supportSettings.defaultCurrency
     ) {
       throw new Error('public payload missing saved supportSettings.defaultCurrency');
+    }
+    if (publicRes.body?.data?.heroSlides?.[0]?.mediaUrl !== payload.heroSlides[0].mediaUrl) {
+      throw new Error('public payload missing saved hero slide');
+    }
+  });
+
+  it('rejects malformed hero media and CTA pairs', async () => {
+    const token = (app as any).jwt.sign(
+      { userId: TEST_ADMIN_ID, roles: ['admin'] },
+      (app as any).config.jwt.secret,
+      { expiresIn: '5m' }
+    );
+
+    for (const slide of [
+      { mediaType: 'image', mediaUrl: 'ftp://example.com/hero.png' },
+      { mediaType: 'video' },
+      { ctaLabel: 'Open' },
+      { ctaHref: 'javascript:alert(1)' },
+    ]) {
+      const res = await app
+        .httpRequest()
+        .put('/api/site-settings')
+        .set('X-App-Source', 'admin')
+        .set('Authorization', 'Bearer ' + token)
+        .send({
+          heroSlides: [{ title: '', description: '', active: true, order: 0, ...slide }],
+        });
+
+      if (res.body?.code === 1) throw new Error('expected malformed hero slide rejection');
     }
   });
 

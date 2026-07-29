@@ -7,6 +7,7 @@ export interface UploadedImage {
   url: string;
   key: string;
   size: number;
+  type: string;
 }
 
 export interface ImageUploadResult {
@@ -17,6 +18,7 @@ export interface ImageUploadResult {
 
 export interface ImageUploadConfig {
   maxFileSizeBytes: number;
+  videoMaxFileSizeBytes: number;
   maxFilesPerRequest: number;
   userQuotaBytes: number;
   allowedMimeTypes: string[];
@@ -24,6 +26,7 @@ export interface ImageUploadConfig {
 
 const DEFAULT_CONFIG: ImageUploadConfig = {
   maxFileSizeBytes: 3 * 1024 * 1024, // 3MB
+  videoMaxFileSizeBytes: 10 * 1024 * 1024, // 10MB
   maxFilesPerRequest: 3,
   userQuotaBytes: 50 * 1024 * 1024, // 50MB
   allowedMimeTypes: [
@@ -33,6 +36,8 @@ const DEFAULT_CONFIG: ImageUploadConfig = {
     'image/webp',
     'image/svg+xml',
     'image/avif',
+    'video/mp4',
+    'video/webm',
   ],
 };
 
@@ -50,8 +55,11 @@ export class ImageUploadService {
     if (!this.cfg.allowedMimeTypes.includes(file.type)) {
       return `Invalid file type: ${file.type}`;
     }
-    if (file.size > this.cfg.maxFileSizeBytes) {
-      return `File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds ${this.cfg.maxFileSizeBytes / 1024 / 1024}MB limit`;
+    const maxSize = file.type.startsWith('video/')
+      ? this.cfg.videoMaxFileSizeBytes
+      : this.cfg.maxFileSizeBytes;
+    if (file.size > maxSize) {
+      return `File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds ${maxSize / 1024 / 1024}MB limit`;
     }
     return null;
   }
@@ -67,7 +75,11 @@ export class ImageUploadService {
     return null;
   }
 
-  async checkQuota(userId: string, incomingBytes: number, isAdmin: boolean): Promise<string | null> {
+  async checkQuota(
+    userId: string,
+    incomingBytes: number,
+    isAdmin: boolean
+  ): Promise<string | null> {
     if (isAdmin) return null;
     const used = await this.storage.getUsedBytes(userId);
     if (used + incomingBytes > this.cfg.userQuotaBytes) {
@@ -102,7 +114,7 @@ export class ImageUploadService {
     for (const file of files) {
       const key = this.generateKey(userId, hostname, file.name);
       const url = await this.storage.upload(key, file.data, file.type);
-      uploaded.push({ url, key, size: file.size });
+      uploaded.push({ url, key, size: file.size, type: file.type });
     }
     return { success: true, images: uploaded };
   }

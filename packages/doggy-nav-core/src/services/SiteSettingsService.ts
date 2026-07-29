@@ -1,4 +1,4 @@
-import type { SiteSettings } from '../types/types';
+import type { HeroSlideSettings, SiteSettings } from '../types/types';
 import type { CreatorProfileSettings } from '../types/types';
 import type {
   SiteSettingsRepository,
@@ -52,6 +52,57 @@ function normalizeCreatorProfile(input: unknown): CreatorProfileSettings | null 
   };
 
   return Object.values(creatorProfile).some(Boolean) ? creatorProfile : null;
+}
+
+function validationError(message: string): never {
+  const err = new Error(message);
+  (err as any).name = 'ValidationError';
+  throw err;
+}
+
+function normalizeHeroSlides(input: unknown): HeroSlideSettings[] {
+  if (input === undefined || input === null) return [];
+  if (!Array.isArray(input)) validationError('Invalid heroSlides');
+
+  return input.map((slide, index) => {
+    if (!slide || typeof slide !== 'object') {
+      validationError(`Invalid hero slide at index ${index}`);
+    }
+
+    const mediaType = normalizeText((slide as any).mediaType);
+    const mediaUrl = normalizeText((slide as any).mediaUrl);
+    const ctaLabel = normalizeText((slide as any).ctaLabel);
+    const ctaHref = normalizeText((slide as any).ctaHref);
+    const order = Number((slide as any).order);
+
+    if (mediaType && mediaType !== 'image' && mediaType !== 'video') {
+      validationError(`Invalid hero slide mediaType at index ${index}`);
+    }
+    if (Boolean(mediaType) !== Boolean(mediaUrl)) {
+      validationError(`Hero slide mediaType and mediaUrl must be paired at index ${index}`);
+    }
+    if (mediaUrl && !isValidUrlLike(mediaUrl)) {
+      validationError(`Invalid hero slide mediaUrl at index ${index}`);
+    }
+    if (Boolean(ctaLabel) !== Boolean(ctaHref)) {
+      validationError(`Hero slide CTA label and URL must be paired at index ${index}`);
+    }
+    if (ctaHref && !isValidUrlLike(ctaHref)) {
+      validationError(`Invalid hero slide ctaHref at index ${index}`);
+    }
+    if (!Number.isInteger(order)) {
+      validationError(`Invalid hero slide order at index ${index}`);
+    }
+
+    return {
+      title: normalizeText((slide as any).title) || '',
+      description: normalizeText((slide as any).description) || '',
+      ...(mediaType && mediaUrl ? { mediaType: mediaType as 'image' | 'video', mediaUrl } : {}),
+      ...(ctaLabel && ctaHref ? { ctaLabel, ctaHref } : {}),
+      active: Boolean((slide as any).active),
+      order,
+    };
+  });
 }
 
 function parseCurrency(value: unknown, field: string): SupportPaymentCurrency | null {
@@ -204,6 +255,7 @@ export class SiteSettingsService {
     const feedbackUrl = normalizeText(input.feedbackUrl);
     const creatorProfile = normalizeCreatorProfile(input.creatorProfile);
     const supportSettings = normalizeSupportSettings(input.supportSettings);
+    const heroSlides = normalizeHeroSlides(input.heroSlides);
 
     const rawKeywords = input.seoKeywords as string[] | string | undefined;
     let seoKeywords: string[] = [];
@@ -234,6 +286,7 @@ export class SiteSettingsService {
       feedbackUrl,
       creatorProfile,
       supportSettings,
+      heroSlides,
     });
   }
 }

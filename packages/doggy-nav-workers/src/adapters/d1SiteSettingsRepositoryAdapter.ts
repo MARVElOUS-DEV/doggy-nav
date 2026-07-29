@@ -35,6 +35,14 @@ export default class D1SiteSettingsRepositoryAdapter implements SiteSettingsRepo
           return null;
         }
       })(),
+      heroSlides: (() => {
+        try {
+          const value = JSON.parse(row.hero_slides || '[]');
+          return Array.isArray(value) ? value : [];
+        } catch {
+          return [];
+        }
+      })(),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -51,6 +59,7 @@ export default class D1SiteSettingsRepositoryAdapter implements SiteSettingsRepo
     const seoKeywords = JSON.stringify(input.seoKeywords || []);
     const creatorProfile = JSON.stringify(input.creatorProfile || null);
     const supportSettings = JSON.stringify(input.supportSettings || null);
+    const heroSlides = JSON.stringify(input.heroSlides || []);
     const exists = await this.db
       .prepare(`SELECT id FROM site_settings WHERE id = 'default'`)
       .first<any>();
@@ -61,7 +70,7 @@ export default class D1SiteSettingsRepositoryAdapter implements SiteSettingsRepo
           `UPDATE site_settings
            SET site_title = ?, logo_url = ?, seo_title = ?, seo_description = ?,
                seo_keywords = ?, copyright_text = ?, feedback_url = ?,
-               creator_profile = ?, support_settings = ?,
+               creator_profile = ?, support_settings = ?, hero_slides = ?,
                updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
            WHERE id = 'default'`
         )
@@ -74,7 +83,8 @@ export default class D1SiteSettingsRepositoryAdapter implements SiteSettingsRepo
           input.copyrightText ?? null,
           input.feedbackUrl ?? null,
           creatorProfile,
-          supportSettings
+          supportSettings,
+          heroSlides
         )
         .run();
     } else {
@@ -82,8 +92,8 @@ export default class D1SiteSettingsRepositoryAdapter implements SiteSettingsRepo
         .prepare(
           `INSERT INTO site_settings (
              id, site_title, logo_url, seo_title, seo_description,
-             seo_keywords, copyright_text, feedback_url, creator_profile, support_settings
-           ) VALUES ('default',?,?,?,?,?,?,?,?,?)`
+             seo_keywords, copyright_text, feedback_url, creator_profile, support_settings, hero_slides
+           ) VALUES ('default',?,?,?,?,?,?,?,?,?,?)`
         )
         .bind(
           input.siteTitle ?? null,
@@ -94,7 +104,8 @@ export default class D1SiteSettingsRepositoryAdapter implements SiteSettingsRepo
           input.copyrightText ?? null,
           input.feedbackUrl ?? null,
           creatorProfile,
-          supportSettings
+          supportSettings,
+          heroSlides
         )
         .run();
     }

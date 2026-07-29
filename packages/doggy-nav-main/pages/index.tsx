@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { TimelineItem as TimelineItemType, TimelineYear } from '@/types/timeline';
 import { useTranslation } from 'react-i18next';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
+import HomeHero from '@/components/HomeHero';
 
 function DeferredSectionPlaceholder({
   title,
@@ -246,39 +247,11 @@ export default function HomePage() {
         {/* Hero Section */}
         <div className="mb-8">
           <div className="bg-theme-background rounded-3xl shadow-xl overflow-hidden border border-theme-border">
-            <div className="hero-gradient p-8 text-white relative">
-              <div className="max-w-3xl mx-auto text-center relative z-10">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                  {t('curated_website_navigation')}
-                </h1>
-                <p className="text-xl opacity-90 mb-8">{t('discover_quality_websites')}</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  {isAuthenticated ? (
-                    <button
-                      type="button"
-                      onClick={handleTryGotoDesktop}
-                      className="cursor-pointer bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
-                    >
-                      {t('try_goto_desktop')}
-                    </button>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
-                    >
-                      {t('login_explore')}
-                    </Link>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setSearchModalOpen(true)}
-                    className="cursor-pointer bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300"
-                  >
-                    {t('search_websites')}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <HomeHero
+              isAuthenticated={isAuthenticated}
+              onTryDesktop={handleTryGotoDesktop}
+              onSearch={() => setSearchModalOpen(true)}
+            />
           </div>
         </div>
 

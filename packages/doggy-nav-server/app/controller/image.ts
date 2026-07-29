@@ -21,8 +21,10 @@ export default class ImageController extends Controller {
 
     const maxSizeMb = parseFloat(this.app.config.IMAGE_MAX_SIZE_MB || '3');
     const quotaMb = parseFloat(this.app.config.IMAGE_USER_QUOTA_MB || '50');
+    const videoMaxSizeMb = parseFloat(this.app.config.VIDEO_MAX_SIZE_MB || '10');
     const service = new ImageUploadService(storage, {
       maxFileSizeBytes: maxSizeMb * 1024 * 1024,
+      videoMaxFileSizeBytes: videoMaxSizeMb * 1024 * 1024,
       userQuotaBytes: quotaMb * 1024 * 1024,
     });
 

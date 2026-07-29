@@ -14,6 +14,7 @@ export default function (app: any) {
       feedbackUrl: { type: String, default: null },
       creatorProfile: { type: Schema.Types.Mixed, default: null },
       supportSettings: { type: Schema.Types.Mixed, default: null },
+      heroSlides: { type: [Schema.Types.Mixed], default: [] },
     },
     { collection: 'site_settings', timestamps: true }
   );

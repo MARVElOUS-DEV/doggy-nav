@@ -131,6 +131,17 @@ export interface SupportSettings {
   tiers?: SupportTierDefinition[];
 }
 
+export interface HeroSlideSettings {
+  title: string;
+  description: string;
+  mediaType?: 'image' | 'video';
+  mediaUrl?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  active: boolean;
+  order: number;
+}
+
 export interface SiteSettings {
   siteTitle?: string | null;
   logoUrl?: string | null;
@@ -141,6 +152,7 @@ export interface SiteSettings {
   feedbackUrl?: string | null;
   creatorProfile?: CreatorProfileSettings | null;
   supportSettings?: SupportSettings | null;
+  heroSlides?: HeroSlideSettings[];
 }
 
 export type ToolOutputDirection = 'yaml-to-json' | 'json-to-yaml';

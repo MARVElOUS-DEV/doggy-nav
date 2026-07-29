@@ -12,4 +12,5 @@ ALLOWED_ORIGINS=http://localhost:3001,https://your-domain.com
 
 # Optional: Limits
 IMAGE_MAX_SIZE_MB=3
+VIDEO_MAX_SIZE_MB=10
 IMAGE_USER_QUOTA_MB=50

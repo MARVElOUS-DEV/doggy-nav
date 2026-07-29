@@ -46,6 +46,7 @@ In Cloudflare Dashboard → Workers → doggy-nav-image-service → Settings:
 **Optional:**
 
 - `IMAGE_MAX_SIZE_MB`: Max file size (default: 3)
+- `VIDEO_MAX_SIZE_MB`: Max MP4/WebM file size (default: 10)
 - `IMAGE_USER_QUOTA_MB`: Per-user quota (default: 50)
 
 ## API

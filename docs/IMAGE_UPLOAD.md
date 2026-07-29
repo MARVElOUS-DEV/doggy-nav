@@ -33,14 +33,14 @@ The image upload feature allows authenticated users to upload images directly fr
 
 ## Constraints
 
-| Constraint            | Value                                    |
-| --------------------- | ---------------------------------------- |
-| Authentication        | Required (JWT)                           |
-| Max file size         | 3MB per image                            |
-| Max files per request | 3                                        |
-| Allowed types         | jpeg, png, gif, webp, svg, avif          |
-| User quota            | 50MB (unlimited for admins)              |
-| Filename format       | `{hostname}_{datetime}_{sanitized_name}` |
+| Constraint            | Value                                      |
+| --------------------- | ------------------------------------------ |
+| Authentication        | Required (JWT)                             |
+| Max file size         | 3MB per image, 10MB per MP4/WebM video     |
+| Max files per request | 3                                          |
+| Allowed types         | jpeg, png, gif, webp, svg, avif, MP4, WebM |
+| User quota            | 50MB (unlimited for admins)                |
+| Filename format       | `{hostname}_{datetime}_{sanitized_name}`   |
 
 ## Deployment Options
 
@@ -71,6 +71,8 @@ S3_ACCESS_KEY_ID=minioadmin
 S3_SECRET_ACCESS_KEY=minioadmin
 S3_BUCKET=doggy-nav-images
 IMAGES_PUBLIC_URL=http://localhost:9000/doggy-nav-images
+IMAGE_MAX_SIZE_MB=3
+VIDEO_MAX_SIZE_MB=10
 ```
 
 ## API Reference
@@ -94,7 +96,8 @@ Upload images to storage.
       {
         "url": "https://storage.example.com/images/user123/example_20240131120000_photo.jpg",
         "key": "images/user123/example_20240131120000_photo.jpg",
-        "size": 123456
+        "size": 123456,
+        "type": "image/jpeg"
       }
     ]
   }

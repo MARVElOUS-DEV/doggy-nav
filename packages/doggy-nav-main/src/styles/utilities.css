@@ -339,6 +339,26 @@
   background-size: 400% 400%;
   animation: hero-gradient-flow 12s ease infinite;
 }
+
+.hero-slide-cta {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.hero-slide-cta:hover,
+.hero-slide-cta:focus-visible {
+  color: #0f172a;
+  background-color: #f8fafc;
+  border-color: #f8fafc;
+  outline: 2px solid #f8fafc;
+  outline-offset: 2px;
+}
+
+.arco-carousel-slide > :not(.arco-carousel-item-current) .hero-slide-content {
+  visibility: hidden;
+}
+
 .bg-theme-primary {
   background-color: var(--color-primary);
 }

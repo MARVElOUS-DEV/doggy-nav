@@ -8,6 +8,7 @@ type Env = {
   JWT_SECRET: string;
   ALLOWED_ORIGINS?: string;
   IMAGE_MAX_SIZE_MB?: string;
+  VIDEO_MAX_SIZE_MB?: string;
   IMAGE_USER_QUOTA_MB?: string;
 };
 
@@ -22,7 +23,10 @@ const app = new Hono<{ Bindings: Env }>();
 // CORS
 app.use('*', async (c, next) => {
   const origin = c.req.header('Origin') || '';
-  const allowed = (c.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+  const allowed = (c.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   if (allowed.length && allowed.includes(origin)) {
     return cors({ origin, credentials: true })(c, next);
   }
@@ -48,7 +52,10 @@ async function verifyJwt(token: string, secret: string): Promise<JwtPayload | nu
 
 // R2 storage client
 class R2Storage {
-  constructor(private bucket: R2Bucket, private publicUrl: string) {}
+  constructor(
+    private bucket: R2Bucket,
+    private publicUrl: string
+  ) {}
 
   async upload(key: string, data: ArrayBuffer, contentType: string): Promise<string> {
     await this.bucket.put(key, data, { httpMetadata: { contentType } });
@@ -100,6 +107,7 @@ app.post('/upload', async (c) => {
   const storage = new R2Storage(c.env.IMAGES_BUCKET, c.env.IMAGES_PUBLIC_URL);
   const service = new ImageUploadService(storage, {
     maxFileSizeBytes: parseFloat(c.env.IMAGE_MAX_SIZE_MB || '3') * 1024 * 1024,
+    videoMaxFileSizeBytes: parseFloat(c.env.VIDEO_MAX_SIZE_MB || '10') * 1024 * 1024,
     userQuotaBytes: parseFloat(c.env.IMAGE_USER_QUOTA_MB || '50') * 1024 * 1024,
   });
 

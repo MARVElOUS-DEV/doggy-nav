@@ -134,6 +134,16 @@ jest.mock('../ioc/worker', () => {
               },
             ],
           },
+          heroSlides: [
+            {
+              title: 'Workers launch',
+              description: 'Latest release',
+              mediaType: 'image',
+              mediaUrl: 'https://example.com/hero.webp',
+              active: true,
+              order: 0,
+            },
+          ],
         }),
         update: jest.fn().mockResolvedValue({
           siteTitle: 'Doggy Nav Workers',
@@ -298,6 +308,7 @@ describe('Doggy Nav Worker API', () => {
       expect(data.data.feedbackUrl).toBe('https://example.com/feedback');
       expect(data.data.creatorProfile?.name).toBe('Worker Creator');
       expect(data.data.supportSettings?.defaultCurrency).toBe('hkd');
+      expect(data.data.heroSlides?.[0]?.mediaUrl).toBe('https://example.com/hero.webp');
     });
 
     it('should require auth for admin site settings route', async () => {

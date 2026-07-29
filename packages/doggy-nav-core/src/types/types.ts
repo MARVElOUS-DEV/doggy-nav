@@ -110,6 +110,17 @@ export interface CreatorProfileSettings {
   mission?: string | null;
 }
 
+export interface HeroSlideSettings {
+  title: string;
+  description: string;
+  mediaType?: 'image' | 'video';
+  mediaUrl?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  active: boolean;
+  order: number;
+}
+
 export interface SiteSettings {
   siteTitle?: string | null;
   logoUrl?: string | null;
@@ -120,6 +131,7 @@ export interface SiteSettings {
   feedbackUrl?: string | null;
   creatorProfile?: CreatorProfileSettings | null;
   supportSettings?: SupportPaymentSettings | null;
+  heroSlides?: HeroSlideSettings[];
   createdAt?: string;
   updatedAt?: string;
 }
