@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react';
-import type React from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Form, Input, Button, Message } from '@arco-design/web-react';
-import { motion } from 'framer-motion';
-import api from '@/utils/api';
-import type { RegisterFormValues } from '@/types';
+import { Button, Form, Input, Message } from '@arco-design/web-react';
+import { ArrowLeft, KeyRound, LockKeyhole, Mail, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { User, Mail, Lock, Key } from 'lucide-react';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import ThemeToggle from '@/components/Buttons/ThemeToggle';
+import type { RegisterFormValues } from '@/types';
+import api from '@/utils/api';
 
 const FormItem = Form.Item;
+const inputClass =
+  '!h-11 !rounded-xl !border-[#d7d1c5] !bg-[#fbfaf7] hover:!border-[#8b927e] dark:!border-white/15 dark:!bg-white/[0.06]';
+const iconClass = 'text-[#858a7d]';
 
 export default function RegisterPage() {
   const { t } = useTranslation('translation');
@@ -16,6 +21,13 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [requireInvite, setRequireInvite] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    api
+      .getAuthConfig()
+      .then((config) => setRequireInvite(Boolean(config.requireInviteForLocalRegister)))
+      .catch(() => setRequireInvite(false));
+  }, []);
 
   const handleSubmit = async (values: RegisterFormValues) => {
     if (values.password !== values.confirmPassword) {
@@ -26,211 +38,227 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const payload = requireInvite ? values : { ...values, inviteCode: undefined };
-      const { user: { username } } = await api.register(payload);
-      if (username) {
+      const { user } = await api.register(payload);
+      if (user.username) {
         Message.success(t('registration_successful'));
-        router.push('/login');
+        await router.push('/login');
       }
     } catch (error: unknown) {
-      if (typeof error === 'object' && error !== null && 'message' in error) {
-        Message.error((error as { message?: string }).message || t('registration_failed'));
-      } else {
-        Message.error(t('registration_failed'));
-      }
+      Message.error(
+        typeof error === 'object' && error !== null && 'message' in error
+          ? (error as { message?: string }).message || t('registration_failed')
+          : t('registration_failed')
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    api.getAuthConfig()
-      .then((config) => {
-        setRequireInvite(!!config.requireInviteForLocalRegister);
-      })
-      .catch(() => setRequireInvite(false));
-  }, []);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 dark:bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-400 dark:bg-purple-700 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400 dark:bg-pink-700 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse delay-500"></div>
-      </div>
+    <main className="min-h-[100dvh] bg-[#f4f0e8] text-[#20231d] dark:bg-[#10120f] dark:text-[#f4f0e8] lg:flex">
+      <section className="sticky top-0 hidden h-[100dvh] w-[58%] overflow-hidden lg:block">
+        <Image
+          src="/login-editorial.webp"
+          alt="A golden retriever resting in a quiet reading room"
+          fill
+          priority
+          sizes="58vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/25" aria-hidden="true" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10"
-      >
-        {/* Glass card */}
-        <div className="bg-white/20 dark:bg-gray-800/40 backdrop-blur-lg backdrop-saturate-150 rounded-2xl border border-white/30 dark:border-gray-700/40 shadow-2xl p-8 w-full max-w-md">
-          {/* Logo and title */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t('join_doggy_nav')}</h1>
-            <p className="text-gray-600 dark:text-gray-300">{t('create_account')}</p>
-          </motion.div>
+        <Link
+          href="/"
+          className="absolute left-10 top-9 flex items-center gap-3 text-white focus-visible:outline-2 focus-visible:outline-offset-4"
+          aria-label={t('back_to_home')}
+        >
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-white">
+            <Image src="/logo-icon.png" alt="" width={25} height={27} />
+          </span>
+          <span className="text-base font-semibold tracking-wide">Doggy Nav</span>
+        </Link>
 
-          {/* Register form */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Form
-              form={form}
-              onSubmit={handleSubmit}
-              layout="vertical"
-              requiredSymbol={false}
-            >
-              <FormItem
-                label={<span className="text-gray-700 dark:text-gray-200 font-medium">{t('username')}</span>}
-                field="username"
-                rules={[
-                  { required: true, message: t('username_required') },
-                  { minLength: 3, message: t('username_min_length') },
-                  { maxLength: 20, message: t('username_max_length') }
-                ]}
-              >
-                <Input
-                  placeholder={t('enter_username')}
-                  size="large"
-                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<User className="text-gray-400" size={20} />}
-                />
-              </FormItem>
-
-              <FormItem
-                label={<span className="text-gray-700 font-medium">{t('email')}</span>}
-                field="email"
-                rules={[
-                  { required: true, message: t('email_required') },
-                  { type: 'email', message: t('email_invalid') }
-                ]}
-              >
-                <Input
-                  placeholder={t('enter_email')}
-                  size="large"
-                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<Mail className="text-gray-400" size={20} />}
-                />
-              </FormItem>
-
-              <FormItem
-                label={<span className="text-gray-700 font-medium">{t('password')}</span>}
-                field="password"
-                rules={[
-                  { required: true, message: t('password_required') },
-                  { minLength: 6, message: t('password_min_length') }
-                ]}
-              >
-                <Input.Password
-                  placeholder={t('enter_password')}
-                  size="large"
-                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<Lock className="text-gray-400" size={20} />}
-                />
-              </FormItem>
-
-              <FormItem
-                label={<span className="text-gray-700 font-medium">{t('confirm_password')}</span>}
-                field="confirmPassword"
-                rules={[
-                  { required: true, message: t('confirm_password_required') },
-                  {
-                    validator: (value, callback) => {
-                      const password = form.getFieldValue('password');
-                      if (value && value !== password) {
-                        callback(t('password_mismatch'));
-                      } else {
-                        callback();
-                      }
-                    }
-                  }
-                ]}
-              >
-                <Input.Password
-                  placeholder={t('enter_confirm_password')}
-                  size="large"
-                  className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                  prefix={<Lock className="text-gray-400" size={20} />}
-                />
-              </FormItem>
-
-              {requireInvite && (
-                <FormItem
-                  label={<span className="text-gray-700 font-medium">{t('invite_code')}</span>}
-                  field="inviteCode"
-                  rules={[
-                    { required: true, message: t('invite_code_required') },
-                  ]}
-                >
-                  <Input
-                    placeholder={t('enter_invite_code')}
-                    size="large"
-                    className="bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/50 backdrop-blur-sm rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-                    prefix={<Key className="text-gray-400" size={20} />}
-                  />
-                </FormItem>
-              )}
-
-              <FormItem>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  size="large"
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-xl font-medium text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  {loading ? t('creating_account') : t('create_account_button')}
-                </Button>
-              </FormItem>
-            </Form>
-          </motion.div>
-
-          {/* Footer */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-center mt-6"
-          >
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              {t('already_have_account')}{' '}
-              <button
-                onClick={() => router.push('/login')}
-                className="cursor-pointer text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200"
-              >
-                {t('sign_in_link')}
-              </button>
-            </p>
-            <div className="mt-4 pt-4 border-t border-white/30 dark:border-gray-700/40">
-              <button
-                onClick={() => router.push('/')}
-                className="cursor-pointer text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200"
-              >
-                {t('back_to_home')}
-              </button>
-            </div>
-          </motion.div>
+        <div className="absolute bottom-12 left-10 max-w-md text-white">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-white/75">
+            A better way to wander
+          </p>
+          <p className="text-3xl font-medium leading-tight">
+            Save what matters. Find it again when it does.
+          </p>
         </div>
-      </motion.div>
-    </div>
+      </section>
+
+      <section className="relative flex min-h-[100dvh] flex-1 items-center justify-center px-6 py-16 sm:px-10">
+        <div className="absolute right-5 top-5 flex items-center gap-2">
+          <LanguageSwitcher className="!border-[#d8d2c6] !bg-transparent dark:!border-white/15" />
+          <ThemeToggle className="!border-[#d8d2c6] !bg-transparent dark:!border-white/15" />
+        </div>
+
+        <div className="w-full max-w-[390px]" aria-busy={loading}>
+          <Link
+            href="/"
+            className="mb-10 inline-flex items-center gap-2 text-sm font-medium text-[#686c62] transition-colors hover:text-[#273524] dark:text-[#a8aa9f] dark:hover:text-white lg:hidden"
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            {t('back_to_home').replace('←', '').trim()}
+          </Link>
+
+          <div className="mb-7">
+            <div className="mb-6 flex items-center gap-3 lg:hidden">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-white shadow-sm">
+                <Image src="/logo-icon.png" alt="" width={25} height={27} />
+              </span>
+              <span className="font-semibold tracking-wide">Doggy Nav</span>
+            </div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#747a6d] dark:text-[#9da092]">
+              Doggy Nav
+            </p>
+            <h1 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
+              {t('join_doggy_nav')}
+            </h1>
+            <p className="mt-3 text-base leading-6 text-[#696d64] dark:text-[#a7aa9f]">
+              {t('create_account')}
+            </p>
+          </div>
+
+          <Form
+            form={form}
+            onSubmit={handleSubmit}
+            layout="vertical"
+            requiredSymbol={false}
+            disabled={loading}
+            autoComplete="on"
+          >
+            <FormItem
+              label={<span className="font-medium">{t('username')}</span>}
+              field="username"
+              rules={[
+                { required: true, message: t('username_required') },
+                { minLength: 3, message: t('username_min_length') },
+                { maxLength: 20, message: t('username_max_length') },
+              ]}
+            >
+              <Input
+                name="username"
+                autoComplete="username"
+                placeholder={t('enter_username')}
+                size="large"
+                className={inputClass}
+                prefix={<UserRound size={18} className={iconClass} aria-hidden="true" />}
+              />
+            </FormItem>
+
+            <FormItem
+              label={<span className="font-medium">{t('email')}</span>}
+              field="email"
+              rules={[
+                { required: true, message: t('email_required') },
+                { type: 'email', message: t('email_invalid') },
+              ]}
+            >
+              <Input
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder={t('enter_email')}
+                size="large"
+                className={inputClass}
+                prefix={<Mail size={18} className={iconClass} aria-hidden="true" />}
+              />
+            </FormItem>
+
+            <FormItem
+              label={<span className="font-medium">{t('password')}</span>}
+              field="password"
+              rules={[
+                { required: true, message: t('password_required') },
+                { minLength: 6, message: t('password_min_length') },
+              ]}
+            >
+              <Input.Password
+                name="password"
+                autoComplete="new-password"
+                placeholder={t('enter_password')}
+                size="large"
+                className={inputClass}
+                prefix={<LockKeyhole size={18} className={iconClass} aria-hidden="true" />}
+              />
+            </FormItem>
+
+            <FormItem
+              label={<span className="font-medium">{t('confirm_password')}</span>}
+              field="confirmPassword"
+              dependencies={['password']}
+              rules={[
+                { required: true, message: t('confirm_password_required') },
+                {
+                  validator: (value, callback) => {
+                    if (value && value !== form.getFieldValue('password')) {
+                      callback(t('password_mismatch'));
+                    } else {
+                      callback();
+                    }
+                  },
+                },
+              ]}
+            >
+              <Input.Password
+                name="confirmPassword"
+                autoComplete="new-password"
+                placeholder={t('enter_confirm_password')}
+                size="large"
+                className={inputClass}
+                prefix={<LockKeyhole size={18} className={iconClass} aria-hidden="true" />}
+              />
+            </FormItem>
+
+            {requireInvite ? (
+              <FormItem
+                label={<span className="font-medium">{t('invite_code')}</span>}
+                field="inviteCode"
+                rules={[{ required: true, message: t('invite_code_required') }]}
+              >
+                <Input
+                  name="inviteCode"
+                  autoComplete="off"
+                  placeholder={t('enter_invite_code')}
+                  size="large"
+                  className={inputClass}
+                  prefix={<KeyRound size={18} className={iconClass} aria-hidden="true" />}
+                />
+              </FormItem>
+            ) : null}
+
+            <FormItem className="!mb-0 !mt-2">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                loadingFixedWidth
+                long
+                size="large"
+                className="!h-12 !rounded-xl !border-none !bg-[#273524] !font-semibold !shadow-none hover:!bg-[#354632] dark:!bg-[#dce7d5] dark:!text-[#1a2118] dark:hover:!bg-white"
+              >
+                {loading ? t('creating_account') : t('create_account_button')}
+              </Button>
+            </FormItem>
+          </Form>
+
+          <p className="mt-7 text-center text-sm text-[#696d64] dark:text-[#a7aa9f]">
+            {t('already_have_account')}{' '}
+            <Link
+              href="/login"
+              className="font-semibold text-[#273524] underline decoration-[#aeb5a5] underline-offset-4 hover:decoration-[#273524] dark:text-[#dce7d5]"
+            >
+              {t('sign_in_link')}
+            </Link>
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
 
-// Use custom layout to hide sidebar and header
-RegisterPage.getLayout = function getLayout(page: React.ReactElement) {
-  return <>{page}</>;
+RegisterPage.getLayout = function getLayout(page: ReactElement) {
+  return page;
 };
