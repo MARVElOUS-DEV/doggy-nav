@@ -19,6 +19,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@simplewebauthn/server": "13.3.0",
     "bcryptjs": "^2.4.3",
     "doggy-nav-core": "workspace:*",
     "hono": "^4.11.7",

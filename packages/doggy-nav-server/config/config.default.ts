@@ -154,6 +154,11 @@ export default (appInfo: EggAppInfo) => {
     },
   };
 
+  config.passkey = {
+    rpID: process.env.PASSKEY_RP_ID || '',
+    origin: process.env.PASSKEY_ORIGIN || process.env.PUBLIC_BASE_URL || '',
+  };
+
   config.invite = {
     requireForLocalRegister: process.env.REQUIRE_INVITE_CODE === 'true' || false,
     codeLength: 12,

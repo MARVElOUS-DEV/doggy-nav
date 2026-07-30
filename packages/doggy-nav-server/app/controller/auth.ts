@@ -1,5 +1,18 @@
 import { randomBytes } from 'crypto';
+import { URL } from 'url';
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+} from '@simplewebauthn/server';
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+  WebAuthnCredential,
+} from '@simplewebauthn/server';
 import CommonController from '../core/base_controller';
+import { AuthenticationError, NotFoundError, ValidationError } from '../core/errors';
 import {
   clearAuthCookies,
   setAuthCookies,
@@ -16,6 +29,55 @@ import {
 } from '../utils/appSource';
 
 export default class AuthController extends CommonController {
+  private getPasskeyConfig() {
+    const { app, ctx } = this;
+    const configuredOrigin = String((app.config as any).passkey?.origin || '').trim();
+    const forwardedHost = ctx.get('X-Forwarded-Host').split(',')[0].trim();
+    const forwardedProto = ctx.get('X-Forwarded-Proto').split(',')[0].trim();
+    const host = forwardedHost || ctx.host;
+    const origin = new URL(
+      configuredOrigin || `${forwardedProto || ctx.protocol || 'http'}://${host}`
+    );
+    const rpID = String((app.config as any).passkey?.rpID || origin.hostname).trim();
+
+    if (origin.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(origin.hostname)) {
+      throw new ValidationError('Passkeys require HTTPS');
+    }
+    if (!rpID) throw new ValidationError('Passkey RP ID is not configured');
+
+    return { origin: origin.origin, rpID };
+  }
+
+  private challengeCookieName(kind: 'login' | 'registration') {
+    return `passkey_${kind}_challenge`;
+  }
+
+  private setPasskeyChallenge(kind: 'login' | 'registration', challenge: string) {
+    this.ctx.cookies.set(this.challengeCookieName(kind), challenge, {
+      httpOnly: true,
+      maxAge: 5 * 60 * 1000,
+      overwrite: true,
+      sameSite: 'strict',
+      secure: this.ctx.secure,
+      signed: true,
+    });
+  }
+
+  private consumePasskeyChallenge(kind: 'login' | 'registration') {
+    const name = this.challengeCookieName(kind);
+    const challenge = this.ctx.cookies.get(name);
+    this.ctx.cookies.set(name, '', {
+      httpOnly: true,
+      maxAge: 0,
+      overwrite: true,
+      sameSite: 'strict',
+      secure: this.ctx.secure,
+      signed: true,
+    });
+    if (!challenge) throw new ValidationError('Passkey challenge expired; please try again');
+    return challenge;
+  }
+
   private async issueCookiesForUser(user: {
     _id: any;
     username: string;
@@ -164,6 +226,155 @@ export default class AuthController extends CommonController {
     const { app } = this;
     const providers = getEnabledProviders(app);
     this.success({ providers });
+  }
+
+  async listPasskeys() {
+    const userId = this.ctx.state.userinfo?.userId;
+    const user = await this.ctx.model.User.findById(userId).select('+passkeys').lean();
+    if (!user) throw new NotFoundError('用户不存在');
+
+    this.success(
+      ((user as any).passkeys || []).map((passkey: any) => ({
+        id: passkey._id,
+        name: passkey.name,
+        createdAt: passkey.createdAt,
+        lastUsedAt: passkey.lastUsedAt,
+      }))
+    );
+  }
+
+  async registerPasskey() {
+    const { ctx } = this;
+    const userId = ctx.state.userinfo?.userId;
+    const user = await ctx.model.User.findById(userId).select('+passkeys');
+    if (!user) throw new NotFoundError('用户不存在');
+
+    const response = ctx.request.body?.credential as RegistrationResponseJSON | undefined;
+    const { origin, rpID } = this.getPasskeyConfig();
+
+    if (!response) {
+      const options = await generateRegistrationOptions({
+        rpName: 'Doggy Nav',
+        rpID,
+        userID: new Uint8Array(Buffer.from(String(user._id))),
+        userName: user.username,
+        userDisplayName: user.username,
+        attestationType: 'none',
+        excludeCredentials: (user.passkeys || []).map((passkey: any) => ({
+          id: passkey.credentialId,
+          transports: passkey.transports,
+        })),
+        authenticatorSelection: {
+          residentKey: 'required',
+          userVerification: 'required',
+        },
+      });
+      this.setPasskeyChallenge('registration', options.challenge);
+      this.success(options);
+      return;
+    }
+
+    const challenge = this.consumePasskeyChallenge('registration');
+    try {
+      const verification = await verifyRegistrationResponse({
+        response,
+        expectedChallenge: challenge,
+        expectedOrigin: origin,
+        expectedRPID: rpID,
+        requireUserVerification: true,
+      });
+      const credential = verification.registrationInfo?.credential;
+      if (!verification.verified || !verification.registrationInfo || !credential) {
+        throw new Error('Unverified registration');
+      }
+
+      const exists = await ctx.model.User.exists({
+        'passkeys.credentialId': credential.id,
+      });
+      if (exists) throw new ValidationError('This passkey is already registered');
+
+      const kind =
+        response.authenticatorAttachment === 'cross-platform' ? 'Security key' : 'Passkey';
+      user.passkeys.push({
+        credentialId: credential.id,
+        publicKey: Buffer.from(Array.from(credential.publicKey) as any),
+        counter: credential.counter,
+        transports: credential.transports || [],
+        deviceType: verification.registrationInfo.credentialDeviceType,
+        backedUp: verification.registrationInfo.credentialBackedUp,
+        name: `${kind} ${user.passkeys.length + 1}`,
+      });
+      await user.save();
+      this.success({ registered: true });
+    } catch (error) {
+      if (error instanceof ValidationError) throw error;
+      ctx.logger.warn('Passkey registration failed', error);
+      throw new ValidationError('Passkey registration could not be verified');
+    }
+  }
+
+  async deletePasskey() {
+    const { ctx } = this;
+    const result = await ctx.model.User.updateOne(
+      { _id: ctx.state.userinfo?.userId, 'passkeys._id': ctx.params.id },
+      { $pull: { passkeys: { _id: ctx.params.id } } }
+    );
+    if (!result.modifiedCount) throw new NotFoundError('Passkey not found');
+    this.success({ deleted: true });
+  }
+
+  async passkeyLogin() {
+    const { ctx } = this;
+    const response = ctx.request.body?.credential as AuthenticationResponseJSON | undefined;
+    const { origin, rpID } = this.getPasskeyConfig();
+
+    if (!response) {
+      const options = await generateAuthenticationOptions({
+        rpID,
+        userVerification: 'required',
+      });
+      this.setPasskeyChallenge('login', options.challenge);
+      this.success(options);
+      return;
+    }
+
+    const challenge = this.consumePasskeyChallenge('login');
+    try {
+      if (!response.id) throw new Error('Missing credential ID');
+      const user = await ctx.model.User.findOne({
+        'passkeys.credentialId': response.id,
+        isActive: true,
+      }).select('+passkeys');
+      const passkey = user?.passkeys?.find(
+        (candidate: any) => candidate.credentialId === response.id
+      );
+      if (!user || !passkey) throw new Error('Unknown passkey');
+
+      const credential: WebAuthnCredential = {
+        id: passkey.credentialId,
+        publicKey: new Uint8Array(passkey.publicKey),
+        counter: passkey.counter,
+        transports: passkey.transports,
+      };
+      const verification = await verifyAuthenticationResponse({
+        response,
+        expectedChallenge: challenge,
+        expectedOrigin: origin,
+        expectedRPID: rpID,
+        credential,
+        requireUserVerification: true,
+      });
+      if (!verification.verified) throw new Error('Unverified authentication');
+
+      passkey.counter = verification.authenticationInfo.newCounter;
+      passkey.lastUsedAt = new Date();
+      await user.save();
+      await this.issueCookiesForUser(user);
+      this.success({ user: await ctx.service.user.getById(user._id) });
+    } catch (error) {
+      ctx.logger.warn('Passkey login failed', error);
+      throw new AuthenticationError('Passkey login failed');
+    }
   }
 
   async getAuthConfig() {

@@ -7,7 +7,7 @@ const DOGGY_SERVER_CLIENT_SECRET = process.env.DOGGY_SERVER_CLIENT_SECRET;
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 interface ApiConfig {
-  method: HttpMethod;
+  method: HttpMethod | HttpMethod[];
   endpoint?: string; // optional if buildUrl provided
   paramName?: string;
   paramNames?: string[];
@@ -16,7 +16,9 @@ interface ApiConfig {
 
 export const createApiHandler = (config: ApiConfig) => {
   return async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== config.method) {
+    const allowedMethods = Array.isArray(config.method) ? config.method : [config.method];
+    if (!req.method || !allowedMethods.includes(req.method as HttpMethod)) {
+      res.setHeader('Allow', allowedMethods);
       return res.status(405).json({
         code: 0,
         message: 'Method not allowed',

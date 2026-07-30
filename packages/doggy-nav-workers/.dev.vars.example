@@ -4,9 +4,13 @@ ALLOWED_ORIGINS="http://localhost:3001"
 RATE_LIMIT_MAX="100"
 RATE_LIMIT_WINDOW_MS="60000"
 NODE_ENV="development"
+PUBLIC_BASE_URL="http://localhost:3001"
+# Override these when the passkey origin/RP differs from PUBLIC_BASE_URL.
+PASSKEY_ORIGIN="http://localhost:3001"
+PASSKEY_RP_ID="localhost"
 REQUIRE_CLIENT_SECRET=false
 RATE_LIMIT_ENABLED=false
-CLIENT_SECRET_BYPASS="/api/auth/register,/api/auth/login,/api/application/verify-client-secret,/api/auth/:provider,/api/auth/:provider/callback,/api/auth/providers,/api/auth/config,/api/auth/me,/api/auth/logout,/api/system/version,/api/tool-outputs/converter/published/:publishId"
+CLIENT_SECRET_BYPASS="/api/auth/register,/api/auth/login,/api/auth/passkey,/api/application/verify-client-secret,/api/auth/:provider,/api/auth/:provider/callback,/api/auth/providers,/api/auth/config,/api/auth/me,/api/auth/logout,/api/system/version,/api/tool-outputs/converter/published/:publishId"
 TOOL_OUTPUT_REQUIRE_HTTPS=false
 
 # optional for OAuth, if you do not need oauth login, remove them from cloudflare envs

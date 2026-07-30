@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Button, Form, Input, Message } from '@arco-design/web-react';
 import { useSetAtom } from 'jotai';
-import { ArrowLeft, LockKeyhole, UserRound } from 'lucide-react';
+import { ArrowLeft, Fingerprint, LockKeyhole, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { GitHubIcon, GoogleIcon, LinuxDoIcon } from '@/components/OAuthIcons';
 import ThemeToggle from '@/components/Buttons/ThemeToggle';
@@ -20,9 +21,16 @@ export default function LoginPage() {
   const { t } = useTranslation('translation');
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [passkeySupported, setPasskeySupported] = useState(false);
   const [providers, setProviders] = useState<OAuthProvider[]>([]);
   const dispatchAuth = useSetAtom(authActionsAtom);
   const router = useRouter();
+  const busy = loading || passkeyLoading;
+
+  useEffect(() => {
+    setPasskeySupported(browserSupportsWebAuthn());
+  }, []);
 
   const providerMeta = useMemo<Record<OAuthProvider, { icon: ReactNode; label: string }>>(
     () => ({
@@ -90,6 +98,27 @@ export default function LoginPage() {
     }
   };
 
+  const handlePasskeyLogin = async () => {
+    setPasskeyLoading(true);
+    try {
+      const optionsJSON = await api.beginPasskeyLogin();
+      const credential = await startAuthentication({ optionsJSON });
+      const { user } = await api.finishPasskeyLogin(credential);
+      dispatchAuth({ type: 'LOGIN', payload: { user } });
+      Message.success(t('login_successful'));
+      await router.push((router.query.redirect as string) || '/');
+    } catch (error: unknown) {
+      Message.error(
+        typeof error === 'object' && error !== null && 'message' in error
+          ? (error as { message?: string }).message ||
+              t('passkey_login_failed', { defaultValue: 'Passkey sign-in failed' })
+          : t('passkey_login_failed', { defaultValue: 'Passkey sign-in failed' })
+      );
+    } finally {
+      setPasskeyLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-[100dvh] bg-[#f4f0e8] text-[#20231d] dark:bg-[#10120f] dark:text-[#f4f0e8] lg:flex">
       <section className="relative hidden min-h-[100dvh] w-[58%] overflow-hidden lg:block">
@@ -130,7 +159,7 @@ export default function LoginPage() {
           <ThemeToggle className="!border-[#d8d2c6] !bg-transparent dark:!border-white/15" />
         </div>
 
-        <div className="w-full max-w-[390px]" aria-busy={loading}>
+        <div className="w-full max-w-[390px]" aria-busy={busy}>
           <Link
             href="/"
             className="mb-12 inline-flex items-center gap-2 text-sm font-medium text-[#686c62] transition-colors hover:text-[#273524] dark:text-[#a8aa9f] dark:hover:text-white lg:hidden"
@@ -162,7 +191,7 @@ export default function LoginPage() {
             onSubmit={handleSubmit}
             layout="vertical"
             requiredSymbol={false}
-            disabled={loading}
+            disabled={busy}
             autoComplete="on"
           >
             <FormItem
@@ -216,6 +245,27 @@ export default function LoginPage() {
             </FormItem>
           </Form>
 
+          {passkeySupported ? (
+            <div className="mt-7">
+              <div className="mb-4 flex items-center gap-4 text-xs text-[#85887f]">
+                <span className="h-px flex-1 bg-[#d9d3c8] dark:bg-white/15" />
+                {t('or', { defaultValue: 'Or' })}
+                <span className="h-px flex-1 bg-[#d9d3c8] dark:bg-white/15" />
+              </div>
+              <button
+                type="button"
+                onClick={handlePasskeyLogin}
+                disabled={busy}
+                className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-[#9ca894] bg-[#eef3e9] px-4 font-semibold text-[#273524] transition-colors hover:bg-[#e3ecdc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#273524] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#71806a] dark:bg-[#1b2419] dark:text-[#dce7d5] dark:hover:bg-[#243020]"
+              >
+                <Fingerprint size={20} aria-hidden="true" />
+                {passkeyLoading
+                  ? t('passkey_signing_in', { defaultValue: 'Waiting for your passkey…' })
+                  : t('sign_in_with_passkey', { defaultValue: 'Sign in with a passkey' })}
+              </button>
+            </div>
+          ) : null}
+
           {providers.length > 0 ? (
             <div className="mt-7">
               <div className="mb-4 flex items-center gap-4 text-xs text-[#85887f]">
@@ -231,10 +281,12 @@ export default function LoginPage() {
                     onClick={() => {
                       window.location.href = `/api/auth/${provider}`;
                     }}
-                    disabled={loading}
+                    disabled={busy}
                     className="flex h-12 cursor-pointer items-center justify-center gap-3 rounded-xl border border-[#d7d1c5] bg-transparent px-4 font-medium transition-colors hover:border-[#8b927e] hover:bg-white/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#273524] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:hover:bg-white/[0.06]"
                   >
-                    <span className="grid h-5 w-5 place-items-center">{providerMeta[provider].icon}</span>
+                    <span className="grid h-5 w-5 place-items-center">
+                      {providerMeta[provider].icon}
+                    </span>
                     {providerMeta[provider].label}
                   </button>
                 ))}

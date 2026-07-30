@@ -158,6 +158,10 @@ export const defaultRateLimitRoutes: Record<string, RateLimitEntry> = {
     limit: 10,
     interval: 300000, // 5 minutes
   },
+  '/api/auth/passkey': {
+    limit: 10,
+    interval: 300000,
+  },
   '/api/auth/register': {
     limit: 5,
     interval: 300000, // 5 minutes

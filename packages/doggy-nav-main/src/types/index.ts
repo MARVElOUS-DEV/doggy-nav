@@ -72,6 +72,13 @@ export interface LoginFormValues {
   password: string;
 }
 
+export interface Passkey {
+  id: string;
+  name: string;
+  createdAt: string;
+  lastUsedAt?: string | null;
+}
+
 export interface RegisterFormValues {
   username: string;
   email: string;

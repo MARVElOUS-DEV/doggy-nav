@@ -29,6 +29,8 @@ services:
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
       RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001,http://localhost:8080}
+      PASSKEY_RP_ID: ${PASSKEY_RP_ID:-localhost}
+      PASSKEY_ORIGIN: ${PASSKEY_ORIGIN:-http://localhost:3001}
     ports:
       - '3002:3002'
     depends_on:

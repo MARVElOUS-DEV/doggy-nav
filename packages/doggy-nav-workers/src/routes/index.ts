@@ -23,6 +23,7 @@ import siteSettingsRoutes from './siteSettings';
 import imageRoutes from './images';
 import toolOutputRoutes from './toolOutputs';
 import paymentRoutes from './payments';
+import passkeyRoutes from './passkeys';
 
 export type Env = {
   DB: D1Database;
@@ -50,9 +51,13 @@ export type Env = {
   STRIPE_SUPPORT_SUCCESS_URL?: string;
   STRIPE_SUPPORT_CANCEL_URL?: string;
   STRIPE_SUPPORT_CREATOR_NAME?: string;
+  PASSKEY_ORIGIN?: string;
+  PASSKEY_RP_ID?: string;
+  PUBLIC_BASE_URL?: string;
 };
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>) {
+  app.route('/api', passkeyRoutes);
   app.route('/api/auth', authRoutes);
   app.route('/api/users', userRoutes);
   // Server-compat alias (server uses singular /api/user)

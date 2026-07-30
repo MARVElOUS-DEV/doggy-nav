@@ -99,6 +99,8 @@ jobs:
           RATE_LIMIT_WINDOW_MS: ${{ vars.RATE_LIMIT_WINDOW_MS }}
           NODE_ENV: ${{ vars.NODE_ENV }}
           PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+          PASSKEY_ORIGIN: ${{ vars.PASSKEY_ORIGIN }}
+          PASSKEY_RP_ID: ${{ vars.PASSKEY_RP_ID }}
           REQUIRE_INVITE_CODE: ${{ vars.REQUIRE_INVITE_CODE }}
           # GitHub OAuth (non-secret)
           GITHUB_CLIENT_ID: ${{ vars.GITHUB_CLIENT_ID }}
@@ -125,6 +127,8 @@ jobs:
           add_var RATE_LIMIT_WINDOW_MS "${RATE_LIMIT_WINDOW_MS:-}"
           add_var NODE_ENV "${NODE_ENV:-}"
           add_var PUBLIC_BASE_URL "${PUBLIC_BASE_URL:-}"
+          add_var PASSKEY_ORIGIN "${PASSKEY_ORIGIN:-}"
+          add_var PASSKEY_RP_ID "${PASSKEY_RP_ID:-}"
           add_var REQUIRE_INVITE_CODE "${REQUIRE_INVITE_CODE:-}"
           add_var GITHUB_CLIENT_ID "${GITHUB_CLIENT_ID:-}"
           add_var GITHUB_CALLBACK_URL "${GITHUB_CALLBACK_URL:-}"
@@ -137,7 +141,7 @@ jobs:
           add_var LINUXDO_PROFILE_URL "${LINUXDO_PROFILE_URL:-}"
           add_var LINUXDO_SCOPE "${LINUXDO_SCOPE:-}"
           add_var REQUIRE_CLIENT_SECRET "${REQUIRE_CLIENT_SECRET:-false}"
-          add_var CLIENT_SECRET_BYPASS "${CLIENT_SECRET_BYPASS:-/api/auth/register,/api/auth/login,/api/application/verify-client-secret,/api/auth/:provider,/api/auth/:provider/callback,/api/auth/providers,/api/auth/config,/api/auth/me,/api/auth/logout}"
+          add_var CLIENT_SECRET_BYPASS "${CLIENT_SECRET_BYPASS:-/api/auth/register,/api/auth/login,/api/auth/passkey,/api/application/verify-client-secret,/api/auth/:provider,/api/auth/:provider/callback,/api/auth/providers,/api/auth/config,/api/auth/me,/api/auth/logout}"
           add_var SERVER_COMMIT_ID "${SERVER_COMMIT_ID:-}"
           # Optional manual K=V input; split only on first '=' to keep ':' in values
           if [ -n "${CF_VARS_INPUT:-}" ]; then

@@ -32,6 +32,12 @@ export const routePermissions: RoutePermission[] = [
   },
   {
     method: 'POST',
+    path: '/api/auth/passkey',
+    require: { level: 'public' },
+    description: 'Start or finish passkey login',
+  },
+  {
+    method: 'POST',
     path: '/api/auth/refresh',
     require: { level: 'public' },
     description: 'Refresh access token',
@@ -142,6 +148,24 @@ export const routePermissions: RoutePermission[] = [
     path: '/api/user/password',
     require: { level: 'authenticated' },
     description: 'Change user password',
+  },
+  {
+    method: 'GET',
+    path: '/api/user/passkeys',
+    require: { level: 'authenticated' },
+    description: 'List user passkeys',
+  },
+  {
+    method: 'POST',
+    path: '/api/user/passkeys',
+    require: { level: 'authenticated' },
+    description: 'Start or finish passkey registration',
+  },
+  {
+    method: 'DELETE',
+    path: '/api/user/passkeys/:id',
+    require: { level: 'authenticated' },
+    description: 'Delete a user passkey',
   },
 
   // User management

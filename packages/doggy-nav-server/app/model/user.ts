@@ -2,6 +2,21 @@ export default function (app: any) {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
 
+  const PasskeySchema = new Schema(
+    {
+      credentialId: { type: String, required: true },
+      publicKey: { type: Buffer, required: true },
+      counter: { type: Number, required: true, default: 0 },
+      transports: { type: [String], default: [] },
+      deviceType: { type: String, required: true },
+      backedUp: { type: Boolean, required: true, default: false },
+      name: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+      lastUsedAt: { type: Date, default: null },
+    },
+    { _id: true }
+  );
+
   const UserSchema = new Schema(
     {
       username: {
@@ -66,6 +81,11 @@ export default function (app: any) {
         type: String,
         default: null,
       },
+      passkeys: {
+        type: [PasskeySchema],
+        default: [],
+        select: false,
+      },
     },
     {
       collection: 'user',
@@ -78,6 +98,7 @@ export default function (app: any) {
           }
           // Remove sensitive fields and __v
           delete ret.password;
+          delete ret.passkeys;
           delete ret.resetPasswordToken;
           delete ret.__v;
           return ret;
@@ -91,6 +112,7 @@ export default function (app: any) {
           }
           // Remove sensitive fields and __v
           delete ret.password;
+          delete ret.passkeys;
           delete ret.resetPasswordToken;
           delete ret.__v;
           return ret;
@@ -101,6 +123,7 @@ export default function (app: any) {
 
   UserSchema.index({ roles: 1 });
   UserSchema.index({ groups: 1 });
+  UserSchema.index({ 'passkeys.credentialId': 1 }, { unique: true, sparse: true });
 
   return mongoose.model('User', UserSchema);
 }

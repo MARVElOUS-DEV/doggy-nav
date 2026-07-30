@@ -18,16 +18,10 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-// Provide crypto polyfill for Node.js environment
+// Provide the Web Crypto API used by JWT and WebAuthn in the Worker runtime.
+const nodeCrypto = require('node:crypto').webcrypto;
 Object.defineProperty(global, 'crypto', {
-  value: {
-    getRandomValues: (arr: any) => {
-      for (let i = 0; i < arr.length; i++) {
-        arr[i] = Math.floor(Math.random() * 256);
-      }
-      return arr;
-    },
-  },
+  value: nodeCrypto,
   writable: true,
   configurable: true,
 });

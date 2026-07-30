@@ -14,6 +14,7 @@ export default (app: Application) => {
   router.get('/api/auth/token', controller.auth.getAccessToken);
   router.post('/api/auth/register', controller.user.register);
   router.post('/api/auth/login', controller.user.login);
+  router.post('/api/auth/passkey', controller.auth.passkeyLogin);
   // OAuth callback route (dynamic provider), Note: dynamic route should be after the common ones.
   router.get('/api/auth/:provider/callback', oauthCallback, controller.auth.issueTokenAndRedirect);
   // OAuth init route (dynamic provider)
@@ -30,6 +31,9 @@ export default (app: Application) => {
 
   router.get('/api/user/profile', controller.user.profile);
   router.put('/api/user/profile', controller.user.updateProfile);
+  router.get('/api/user/passkeys', controller.auth.listPasskeys);
+  router.post('/api/user/passkeys', controller.auth.registerPasskey);
+  router.delete('/api/user/passkeys/:id', controller.auth.deletePasskey);
   router.get('/api/tool-outputs/converter', controller.toolOutputPublication.getCurrent);
   router.put('/api/tool-outputs/converter', controller.toolOutputPublication.upsert);
   router.post(

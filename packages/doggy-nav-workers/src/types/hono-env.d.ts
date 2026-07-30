@@ -33,4 +33,7 @@ export type Env = {
   STRIPE_SUPPORT_SUCCESS_URL?: string;
   STRIPE_SUPPORT_CANCEL_URL?: string;
   STRIPE_SUPPORT_CREATOR_NAME?: string;
+  PASSKEY_ORIGIN?: string;
+  PASSKEY_RP_ID?: string;
+  PUBLIC_BASE_URL?: string;
 };

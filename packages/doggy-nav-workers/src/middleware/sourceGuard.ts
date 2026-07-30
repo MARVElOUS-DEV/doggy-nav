@@ -10,6 +10,7 @@ function isAuthPublicPath(path: string, method: string): boolean {
     m === 'POST' &&
     (p === '/api/auth/login' ||
       p === '/api/auth/register' ||
+      p === '/api/auth/passkey' ||
       p === '/api/auth/refresh' ||
       p === '/api/auth/logout')
   ) {

@@ -357,6 +357,19 @@ describe('Doggy Nav Worker API', () => {
   });
 
   describe('Authentication', () => {
+    it('should start passkey login', async () => {
+      const response = await app.request('/api/auth/passkey', {
+        method: 'POST',
+        headers: { 'X-Forwarded-Host': 'localhost', 'X-Forwarded-Proto': 'http' },
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.code).toBe(1);
+      expect(data.data.challenge).toEqual(expect.any(String));
+      expect(response.headers.get('set-cookie')).toContain('passkey_login_challenge=');
+    });
+
     it.skip('should handle registration', async () => {
       (mockDB.prepare().bind().first as jest.Mock<any, any>).mockResolvedValue(null); // No existing user
 

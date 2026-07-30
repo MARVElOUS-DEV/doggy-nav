@@ -5,6 +5,7 @@ import type {
   Tag,
   User,
   LoginFormValues,
+  Passkey,
   RegisterFormValues,
   OAuthProvider,
   SystemVersionInfo,
@@ -14,6 +15,10 @@ import type {
   ToolOutputPublication,
 } from '@/types';
 import type { SupportCurrency } from '@/config/aboutMe';
+import type {
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+} from '@simplewebauthn/browser';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
@@ -139,6 +144,12 @@ const api = {
   login: (credentials: LoginFormValues): Promise<{ user: User; token?: string }> =>
     axios.post('/api/auth/login', credentials),
 
+  beginPasskeyLogin: (): Promise<PublicKeyCredentialRequestOptionsJSON> =>
+    axios.post('/api/auth/passkey'),
+
+  finishPasskeyLogin: (credential: unknown): Promise<{ user: User }> =>
+    axios.post('/api/auth/passkey', { credential }),
+
   register: (userData: RegisterFormValues): Promise<{ user: User }> =>
     axios.post('/api/auth/register', userData),
 
@@ -158,6 +169,17 @@ const api = {
 
   changePassword: (data: { currentPassword: string; newPassword: string }): Promise<void> =>
     axios.put('/api/user/password', data),
+
+  getPasskeys: (): Promise<Passkey[]> => axios.get('/api/user/passkeys'),
+
+  beginPasskeyRegistration: (): Promise<PublicKeyCredentialCreationOptionsJSON> =>
+    axios.post('/api/user/passkeys'),
+
+  finishPasskeyRegistration: (credential: unknown): Promise<{ registered: boolean }> =>
+    axios.post('/api/user/passkeys', { credential }),
+
+  deletePasskey: (id: string): Promise<{ deleted: boolean }> =>
+    axios.delete(`/api/user/passkeys/${encodeURIComponent(id)}`),
 
   // Favorite APIs - require authentication
   addFavorite: (navId: string): Promise<void> => axios.post('/api/favorites', { navId }),
