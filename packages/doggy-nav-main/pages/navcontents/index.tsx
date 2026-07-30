@@ -1,4 +1,4 @@
-import { Empty, Spin } from '@arco-design/web-react';
+import { Empty } from '@arco-design/web-react';
 import AppNavList from '@/components/AppNavList';
 import api from '@/utils/api';
 import { useApi } from '@/hooks/useApi';
@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { categoriesAtom, selectedCategoryAtom } from '@/store/store';
 import type { Category, NavItem } from '@/types';
+import { LoadingIndicator } from '@/components/PageLoading';
 
 function findCategoryById(categories: Category[], targetId: string): Category | null {
   for (const category of categories) {
@@ -94,14 +95,7 @@ export default function NavContentsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <div className="text-center">
-          <Spin size={40} />
-          <p className="mt-4 text-theme-muted-foreground">{t('loading_content')}</p>
-        </div>
-      </div>
-    );
+    return <LoadingIndicator className="py-20" label={t('loading_content')} />;
   }
 
   if (!selectedCategoryId && !currentCategory && sectionData.length === 0) {

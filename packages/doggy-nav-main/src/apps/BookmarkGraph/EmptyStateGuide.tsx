@@ -34,7 +34,7 @@ const EmptyStateGuide: React.FC<EmptyStateGuideProps> = ({
   return (
     <div className="flex flex-col items-center justify-center h-full px-4">
       <div className="max-w-lg w-full text-center">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center">
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-theme-muted">
           <svg
             className="w-10 h-10 text-blue-600 dark:text-blue-400"
             fill="none"

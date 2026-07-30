@@ -1,9 +1,10 @@
 'use client';
 
 import { useRef, useCallback } from 'react';
-import { IconImage, IconLoading } from '@arco-design/web-react/icon';
+import { IconImage } from '@arco-design/web-react/icon';
 import { Message, Tooltip } from '@arco-design/web-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { LoadingSpinner } from '@/components/PageLoading';
 
 interface ImageUploadToolbarProps {
   onInsert: (markdown: string) => void;
@@ -55,7 +56,7 @@ export default function ImageUploadToolbar({ onInsert, disabled, imageHostname }
           className="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {uploading ? (
-            <IconLoading className="text-blue-500 animate-spin" />
+            <LoadingSpinner className="h-4 w-4" />
           ) : (
             <IconImage className="text-gray-600 dark:text-gray-300" />
           )}

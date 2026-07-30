@@ -1,7 +1,8 @@
 import { memo, useState } from 'react';
-import { Spin, Button, Message } from '@arco-design/web-react';
+import { Button, Message } from '@arco-design/web-react';
 import { IconCopy, IconCheck } from '@arco-design/web-react/icon';
 import { TranslationPanelProps } from './types';
+import { LoadingIndicator } from '@/components/PageLoading';
 
 /**
  * Translation Panel Component
@@ -84,7 +85,7 @@ function TranslationPanel({
               backdropFilter: 'blur(2px)',
             }}
           >
-            <Spin size={32} />
+            <LoadingIndicator />
           </div>
         )}
 

@@ -9,7 +9,8 @@
     "build:static": "node ./scripts/static-build.mjs",
     "start": "cross-env PORT=3001 next start",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "test:theme": "node --experimental-strip-types src/theme/theme.test.mjs"
   },
   "dependencies": {
     "@arco-design/web-react": "^2.66.5",

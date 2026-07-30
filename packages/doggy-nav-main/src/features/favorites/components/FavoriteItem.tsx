@@ -93,7 +93,7 @@ export default function FavoriteItem({
             className="rounded-full flex-shrink-0 w-[48px] h-[48px] object-contain"
           />
         ) : (
-          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-theme-primary text-sm font-bold text-theme-primary-foreground">
             {item.name?.charAt(0) || 'W'}
           </div>
         )}

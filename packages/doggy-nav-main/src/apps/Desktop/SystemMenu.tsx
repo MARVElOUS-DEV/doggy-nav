@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useAtom } from 'jotai';
-import { themeAtom } from '@/store/store';
+import { useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
+import ThemeToggle from '@/components/Buttons/ThemeToggle';
 
 type Wallpaper = { id: string; name: string; src: string };
 
@@ -20,40 +19,7 @@ export default function SystemMenu({
   onPick: (id: string) => void;
   onOpenWallpapers?: () => void;
 }) {
-  const [theme, setTheme] = useAtom(themeAtom);
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-  const toggleTheme = useCallback(
-    () => setTheme(theme === 'light' ? 'dark' : 'light'),
-    [theme, setTheme]
-  );
-  // FIXME: avoid duplicate code with TopMenuBar.tsx
-  // Initialize theme on Desktop route (since Desktop bypasses RootLayout)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const saved = window.localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (saved === 'light' || saved === 'dark') {
-      setTheme(saved);
-    } else {
-      setTheme(prefersDark ? 'dark' : 'light');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Apply theme to DOM and persist
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      document.body.setAttribute('arco-theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      document.body.removeAttribute('arco-theme');
-    }
-    window.localStorage.setItem('theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     if (!open) return;
@@ -61,6 +27,7 @@ export default function SystemMenu({
       if (e.key === 'Escape') onClose();
     };
     const onDocPointer = (e: PointerEvent) => {
+      if ((e.target as Element).closest?.('.arco-trigger-popup')) return;
       if (!containerRef.current) return;
       if (!containerRef.current.contains(e.target as Node)) onClose();
     };
@@ -100,14 +67,7 @@ export default function SystemMenu({
           <div className="text-sm" style={{ color: 'var(--color-foreground)' }}>
             Theme
           </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="text-xs px-2 py-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-            title="Toggle theme"
-          >
-            {theme === 'light' ? 'Light → Dark' : 'Dark → Light'}
-          </button>
+          <ThemeToggle variant="compact" />
         </div>
 
         {/* Wallpaper quick section - condensed cards */}

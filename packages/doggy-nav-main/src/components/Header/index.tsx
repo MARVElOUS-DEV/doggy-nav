@@ -134,7 +134,7 @@ export default function AppHeader({
 
   return (
     <>
-      <header className="flex justify-between items-center glass-medium shadow-lg p-4 w-full sticky top-0 z-50 min-h-[80px] border-b border-theme-border">
+      <header className="app-header flex justify-between items-center glass-medium shadow-lg p-4 w-full sticky top-0 z-50 min-h-[80px] border-b border-theme-border">
         <div className="flex items-center">
           {/* Menu Toggle Button (desktop only) */}
           <div className="hidden lg:block">
@@ -224,7 +224,12 @@ export default function AppHeader({
         {/* Mobile Dropdown Menu (actions) */}
         <div className="lg:hidden flex items-center">
           <Dropdown droplist={mobileDropdownMenu} trigger="click" position="br">
-            <Button className="app-header-action p-2" icon={<IconMenu />} type="text" size="large" />
+            <Button
+              className="app-header-action p-2"
+              icon={<IconMenu />}
+              type="text"
+              size="large"
+            />
           </Dropdown>
         </div>
       </header>

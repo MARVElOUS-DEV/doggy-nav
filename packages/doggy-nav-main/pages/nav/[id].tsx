@@ -306,7 +306,7 @@ export default function NavDetail() {
             <div className="btn-group flex mt-8">
               <div
                 onClick={() => handleNavClick(detail)}
-                className="btn-link btn-group-item bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg flex items-center cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="btn-link btn-group-item flex cursor-pointer items-center rounded-xl bg-theme-primary px-6 py-3 text-theme-primary-foreground shadow-sm transition-opacity hover:opacity-90"
               >
                 {t('go_direct')}
                 <ArrowRight className="ml-2 text-sm" size={14} />

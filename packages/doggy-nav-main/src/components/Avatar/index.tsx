@@ -91,7 +91,7 @@ export default function UserAvatar({
         type="primary"
         size="small"
         onClick={handleLogin}
-        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-none rounded-full"
+        className="rounded-full border-none bg-theme-primary text-theme-primary-foreground hover:opacity-90"
       >
         {t('sign_in')}
       </Button>
@@ -112,27 +112,6 @@ export default function UserAvatar({
       return user.username.charAt(0).toUpperCase();
     }
     return user.email ? user.email.charAt(0).toUpperCase() : 'U';
-  };
-
-  const getAvatarColors = (username: string): string => {
-    // Generate consistent colors based on username
-    const hash = username.split('').reduce((a, b) => {
-      a = (a << 5) - a + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-
-    const colors = [
-      'bg-gradient-to-r from-blue-500 to-blue-600',
-      'bg-gradient-to-r from-purple-500 to-purple-600',
-      'bg-gradient-to-r from-green-500 to-green-600',
-      'bg-gradient-to-r from-orange-500 to-orange-600',
-      'bg-gradient-to-r from-pink-500 to-pink-600',
-      'bg-gradient-to-r from-indigo-500 to-indigo-600',
-      'bg-gradient-to-r from-red-500 to-red-600',
-      'bg-gradient-to-r from-yellow-500 to-yellow-600',
-    ];
-
-    return colors[Math.abs(hash) % colors.length];
   };
 
   return (
@@ -157,7 +136,7 @@ export default function UserAvatar({
           </ArcoAvatar>
         ) : (
           <div
-            className={`${getAvatarColors(user.username)} rounded-full flex items-center justify-center text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 ring-2 ring-white ring-opacity-50`}
+            className="flex items-center justify-center rounded-full bg-theme-primary font-semibold text-theme-primary-foreground shadow-md ring-2 ring-theme-border transition-all duration-200 hover:shadow-lg"
             style={{ width: size, height: size, fontSize: size * 0.4 }}
           >
             {getAvatarText(user)}

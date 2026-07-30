@@ -41,7 +41,7 @@ export default function FolderTile({
                   className="flex-shrink-0 w-full h-full object-contain"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                <div className="flex h-full w-full items-center justify-center bg-theme-primary text-[10px] text-theme-primary-foreground">
                   {it.name?.charAt(0) || 'W'}
                 </div>
               )}

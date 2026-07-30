@@ -34,11 +34,11 @@ function NavRanking({ data, countType = 'createTimeDate' }: NavRankingProps) {
           {data.name}
         </span>
       </Tooltip>
-      <span className="text-xs whitespace-nowrap">
+      <span className="whitespace-nowrap text-xs text-theme-muted-foreground">
         {data[countType] && formatAttr(data[countType])}
       </span>
-      {countType === 'view' && <Eye className="ml-1 text-xs" size={12} />}
-      {countType === 'star' && <ThumbsUp className="ml-1 text-xs" size={12} />}
+      {countType === 'view' && <Eye className="ml-1 text-theme-muted-foreground" size={12} />}
+      {countType === 'star' && <ThumbsUp className="ml-1 text-theme-muted-foreground" size={12} />}
     </Link>
   );
 }

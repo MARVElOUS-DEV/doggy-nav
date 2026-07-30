@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Spin, Typography } from '@arco-design/web-react';
+import { Typography } from '@arco-design/web-react';
 import AppNavList from '@/components/AppNavList';
 import api from '@/utils/api';
 import { useApi } from '@/hooks/useApi';
@@ -8,6 +8,7 @@ import { NavItem } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { useAtomValue } from 'jotai';
 import { categoriesAtom } from '@/store/store';
+import PageLoading from '@/components/PageLoading';
 
 const { Title } = Typography;
 
@@ -124,17 +125,7 @@ export default function SearchResultsPage() {
 
   return (
     <div className="main rounded-2xl bg-theme-background text-theme-foreground border border-theme-border shadow-lg p-8 transition-colors">
-      {/* Optimized Loading Overlay */}
-      {loading && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="flex flex-column items-center gap-4 p-6 glass-medium rounded-xl border border-theme-border animate-fade-in-simple">
-            <Spin size={32} />
-            <span className="text-theme-foreground text-lg font-medium">
-              {t('loading')}
-            </span>
-          </div>
-        </div>
-      )}
+      {loading ? <PageLoading /> : null}
 
       <div className="website-wrapper">
         <div className="mb-6">

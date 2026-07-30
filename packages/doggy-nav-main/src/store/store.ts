@@ -2,6 +2,12 @@ import { atom } from 'jotai';
 import { NavItem, Category, Tag, User } from '@/types';
 import api from '@/utils/api';
 import { setAccessExpEpochMs } from '@/utils/session';
+import {
+  defaultCustomTheme,
+  type CustomThemeColors,
+  type ThemeMode,
+  type ThemePalette,
+} from '@/theme/theme';
 
 export const categoriesAtom = atom<Category[]>([]);
 export const selectedCategoryAtom = atom<string>('');
@@ -17,6 +23,9 @@ export const manualCollapseAtom = atom<boolean | null>(null); // null = no manua
 export const searchModalOpenAtom = atom(false);
 export const favoritesAtom = atom<NavItem[]>([]);
 export const themeAtom = atom<'light' | 'dark'>('light');
+export const themeModeAtom = atom<ThemeMode>('system');
+export const themePaletteAtom = atom<ThemePalette>('editorial');
+export const customThemeColorsAtom = atom<CustomThemeColors>(defaultCustomTheme());
 
 // Authentication atoms
 export const userAtom = atom<User | null>(null);

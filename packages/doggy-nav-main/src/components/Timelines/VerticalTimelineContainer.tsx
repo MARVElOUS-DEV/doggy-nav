@@ -53,7 +53,7 @@ export default function VerticalTimelineContainer({
     >
       {/* Header */}
       <div className="mb-6 text-center">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-xl font-bold text-theme-foreground sm:text-2xl">
           {year} {t('year_collection_timeline')}
         </h2>
         <div className="mt-2 text-center">
@@ -68,19 +68,19 @@ export default function VerticalTimelineContainer({
 
       {/* Search */}
       <div className="mb-6 relative max-w-md mx-auto">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted-foreground" />
         <input
           type="text"
           placeholder={t('search_websites_placeholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm sm:text-base"
+          className="w-full rounded-lg border border-theme-border bg-theme-card py-2 pl-10 pr-3 text-sm text-theme-foreground outline-none transition-shadow placeholder:text-theme-muted-foreground focus:border-theme-primary focus:ring-2 focus:ring-theme-primary/20 sm:text-base"
           aria-label={t('search_websites_label')}
         />
       </div>
 
       {/* Stats */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg p-4 mb-6 text-center max-w-md mx-auto">
+      <div className="mx-auto mb-6 max-w-md rounded-xl border border-theme-primary/20 bg-theme-secondary p-4 text-center text-theme-secondary-foreground">
         <div className="flex items-center justify-center space-x-4 text-sm">
           <div className="flex items-center space-x-1">
             <Calendar className="w-4 h-4" />
@@ -95,19 +95,15 @@ export default function VerticalTimelineContainer({
       {/* Alternating Timeline */}
       <div className="relative">
         {/* Timeline Line - Left on mobile, Center on md+ */}
-        <div className="absolute left-4 md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 via-amber-300 to-amber-400"></div>
+        <div className="absolute bottom-0 left-4 top-0 w-0.5 bg-theme-primary/30 md:left-1/2 md:-translate-x-1/2"></div>
 
         {/* Timeline Items */}
         <div className="relative">
           {sortedItems.length === 0 ? (
-            <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-lg">
-                {t('no_matching_websites')}
-              </p>
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-                {t('try_other_keywords')}
-              </p>
+            <div className="rounded-xl border border-theme-border bg-theme-muted py-8 text-center shadow-sm">
+              <Calendar className="mx-auto mb-4 h-12 w-12 text-theme-muted-foreground" />
+              <p className="text-lg text-theme-muted-foreground">{t('no_matching_websites')}</p>
+              <p className="mt-2 text-sm text-theme-muted-foreground">{t('try_other_keywords')}</p>
             </div>
           ) : (
             <div className="flex flex-col md:grid md:grid-cols-2 md:gap-x-12">
@@ -132,20 +128,22 @@ export default function VerticalTimelineContainer({
                   >
                     {/* Timeline Dot - Left on mobile, alternating on md+ */}
                     <div
-                      className={`absolute top-3 w-3 h-3 md:w-4 md:h-4 bg-amber-500 rounded-full border-2 md:border-4 border-white dark:border-gray-900 shadow-lg z-10 group-hover:bg-amber-400 transition-colors left-[0.625rem] ${
+                      className={`absolute left-[0.625rem] top-3 z-10 h-3 w-3 rounded-full border-2 border-theme-card bg-theme-primary shadow-lg transition-opacity group-hover:opacity-80 md:h-4 md:w-4 md:border-4 ${
                         isLeft ? 'md:left-auto md:-right-[1.5rem]' : 'md:-left-[1.5rem]'
                       }`}
                     ></div>
 
                     {/* Connector Line - Right on mobile, alternating on md+ */}
                     <div
-                      className={`absolute top-4 w-4 md:w-6 h-0.5 bg-amber-300 left-6 ${
+                      className={`absolute left-6 top-4 h-0.5 w-4 bg-theme-primary/40 md:w-6 ${
                         isLeft ? 'md:left-auto md:-right-6' : 'md:-left-6'
                       }`}
                     ></div>
 
                     {/* Date Label */}
-                    <div className={`text-[10px] md:text-xs text-amber-600 dark:text-amber-400 font-medium mb-1 text-left ${isLeft ? 'md:text-right' : 'md:text-left'}`}>
+                    <div
+                      className={`mb-1 text-left text-[10px] font-medium text-theme-primary md:text-xs ${isLeft ? 'md:text-right' : 'md:text-left'}`}
+                    >
                       {t('month_day_format', { month, day })}
                     </div>
 
@@ -153,21 +151,23 @@ export default function VerticalTimelineContainer({
                     <div
                       className={`flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg cursor-pointer transition-all duration-200 group-hover:shadow-md ${
                         selectedItem?.id === item.id
-                          ? `bg-amber-50 dark:bg-gray-800 border-l-4 ${isLeft ? 'md:border-l-0 md:border-r-4' : ''} border-amber-400`
-                          : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          ? `bg-theme-secondary border-l-4 ${isLeft ? 'md:border-l-0 md:border-r-4' : ''} border-theme-primary`
+                          : 'border border-theme-border bg-theme-card hover:bg-theme-muted'
                       } ${isLeft ? 'md:flex-row-reverse md:space-x-reverse' : ''}`}
                       onClick={() => handleItemClick(item)}
                     >
                       {/* Website Icon */}
                       {item.logo && (
-                        <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
+                        <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-md border border-theme-border md:h-10 md:w-10">
                           <DoggyImage logo={item.logo} name={item.title} width={40} height={40} />
                         </div>
                       )}
 
                       {/* Website Title */}
                       <div className="flex-1 min-w-0">
-                        <h3 className={`font-medium text-gray-900 dark:text-white truncate text-sm md:text-base text-left ${isLeft ? 'md:text-right' : 'md:text-left'}`}>
+                        <h3
+                          className={`truncate text-left text-sm font-medium text-theme-foreground md:text-base ${isLeft ? 'md:text-right' : 'md:text-left'}`}
+                        >
                           {item.title}
                         </h3>
                       </div>
@@ -178,7 +178,7 @@ export default function VerticalTimelineContainer({
                           href={item.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-gray-400 hover:text-amber-500 transition-colors flex-shrink-0"
+                          className="flex-shrink-0 text-theme-muted-foreground transition-colors hover:text-theme-primary"
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
@@ -204,7 +204,7 @@ export default function VerticalTimelineContainer({
 
       {/* Footer */}
       {sortedItems.length > 0 && (
-        <div className="mt-6 sm:mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-6 border-t border-theme-border pt-4 text-center text-xs text-theme-muted-foreground sm:mt-8 sm:text-sm">
           {t('showing_websites_total', { count: filteredItems.length })}
         </div>
       )}

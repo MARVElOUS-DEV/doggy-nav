@@ -75,7 +75,7 @@ export default function LanguageSwitcher({
         <Button
           className={`app-header-action text-2xl cursor-pointer !flex items-center justify-center w-10 h-10 ${className}`}
           aria-label={t('language')}
-          icon={<Languages size={16} className="text-theme-muted-foreground" />}
+          icon={<Languages size={16} />}
         />
       </Dropdown>
     </Tooltip>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { openDB } from 'idb';
 import { v4 as uuidv4 } from 'uuid';
-import { Message, Modal, Spin } from '@arco-design/web-react';
+import { Message, Modal } from '@arco-design/web-react';
 
 import Toolbar, { FolderTreeNode } from './Toolbar';
 import BookmarkGraphCanvas from './BookmarkGraphCanvas';
@@ -12,6 +12,7 @@ import useHistory from './hooks/useHistory';
 import WelcomeGuideModal from './WelcomeGuideModal';
 import EmptyStateGuide from './EmptyStateGuide';
 import type { NavItem } from '@/types';
+import { LoadingIndicator } from '@/components/PageLoading';
 
 const DB_NAME = 'bookmark-graph-db';
 const STORE_NAME = 'graph-state';
@@ -536,11 +537,7 @@ const EditorContent = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Spin dot tip="Loading..." />
-      </div>
-    );
+    return <LoadingIndicator className="h-full" />;
   }
 
   return (

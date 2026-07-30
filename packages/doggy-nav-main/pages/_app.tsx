@@ -1,6 +1,6 @@
 import App, { type AppContext } from 'next/app';
 import { Provider as JotaiProvider } from 'jotai';
-import { useEffect, type ReactElement, type ReactNode } from 'react';
+import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
 import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import RootLayout from '@/components/Layout';
@@ -13,11 +13,10 @@ import { startProactiveAuthRefresh } from '@/utils/session';
 import { GlobalAppWindowProvider } from '@/store/GlobalAppWindowStore';
 import { WindowZProvider } from '@/store/WindowZStore';
 import { SiteSettingsProvider } from '@/context/SiteSettingsContext';
+import ThemeProvider from '@/theme/ThemeProvider';
+import PageLoading from '@/components/PageLoading';
 import type { SiteSettings } from '@/types';
-import {
-  readCachedSiteSettings,
-  writeCachedSiteSettings,
-} from '@/utils/siteSettingsCache';
+import { readCachedSiteSettings, writeCachedSiteSettings } from '@/utils/siteSettingsCache';
 
 import './global.css';
 
@@ -37,6 +36,22 @@ export default function MyApp({
   };
 }) {
   const router = useRouter();
+  const [routeLoading, setRouteLoading] = useState(false);
+
+  useEffect(() => {
+    const start = () => setRouteLoading(true);
+    const stop = () => setRouteLoading(false);
+
+    router.events.on('routeChangeStart', start);
+    router.events.on('routeChangeComplete', stop);
+    router.events.on('routeChangeError', stop);
+
+    return () => {
+      router.events.off('routeChangeStart', start);
+      router.events.off('routeChangeComplete', stop);
+      router.events.off('routeChangeError', stop);
+    };
+  }, [router.events]);
 
   useEffect(() => {
     if (router.isReady && router.locale && i18n.language !== router.locale) {
@@ -63,15 +78,18 @@ export default function MyApp({
         <SpeedInsights />
       </ReactIf>
       <JotaiProvider>
-        <SiteSettingsProvider value={pageProps.initialSiteSettings}>
-          <WindowZProvider>
-            <GlobalAppWindowProvider>
-              {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-              {/* @ts-ignore */}
-              {getLayout(<Component {...pageProps} />)}
-            </GlobalAppWindowProvider>
-          </WindowZProvider>
-        </SiteSettingsProvider>
+        <ThemeProvider>
+          {routeLoading ? <PageLoading /> : null}
+          <SiteSettingsProvider value={pageProps.initialSiteSettings}>
+            <WindowZProvider>
+              <GlobalAppWindowProvider>
+                {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+                {/* @ts-ignore */}
+                {getLayout(<Component {...pageProps} />)}
+              </GlobalAppWindowProvider>
+            </WindowZProvider>
+          </SiteSettingsProvider>
+        </ThemeProvider>
       </JotaiProvider>
     </>
   );

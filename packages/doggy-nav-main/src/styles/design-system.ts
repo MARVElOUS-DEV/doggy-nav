@@ -5,44 +5,44 @@
 export const colors = {
   // Primary Colors
   primary: {
-    50: '#f0f9ff',
-    100: '#e0f2fe',
-    200: '#bae6fd',
-    300: '#7dd3fc',
-    400: '#38bdf8',
-    500: '#0ea5e9',
-    600: '#0284c7',
-    700: '#0369a1',
-    800: '#075985',
-    900: '#0c4a6e',
+    50: '#f1f5ef',
+    100: '#e2eadf',
+    200: '#c7d6c3',
+    300: '#a7bda1',
+    400: '#819c7b',
+    500: '#607c5f',
+    600: '#496348',
+    700: '#304638',
+    800: '#273a2e',
+    900: '#1c2a22',
   },
 
   // Secondary Colors
   secondary: {
-    50: '#f5f3ff',
-    100: '#ede9fe',
-    200: '#ddd6fe',
-    300: '#c4b5fd',
-    400: '#a78bfa',
-    500: '#8b5cf6',
-    600: '#7c3aed',
-    700: '#6d28d9',
-    800: '#5b21b6',
-    900: '#4c1d95',
+    50: '#fbfaf7',
+    100: '#f4f0e8',
+    200: '#e7e0d3',
+    300: '#d3c8b6',
+    400: '#b5a78f',
+    500: '#94856d',
+    600: '#776a57',
+    700: '#5d5345',
+    800: '#453e35',
+    900: '#302c27',
   },
 
   // Neutral Colors
   neutral: {
-    50: '#fafafa',
-    100: '#f5f5f5',
-    200: '#e5e5e5',
-    300: '#d4d4d4',
-    400: '#a3a3a3',
-    500: '#737373',
-    600: '#525252',
-    700: '#404040',
-    800: '#262626',
-    900: '#171717',
+    50: '#fbfaf7',
+    100: '#f4f1ea',
+    200: '#e1ddd3',
+    300: '#cbc5b9',
+    400: '#9e9b90',
+    500: '#74786f',
+    600: '#5a5f56',
+    700: '#41463f',
+    800: '#2d312b',
+    900: '#20231d',
   },
 
   // Status Colors
@@ -63,10 +63,10 @@ export const colors = {
 
   // Text Colors
   text: {
-    primary: '#171717',
-    secondary: '#525252',
-    tertiary: '#737373',
-    disabled: '#a3a3a3',
+    primary: '#20231d',
+    secondary: '#5a5f56',
+    tertiary: '#74786f',
+    disabled: '#9e9b90',
     inverse: '#ffffff',
   },
 };
@@ -75,16 +75,16 @@ export const colors = {
 export const darkColors = {
   // Neutral Colors (inverted for dark mode)
   neutral: {
-    50: '#171717',
-    100: '#262626',
-    200: '#404040',
-    300: '#525252',
-    400: '#737373',
-    500: '#a3a3a3',
-    600: '#d4d4d4',
-    700: '#e5e5e5',
-    800: '#f5f5f5',
-    900: '#fafafa',
+    50: '#11130f',
+    100: '#1b1e19',
+    200: '#30352e',
+    300: '#454b42',
+    400: '#747a6f',
+    500: '#a8ab9f',
+    600: '#c7c9bf',
+    700: '#dcddd5',
+    800: '#eeece5',
+    900: '#f7f4ed',
   },
 
   // Dark Mode Glass Effects
@@ -97,46 +97,46 @@ export const darkColors = {
 
   // Dark Mode Text Colors
   text: {
-    primary: '#fafafa',
-    secondary: '#d4d4d4',
-    tertiary: '#a3a3a3',
-    disabled: '#525252',
-    inverse: '#171717',
+    primary: '#f4f0e8',
+    secondary: '#c7c9bf',
+    tertiary: '#a8ab9f',
+    disabled: '#747a6f',
+    inverse: '#20231d',
   },
 
   // Dark Mode Background Colors
   background: {
-    primary: '#0a0a0a',
-    secondary: '#171717',
-    tertiary: '#262626',
-    card: '#1a1a1a',
-    sidebar: '#111111',
+    primary: '#11130f',
+    secondary: '#1b1e19',
+    tertiary: '#252a23',
+    card: '#171a15',
+    sidebar: '#121811',
   },
 };
 
 // Theme-aware color tokens
 export const themeColors = {
   light: {
-    background: '#ffffff',
-    foreground: '#171717',
-    card: '#ffffff',
-    cardForeground: '#171717',
-    popover: '#ffffff',
-    popoverForeground: '#171717',
-    primary: colors.primary[500],
+    background: '#f6f3ec',
+    foreground: '#20231d',
+    card: '#fffdf9',
+    cardForeground: '#20231d',
+    popover: '#fffdf9',
+    popoverForeground: '#20231d',
+    primary: colors.primary[700],
     primaryForeground: '#ffffff',
-    secondary: colors.secondary[500],
-    secondaryForeground: '#ffffff',
+    secondary: colors.primary[100],
+    secondaryForeground: colors.primary[800],
     muted: colors.neutral[100],
     mutedForeground: colors.neutral[500],
-    accent: colors.neutral[100],
-    accentForeground: colors.neutral[900],
+    accent: colors.primary[100],
+    accentForeground: colors.primary[800],
     destructive: colors.status.error,
     destructiveForeground: '#ffffff',
     border: colors.neutral[200],
-    input: colors.neutral[200],
+    input: colors.neutral[300],
     ring: colors.primary[500],
-    sidebar: colors.neutral[50],
+    sidebar: '#f1efe8',
     sidebarForeground: colors.neutral[700],
   },
   dark: {
@@ -146,10 +146,10 @@ export const themeColors = {
     cardForeground: darkColors.text.primary,
     popover: darkColors.background.secondary,
     popoverForeground: darkColors.text.primary,
-    primary: colors.primary[400],
+    primary: '#dce8d8',
     primaryForeground: darkColors.background.primary,
-    secondary: colors.secondary[400],
-    secondaryForeground: darkColors.background.primary,
+    secondary: '#252b23',
+    secondaryForeground: darkColors.text.primary,
     muted: darkColors.neutral[100],
     mutedForeground: darkColors.neutral[400],
     accent: darkColors.neutral[100],
@@ -157,10 +157,10 @@ export const themeColors = {
     destructive: colors.status.error,
     destructiveForeground: '#ffffff',
     border: darkColors.neutral[200],
-    input: darkColors.neutral[200],
-    ring: colors.primary[400],
+    input: darkColors.neutral[300],
+    ring: '#9caf96',
     sidebar: darkColors.background.sidebar,
-    sidebarForeground: darkColors.text.secondary,
+    sidebarForeground: darkColors.neutral[700],
   },
 };
 
@@ -174,14 +174,14 @@ export const typography = {
 
   // Font sizes
   fontSize: {
-    xs: '0.75rem',      // 12px
-    sm: '0.875rem',     // 14px
-    base: '1rem',       // 16px
-    lg: '1.125rem',     // 18px
-    xl: '1.25rem',      // 20px
-    '2xl': '1.5rem',    // 24px
-    '3xl': '1.875rem',  // 30px
-    '4xl': '2.25rem',   // 36px
+    xs: '0.75rem', // 12px
+    sm: '0.875rem', // 14px
+    base: '1rem', // 16px
+    lg: '1.125rem', // 18px
+    xl: '1.25rem', // 20px
+    '2xl': '1.5rem', // 24px
+    '3xl': '1.875rem', // 30px
+    '4xl': '2.25rem', // 36px
   },
 
   // Font weights
@@ -209,13 +209,13 @@ export const typography = {
 
 // Spacing
 export const spacing = {
-  xs: '0.25rem',      // 4px
-  sm: '0.5rem',       // 8px
-  md: '1rem',         // 16px
-  lg: '1.5rem',       // 24px
-  xl: '2rem',         // 32px
-  '2xl': '3rem',      // 48px
-  '3xl': '4rem',      // 64px
+  xs: '0.25rem', // 4px
+  sm: '0.5rem', // 8px
+  md: '1rem', // 16px
+  lg: '1.5rem', // 24px
+  xl: '2rem', // 32px
+  '2xl': '3rem', // 48px
+  '3xl': '4rem', // 64px
 };
 
 // Borders
@@ -228,11 +228,11 @@ export const borders = {
   },
   radius: {
     none: '0',
-    sm: '0.125rem',     // 2px
-    md: '0.25rem',      // 4px
-    lg: '0.5rem',       // 8px
-    xl: '0.75rem',      // 12px
-    '2xl': '1rem',      // 16px
+    sm: '0.125rem', // 2px
+    md: '0.25rem', // 4px
+    lg: '0.5rem', // 8px
+    xl: '0.75rem', // 12px
+    '2xl': '1rem', // 16px
     full: '9999px',
   },
 };

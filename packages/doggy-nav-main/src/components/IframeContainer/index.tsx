@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { LoadingSpinner } from '@/components/PageLoading';
 
 type IframeContainerProps = {
   src: string;
@@ -35,7 +36,7 @@ export default function IframeContainer({
             className="glass-light dark:glass-dark border rounded-lg px-3 py-2 text-xs flex items-center gap-2"
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted-foreground)' }}
           >
-            <span className="inline-block h-4 w-4 border-2 border-theme-border border-t-transparent rounded-full animate-spin" />
+            <LoadingSpinner className="h-4 w-4" />
             <span>Loading…</span>
           </div>
         </div>

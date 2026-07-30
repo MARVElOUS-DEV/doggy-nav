@@ -11,9 +11,8 @@ import type { RegisterFormValues } from '@/types';
 import api from '@/utils/api';
 
 const FormItem = Form.Item;
-const inputClass =
-  '!h-11 !rounded-xl !border-[#d7d1c5] !bg-[#fbfaf7] hover:!border-[#8b927e] dark:!border-white/15 dark:!bg-white/[0.06]';
-const iconClass = 'text-[#858a7d]';
+const inputClass = 'theme-form-input !h-11 !rounded-xl';
+const iconClass = 'text-theme-muted-foreground';
 
 export default function RegisterPage() {
   const { t } = useTranslation('translation');
@@ -55,7 +54,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#f4f0e8] text-[#20231d] dark:bg-[#10120f] dark:text-[#f4f0e8] lg:flex">
+    <main className="min-h-[100dvh] bg-theme-background text-theme-foreground lg:flex">
       <section className="sticky top-0 hidden h-[100dvh] w-[58%] overflow-hidden lg:block">
         <Image
           src="/login-editorial.webp"
@@ -90,14 +89,14 @@ export default function RegisterPage() {
 
       <section className="relative flex min-h-[100dvh] flex-1 items-center justify-center px-6 py-16 sm:px-10">
         <div className="absolute right-5 top-5 flex items-center gap-2">
-          <LanguageSwitcher className="!border-[#d8d2c6] !bg-transparent dark:!border-white/15" />
-          <ThemeToggle className="!border-[#d8d2c6] !bg-transparent dark:!border-white/15" />
+          <LanguageSwitcher className="!border-theme-border !bg-transparent" />
+          <ThemeToggle className="!border-theme-border !bg-transparent" />
         </div>
 
         <div className="w-full max-w-[390px]" aria-busy={loading}>
           <Link
             href="/"
-            className="mb-10 inline-flex items-center gap-2 text-sm font-medium text-[#686c62] transition-colors hover:text-[#273524] dark:text-[#a8aa9f] dark:hover:text-white lg:hidden"
+            className="mb-10 inline-flex items-center gap-2 text-sm font-medium text-theme-muted-foreground transition-colors hover:text-theme-primary lg:hidden"
           >
             <ArrowLeft size={16} aria-hidden="true" />
             {t('back_to_home').replace('←', '').trim()}
@@ -105,18 +104,18 @@ export default function RegisterPage() {
 
           <div className="mb-7">
             <div className="mb-6 flex items-center gap-3 lg:hidden">
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-white shadow-sm">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-theme-card shadow-sm">
                 <Image src="/logo-icon.png" alt="" width={25} height={27} />
               </span>
               <span className="font-semibold tracking-wide">Doggy Nav</span>
             </div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#747a6d] dark:text-[#9da092]">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-theme-muted-foreground">
               Doggy Nav
             </p>
             <h1 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
               {t('join_doggy_nav')}
             </h1>
-            <p className="mt-3 text-base leading-6 text-[#696d64] dark:text-[#a7aa9f]">
+            <p className="mt-3 text-base leading-6 text-theme-muted-foreground">
               {t('create_account')}
             </p>
           </div>
@@ -237,18 +236,18 @@ export default function RegisterPage() {
                 loadingFixedWidth
                 long
                 size="large"
-                className="!h-12 !rounded-xl !border-none !bg-[#273524] !font-semibold !shadow-none hover:!bg-[#354632] dark:!bg-[#dce7d5] dark:!text-[#1a2118] dark:hover:!bg-white"
+                className="!h-12 !rounded-xl !border-theme-primary !bg-theme-primary !font-semibold !text-theme-primary-foreground !shadow-none hover:!opacity-90"
               >
                 {loading ? t('creating_account') : t('create_account_button')}
               </Button>
             </FormItem>
           </Form>
 
-          <p className="mt-7 text-center text-sm text-[#696d64] dark:text-[#a7aa9f]">
+          <p className="mt-7 text-center text-sm text-theme-muted-foreground">
             {t('already_have_account')}{' '}
             <Link
               href="/login"
-              className="font-semibold text-[#273524] underline decoration-[#aeb5a5] underline-offset-4 hover:decoration-[#273524] dark:text-[#dce7d5]"
+              className="font-semibold text-theme-primary underline decoration-theme-border underline-offset-4 hover:decoration-theme-primary"
             >
               {t('sign_in_link')}
             </Link>

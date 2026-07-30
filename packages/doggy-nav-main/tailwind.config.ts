@@ -1,12 +1,19 @@
-import type { Config } from "tailwindcss";
-import { colors, typography, spacing, borders, shadows, breakpoints } from "./src/styles/design-system";
+import type { Config } from 'tailwindcss';
+import {
+  colors,
+  typography,
+  spacing,
+  borders,
+  shadows,
+  breakpoints,
+} from './src/styles/design-system';
 
 const config: Config = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   darkMode: 'class', // Enable class-based dark mode
   theme: {
@@ -50,18 +57,17 @@ const config: Config = {
       boxShadow: shadows,
       screens: breakpoints,
       backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "hero-gradient": "linear-gradient(-45deg, #2563eb, #7c3aed, #db2777, #059669, #0891b2, #4f46e5)",
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'hero-gradient': 'linear-gradient(-45deg, #1c2a22, #304638, #496348, #776a57)',
       },
       animation: {
         'hero-gradient-flow': 'hero-gradient-flow 12s ease infinite',
         'fade-in': 'fade-in 0.3s ease-out forwards',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
         'fade-in-simple': 'fade-in-simple 0.3s ease-out forwards',
-        'shake': 'shake 0.5s ease-in-out',
-        'sway': 'sway 4s ease-in-out infinite',
+        shake: 'shake 0.5s ease-in-out',
+        sway: 'sway 4s ease-in-out infinite',
       },
       keyframes: {
         'hero-gradient-flow': {
@@ -70,23 +76,23 @@ const config: Config = {
           '100%': { 'background-position': '0% 50%' },
         },
         'fade-in': {
-          'from': { opacity: '0', transform: 'translateY(10px)' },
-          'to': { opacity: '1', transform: 'translateY(0)' },
+          from: { opacity: '0', transform: 'translateY(10px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
         'fade-in-up': {
-          'from': { opacity: '0', transform: 'translateY(20px)' },
-          'to': { opacity: '1', transform: 'translateY(0)' },
+          from: { opacity: '0', transform: 'translateY(20px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
         'fade-in-simple': {
-          'from': { opacity: '0' },
-          'to': { opacity: '1' },
+          from: { opacity: '0' },
+          to: { opacity: '1' },
         },
-        'shake': {
+        shake: {
           '0%, 100%': { transform: 'translateX(0)' },
           '25%': { transform: 'translateX(-5px)' },
           '75%': { transform: 'translateX(5px)' },
         },
-        'sway': {
+        sway: {
           '0%, 100%': { transform: 'translateX(0) translateY(0) rotate(0deg)' },
           '25%': { transform: 'translateX(-8px) translateY(-2px) rotate(8deg)' },
           '50%': { transform: 'translateX(0) translateY(0) rotate(0deg)' },

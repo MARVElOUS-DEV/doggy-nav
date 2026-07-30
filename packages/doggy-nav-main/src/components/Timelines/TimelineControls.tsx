@@ -35,16 +35,16 @@ export default function TimelineControls({
 
   return (
     <div className="mb-8 space-y-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div className="rounded-xl border border-theme-border bg-theme-card p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted-foreground" />
             <input
               type="text"
               placeholder={t('search_placeholder')}
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              className="w-full rounded-lg border border-theme-border bg-theme-muted py-2 pl-10 pr-4 text-theme-foreground outline-none placeholder:text-theme-muted-foreground focus:border-theme-primary focus:ring-2 focus:ring-theme-primary/20"
               aria-label={t('search_tooltip')}
             />
           </div>

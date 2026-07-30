@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Form, Input, Select, Button, Message, Spin, Tooltip } from '@arco-design/web-react';
+import { Form, Input, Select, Button, Message, Tooltip } from '@arco-design/web-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '@/utils/axios';
 import api, { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api';
@@ -12,6 +12,7 @@ import { OVERVIEW } from '@/utils/localCategories';
 import MarkdownEditor from '@/components/MarkdownEditor';
 import MarkdownContent from '@/components/MarkdownContent';
 import { Eye, Search, Sparkles } from 'lucide-react';
+import { LoadingIndicator, LoadingSpinner } from '@/components/PageLoading';
 
 const FormItem = Form.Item;
 const URL_PATTERN =
@@ -271,7 +272,7 @@ export default function Recommend() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center mb-8"
           >
-            <h1 className="my-0 text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            <h1 className="my-0 mb-2 text-4xl font-bold text-theme-foreground">
               {t('recommend_website')}
             </h1>
             <p className="text-gray-600 dark:text-gray-300 text-lg">
@@ -294,7 +295,7 @@ export default function Recommend() {
                     exit={{ opacity: 0 }}
                     className="absolute inset-0 bg-theme-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10 ring-1 ring-theme-border"
                   >
-                    <Spin size={24} />
+                    <LoadingIndicator />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -321,7 +322,7 @@ export default function Recommend() {
                               className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent p-0 text-theme-muted-foreground transition-all duration-200 hover:border-theme-primary/20 hover:bg-theme-primary/10 hover:text-theme-primary active:scale-95 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent disabled:hover:bg-transparent disabled:hover:text-theme-muted-foreground"
                             >
                               {metadataLoading === 'scrape' ? (
-                                <Spin size={14} />
+                                <LoadingSpinner className="h-3.5 w-3.5" />
                               ) : (
                                 <Search size={16} className="block" />
                               )}
@@ -336,7 +337,7 @@ export default function Recommend() {
                               className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent p-0 text-theme-primary transition-all duration-200 hover:border-theme-primary/20 hover:bg-theme-primary/10 hover:text-theme-primary active:scale-95 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent disabled:hover:bg-transparent"
                             >
                               {metadataLoading === 'ai' ? (
-                                <Spin size={14} />
+                                <LoadingSpinner className="h-3.5 w-3.5" />
                               ) : (
                                 <Sparkles size={16} className="block" />
                               )}
@@ -560,7 +561,7 @@ export default function Recommend() {
                       type="primary"
                       htmlType="submit"
                       loading={loading}
-                      className="h-14 px-8 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="h-14 rounded-full border-0 bg-theme-primary px-8 text-lg font-semibold text-theme-primary-foreground shadow-sm transition-opacity hover:opacity-90"
                     >
                       {loading ? t('submitting') : t('submit_recommendation')}
                     </Button>

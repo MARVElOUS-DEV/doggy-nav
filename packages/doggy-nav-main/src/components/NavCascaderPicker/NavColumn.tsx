@@ -3,6 +3,7 @@ import { IconLink } from '@arco-design/web-react/icon';
 import type { NavItem } from '@/types';
 import type { NavColumnProps } from './types';
 import SearchInput from './SearchInput';
+import { LoadingSpinner } from '@/components/PageLoading';
 
 const filterNavs = (navs: NavItem[], search: string): NavItem[] => {
   if (!search.trim()) return navs;
@@ -42,10 +43,7 @@ const NavColumn: React.FC<NavColumnProps> = ({
       <div className="flex-1 overflow-y-auto p-1.5">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div
-              className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}
-            />
+            <LoadingSpinner className="h-5 w-5" />
           </div>
         ) : navItems.length === 0 ? (
           <div

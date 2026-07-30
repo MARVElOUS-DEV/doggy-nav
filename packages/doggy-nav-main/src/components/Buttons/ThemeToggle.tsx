@@ -1,93 +1,210 @@
-import { useEffect, useMemo } from 'react';
-import { Button, Tooltip } from '@arco-design/web-react';
+import { useEffect, useState } from 'react';
+import { Button, Popover } from '@arco-design/web-react';
+import { Monitor, Moon, Palette, RotateCcw, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAtom } from 'jotai';
-import { themeAtom } from '@/store/store';
+import { useAtom, useAtomValue } from 'jotai';
+import { customThemeColorsAtom, themeAtom, themeModeAtom, themePaletteAtom } from '@/store/store';
+import {
+  defaultCustomTheme,
+  type CustomThemeColors,
+  type ThemeMode,
+  type ThemePalette,
+  validateCustomTheme,
+} from '@/theme/theme';
 
 interface ThemeToggleProps {
   variant?: 'icon' | 'compact';
   className?: string;
 }
 
-const darkModeIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 m-auto" viewBox="0 0 20 20" fill="currentColor">
-    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-  </svg>
-);
+const paletteSwatches: Record<ThemePalette, [string, string, string]> = {
+  editorial: ['#f6f3ec', '#304638', '#e2eadf'],
+  classic: ['#ffffff', '#165dff', '#8b5cf6'],
+  custom: ['var(--custom-background-light)', 'var(--custom-primary-light)', '#d9d9d9'],
+};
 
-const lightModeIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 m-auto" viewBox="0 0 20 20" fill="currentColor">
-    <path
-      fillRule="evenodd"
-      d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
+function ColorControl({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between gap-3 text-xs text-theme-muted-foreground">
+      <span>{label}</span>
+      <span className="flex items-center gap-2 font-mono text-[11px] text-theme-foreground">
+        {value.toUpperCase()}
+        <input
+          type="color"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-7 w-9 cursor-pointer rounded border border-theme-border bg-transparent p-0.5"
+        />
+      </span>
+    </label>
+  );
+}
 
 export default function ThemeToggle({ variant = 'icon', className = '' }: ThemeToggleProps) {
   const { t } = useTranslation('translation');
-  const [theme, setTheme] = useAtom(themeAtom);
+  const theme = useAtomValue(themeAtom);
+  const [mode, setMode] = useAtom(themeModeAtom);
+  const [palette, setPalette] = useAtom(themePaletteAtom);
+  const [custom, setCustom] = useAtom(customThemeColorsAtom);
+  const [draft, setDraft] = useState(custom);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
+  useEffect(() => setDraft(custom), [custom]);
+
+  const updateCustom = (
+    appearance: keyof CustomThemeColors,
+    color: keyof CustomThemeColors['light'],
+    value: string
+  ) => {
+    const next = { ...draft, [appearance]: { ...draft[appearance], [color]: value } };
+    setDraft(next);
+    if (!validateCustomTheme(next)) {
+      setCustom(next);
+      setPalette('custom');
     }
-
-    const savedTheme = window.localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (systemPrefersDark) {
-      setTheme('dark');
-    } else {
-      setTheme('light');
-    }
-  }, [setTheme]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      document.body.setAttribute('arco-theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      document.body.removeAttribute('arco-theme');
-    }
-
-    window.localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
   };
 
-  const tooltipContent = useMemo(
-    () => (theme === 'light' ? t('switch_to_dark_mode') : t('switch_to_light_mode')),
-    [theme, t]
+  const resetCustom = () => {
+    const defaults = defaultCustomTheme();
+    setDraft(defaults);
+    setCustom(defaults);
+    setPalette('custom');
+  };
+
+  const modes: Array<{ value: ThemeMode; label: string; icon: typeof Sun }> = [
+    { value: 'light', label: t('light_mode'), icon: Sun },
+    { value: 'dark', label: t('dark_mode'), icon: Moon },
+    { value: 'system', label: t('system_mode'), icon: Monitor },
+  ];
+  const palettes: Array<{ value: ThemePalette; label: string }> = [
+    { value: 'editorial', label: t('editorial_theme') },
+    { value: 'classic', label: t('classic_theme') },
+    { value: 'custom', label: t('custom_theme') },
+  ];
+  const customError = validateCustomTheme(draft);
+
+  const panel = (
+    <div className="w-[320px] max-w-[calc(100vw-32px)] p-1 text-theme-foreground">
+      <div className="mb-3">
+        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-theme-muted-foreground">
+          {t('appearance')}
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {modes.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setMode(value)}
+              aria-pressed={mode === value}
+              className={`flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border text-xs transition-colors ${
+                mode === value
+                  ? 'border-theme-primary bg-theme-secondary text-theme-secondary-foreground'
+                  : 'border-theme-border hover:bg-theme-muted'
+              }`}
+            >
+              <Icon size={17} aria-hidden="true" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-theme-muted-foreground">
+          {t('color_theme')}
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {palettes.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPalette(value)}
+              aria-pressed={palette === value}
+              className={`rounded-xl border p-2 text-left text-xs transition-colors ${
+                palette === value
+                  ? 'border-theme-primary bg-theme-secondary'
+                  : 'border-theme-border hover:bg-theme-muted'
+              }`}
+            >
+              <span className="mb-2 flex overflow-hidden rounded-full border border-black/10">
+                {paletteSwatches[value].map((color) => (
+                  <span key={color} className="h-4 flex-1" style={{ background: color }} />
+                ))}
+              </span>
+              <span className="block truncate">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {palette === 'custom' && (
+        <div className="mt-3 rounded-xl border border-theme-border bg-theme-muted p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-semibold">{t('custom_colors')}</span>
+            <button
+              type="button"
+              onClick={resetCustom}
+              className="inline-flex items-center gap-1 text-[11px] text-theme-muted-foreground hover:text-theme-foreground"
+            >
+              <RotateCcw size={12} aria-hidden="true" />
+              {t('reset')}
+            </button>
+          </div>
+          <div className="grid gap-2.5">
+            <ColorControl
+              label={`${t('light_mode')} · ${t('background_color')}`}
+              value={draft.light.background}
+              onChange={(value) => updateCustom('light', 'background', value)}
+            />
+            <ColorControl
+              label={`${t('light_mode')} · ${t('primary_color')}`}
+              value={draft.light.primary}
+              onChange={(value) => updateCustom('light', 'primary', value)}
+            />
+            <ColorControl
+              label={`${t('dark_mode')} · ${t('background_color')}`}
+              value={draft.dark.background}
+              onChange={(value) => updateCustom('dark', 'background', value)}
+            />
+            <ColorControl
+              label={`${t('dark_mode')} · ${t('primary_color')}`}
+              value={draft.dark.primary}
+              onChange={(value) => updateCustom('dark', 'primary', value)}
+            />
+          </div>
+          {customError && (
+            <p className="mt-2 text-[11px] leading-4 text-red-500" role="alert">
+              {t('theme_contrast_warning')}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
-  const currentThemeLabel = theme === 'light' ? t('light_mode') : t('dark_mode');
 
   return (
-    <Tooltip content={tooltipContent}>
+    <Popover content={panel} trigger="click" position="br">
       <Button
-        onClick={toggleTheme}
         className={
           variant === 'compact'
-            ? `app-header-action h-8 min-w-[64px] px-3 !inline-flex items-center justify-center rounded-full text-xs font-semibold ${className}`
-            : `app-header-action theme-toggle-btn w-10 h-10 !flex items-center justify-center ${className}`
+            ? `app-header-action h-8 min-w-[92px] px-3 !inline-flex items-center justify-center rounded-full text-xs font-semibold ${className}`
+            : `app-header-action theme-toggle-btn h-10 w-10 !flex items-center justify-center ${className}`
         }
-        aria-label={tooltipContent}
-        icon={variant === 'icon' ? (theme === 'light' ? darkModeIcon : lightModeIcon) : undefined}
+        aria-label={t('open_theme_settings')}
+        title={t('open_theme_settings')}
+        icon={variant === 'icon' ? <Palette size={18} /> : undefined}
       >
-        {variant === 'compact' ? currentThemeLabel : null}
+        {variant === 'compact'
+          ? `${theme === 'light' ? t('light_mode') : t('dark_mode')} · ${t(`${palette}_theme`)}`
+          : null}
       </Button>
-    </Tooltip>
+    </Popover>
   );
 }

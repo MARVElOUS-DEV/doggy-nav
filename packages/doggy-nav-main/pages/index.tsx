@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Spin } from '@arco-design/web-react';
 import dynamic from 'next/dynamic';
 import Affiche from '@/components/Affiche';
 import NavRankingList from '@/components/NavRankingList';
@@ -19,6 +18,7 @@ import { TimelineItem as TimelineItemType, TimelineYear } from '@/types/timeline
 import { useTranslation } from 'react-i18next';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 import HomeHero from '@/components/HomeHero';
+import { LoadingIndicator } from '@/components/PageLoading';
 
 function DeferredSectionPlaceholder({
   title,
@@ -30,15 +30,11 @@ function DeferredSectionPlaceholder({
   minHeight?: string;
 }) {
   return (
-    <div
-      className={`bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border flex items-center justify-center ${minHeight}`}
-    >
-      <div className="text-center">
-        <Spin size={32} />
-        <p className="mt-4 text-lg font-semibold text-theme-foreground">{title}</p>
-        <p className="mt-2 text-theme-muted-foreground">{description}</p>
-      </div>
-    </div>
+    <LoadingIndicator
+      className={`rounded-2xl border border-theme-border bg-theme-background p-8 shadow-lg ${minHeight}`}
+      label={<span className="text-lg font-semibold text-theme-foreground">{title}</span>}
+      description={description}
+    />
   );
 }
 
@@ -237,7 +233,7 @@ export default function HomePage() {
 
   return (
     <div
-      className="min-h-screen overflow-hidden rounded-t-[1rem] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800"
+      className="min-h-screen overflow-hidden rounded-t-[1rem] bg-theme-background"
       onKeyDown={onKeyDown}
       tabIndex={-1}
       role="application"
@@ -246,7 +242,7 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="bg-theme-background rounded-3xl shadow-xl overflow-hidden border border-theme-border">
+          <div className="bg-theme-card rounded-3xl shadow-xl overflow-hidden border border-theme-border">
             <HomeHero
               isAuthenticated={isAuthenticated}
               onTryDesktop={handleTryGotoDesktop}
@@ -262,18 +258,13 @@ export default function HomePage() {
 
         {/* Top Rankings Section */}
         {rankingLoading ? (
-          <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
-            <div className="flex justify-center items-center py-16">
-              <div className="text-center">
-                <Spin size={32} />
-                <p className="mt-4 text-theme-muted-foreground">{t('loading_content')}</p>
-              </div>
-            </div>
+          <div className="rounded-2xl border border-theme-border bg-theme-background p-8 shadow-lg">
+            <LoadingIndicator className="py-16" label={t('loading_content')} />
           </div>
         ) : (
-          <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
+          <div className="rounded-2xl border border-theme-border bg-theme-background p-8 shadow-lg">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-theme-foreground mb-2">
+              <h2 className="mb-2 text-2xl font-bold text-theme-foreground">
                 {t('popular_recommendations')}
               </h2>
               <p className="text-theme-muted-foreground">
@@ -289,7 +280,7 @@ export default function HomePage() {
           {!shouldLoadTimeline || timelineLoading || !timelineLoaded ? (
             <DeferredSectionPlaceholder title={t('timeline')} description={t('loading_timeline')} />
           ) : (
-            <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
+            <div className="rounded-2xl border border-theme-border bg-theme-background p-8 shadow-lg">
               {currentYearData && currentYearData.items && currentYearData.items.length > 0 ? (
                 <VerticalTimelineContainer
                   year={currentYear}
@@ -305,7 +296,7 @@ export default function HomePage() {
                   <p className="text-theme-muted-foreground mb-6">{t('submit_worthwhile_sites')}</p>
                   <Link
                     href="/recommend"
-                    className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
+                    className="inline-block rounded-xl bg-theme-primary px-5 py-2.5 font-semibold text-theme-primary-foreground shadow-sm transition-opacity hover:opacity-90"
                   >
                     {t('submit_website')}
                   </Link>
@@ -329,18 +320,24 @@ export default function HomePage() {
 
         {/* Stats Section */}
         {timelineLoaded && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
-              <div className="text-3xl font-bold">{totalNavCount.toLocaleString()}</div>
-              <div className="text-blue-100">{t('total_nav_count')}</div>
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="rounded-2xl border border-theme-border bg-theme-card p-6 shadow-sm">
+              <div className="text-3xl font-bold text-theme-primary">
+                {totalNavCount.toLocaleString()}
+              </div>
+              <div className="mt-1 text-theme-muted-foreground">{t('total_nav_count')}</div>
             </div>
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-              <div className="text-3xl font-bold">{Math.max(categories.length - 1, 0)}</div>
-              <div className="text-purple-100">{t('total_category_count')}</div>
+            <div className="rounded-2xl border border-theme-border bg-theme-card p-6 shadow-sm">
+              <div className="text-3xl font-bold text-theme-primary">
+                {Math.max(categories.length - 1, 0)}
+              </div>
+              <div className="mt-1 text-theme-muted-foreground">{t('total_category_count')}</div>
             </div>
-            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
-              <div className="text-3xl font-bold">{totalViews.toLocaleString()}</div>
-              <div className="text-green-100">{t('total_views')}</div>
+            <div className="rounded-2xl border border-theme-border bg-theme-card p-6 shadow-sm">
+              <div className="text-3xl font-bold text-theme-primary">
+                {totalViews.toLocaleString()}
+              </div>
+              <div className="mt-1 text-theme-muted-foreground">{t('total_views')}</div>
             </div>
           </div>
         )}
@@ -348,16 +345,16 @@ export default function HomePage() {
         {/* Footer CTA */}
         {!rankingLoading && (
           <div className="mt-12 text-center">
-            <div className="bg-theme-background rounded-2xl shadow-lg p-8 border border-theme-border">
-              <h3 className="text-2xl font-bold text-theme-foreground mb-4">
+            <div className="rounded-2xl border border-theme-border bg-theme-background p-8 shadow-sm">
+              <h3 className="mb-4 text-2xl font-bold text-theme-foreground">
                 {t('cant_find_website')}
               </h3>
-              <p className="text-theme-muted-foreground mb-6 max-w-2xl mx-auto">
+              <p className="mx-auto mb-6 max-w-2xl text-theme-muted-foreground">
                 {t('best_navigation_service')}
               </p>
               <Link
                 href="/recommend"
-                className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                className="inline-block rounded-xl bg-theme-primary px-8 py-3 font-semibold text-theme-primary-foreground shadow-sm transition-opacity hover:opacity-90"
               >
                 {t('submit_website')}
               </Link>

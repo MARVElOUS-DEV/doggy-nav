@@ -1,33 +1,40 @@
-@import "@arco-design/web-react/dist/css/arco.css";
-@import "tailwindcss";
+@import '@arco-design/web-react/dist/css/arco.css';
+@import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
-@import "../src/styles/utilities.css";
+@import '../src/styles/utilities.css';
 
 @import '../src/styles/override.css';
 
 :root {
+  --custom-background-light: #f6f3ec;
+  --custom-primary-light: #304638;
+  --custom-background-dark: #11130f;
+  --custom-primary-dark: #dce8d8;
+
   /* Light theme colors from design system */
-  --color-background: #ffffff;
-  --color-foreground: #171717;
-  --color-card: #ffffff;
-  --color-card-foreground: #171717;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #171717;
-  --color-primary: #165dff;
+  --color-background: #f6f3ec;
+  --color-foreground: #20231d;
+  --color-card: #fffdf9;
+  --color-card-foreground: #20231d;
+  --color-popover: #fffdf9;
+  --color-popover-foreground: #20231d;
+  --color-primary: #304638;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #8b5cf6;
-  --color-secondary-foreground: #ffffff;
-  --color-muted: #f5f5f5;
-  --color-muted-foreground: #737373;
-  --color-accent: #f5f5f5;
-  --color-accent-foreground: #171717;
+  --theme-secondary: #e2eadf;
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-foreground: #273a2e;
+  --color-muted: #f4f1ea;
+  --color-muted-foreground: #74786f;
+  --color-accent: #e2eadf;
+  --color-accent-foreground: #273a2e;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
-  --color-border: #e5e5e5;
-  --color-input: #e5e5e5;
-  --color-ring: #0ea5e9;
-  --color-sidebar: #fafafa;
-  --color-sidebar-foreground: #404040;
+  --theme-border: #e1ddd3;
+  --color-border: var(--theme-border);
+  --color-input: #cbc5b9;
+  --color-ring: #607c5f;
+  --color-sidebar: #f1efe8;
+  --color-sidebar-foreground: #41463f;
 
   /* Legacy variables for backward compatibility */
   --background: var(--color-background);
@@ -40,29 +47,55 @@
   --info-color: #3b82f6;
 }
 
+:root[data-theme='classic'] {
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --color-card: #ffffff;
+  --color-card-foreground: #171717;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #171717;
+  --color-primary: #165dff;
+  --color-primary-foreground: #ffffff;
+  --theme-secondary: #eeeafe;
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-foreground: #4c1d95;
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #737373;
+  --color-accent: #f1effe;
+  --color-accent-foreground: #4c1d95;
+  --theme-border: #e5e5e5;
+  --color-border: var(--theme-border);
+  --color-input: #d4d4d4;
+  --color-ring: #0ea5e9;
+  --color-sidebar: #fafafa;
+  --color-sidebar-foreground: #404040;
+}
+
 .dark {
   /* Dark theme colors from design system */
-  --color-background: #0a0a0a;
-  --color-foreground: #fafafa;
-  --color-card: #1a1a1a;
-  --color-card-foreground: #fafafa;
-  --color-popover: #171717;
-  --color-popover-foreground: #fafafa;
-  --color-primary: #165dff;
-  --color-primary-foreground: #0a0a0a;
-  --color-secondary: #a78bfa;
-  --color-secondary-foreground: #0a0a0a;
-  --color-muted: #262626;
-  --color-muted-foreground: #a3a3a3;
-  --color-accent: #262626;
-  --color-accent-foreground: #fafafa;
+  --color-background: #11130f;
+  --color-foreground: #f4f0e8;
+  --color-card: #171a15;
+  --color-card-foreground: #f4f0e8;
+  --color-popover: #1b1e19;
+  --color-popover-foreground: #f4f0e8;
+  --color-primary: #dce8d8;
+  --color-primary-foreground: #11130f;
+  --theme-secondary: #252b23;
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-foreground: #f4f0e8;
+  --color-muted: #1b1e19;
+  --color-muted-foreground: #a8ab9f;
+  --color-accent: #252b23;
+  --color-accent-foreground: #f4f0e8;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
-  --color-border: #404040;
-  --color-input: #404040;
-  --color-ring: #38bdf8;
-  --color-sidebar: #111111;
-  --color-sidebar-foreground: #d4d4d4;
+  --theme-border: #30352e;
+  --color-border: var(--theme-border);
+  --color-input: #454b42;
+  --color-ring: #9caf96;
+  --color-sidebar: #121811;
+  --color-sidebar-foreground: #dcddd5;
 
   /* Legacy variables for backward compatibility */
   --background: var(--color-background);
@@ -71,6 +104,85 @@
   --secondary-color: var(--color-secondary);
 }
 
+:root.dark[data-theme='classic'] {
+  --color-background: #0a0a0a;
+  --color-foreground: #fafafa;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #fafafa;
+  --color-popover: #171717;
+  --color-popover-foreground: #fafafa;
+  --color-primary: #6ea0ff;
+  --color-primary-foreground: #0a0a0a;
+  --theme-secondary: #4c3975;
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-foreground: #fafafa;
+  --color-muted: #262626;
+  --color-muted-foreground: #a3a3a3;
+  --color-accent: #302747;
+  --color-accent-foreground: #fafafa;
+  --theme-border: #404040;
+  --color-border: var(--theme-border);
+  --color-input: #525252;
+  --color-ring: #38bdf8;
+  --color-sidebar: #111111;
+  --color-sidebar-foreground: #d4d4d4;
+}
+
+:root[data-theme='custom'] {
+  --color-background: var(--custom-background-light);
+  --color-foreground: #20231d;
+  --color-card: color-mix(in srgb, var(--color-background) 35%, white);
+  --color-card-foreground: var(--color-foreground);
+  --color-popover: var(--color-card);
+  --color-popover-foreground: var(--color-foreground);
+  --color-primary: var(--custom-primary-light);
+  --color-primary-foreground: #ffffff;
+  --theme-secondary: color-mix(in srgb, var(--color-primary) 12%, var(--color-background));
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-foreground: var(--color-foreground);
+  --color-muted: color-mix(in srgb, var(--color-foreground) 6%, var(--color-background));
+  --color-muted-foreground: color-mix(
+    in srgb,
+    var(--color-foreground) 62%,
+    var(--color-background)
+  );
+  --color-accent: var(--color-secondary);
+  --color-accent-foreground: var(--color-foreground);
+  --theme-border: color-mix(in srgb, var(--color-foreground) 14%, var(--color-background));
+  --color-border: var(--theme-border);
+  --color-input: color-mix(in srgb, var(--color-foreground) 22%, var(--color-background));
+  --color-ring: var(--color-primary);
+  --color-sidebar: color-mix(in srgb, var(--color-primary) 5%, var(--color-background));
+  --color-sidebar-foreground: var(--color-foreground);
+}
+
+:root.dark[data-theme='custom'] {
+  --color-background: var(--custom-background-dark);
+  --color-foreground: #f4f0e8;
+  --color-card: color-mix(in srgb, var(--color-background) 94%, white);
+  --color-card-foreground: var(--color-foreground);
+  --color-popover: var(--color-card);
+  --color-popover-foreground: var(--color-foreground);
+  --color-primary: var(--custom-primary-dark);
+  --color-primary-foreground: #11130f;
+  --theme-secondary: color-mix(in srgb, var(--color-primary) 12%, var(--color-background));
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-foreground: var(--color-foreground);
+  --color-muted: color-mix(in srgb, var(--color-foreground) 7%, var(--color-background));
+  --color-muted-foreground: color-mix(
+    in srgb,
+    var(--color-foreground) 66%,
+    var(--color-background)
+  );
+  --color-accent: var(--color-secondary);
+  --color-accent-foreground: var(--color-foreground);
+  --theme-border: color-mix(in srgb, var(--color-foreground) 17%, var(--color-background));
+  --color-border: var(--theme-border);
+  --color-input: color-mix(in srgb, var(--color-foreground) 27%, var(--color-background));
+  --color-ring: var(--color-primary);
+  --color-sidebar: color-mix(in srgb, var(--color-primary) 5%, var(--color-background));
+  --color-sidebar-foreground: var(--color-foreground);
+}
 
 li {
   list-style: none;
@@ -80,7 +192,8 @@ a {
   text-decoration: none;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -95,24 +208,33 @@ html, body {
 }
 
 body {
+  /* Arco declares these names on body; keep our semantic theme aliases authoritative. */
+  --color-border: var(--theme-border);
+  --color-secondary: var(--theme-secondary);
   font-size: 0.875rem; /* 14px - text-sm from design system */
   color: var(--color-foreground);
-  font-family: Helvetica Neue, Microsoft Yahei, system-ui, sans-serif;
+  font-family:
+    Helvetica Neue,
+    Microsoft Yahei,
+    system-ui,
+    sans-serif;
   height: 100vh;
   background: var(--background);
   background-attachment: fixed;
   position: relative;
   overflow-x: hidden;
-  transition: color 0.3s ease, background-color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
 }
 
-/* Dark mode background gradient */
-.dark body {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+body[arco-theme='dark'] {
+  --color-border: var(--theme-border);
+  --color-secondary: var(--theme-secondary);
 }
 
 body::before {
-  content: "";
+  content: '';
   position: fixed;
   top: 0;
   left: 0;
@@ -153,13 +275,9 @@ body::before {
   font-size: 1.25rem; /* text-xl */
   font-weight: 600; /* semibold */
   margin-bottom: 1rem; /* spacing.md */
-  color: #171717; /* text-primary */
+  color: var(--color-foreground);
   padding-left: 0.5rem; /* spacing.sm */
   border-left: 4px solid var(--primary-color);
-}
-
-.dark .website-title {
-  color: #fafafa; /* dark text-primary */
 }
 
 /* Responsive adjustments */

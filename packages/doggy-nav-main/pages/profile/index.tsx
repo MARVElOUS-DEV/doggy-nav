@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Camera, Fingerprint, KeyRound, Mail, ShieldCheck, Trash2, UserRound } from 'lucide-react';
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser';
 import AuthGuard from '@/components/AuthGuard';
+import PageLoading from '@/components/PageLoading';
 import { authStateAtom, authActionsAtom } from '@/store/store';
 import api from '@/utils/api';
 import type { Passkey } from '@/types';
@@ -163,35 +164,17 @@ function ProfileContent() {
     return username.charAt(0).toUpperCase();
   };
 
-  const getAvatarColors = (username: string): string => {
-    const hash = username.split('').reduce((a, b) => {
-      a = (a << 5) - a + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-
-    const colors = [
-      'bg-gradient-to-r from-blue-500 to-blue-600',
-      'bg-gradient-to-r from-purple-500 to-purple-600',
-      'bg-gradient-to-r from-green-500 to-green-600',
-      'bg-gradient-to-r from-orange-500 to-orange-600',
-      'bg-gradient-to-r from-pink-500 to-pink-600',
-      'bg-gradient-to-r from-indigo-500 to-indigo-600',
-    ];
-
-    return colors[Math.abs(hash) % colors.length];
-  };
-
   return (
-    <main className="min-h-full bg-[#f6f3ec] px-4 py-10 text-[#242820] dark:bg-[#11130f] dark:text-[#f4f0e8] sm:px-6 sm:py-14">
+    <main className="min-h-full bg-theme-background px-4 py-10 text-theme-foreground sm:px-6 sm:py-14">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 max-w-2xl sm:mb-10">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#687061] dark:text-[#a5aa9c]">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-theme-muted-foreground">
             Doggy Nav
           </p>
           <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
             {t('profile_settings')}
           </h1>
-          <p className="mt-3 text-base leading-7 text-[#686d63] dark:text-[#a8ab9f]">
+          <p className="mt-3 text-base leading-7 text-theme-muted-foreground">
             {t('profile_intro')}
           </p>
         </header>
@@ -202,12 +185,12 @@ function ProfileContent() {
           transition={{ duration: 0.45 }}
           className="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)]"
         >
-          <aside className="overflow-hidden rounded-[1.75rem] bg-[#304638] text-white shadow-[0_24px_70px_rgba(38,51,42,0.18)] lg:sticky lg:top-8">
+          <aside className="overflow-hidden rounded-[1.75rem] bg-theme-primary text-theme-primary-foreground shadow-xl lg:sticky lg:top-8">
             <div className="p-7 sm:p-8">
               <div className="mb-7 flex items-center gap-5 lg:block">
                 <div className="relative w-fit lg:mb-6">
                   {user.avatar ? (
-                    <div className="h-24 w-24 overflow-hidden rounded-[1.75rem] bg-white/10 ring-4 ring-white/10 lg:h-28 lg:w-28">
+                    <div className="h-24 w-24 overflow-hidden rounded-[1.75rem] bg-theme-primary-foreground/10 ring-4 ring-theme-primary-foreground/10 lg:h-28 lg:w-28">
                       <Image
                         src={user.avatar}
                         alt={`${user.username}'s avatar`}
@@ -217,9 +200,7 @@ function ProfileContent() {
                       />
                     </div>
                   ) : (
-                    <div
-                      className={`${getAvatarColors(user.username)} flex h-24 w-24 items-center justify-center rounded-[1.75rem] text-3xl font-semibold text-white ring-4 ring-white/10 lg:h-28 lg:w-28 lg:text-4xl`}
-                    >
+                    <div className="flex h-24 w-24 items-center justify-center rounded-[1.75rem] bg-theme-secondary text-3xl font-semibold text-theme-secondary-foreground ring-4 ring-theme-primary-foreground/10 lg:h-28 lg:w-28 lg:text-4xl">
                       {getAvatarText(user.username)}
                     </div>
                   )}
@@ -235,7 +216,7 @@ function ProfileContent() {
                       loading={uploadLoading}
                       icon={<Camera size={17} aria-hidden="true" />}
                       aria-label={t('change_avatar')}
-                      className="!absolute !-bottom-2 !-right-2 !h-10 !w-10 !rounded-xl !border-0 !bg-white !text-[#304638] !shadow-lg"
+                      className="!absolute !-bottom-2 !-right-2 !inline-flex !h-10 !w-10 !items-center !justify-center !rounded-xl !border-0 !bg-theme-primary-foreground !text-theme-primary !shadow-lg"
                     />
                   </Upload>
                 </div>
@@ -244,18 +225,23 @@ function ProfileContent() {
                   <h2 className="truncate text-2xl font-semibold tracking-[-0.03em]">
                     {user.username}
                   </h2>
-                  <p className="mt-1 truncate text-sm text-white/65">
+                  <p className="mt-1 truncate text-sm text-theme-primary-foreground/65">
                     {user.email || t('email_not_added')}
                   </p>
                 </div>
               </div>
 
-              <div className="border-t border-white/15 pt-6">
+              <div className="border-t border-theme-primary-foreground/15 pt-6">
                 <div className="flex items-start gap-3">
-                  <ShieldCheck className="mt-0.5 shrink-0 text-[#d9e8d6]" size={20} />
+                  <ShieldCheck
+                    className="mt-0.5 shrink-0 text-theme-primary-foreground/80"
+                    size={20}
+                  />
                   <div>
                     <p className="font-medium">{t('security')}</p>
-                    <p className="mt-1 text-sm leading-6 text-white/65">{t('security_summary')}</p>
+                    <p className="mt-1 text-sm leading-6 text-theme-primary-foreground/65">
+                      {t('security_summary')}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -263,16 +249,16 @@ function ProfileContent() {
           </aside>
 
           <div className="space-y-6">
-            <section className="rounded-[1.75rem] border border-[#ddd8cc] bg-[#fffdf9] p-6 shadow-[0_18px_55px_rgba(49,54,45,0.07)] dark:border-white/10 dark:bg-white/[0.045] sm:p-8">
+            <section className="rounded-[1.75rem] border border-theme-border bg-theme-card p-6 shadow-lg sm:p-8">
               <div className="mb-7 flex items-start gap-4">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#e8ede5] text-[#304638] dark:bg-white/10 dark:text-[#dce8d8]">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-theme-secondary text-theme-secondary-foreground">
                   <UserRound size={21} aria-hidden="true" />
                 </span>
                 <div>
                   <h2 className="text-xl font-semibold tracking-[-0.025em]">
                     {t('personal_information')}
                   </h2>
-                  <p className="mt-1 text-sm leading-6 text-[#74786f] dark:text-[#a8ab9f]">
+                  <p className="mt-1 text-sm leading-6 text-theme-muted-foreground">
                     {t('personal_information_description')}
                   </p>
                 </div>
@@ -297,8 +283,14 @@ function ProfileContent() {
                   <Input
                     placeholder={t('enter_username')}
                     size="large"
-                    prefix={<UserRound size={17} className="text-[#858a7d]" aria-hidden="true" />}
-                    className="!h-12 !rounded-xl !border-[#d8d3c8] !bg-[#f8f6f1] dark:!border-white/10 dark:!bg-white/[0.04]"
+                    prefix={
+                      <UserRound
+                        size={17}
+                        className="text-theme-muted-foreground"
+                        aria-hidden="true"
+                      />
+                    }
+                    className="theme-form-input theme-form-input-muted !h-12 !rounded-xl"
                   />
                 </FormItem>
 
@@ -311,8 +303,10 @@ function ProfileContent() {
                   <Input
                     placeholder={t('enter_email_optional')}
                     size="large"
-                    prefix={<Mail size={17} className="text-[#858a7d]" aria-hidden="true" />}
-                    className="!h-12 !rounded-xl !border-[#d8d3c8] !bg-[#f8f6f1] dark:!border-white/10 dark:!bg-white/[0.04]"
+                    prefix={
+                      <Mail size={17} className="text-theme-muted-foreground" aria-hidden="true" />
+                    }
+                    className="theme-form-input theme-form-input-muted !h-12 !rounded-xl"
                   />
                 </FormItem>
 
@@ -322,14 +316,14 @@ function ProfileContent() {
                       type="primary"
                       htmlType="submit"
                       loading={loading}
-                      className="!h-11 !rounded-xl !border-[#304638] !bg-[#304638] !px-6 !font-medium hover:!border-[#3d5847] hover:!bg-[#3d5847]"
+                      className="!h-11 !rounded-xl !border-theme-primary !bg-theme-primary !px-6 !font-medium !text-theme-primary-foreground hover:!opacity-90"
                     >
                       {loading ? t('updating') : t('update_profile')}
                     </Button>
                     <Button
                       type="secondary"
                       onClick={() => form.resetFields(['email'])}
-                      className="!h-11 !rounded-xl !border-[#d8d3c8] !bg-transparent !px-6 dark:!border-white/15"
+                      className="!h-11 !rounded-xl !border-theme-border !bg-transparent !px-6"
                     >
                       {t('reset')}
                     </Button>
@@ -338,17 +332,17 @@ function ProfileContent() {
               </Form>
             </section>
 
-            <section className="rounded-[1.75rem] border border-[#ddd8cc] bg-[#fffdf9] p-6 shadow-[0_18px_55px_rgba(49,54,45,0.07)] dark:border-white/10 dark:bg-white/[0.045] sm:p-8">
+            <section className="rounded-[1.75rem] border border-theme-border bg-theme-card p-6 shadow-lg sm:p-8">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#e8ede5] text-[#304638] dark:bg-white/10 dark:text-[#dce8d8]">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-theme-secondary text-theme-secondary-foreground">
                     <Fingerprint size={21} aria-hidden="true" />
                   </span>
                   <div>
                     <h2 className="text-xl font-semibold tracking-[-0.025em]">
                       {t('passkeys', { defaultValue: 'Passkeys' })}
                     </h2>
-                    <p className="mt-1 max-w-xl text-sm leading-6 text-[#74786f] dark:text-[#a8ab9f]">
+                    <p className="mt-1 max-w-xl text-sm leading-6 text-theme-muted-foreground">
                       {t('passkeys_description', {
                         defaultValue:
                           'Use your fingerprint, face, or device PIN to sign in without a password.',
@@ -362,7 +356,7 @@ function ProfileContent() {
                     icon={<Fingerprint size={17} aria-hidden="true" />}
                     loading={passkeyLoading}
                     onClick={handleAddPasskey}
-                    className="!inline-flex !h-11 shrink-0 !items-center !justify-center !rounded-xl !border-[#304638] !bg-[#304638] !px-5 hover:!border-[#3d5847] hover:!bg-[#3d5847]"
+                    className="!inline-flex !h-11 shrink-0 !items-center !justify-center !rounded-xl !border-theme-primary !bg-theme-primary !px-5 !text-theme-primary-foreground hover:!opacity-90"
                   >
                     {passkeyLoading
                       ? t('adding_passkey', { defaultValue: 'Waiting for your device…' })
@@ -375,14 +369,14 @@ function ProfileContent() {
                 {passkeys.map((passkey) => (
                   <div
                     key={passkey.id}
-                    className="flex items-center gap-4 rounded-2xl border border-[#e2ded4] bg-[#faf8f3] p-4 dark:border-white/10 dark:bg-white/[0.035]"
+                    className="flex items-center gap-4 rounded-2xl border border-theme-border bg-theme-muted p-4"
                   >
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#e8ede5] text-[#304638] dark:bg-white/10 dark:text-[#dce8d8]">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-theme-secondary text-theme-secondary-foreground">
                       <KeyRound size={19} aria-hidden="true" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{passkey.name}</p>
-                      <p className="mt-1 text-xs leading-5 text-[#777c72] dark:text-[#a8ab9f]">
+                      <p className="mt-1 text-xs leading-5 text-theme-muted-foreground">
                         {t('added_on', {
                           defaultValue: 'Added {{date}}',
                           date: new Date(passkey.createdAt).toLocaleDateString(),
@@ -415,13 +409,13 @@ function ProfileContent() {
                   </div>
                 ))}
                 {passkeys.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-[#d8d3c8] bg-[#faf8f3] px-5 py-7 text-center dark:border-white/15 dark:bg-white/[0.025]">
+                  <div className="rounded-2xl border border-dashed border-theme-border bg-theme-muted px-5 py-7 text-center">
                     <Fingerprint
                       size={24}
-                      className="mx-auto mb-3 text-[#8d9386]"
+                      className="mx-auto mb-3 text-theme-muted-foreground"
                       aria-hidden="true"
                     />
-                    <p className="text-sm text-[#74786f] dark:text-[#a8ab9f]">
+                    <p className="text-sm text-theme-muted-foreground">
                       {t('no_passkeys', { defaultValue: 'No passkeys added yet.' })}
                     </p>
                   </div>
@@ -429,16 +423,16 @@ function ProfileContent() {
               </div>
             </section>
 
-            <section className="rounded-[1.75rem] border border-[#ddd8cc] bg-[#fffdf9] p-6 shadow-[0_18px_55px_rgba(49,54,45,0.07)] dark:border-white/10 dark:bg-white/[0.045] sm:p-8">
+            <section className="rounded-[1.75rem] border border-theme-border bg-theme-card p-6 shadow-lg sm:p-8">
               <div className="mb-7 flex items-start gap-4">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#e8ede5] text-[#304638] dark:bg-white/10 dark:text-[#dce8d8]">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-theme-secondary text-theme-secondary-foreground">
                   <KeyRound size={21} aria-hidden="true" />
                 </span>
                 <div>
                   <h2 className="text-xl font-semibold tracking-[-0.025em]">
                     {t('change_password', { defaultValue: 'Change Password' })}
                   </h2>
-                  <p className="mt-1 text-sm leading-6 text-[#74786f] dark:text-[#a8ab9f]">
+                  <p className="mt-1 text-sm leading-6 text-theme-muted-foreground">
                     {t('password_description')}
                   </p>
                 </div>
@@ -473,8 +467,14 @@ function ProfileContent() {
                       defaultValue: 'Enter your current password',
                     })}
                     size="large"
-                    prefix={<KeyRound size={17} className="text-[#858a7d]" aria-hidden="true" />}
-                    className="!h-12 !rounded-xl !border-[#d8d3c8] !bg-[#f8f6f1] dark:!border-white/10 dark:!bg-white/[0.04]"
+                    prefix={
+                      <KeyRound
+                        size={17}
+                        className="text-theme-muted-foreground"
+                        aria-hidden="true"
+                      />
+                    }
+                    className="theme-form-input theme-form-input-muted !h-12 !rounded-xl"
                   />
                 </FormItem>
 
@@ -503,7 +503,7 @@ function ProfileContent() {
                       defaultValue: 'Enter your new password',
                     })}
                     size="large"
-                    className="!h-12 !rounded-xl !border-[#d8d3c8] !bg-[#f8f6f1] dark:!border-white/10 dark:!bg-white/[0.04]"
+                    className="theme-form-input theme-form-input-muted !h-12 !rounded-xl"
                   />
                 </FormItem>
 
@@ -538,7 +538,7 @@ function ProfileContent() {
                       defaultValue: 'Confirm your new password',
                     })}
                     size="large"
-                    className="!h-12 !rounded-xl !border-[#d8d3c8] !bg-[#f8f6f1] dark:!border-white/10 dark:!bg-white/[0.04]"
+                    className="theme-form-input theme-form-input-muted !h-12 !rounded-xl"
                   />
                 </FormItem>
 
@@ -548,7 +548,7 @@ function ProfileContent() {
                       type="primary"
                       htmlType="submit"
                       loading={passwordLoading}
-                      className="!h-11 !rounded-xl !border-[#304638] !bg-[#304638] !px-6 !font-medium hover:!border-[#3d5847] hover:!bg-[#3d5847]"
+                      className="!h-11 !rounded-xl !border-theme-primary !bg-theme-primary !px-6 !font-medium !text-theme-primary-foreground hover:!opacity-90"
                     >
                       {passwordLoading
                         ? t('updating', { defaultValue: 'Updating...' })
@@ -557,7 +557,7 @@ function ProfileContent() {
                     <Button
                       type="secondary"
                       onClick={() => passwordForm.resetFields()}
-                      className="!h-11 !rounded-xl !border-[#d8d3c8] !bg-transparent !px-6 dark:!border-white/15"
+                      className="!h-11 !rounded-xl !border-theme-border !bg-transparent !px-6"
                     >
                       {t('reset')}
                     </Button>
@@ -573,25 +573,8 @@ function ProfileContent() {
 }
 
 export default function ProfilePage() {
-  const { t } = useTranslation('translation');
-
   return (
-    <AuthGuard
-      fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div
-              className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-              style={{
-                borderColor: 'color-mix(in srgb, var(--color-primary) 70%, transparent)',
-                borderTopColor: 'transparent',
-              }}
-            ></div>
-            <p className="text-theme-muted-foreground transition-colors">{t('loading')}</p>
-          </div>
-        </div>
-      }
-    >
+    <AuthGuard fallback={<PageLoading />}>
       <ProfileContent />
     </AuthGuard>
   );
