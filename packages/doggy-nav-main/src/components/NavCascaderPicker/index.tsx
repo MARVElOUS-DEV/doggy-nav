@@ -7,12 +7,14 @@ import NavColumn from './NavColumn';
 import api from '@/utils/api';
 import DoggyImage from '../DoggyImage';
 
+const EMPTY_TAGS: string[] = [];
+
 const NavCascaderPicker: React.FC<NavCascaderPickerProps> = ({
   onSelect,
   onCancel,
   trigger,
   title = 'Select Navigation',
-  selectedTags = [],
+  selectedTags = EMPTY_TAGS,
 }) => {
   const [visible, setVisible] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);

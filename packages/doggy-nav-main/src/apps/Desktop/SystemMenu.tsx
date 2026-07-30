@@ -27,7 +27,7 @@ export default function SystemMenu({
       if (e.key === 'Escape') onClose();
     };
     const onDocPointer = (e: PointerEvent) => {
-      if ((e.target as Element).closest?.('.arco-trigger-popup')) return;
+      if ((e.target as Element).closest?.('.arco-trigger')) return;
       if (!containerRef.current) return;
       if (!containerRef.current.contains(e.target as Node)) onClose();
     };

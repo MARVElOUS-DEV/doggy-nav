@@ -95,7 +95,7 @@ export default function AppHeader({
   );
 
   const mobileDropdownMenu = (
-    <Menu>
+    <Menu onClickMenuItem={(key) => key !== 'theme'}>
       <Menu.Item key="search" onClick={() => setShowSearch(!showSearch)}>
         <div className="flex items-center py-1">
           <SearchIcon className="text-lg mr-3 text-theme-muted-foreground" size={18} />
@@ -186,20 +186,6 @@ export default function AppHeader({
 
         {/* Desktop Actions */}
         <div className="hidden lg:flex items-center space-x-2">
-          {/* Language Switcher */}
-          {/** @ts-ignore */}
-          <ReactIf condition={isFeatureEnabled('lang_switch')}>
-            <LanguageSwitcher />
-          </ReactIf>
-          <Tooltip content={t('recommend_site')}>
-            <Link
-              href="/recommend"
-              className="app-header-action text-2xl !flex items-center justify-center w-8 h-8 mr-0"
-            >
-              <IconPlusCircle style={{ width: 20, height: 20 }} />
-            </Link>
-          </Tooltip>
-
           <Tooltip content={t('search_shortcut_tooltip')}>
             <Button
               aria-label={t('search_shortcut_tooltip')}
@@ -213,9 +199,26 @@ export default function AppHeader({
             </Button>
           </Tooltip>
 
-          <div className="mr-1">
-            <ThemeToggle />
-          </div>
+          <Tooltip content={t('recommend_site')}>
+            <Link
+              href="/recommend"
+              className="app-header-action text-2xl !flex items-center justify-center w-8 h-8 mr-0"
+            >
+              <IconPlusCircle style={{ width: 20, height: 20 }} />
+            </Link>
+          </Tooltip>
+
+          {/* Language Switcher */}
+          {/** @ts-ignore */}
+          <ReactIf condition={isFeatureEnabled('lang_switch')}>
+            <LanguageSwitcher />
+          </ReactIf>
+
+          <Tooltip content={t('open_theme_settings')}>
+            <div className="mr-1">
+              <ThemeToggle />
+            </div>
+          </Tooltip>
 
           {/* User Avatar */}
           <UserAvatar />
@@ -223,7 +226,12 @@ export default function AppHeader({
 
         {/* Mobile Dropdown Menu (actions) */}
         <div className="lg:hidden flex items-center">
-          <Dropdown droplist={mobileDropdownMenu} trigger="click" position="br">
+          <Dropdown
+            droplist={mobileDropdownMenu}
+            trigger="click"
+            position="br"
+            unmountOnExit={false}
+          >
             <Button
               className="app-header-action p-2"
               icon={<IconMenu />}
