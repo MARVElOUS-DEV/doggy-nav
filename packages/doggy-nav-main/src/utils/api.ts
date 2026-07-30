@@ -73,7 +73,7 @@ const api = {
       match: number;
       logo?: string;
     }>;
-  }> => axios.post(API_AI_SIMILAR_NAV, data),
+  }> => axios.post(API_AI_SIMILAR_NAV, data, { timeout: 130_000 }),
 
   // Get category list
   getCategoryList: (): Promise<Category[]> => axios.get('/api/category/list'),

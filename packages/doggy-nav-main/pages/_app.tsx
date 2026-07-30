@@ -39,7 +39,8 @@ export default function MyApp({
   const [routeLoading, setRouteLoading] = useState(false);
 
   useEffect(() => {
-    const start = () => setRouteLoading(true);
+    const start = (url: string) =>
+      setRouteLoading(new URL(url, location.href).pathname !== location.pathname);
     const stop = () => setRouteLoading(false);
 
     router.events.on('routeChangeStart', start);

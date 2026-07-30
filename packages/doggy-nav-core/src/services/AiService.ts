@@ -43,6 +43,11 @@ export interface AiConfig {
   model: string;
 }
 
+export interface AiRequestOptions {
+  timeoutMs?: number;
+  maxRetries?: number;
+}
+
 type ProviderProfile = {
   name: string;
   apiKeyHeader: string;
@@ -246,7 +251,10 @@ function redactHeaders(headers: Record<string, string>) {
 export class AiService {
   constructor(private readonly cfg: AiConfig) {}
 
-  async chatCompletions(req: ChatCompletionRequest): Promise<ChatCompletionResponse> {
+  async chatCompletions(
+    req: ChatCompletionRequest,
+    options: AiRequestOptions = {}
+  ): Promise<ChatCompletionResponse> {
     if (!this.cfg.apiKey || !this.cfg.baseURL || !this.cfg.model) {
       throw new Error('AI configuration is incomplete');
     }
@@ -265,11 +273,13 @@ export class AiService {
       headers: redactHeaders(headers),
       body: requestBody,
     };
+    const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
 
     let lastError: unknown;
-    for (let attempt = 0; attempt <= DEFAULT_MAX_RETRIES; attempt += 1) {
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
       const abortController = new AbortController();
-      const timeout = setTimeout(() => abortController.abort(), DEFAULT_TIMEOUT_MS);
+      const timeout = setTimeout(() => abortController.abort(), timeoutMs);
       let resp: Response | undefined;
       try {
         resp = await fetch(url, {
@@ -287,7 +297,7 @@ export class AiService {
             request: debugRequest,
             message: `AI provider ${provider} error: ${resp.status} ${resp.statusText}`,
           });
-          if (attempt < DEFAULT_MAX_RETRIES && RETRIABLE_STATUS.has(resp.status)) {
+          if (attempt < maxRetries && RETRIABLE_STATUS.has(resp.status)) {
             await sleep(getRetryDelayMs(resp, attempt));
             continue;
           }
@@ -309,7 +319,7 @@ export class AiService {
         const canRetryProviderError =
           e instanceof AiProviderError && e.status !== undefined && RETRIABLE_STATUS.has(e.status);
         const canRetry = isAbort || !(e instanceof AiProviderError) || canRetryProviderError;
-        if (attempt < DEFAULT_MAX_RETRIES && canRetry) {
+        if (attempt < maxRetries && canRetry) {
           await sleep(getRetryDelayMs(resp, attempt));
           continue;
         }

@@ -161,15 +161,18 @@ aiRoutes.post('/api/ai/tasks/similar-nav', async (c) => {
 
     const cfg = await createAiConfig(c);
     const ai = new AiService(cfg);
-    const res = await ai.chatCompletions({
-      messages: buildSimilarNavRecommendationMessages(source, prompt),
-      temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
-      max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
-      max_completion_tokens: body.max_completion_tokens
-        ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
-        : undefined,
-      stream: false,
-    });
+    const res = await ai.chatCompletions(
+      {
+        messages: buildSimilarNavRecommendationMessages(source, prompt),
+        temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
+        max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
+        max_completion_tokens: body.max_completion_tokens
+          ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
+          : undefined,
+        stream: false,
+      },
+      { timeoutMs: 120_000, maxRetries: 0 }
+    );
     const values = parseSimilarNavRecommendations(res?.choices?.[0]?.message?.content, source.url);
     if (!values) {
       return c.json({ error: { message: 'AI returned invalid recommendations' } }, 502);

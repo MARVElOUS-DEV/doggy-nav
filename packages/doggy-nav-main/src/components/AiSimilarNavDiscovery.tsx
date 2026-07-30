@@ -50,14 +50,21 @@ export default function AiSimilarNavDiscovery({
     if (!open) return;
     const content = document.getElementById('doggy-content-area');
     const previousOverflow = content?.style.overflow;
-    if (content) content.style.overflow = 'hidden';
+    const previousBackdropFilter = content?.style.backdropFilter;
+    if (content) {
+      content.style.overflow = 'hidden';
+      content.style.backdropFilter = 'none';
+    }
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => {
       window.removeEventListener('keydown', closeOnEscape);
-      if (content) content.style.overflow = previousOverflow ?? '';
+      if (content) {
+        content.style.overflow = previousOverflow ?? '';
+        content.style.backdropFilter = previousBackdropFilter ?? '';
+      }
     };
   }, [open]);
 

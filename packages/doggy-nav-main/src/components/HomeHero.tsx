@@ -111,7 +111,7 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
     >
       <Carousel
         carousel={carousel as RefObject<CarouselHandle>}
-        className="h-[320px] md:h-[300px]"
+        className="h-[384px] md:h-[300px]"
         autoPlay={reducedMotion ? false : { interval: 5000, hoverToPause: true }}
         miniRender
         showArrow="never"
@@ -119,25 +119,30 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
         onChange={setActiveIndex}
       >
         <div>
-          <div className="hero-gradient h-[320px] p-8 text-white relative md:h-[300px]">
+          <div className="hero-gradient relative h-[384px] p-8 text-white md:h-[300px]">
             <div className="hero-slide-content max-w-3xl mx-auto text-center relative z-10">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1
+                className="text-3xl font-bold leading-9 sm:text-4xl md:text-5xl"
+                style={{ margin: '0 0 0.75rem' }}
+              >
                 {t('curated_website_navigation')}
               </h1>
-              <p className="text-xl opacity-90 mb-8">{t('discover_quality_websites')}</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <p className="mb-6 text-lg leading-6 opacity-90 sm:mb-8 sm:text-xl sm:leading-7">
+                {t('discover_quality_websites')}
+              </p>
+              <div className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
                 {isAuthenticated ? (
                   <button
                     type="button"
                     onClick={onTryDesktop}
-                    className="cursor-pointer bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                    className="cursor-pointer rounded-lg bg-theme-background px-6 py-2.5 font-semibold text-theme-primary shadow-lg transition-all duration-300 hover:scale-105 hover:bg-theme-muted sm:py-3"
                   >
                     {t('try_goto_desktop')}
                   </button>
                 ) : (
                   <Link
                     href="/login"
-                    className="bg-theme-background text-theme-primary hover:bg-theme-muted font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                    className="rounded-lg bg-theme-background px-6 py-2.5 font-semibold text-theme-primary shadow-lg transition-all duration-300 hover:scale-105 hover:bg-theme-muted sm:py-3"
                   >
                     {t('login_explore')}
                   </Link>
@@ -145,7 +150,7 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
                 <button
                   type="button"
                   onClick={onSearch}
-                  className="cursor-pointer bg-transparent border-2 border-theme-primary hover:bg-theme-background hover:text-theme-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300"
+                  className="cursor-pointer rounded-lg border-2 border-theme-primary bg-transparent px-6 py-2.5 font-semibold transition-all duration-300 hover:bg-theme-background hover:text-theme-primary sm:py-3"
                 >
                   {t('search_websites')}
                 </button>
@@ -156,7 +161,7 @@ export default function HomeHero({ isAuthenticated, onSearch, onTryDesktop }: Ho
 
         {slides.map((slide, index) => (
           <div key={`${slide.order}-${slide.title}-${slide.mediaUrl || ''}`}>
-            <div className="hero-gradient relative h-[320px] overflow-hidden text-white md:h-[300px]">
+            <div className="hero-gradient relative h-[384px] overflow-hidden text-white md:h-[300px]">
               {slide.mediaType === 'image' && slide.mediaUrl ? (
                 // External admin-managed URLs cannot use Next Image without a fixed host allowlist.
                 // eslint-disable-next-line @next/next/no-img-element
