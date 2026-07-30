@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepare": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json -w"
+    "dev": "tsc -p tsconfig.json -w",
+    "test": "pnpm build && node src/services/AiRecommendationService.test.mjs"
   },
   "license": "MIT",
   "devDependencies": {

@@ -149,6 +149,7 @@ export default (app: Application) => {
   // Admin-friendly alias under /api (proxied in dev)
   router.post('/api/ai/chat', controller.ai.chatCompletions);
   router.post('/api/ai/tasks/recommendation-autofill', controller.ai.recommendationAutofill);
+  router.post('/api/ai/tasks/similar-nav', controller.ai.similarNavRecommendations);
 
   // Email settings routes
   router.get('/api/email-settings', controller.emailSettings.get);

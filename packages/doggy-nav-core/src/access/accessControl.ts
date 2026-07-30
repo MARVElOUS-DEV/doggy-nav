@@ -583,6 +583,12 @@ export const routePermissions: RoutePermission[] = [
     require: { level: 'optional' },
     description: 'AI recommendation autofill task',
   },
+  {
+    method: 'POST',
+    path: '/api/ai/tasks/similar-nav',
+    require: { level: 'authenticated' },
+    description: 'AI similar navigation recommendations',
+  },
 
   // Affiche (announcement) routes
   {

@@ -3,15 +3,21 @@ import {
   AiProviderError,
   AiService,
   buildRecommendationAutofillMessages,
+  buildSimilarNavRecommendationMessages,
   DEFAULT_RECOMMENDATION_AUTOFILL_PROMPT,
+  DEFAULT_SIMILAR_NAV_RECOMMENDATIONS_PROMPT,
+  normalizeSimilarNavRecommendationInput,
   parseRecommendationAutofillContent,
+  parseSimilarNavRecommendations,
   prependSystemPrompt,
   RECOMMENDATION_AUTOFILL_PROMPT_CODE,
+  SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE,
 } from 'doggy-nav-core';
 import type { AiProviderService, ChatMessage, PromptService } from 'doggy-nav-core';
 import type { Env } from './index';
 import { getDI } from '../ioc/helpers';
 import { TOKENS } from '../ioc/tokens';
+import { createAuthMiddleware } from '../middleware/auth';
 
 const aiRoutes = new Hono<{ Bindings: Env }>();
 
@@ -47,7 +53,7 @@ function providerErrorResponse(c: any, e: AiProviderError) {
   );
 }
 
-aiRoutes.post('/api/ai/chat', async (c) => {
+aiRoutes.post('/api/ai/chat', createAuthMiddleware({ required: true }), async (c) => {
   try {
     const body = await c.req.json();
     if (!body || !Array.isArray(body.messages)) {
@@ -132,6 +138,47 @@ aiRoutes.post('/api/ai/tasks/recommendation-autofill', async (c) => {
     if (e instanceof AiProviderError) return providerErrorResponse(c, e);
     return c.json(
       { error: { message: e?.message || 'recommendation autofill failed' } },
+      e?.status === 503 ? 503 : 500
+    );
+  }
+});
+
+aiRoutes.post('/api/ai/tasks/similar-nav', async (c) => {
+  try {
+    const body = await c.req.json();
+    const input = normalizeSimilarNavRecommendationInput(body);
+    if (!input) {
+      return c.json({ error: { message: 'A valid source website is required' } }, 400);
+    }
+    const { source } = input;
+
+    let prompt = DEFAULT_SIMILAR_NAV_RECOMMENDATIONS_PROMPT;
+    try {
+      const svc = getDI(c).resolve(TOKENS.PromptService) as PromptService;
+      const active = await svc.getActiveByCode(SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE);
+      if (active?.content) prompt = active.content;
+    } catch {}
+
+    const cfg = await createAiConfig(c);
+    const ai = new AiService(cfg);
+    const res = await ai.chatCompletions({
+      messages: buildSimilarNavRecommendationMessages(source, prompt),
+      temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
+      max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
+      max_completion_tokens: body.max_completion_tokens
+        ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
+        : undefined,
+      stream: false,
+    });
+    const values = parseSimilarNavRecommendations(res?.choices?.[0]?.message?.content, source.url);
+    if (!values) {
+      return c.json({ error: { message: 'AI returned invalid recommendations' } }, 502);
+    }
+    return c.json(values);
+  } catch (e: any) {
+    if (e instanceof AiProviderError) return providerErrorResponse(c, e);
+    return c.json(
+      { error: { message: e?.message || 'similar recommendations failed' } },
       e?.status === 503 ? 503 : 500
     );
   }

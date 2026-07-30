@@ -4,6 +4,7 @@ import type { PromptRepository } from '../repositories/PromptRepository';
 
 export const DEFAULT_PROMPT_CODE = 'global.default';
 export const RECOMMENDATION_AUTOFILL_PROMPT_CODE = 'recommendation.autofill.v1';
+export const SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE = 'recommendation.similar-nav.v2';
 
 export class PromptService {
   constructor(private readonly repo: PromptRepository) {}
@@ -12,7 +13,12 @@ export class PromptService {
     return this.repo.list(page);
   }
 
-  create(name: string, content: string, active = false, code = DEFAULT_PROMPT_CODE): Promise<Prompt> {
+  create(
+    name: string,
+    content: string,
+    active = false,
+    code = DEFAULT_PROMPT_CODE
+  ): Promise<Prompt> {
     return this.repo.create({ code, name, content, active });
   }
 

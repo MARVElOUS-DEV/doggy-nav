@@ -3,11 +3,16 @@ import {
   AiProviderService,
   AiService,
   buildRecommendationAutofillMessages,
+  buildSimilarNavRecommendationMessages,
   DEFAULT_RECOMMENDATION_AUTOFILL_PROMPT,
+  DEFAULT_SIMILAR_NAV_RECOMMENDATIONS_PROMPT,
+  normalizeSimilarNavRecommendationInput,
   parseRecommendationAutofillContent,
+  parseSimilarNavRecommendations,
   prependSystemPrompt,
   ChatCompletionRequest,
   RECOMMENDATION_AUTOFILL_PROMPT_CODE,
+  SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE,
 } from 'doggy-nav-core';
 import { Controller } from 'egg';
 import { TOKENS } from '../core/ioc';
@@ -167,6 +172,70 @@ export default class AiController extends Controller {
       if ((e as any)?.status === 503) {
         this.ctx.status = 503;
         this.ctx.body = { error: { message: e.message } };
+        return;
+      }
+      throw e;
+    }
+  }
+
+  async similarNavRecommendations() {
+    const body = this.ctx.request.body as any;
+    const input = normalizeSimilarNavRecommendationInput(body);
+    if (!input) {
+      this.ctx.status = 400;
+      this.ctx.body = { error: { message: 'A valid source website is required' } };
+      return;
+    }
+    const { source } = input;
+
+    let prompt = DEFAULT_SIMILAR_NAV_RECOMMENDATIONS_PROMPT;
+    try {
+      const doc: any = await this.ctx.model.Prompt.findOne({
+        code: SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE,
+        active: true,
+      }).lean();
+      if (doc?.content) prompt = doc.content;
+    } catch (_e) {
+      this.logger.warn('Failed to load similar navigation prompt', _e);
+    }
+
+    const cfg = await this.createAiConfig();
+    const ai = new AiService(cfg);
+    try {
+      const res = await ai.chatCompletions({
+        messages: buildSimilarNavRecommendationMessages(source, prompt),
+        temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
+        max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
+        max_completion_tokens: body.max_completion_tokens
+          ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
+          : undefined,
+        stream: false,
+      });
+      const values = parseSimilarNavRecommendations(
+        res?.choices?.[0]?.message?.content,
+        source.url
+      );
+      if (!values) {
+        this.ctx.status = 502;
+        this.ctx.body = { error: { message: 'AI returned invalid recommendations' } };
+        return;
+      }
+      this.ctx.body = values;
+    } catch (e) {
+      if (e instanceof AiProviderError) {
+        this.logger.warn('[ai:similar-nav] provider request failed', {
+          provider: e.provider,
+          status: e.status,
+          request: e.request,
+          responseBody: e.responseBody,
+        });
+        this.ctx.status = 502;
+        this.ctx.body = { error: { message: e.message } };
+        return;
+      }
+      if ((e as any)?.status === 503) {
+        this.ctx.status = 503;
+        this.ctx.body = { error: { message: (e as Error).message } };
         return;
       }
       throw e;

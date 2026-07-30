@@ -12,6 +12,7 @@ import { favoritesActionsAtom, isAuthenticatedAtom, selectedCategoryAtom } from 
 import { useTranslation } from 'react-i18next';
 import DoggyImage from '@/components/DoggyImage';
 import MarkdownContent from '@/components/MarkdownContent';
+import AiSimilarNavDiscovery from '@/components/AiSimilarNavDiscovery';
 
 const { Row, Col } = Grid;
 
@@ -188,10 +189,13 @@ export default function NavDetail() {
 
   return (
     <div className="container p-4 mx-auto max-w-7xl text-theme-foreground transition-colors">
-      <Row gutter={32} className="site-info mt-8">
+      <Row
+        gutter={32}
+        className="site-info mt-8 rounded-[32px] border border-theme-border bg-theme-background p-4 shadow-lg sm:p-8"
+      >
         <Col md={8} xs={24} className="item">
-          <div className="shiny left rounded-2xl shadow-lg p-4 relative border border-theme-border bg-theme-background transition-colors">
-            <div className="img-wrap h-40 md:h-44 flex items-center justify-center bg-theme-color border border-theme-border rounded-lg transition-colors">
+          <div className="shiny left rounded-3xl p-4 relative border border-theme-border bg-theme-color transition-colors">
+            <div className="img-wrap h-40 md:h-52 flex items-center justify-center bg-theme-background border border-theme-border rounded-2xl transition-colors">
               <DoggyImage
                 logo={detail.logo}
                 name={detail.name}
@@ -267,8 +271,13 @@ export default function NavDetail() {
           </div>
         </Col>
         <Col md={16} xs={24} className="item">
-          <div className="content">
-            <h1 className="title text-4xl font-bold mb-4">{detail.name}</h1>
+          <div className="content py-4 md:py-2">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-theme-primary">
+              {t('website_spotlight')}
+            </p>
+            <h1 className="title text-4xl font-bold tracking-tight mb-4 sm:text-5xl">
+              {detail.name}
+            </h1>
             <p className="desc text-lg text-theme-muted-foreground mb-6 leading-relaxed">
               {detail.desc}
             </p>
@@ -303,14 +312,16 @@ export default function NavDetail() {
                 </a>
               </div>
             )}
-            <div className="btn-group flex mt-8">
-              <div
+            <div className="btn-group mt-8 flex flex-wrap gap-3">
+              <button
+                type="button"
                 onClick={() => handleNavClick(detail)}
-                className="btn-link btn-group-item flex cursor-pointer items-center rounded-xl bg-theme-primary px-6 py-3 text-theme-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+                className="btn-link btn-group-item flex cursor-pointer items-center rounded-xl bg-theme-primary px-6 py-3 font-semibold text-theme-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md"
               >
                 {t('go_direct')}
                 <ArrowRight className="ml-2 text-sm" size={14} />
-              </div>
+              </button>
+              <AiSimilarNavDiscovery source={detail} isAuthenticated={isAuthenticated} />
             </div>
           </div>
         </Col>

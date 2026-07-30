@@ -27,6 +27,7 @@ export const API_NAV_ADD = '/api/nav/add';
 export const API_NAV_REPTILE = '/api/nav/reptile';
 export const API_AI_CHAT = '/api/ai/chat';
 export const API_AI_RECOMMENDATION_AUTOFILL = '/api/ai/tasks/recommendation-autofill';
+export const API_AI_SIMILAR_NAV = '/api/ai/tasks/similar-nav';
 export const API_TAG_LIST = '/api/tag/list';
 export const API_NAV_RANDOM = '/api/nav/random';
 export const API_NAV_LIST = '/api/nav/list';
@@ -57,6 +58,22 @@ const api = {
     logo?: string;
     tags?: string[];
   }> => axios.post(API_AI_RECOMMENDATION_AUTOFILL, data),
+
+  getAiSimilarNav: (data: {
+    source: { name: string; url: string };
+  }): Promise<{
+    headline: string;
+    summary: string;
+    recommendations: Array<{
+      name: string;
+      url: string;
+      description: string;
+      reason: string;
+      bestFor: string;
+      match: number;
+      logo?: string;
+    }>;
+  }> => axios.post(API_AI_SIMILAR_NAV, data),
 
   // Get category list
   getCategoryList: (): Promise<Category[]> => axios.get('/api/category/list'),

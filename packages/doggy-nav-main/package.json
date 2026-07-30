@@ -10,6 +10,7 @@
     "start": "cross-env PORT=3001 next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "test:ai-discovery": "node --experimental-strip-types src/utils/aiDiscoveryError.test.mjs",
     "test:theme": "node --experimental-strip-types src/theme/theme.test.mjs"
   },
   "dependencies": {

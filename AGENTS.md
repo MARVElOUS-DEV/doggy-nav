@@ -16,6 +16,7 @@
 - Prettier enforces 2-space indentation, 100-character lines, single quotes, and trailing commas; leave ESLint rules in place unless you document an exception.
 - In `doggy-nav-main`, favor Tailwind tokens and design-system utilities over custom CSS; only preserve the gradients already defined.
 - Name React components and classes in PascalCase, helper functions in camelCase, and route or file identifiers in kebab-case.
+- Business in doggy-nav-server and doggy-nav-workers should be in parity each other with cause both backend should be maintained.
 
 ## Testing Guidelines
 
