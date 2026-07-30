@@ -103,7 +103,12 @@ export default function RootLayout({
 
   return (
     <I18nextProvider i18n={i18n}>
-      <ConfigProvider componentConfig={{ Menu: { theme } }}>
+      <ConfigProvider
+        componentConfig={{
+          Menu: { theme },
+          Select: { triggerProps: { updateOnScroll: true } },
+        }}
+      >
         <SiteMetadataHead />
         <div className="flex h-screen">
           {/* Sidebar (desktop only) */}

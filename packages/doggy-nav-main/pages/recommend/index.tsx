@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { Form, Input, Select, Button, Message, Tooltip } from '@arco-design/web-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Form, Input, Select, Button, Message } from '@arco-design/web-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '@/utils/axios';
 import api, { API_NAV_ADD, API_NAV_REPTILE } from '@/utils/api';
@@ -51,6 +51,41 @@ const assignGeneratedValue = (
   if (field === 'detail') target.detail = value;
   if (field === 'logo') target.logo = value;
 };
+
+function WebsiteUrlField({
+  value,
+  onChange,
+  id,
+  error,
+  placeholder,
+  busy,
+  className,
+  children,
+}: {
+  value?: string;
+  onChange?: (value: string) => void;
+  id?: string;
+  error?: boolean;
+  placeholder: string;
+  busy: boolean;
+  className: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2.5 sm:flex-row">
+      <Input
+        id={id}
+        value={value}
+        onChange={onChange}
+        error={error}
+        placeholder={placeholder}
+        aria-busy={busy}
+        className={`${className} min-w-0 flex-1`}
+      />
+      <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:flex">{children}</div>
+    </div>
+  );
+}
 
 export default function Recommend() {
   const [loading, setLoading] = useState(false);
@@ -253,334 +288,314 @@ export default function Recommend() {
   };
 
   const fieldChromeClass =
-    'border-2 border-gray-200 dark:border-gray-600 focus:border-theme-primary dark:focus:border-theme-primary focus:ring-theme-primary/20 dark:focus:ring-theme-primary/20 rounded-xl transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100';
-  const inputClass = `h-12 ${fieldChromeClass}`;
-  const multiSelectClass = `min-h-12 ${fieldChromeClass}`;
+    'rounded-xl border border-theme-border bg-theme-background text-theme-foreground transition-colors focus-within:border-theme-primary focus-within:ring-2 focus-within:ring-theme-primary/15';
+  const inputClass = `h-11 sm:h-12 ${fieldChromeClass}`;
+  const multiSelectClass = `min-h-11 sm:min-h-12 ${fieldChromeClass}`;
 
   return (
-    <div className="p-8">
-      <div className="container mx-auto max-w-7xl text-theme-foreground border border-theme-border rounded-xl shadow-md transition-colors">
+    <div className="py-2 text-theme-foreground sm:px-4 sm:py-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="mx-auto max-w-5xl"
+      >
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto py-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.35 }}
+          className="mb-6 px-1 text-left sm:mb-8 sm:text-center"
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center mb-8"
-          >
-            <h1 className="my-0 mb-2 text-4xl font-bold text-theme-foreground">
-              {t('recommend_website')}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">
-              {t('share_quality_websites')}
-            </p>
-          </motion.div>
+          <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-theme-primary/10 text-theme-primary sm:h-12 sm:w-12 sm:rounded-2xl">
+            <Sparkles size={22} aria-hidden="true" />
+          </span>
+          <h1 className="my-0 text-3xl font-bold tracking-tight text-theme-foreground sm:text-4xl">
+            {t('recommend_website')}
+          </h1>
+          <p className="mt-2 max-w-2xl text-base leading-relaxed text-theme-muted-foreground sm:mx-auto sm:text-lg">
+            {t('share_quality_websites')}
+          </p>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative p-8 border border-theme-border border-x-0 dark:border-gray-700/50 rounded-2xl"
-          >
-            <Form form={form} layout="vertical" onSubmit={addNav}>
-              <AnimatePresence>
-                {formLoading && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-theme-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10 ring-1 ring-theme-border"
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.08 }}
+          className="relative overflow-hidden rounded-2xl border border-theme-border bg-[var(--color-card)] p-4 shadow-sm sm:rounded-3xl sm:p-7 lg:p-10"
+        >
+          <Form form={form} layout="vertical" onSubmit={addNav}>
+            <AnimatePresence>
+              {formLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-theme-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10 ring-1 ring-theme-border"
+                >
+                  <LoadingIndicator />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="grid grid-cols-1 gap-x-5 gap-y-1 md:grid-cols-2">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="md:col-span-2"
+              >
+                <FormItem label={t('website_link')} field="href" rules={rules.href}>
+                  <WebsiteUrlField
+                    placeholder={t('enter_website_url')}
+                    busy={formLoading}
+                    className={inputClass}
                   >
-                    <LoadingIndicator />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <button
+                      type="button"
+                      disabled={metadataLoading === 'ai'}
+                      onClick={getNavInfo}
+                      className="inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-theme-border bg-theme-background px-3 text-sm font-medium text-theme-muted-foreground transition-colors hover:border-theme-primary/40 hover:text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12"
+                    >
+                      {metadataLoading === 'scrape' ? (
+                        <LoadingSpinner className="h-4 w-4" />
+                      ) : (
+                        <Search size={16} aria-hidden="true" />
+                      )}
+                      <span className="truncate">{t('traditional_scrape')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={metadataLoading === 'scrape'}
+                      onClick={getAiNavInfo}
+                      className="inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-theme-primary/20 bg-theme-primary/10 px-3 text-sm font-semibold text-theme-primary transition-colors hover:bg-theme-primary/15 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12"
+                    >
+                      {metadataLoading === 'ai' ? (
+                        <LoadingSpinner className="h-4 w-4" />
+                      ) : (
+                        <Sparkles size={16} aria-hidden="true" />
+                      )}
+                      <span className="truncate">{t('ai_autofill')}</span>
+                    </button>
+                  </WebsiteUrlField>
+                </FormItem>
+              </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="md:col-span-2"
-                >
-                  <FormItem label={t('website_link')} field="href" rules={rules.href}>
-                    <Input
-                      placeholder={t('enter_website_url')}
-                      aria-busy={formLoading}
-                      suffix={
-                        <div className="flex items-center gap-1 pl-1">
-                          <Tooltip content={t('traditional_scrape')}>
-                            <button
-                              type="button"
-                              disabled={metadataLoading === 'ai'}
-                              onClick={getNavInfo}
-                              aria-label={t('traditional_scrape')}
-                              className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent p-0 text-theme-muted-foreground transition-all duration-200 hover:border-theme-primary/20 hover:bg-theme-primary/10 hover:text-theme-primary active:scale-95 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent disabled:hover:bg-transparent disabled:hover:text-theme-muted-foreground"
-                            >
-                              {metadataLoading === 'scrape' ? (
-                                <LoadingSpinner className="h-3.5 w-3.5" />
-                              ) : (
-                                <Search size={16} className="block" />
-                              )}
-                            </button>
-                          </Tooltip>
-                          <Tooltip content={t('ai_autofill')}>
-                            <button
-                              type="button"
-                              disabled={metadataLoading === 'scrape'}
-                              onClick={getAiNavInfo}
-                              aria-label={t('ai_autofill')}
-                              className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent p-0 text-theme-primary transition-all duration-200 hover:border-theme-primary/20 hover:bg-theme-primary/10 hover:text-theme-primary active:scale-95 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent disabled:hover:bg-transparent"
-                            >
-                              {metadataLoading === 'ai' ? (
-                                <LoadingSpinner className="h-3.5 w-3.5" />
-                              ) : (
-                                <Sparkles size={16} className="block" />
-                              )}
-                            </button>
-                          </Tooltip>
-                        </div>
-                      }
-                      className={inputClass}
-                    />
-                  </FormItem>
-                </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <FormItem label={t('website_name')} field="name" rules={rules.name}>
+                  <Input placeholder={t('enter_website_name')} className={inputClass} />
+                </FormItem>
+              </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <FormItem label={t('website_name')} field="name" rules={rules.name}>
-                    <Input placeholder={t('enter_website_name')} className={inputClass} />
-                  </FormItem>
-                </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <FormItem label={t('website_logo')} field="logo" rules={rules.logo}>
+                  <Input placeholder={t('enter_website_logo')} className={inputClass} />
+                </FormItem>
+              </motion.div>
 
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="md:col-span-2"
+              >
+                <FormItem label={t('website_description')} field="desc" rules={rules.desc}>
+                  <Input placeholder={t('enter_website_description')} className={inputClass} />
+                </FormItem>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                <FormItem label={t('website_category')} field="categoryId" rules={rules.categoryId}>
+                  <Select
+                    placeholder={t('select')}
+                    showSearch
+                    className={`recommend-sel-container category-select ${inputClass}`}
+                  >
+                    {renderCategories(categories, t)}
+                  </Select>
+                </FormItem>
+              </motion.div>
+
+              {groups.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                  <FormItem label={t('website_logo')} field="logo" rules={rules.logo}>
-                    <Input placeholder={t('enter_website_logo')} className={inputClass} />
-                  </FormItem>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="md:col-span-2"
-                >
-                  <FormItem label={t('website_description')} field="desc" rules={rules.desc}>
-                    <Input placeholder={t('enter_website_description')} className={inputClass} />
-                  </FormItem>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
+                  transition={{ duration: 0.5, delay: 0.55 }}
                 >
                   <FormItem
-                    label={t('website_category')}
-                    field="categoryId"
-                    rules={rules.categoryId}
-                  >
-                    <Select
-                      placeholder={t('select')}
-                      showSearch
-                      className={`recommend-sel-container category-select ${inputClass}`}
-                    >
-                      {renderCategories(categories, t)}
-                    </Select>
-                  </FormItem>
-                </motion.div>
-
-                {groups.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.55 }}
-                  >
-                    <FormItem
-                      label={t('website_group', { defaultValue: '👥 Group' })}
-                      field={'audience.allowGroups'}
-                      className="pt-[1em]"
-                    >
-                      <Select
-                        mode="multiple"
-                        placeholder={t('select')}
-                        className={`recommend-sel-container recommend-multi-select category-select ${multiSelectClass}`}
-                      >
-                        {groups.map((g) => (
-                          <Select.Option key={g.id} value={g.id}>
-                            {g.displayName || g.slug}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </FormItem>
-                  </motion.div>
-                )}
-
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                >
-                  <FormItem
-                    label={t('website_tags')}
-                    field="tags"
-                    rules={rules.tags}
-                    className={groups.length > 0 ? '' : 'pt-[1em]'}
+                    label={t('website_group', { defaultValue: '👥 Group' })}
+                    field={'audience.allowGroups'}
                   >
                     <Select
                       mode="multiple"
-                      showSearch
-                      allowCreate
-                      placeholder={t('enter_website_tags')}
-                      className={`recommend-sel-container recommend-multi-select ${multiSelectClass}`}
+                      placeholder={t('select')}
+                      className={`recommend-sel-container recommend-multi-select category-select ${multiSelectClass}`}
                     >
-                      {tags.map((item) => (
-                        <Select.Option key={item.name} value={item.name}>
-                          {item.label}
+                      {groups.map((g) => (
+                        <Select.Option key={g.id} value={g.id}>
+                          {g.displayName || g.slug}
                         </Select.Option>
                       ))}
                     </Select>
                   </FormItem>
                 </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.7 }}
-                >
-                  <FormItem
-                    label={t('recommender_name')}
-                    field="authorName"
-                    rules={rules.authorName}
-                  >
-                    <Input placeholder={t('enter_recommender_name')} className={inputClass} />
-                  </FormItem>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.8 }}
-                >
-                  <FormItem
-                    label={t('recommender_website')}
-                    field="authorUrl"
-                    rules={rules.authorUrl}
-                  >
-                    <Input placeholder={t('enter_recommender_url')} className={inputClass} />
-                  </FormItem>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.9 }}
-                  className="md:col-span-2"
-                >
-                  <div className="mb-2 flex items-center justify-between">
-                    <label className="text-sm font-medium text-theme-foreground">
-                      {t('website_details')}
-                    </label>
-                    <div className="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
-                      <button
-                        type="button"
-                        onClick={() => setIsPreviewMode(false)}
-                        className={`flex items-center gap-1 rounded-md px-3 py-1 text-xs font-medium transition-all ${
-                          !isPreviewMode
-                            ? 'bg-white text-theme-primary shadow-sm dark:bg-gray-700'
-                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
-                      >
-                        {t('back_to_edit')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsPreviewMode(true)}
-                        className={`flex items-center gap-1 rounded-md px-3 py-1 text-xs font-medium transition-all ${
-                          isPreviewMode
-                            ? 'bg-white text-theme-primary shadow-sm dark:bg-gray-700'
-                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
-                      >
-                        <Eye size={14} />
-                        {t('markdown_preview')}
-                      </button>
-                    </div>
-                  </div>
-
-                  <FormItem
-                    field="detail"
-                    noStyle
-                    getValueFromEvent={(value: string | undefined) => value ?? ''}
-                  >
-                    {isPreviewMode ? (
-                      <div className="min-h-[400px] rounded-2xl border-2 border-dashed border-theme-border bg-theme-background/50 p-6">
-                        <MarkdownContent
-                          value={detailPreview}
-                          className="prose prose-sm dark:prose-invert max-w-none"
-                          fallback={
-                            <div className="flex h-full flex-col items-center justify-center text-theme-muted-foreground">
-                              <p>{t('markdown_preview_empty')}</p>
-                            </div>
-                          }
-                        />
-                      </div>
-                    ) : (
-                      <MarkdownEditor
-                        placeholder={t('enter_website_details')}
-                        height={400}
-                        className="w-full"
-                        enableImageUpload={!!imageHostname && isAuthenticated}
-                        imageHostname={imageHostname}
-                      />
-                    )}
-                  </FormItem>
-                </motion.div>
-              </div>
+              )}
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.0 }}
-                className="mt-8 text-center"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
               >
-                <FormItem>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={loading}
-                      className="h-14 rounded-full border-0 bg-theme-primary px-8 text-lg font-semibold text-theme-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-                    >
-                      {loading ? t('submitting') : t('submit_recommendation')}
-                    </Button>
-                  </motion.div>
+                <FormItem label={t('website_tags')} field="tags" rules={rules.tags}>
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    allowCreate
+                    placeholder={t('enter_website_tags')}
+                    className={`recommend-sel-container recommend-multi-select ${multiSelectClass}`}
+                  >
+                    {tags.map((item) => (
+                      <Select.Option key={item.name} value={item.name}>
+                        {item.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </FormItem>
               </motion.div>
-            </Form>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 1.2 }}
-            className="mt-8 text-center text-gray-500 dark:text-gray-400 text-sm"
-          >
-            <p>{t('thank_you_contribution')}</p>
-          </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+              >
+                <FormItem label={t('recommender_name')} field="authorName" rules={rules.authorName}>
+                  <Input placeholder={t('enter_recommender_name')} className={inputClass} />
+                </FormItem>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
+              >
+                <FormItem
+                  label={t('recommender_website')}
+                  field="authorUrl"
+                  rules={rules.authorUrl}
+                >
+                  <Input placeholder={t('enter_recommender_url')} className={inputClass} />
+                </FormItem>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+                className="md:col-span-2"
+              >
+                <div className="mb-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <label className="text-sm font-medium text-theme-foreground">
+                    {t('website_details')}
+                  </label>
+                  <div className="flex w-full rounded-xl bg-theme-muted p-1 sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setIsPreviewMode(false)}
+                      className={`flex h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 text-xs font-medium transition-all sm:flex-none ${
+                        !isPreviewMode
+                          ? 'bg-[var(--color-card)] text-theme-primary shadow-sm'
+                          : 'text-theme-muted-foreground hover:text-theme-foreground'
+                      }`}
+                    >
+                      {t('back_to_edit')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsPreviewMode(true)}
+                      className={`flex h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 text-xs font-medium transition-all sm:flex-none ${
+                        isPreviewMode
+                          ? 'bg-[var(--color-card)] text-theme-primary shadow-sm'
+                          : 'text-theme-muted-foreground hover:text-theme-foreground'
+                      }`}
+                    >
+                      <Eye size={14} />
+                      {t('markdown_preview')}
+                    </button>
+                  </div>
+                </div>
+
+                <FormItem
+                  field="detail"
+                  noStyle
+                  getValueFromEvent={(value: string | undefined) => value ?? ''}
+                >
+                  {isPreviewMode ? (
+                    <div className="min-h-64 rounded-xl border border-dashed border-theme-border bg-theme-background/50 p-4 sm:min-h-[400px] sm:rounded-2xl sm:p-6">
+                      <MarkdownContent
+                        value={detailPreview}
+                        className="prose prose-sm dark:prose-invert max-w-none"
+                        fallback={
+                          <div className="flex h-full flex-col items-center justify-center text-theme-muted-foreground">
+                            <p>{t('markdown_preview_empty')}</p>
+                          </div>
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <MarkdownEditor
+                      placeholder={t('enter_website_details')}
+                      height="clamp(260px, 50vh, 400px)"
+                      className="w-full !rounded-xl !border-theme-border !bg-theme-background sm:!rounded-2xl"
+                      enableImageUpload={!!imageHostname && isAuthenticated}
+                      imageHostname={imageHostname}
+                    />
+                  )}
+                </FormItem>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.0 }}
+              className="mt-4 text-center sm:mt-6"
+            >
+              <FormItem>
+                <motion.div whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    className="h-12 w-full rounded-xl border-0 bg-theme-primary px-8 text-base font-semibold text-theme-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:w-auto sm:min-w-64"
+                  >
+                    {loading ? t('submitting') : t('submit_recommendation')}
+                  </Button>
+                </motion.div>
+              </FormItem>
+            </motion.div>
+          </Form>
         </motion.div>
-      </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.35, delay: 0.15 }}
+          className="mx-auto mt-5 max-w-2xl px-4 text-center text-sm leading-relaxed text-theme-muted-foreground sm:mt-6"
+        >
+          <p>{t('thank_you_contribution')}</p>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
