@@ -10,10 +10,11 @@
     "start": "cross-env PORT=3001 next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "pnpm run test:ai-discovery && pnpm run test:theme && pnpm run test:creative-trigger",
+    "test": "pnpm run test:ai-discovery && pnpm run test:theme && pnpm run test:creative-trigger && pnpm run test:launchpad",
     "test:ai-discovery": "node --experimental-strip-types src/utils/aiDiscoveryError.test.mjs",
     "test:theme": "node --experimental-strip-types src/theme/theme.test.mjs",
-    "test:creative-trigger": "node --experimental-strip-types src/creativeTrigger.test.mjs"
+    "test:creative-trigger": "node --experimental-strip-types src/creativeTrigger.test.mjs",
+    "test:launchpad": "node --experimental-strip-types src/apps/LaunchPad/pagination.test.mjs"
   },
   "dependencies": {
     "@arco-design/web-react": "^2.66.5",

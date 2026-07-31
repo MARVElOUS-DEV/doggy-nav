@@ -323,7 +323,13 @@ export default function Recommend() {
           transition={{ duration: 0.4, delay: 0.08 }}
           className="relative overflow-hidden rounded-2xl border border-theme-border bg-[var(--color-card)] p-4 shadow-sm sm:rounded-3xl sm:p-7 lg:p-10"
         >
-          <Form form={form} layout="vertical" onSubmit={addNav}>
+          <Form
+            form={form}
+            layout="vertical"
+            requiredSymbol={{ position: 'end' }}
+            className="[&_.arco-form-label-item>label]:inline-flex [&_.arco-form-label-item>label]:items-center"
+            onSubmit={addNav}
+          >
             <AnimatePresence>
               {formLoading && (
                 <motion.div

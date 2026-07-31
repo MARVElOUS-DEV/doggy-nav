@@ -16,13 +16,17 @@ export default function Dock({ items }: { items: DockItem[] }) {
   const [mouseX, setMouseX] = useState<number | null>(null);
 
   const onMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    setMouseX(e.clientX);
+    setMouseX(e.pointerType === 'mouse' ? e.clientX : null);
   };
   const onLeave = () => setMouseX(null);
 
   // Global listener limited strictly to inside the dock container bounds
   useEffect(() => {
     const handler = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') {
+        setMouseX(null);
+        return;
+      }
       const el = containerRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -45,13 +49,15 @@ export default function Dock({ items }: { items: DockItem[] }) {
   return (
     <div
       id="desktop-dock"
-      className="pointer-events-none fixed left-0 right-0 bottom-4 z-[30000] flex justify-center"
+      className="pointer-events-none fixed bottom-2 left-0 right-0 z-[30000] flex justify-center px-2 sm:bottom-4"
     >
       <div
         ref={containerRef}
+        role="toolbar"
+        aria-label="Desktop apps"
         onPointerMove={onMove}
         onPointerLeave={onLeave}
-        className="pointer-events-auto glass-dark rounded-2xl px-3 py-2 shadow-xl flex gap-2"
+        className="pointer-events-auto glass-dark flex max-w-full snap-x snap-proximity gap-1 overflow-x-auto overscroll-x-contain rounded-2xl px-2 py-2 shadow-xl [scrollbar-width:none] touch-pan-x [&::-webkit-scrollbar]:hidden sm:gap-2 sm:px-3"
         style={{
           transform: `scale(${barScaleX}, ${barScaleY})`,
           transformOrigin: 'bottom center',
@@ -94,7 +100,7 @@ function DockButton({ item, mouseX }: { item: DockItem; mouseX: number | null })
       type="button"
       aria-label={`Open ${item.label}`}
       onClick={item.onClick}
-      className="group relative inline-flex flex-col items-center gap-0 px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+      className="group relative inline-flex shrink-0 snap-center flex-col items-center gap-0 rounded-lg px-1.5 py-1 transition-colors hover:bg-black/5 dark:hover:bg-white/10 sm:px-2"
       style={{ zIndex }}
     >
       <div

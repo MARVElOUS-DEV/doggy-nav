@@ -132,6 +132,10 @@ function DesktopInner() {
     router,
     globalWindow,
   ]);
+  const launchpadApps = useMemo(
+    () => dockItems.filter((item) => item.key !== 'launchpad'),
+    [dockItems]
+  );
 
   const onMenuClick = useCallback(() => actions.toggleSys(), [actions]);
   const shortcutItems: DesktopShortcutItem[] = useMemo(
@@ -204,6 +208,7 @@ function DesktopInner() {
         <Launchpad
           open={lpOpen}
           onClose={() => actions.closeLaunchpad()}
+          apps={launchpadApps}
           withinArea={false}
           dockOffset={dockOffset}
         />

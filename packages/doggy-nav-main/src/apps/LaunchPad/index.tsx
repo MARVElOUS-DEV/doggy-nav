@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import type { DragEndEvent } from '@dnd-kit/core';
 import api from '@/utils/api';
+import type { DockItem } from '@/apps/Desktop/Dock';
 import FavoriteItem from '@/features/favorites/components/FavoriteItem';
 import FolderTile from '@/features/favorites/components/FolderTile';
 import FolderOverlay from '@/features/favorites/components/FolderOverlay';
@@ -8,8 +10,10 @@ import FavoritesLayout from '@/features/favorites/components/FavoritesLayout';
 import DraggableCard from '@/features/favorites/dnd/DraggableCard';
 import DroppableCard from '@/features/favorites/dnd/DroppableCard';
 import type { NavItem } from '@/types';
+import { buildLaunchpadPages } from './pagination';
 
 type GridEntry =
+  | { kind: 'app'; app: DockItem }
   | { kind: 'item'; item: NavItem }
   | { kind: 'folder'; id: string; name?: string; items: NavItem[] };
 // Paging
@@ -18,11 +22,13 @@ const perPage = 6 * 4; // 24 icons per page
 export default function Launchpad({
   open,
   onClose,
+  apps,
   withinArea = true,
   dockOffset = 0,
 }: {
   open: boolean;
   onClose: () => void;
+  apps: DockItem[];
   withinArea?: boolean;
   dockOffset?: number;
 }) {
@@ -83,11 +89,10 @@ export default function Launchpad({
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const pages = useMemo(() => {
-    const arr: GridEntry[][] = [];
-    for (let i = 0; i < entries.length; i += perPage) arr.push(entries.slice(i, i + perPage));
-    return arr.length > 0 ? arr : [[]];
-  }, [entries]);
+  const pages = useMemo(
+    () => buildLaunchpadPages<DockItem, GridEntry>(apps, entries, perPage),
+    [apps, entries]
+  );
   const safePage = Math.min(page, Math.max(0, pages.length - 1));
   useEffect(() => {
     if (page !== safePage) setPage(safePage);
@@ -188,9 +193,15 @@ export default function Launchpad({
   const rootStyle = withinArea ? undefined : ({ bottom: dockOffset } as React.CSSProperties);
 
   return (
-    <div className={rootClass} style={rootStyle}>
+    <div
+      className={rootClass}
+      style={rootStyle}
+      onClick={(event) => {
+        if (!(event.target as Element).closest('[data-launchpad-interactive]')) onClose();
+      }}
+    >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-xl" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-xl" />
 
       {/* Content */}
       <div className="relative h-full w-full flex flex-col pt-16 pb-28 px-6">
@@ -207,32 +218,58 @@ export default function Launchpad({
               >
                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-8 xl:grid-cols-10 gap-8 justify-items-center">
                   {pg.map((entry, i) => {
+                    if (entry.kind === 'app') {
+                      return (
+                        <button
+                          key={`app:${entry.app.key}`}
+                          data-launchpad-interactive
+                          type="button"
+                          onClick={entry.app.onClick}
+                          className="group flex max-w-24 cursor-pointer flex-col items-center transition-transform duration-200 hover:scale-110"
+                          aria-label={`Open ${entry.app.label}`}
+                        >
+                          <span className="relative mb-2 h-16 w-16">
+                            <Image
+                              src={entry.app.iconSrc}
+                              alt=""
+                              fill
+                              className={`${entry.app.iconClass ?? ''} object-contain drop-shadow-lg`}
+                            />
+                          </span>
+                          <span className="w-full truncate text-center text-sm font-medium text-primary-50">
+                            {entry.app.label}
+                          </span>
+                        </button>
+                      );
+                    }
                     const id = entry.kind === 'item' ? getNavId(entry.item) : entry.id;
                     return (
-                      <DroppableCard key={id} id={id}>
-                        <div
-                          className="animate-fade-in-up"
-                          style={{ animationDelay: `${i * 30}ms` }}
-                        >
-                          <DraggableCard id={id}>
-                            {entry.kind === 'item' ? (
-                              <FavoriteItem item={entry.item} />
-                            ) : (
-                              <FolderTile
-                                items={entry.items}
-                                name={entry.name}
-                                onClick={() =>
-                                  setFolderOpen({
-                                    id: entry.id,
-                                    name: entry.name,
-                                    items: entry.items,
-                                  })
-                                }
-                              />
-                            )}
-                          </DraggableCard>
-                        </div>
-                      </DroppableCard>
+                      <div key={id} data-launchpad-interactive>
+                        <DroppableCard id={id}>
+                          <div
+                            className="animate-fade-in-up"
+                            style={{ animationDelay: `${i * 30}ms` }}
+                          >
+                            <DraggableCard id={id}>
+                              {entry.kind === 'item' ? (
+                                <FavoriteItem item={entry.item} />
+                              ) : (
+                                <FolderTile
+                                  items={entry.items}
+                                  name={entry.name}
+                                  onClick={() =>
+                                    setFolderOpen({
+                                      id: entry.id,
+                                      name: entry.name,
+                                      items: entry.items,
+                                    })
+                                  }
+                                />
+                              )}
+                            </DraggableCard>
+                          </div>
+                        </DroppableCard>
+                      </div>
                     );
                   })}
                 </div>
@@ -243,6 +280,7 @@ export default function Launchpad({
 
         {/* Dots paginator */}
         <div
+          data-launchpad-interactive
           className="absolute left-0 right-0 flex items-center justify-center gap-2"
           style={{ bottom: dockOffset }}
         >
@@ -263,13 +301,15 @@ export default function Launchpad({
 
       {/* Folder overlay reuse */}
       {folderOpen && (
-        <FolderOverlay
-          name={folderOpen.name}
-          items={folderOpen.items}
-          onRemove={handleRemoveFavorite}
-          onMoveOut={handleMoveOutOfFolder}
-          onClose={() => setFolderOpen(null)}
-        />
+        <div data-launchpad-interactive>
+          <FolderOverlay
+            name={folderOpen.name}
+            items={folderOpen.items}
+            onRemove={handleRemoveFavorite}
+            onMoveOut={handleMoveOutOfFolder}
+            onClose={() => setFolderOpen(null)}
+          />
+        </div>
       )}
     </div>
   );

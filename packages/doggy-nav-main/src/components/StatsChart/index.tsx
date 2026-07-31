@@ -13,6 +13,8 @@ import {
 } from 'recharts';
 import { NavItem } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { useAtomValue } from 'jotai';
+import { mobileAtom } from '@/store/store';
 
 interface StatsChartProps {
   data: {
@@ -22,8 +24,13 @@ interface StatsChartProps {
   };
 }
 
+const mobileChartMargin = { top: 8, right: 8, left: 0, bottom: 56 };
+const desktopChartMargin = { top: 20, right: 30, left: 20, bottom: 60 };
+
 function StatsChart({ data }: StatsChartProps): JSX.Element {
   const { t } = useTranslation();
+  const isMobile = useAtomValue(mobileAtom);
+  const chartMargin = isMobile ? mobileChartMargin : desktopChartMargin;
   // Recharts Legend sometimes has mismatched TS types in certain versions; cast to relax
   const LegendComp = Legend as unknown as React.ComponentType<any>;
   // Prepare data for top viewed sites
@@ -77,18 +84,18 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
   }, [data]);
 
   return (
-    <div className="mb-8 rounded-2xl border border-theme-border bg-theme-background p-6 text-theme-foreground shadow-lg transition-colors">
-      <h2 className="text-2xl font-bold mb-6">{t('data_statistics')}</h2>
+    <div className="rounded-2xl border border-theme-border bg-theme-background p-3 text-theme-foreground shadow-lg transition-colors lg:p-6">
+      <h2 className="mb-4 text-xl font-bold lg:mb-6 lg:text-2xl">{t('data_statistics')}</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
         {/* Top Viewed Sites Chart */}
-        <div className="rounded-xl border border-theme-border bg-theme-card p-4 transition-colors">
-          <h3 className="mb-4 text-center text-lg font-semibold text-theme-foreground">
+        <div className="rounded-xl border border-theme-border bg-theme-card p-2 transition-colors lg:p-4">
+          <h3 className="mb-2 text-center text-base font-semibold leading-tight text-theme-foreground lg:mb-4 lg:text-lg">
             {t('most_popular_websites_views')}
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topViewedData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+              <BarChart data={topViewedData} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis
                   dataKey="name"
@@ -100,6 +107,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   tickLine={{ stroke: 'var(--color-border)' }}
                 />
                 <YAxis
+                  width={isMobile ? 36 : 60}
                   tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
                   axisLine={{ stroke: 'var(--color-border)' }}
                   tickLine={{ stroke: 'var(--color-border)' }}
@@ -129,13 +137,13 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
         </div>
 
         {/* Top Starred Sites Chart */}
-        <div className="rounded-xl border border-theme-border bg-theme-card p-4 transition-colors">
-          <h3 className="mb-4 text-center text-lg font-semibold text-theme-foreground">
+        <div className="rounded-xl border border-theme-border bg-theme-card p-2 transition-colors lg:p-4">
+          <h3 className="mb-2 text-center text-base font-semibold leading-tight text-theme-foreground lg:mb-4 lg:text-lg">
             {t('highest_rated_websites_stars')}
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topStarredData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+              <BarChart data={topStarredData} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis
                   dataKey="name"
@@ -147,6 +155,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   tickLine={{ stroke: 'var(--color-border)' }}
                 />
                 <YAxis
+                  width={isMobile ? 36 : 60}
                   tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
                   axisLine={{ stroke: 'var(--color-border)' }}
                   tickLine={{ stroke: 'var(--color-border)' }}
@@ -176,13 +185,13 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
         </div>
 
         {/* Author Contribution Chart */}
-        <div className="rounded-xl border border-theme-border bg-theme-card p-4 transition-colors lg:col-span-2">
-          <h3 className="mb-4 text-center text-lg font-semibold text-theme-foreground">
+        <div className="rounded-xl border border-theme-border bg-theme-card p-2 transition-colors lg:col-span-2 lg:p-4">
+          <h3 className="mb-2 text-center text-base font-semibold leading-tight text-theme-foreground lg:mb-4 lg:text-lg">
             {t('contributor_ranking')}
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={authorStats} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+              <BarChart data={authorStats} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis
                   dataKey="name"
@@ -194,6 +203,7 @@ function StatsChart({ data }: StatsChartProps): JSX.Element {
                   tickLine={{ stroke: 'var(--color-border)' }}
                 />
                 <YAxis
+                  width={isMobile ? 36 : 60}
                   tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
                   axisLine={{ stroke: 'var(--color-border)' }}
                   tickLine={{ stroke: 'var(--color-border)' }}
