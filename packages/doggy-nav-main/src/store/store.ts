@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import { NavItem, Category, Tag, User } from '@/types';
 import api from '@/utils/api';
 import { setAccessExpEpochMs } from '@/utils/session';
@@ -8,6 +9,11 @@ import {
   type ThemeMode,
   type ThemePalette,
 } from '@/theme/theme';
+import {
+  CREATIVE_TRIGGER_STORAGE_KEY,
+  normalizeCreativeTriggerVariant,
+  type CreativeTriggerVariant,
+} from '@/creativeTrigger';
 
 export const categoriesAtom = atom<Category[]>([]);
 export const selectedCategoryAtom = atom<string>('');
@@ -26,6 +32,15 @@ export const themeAtom = atom<'light' | 'dark'>('light');
 export const themeModeAtom = atom<ThemeMode>('system');
 export const themePaletteAtom = atom<ThemePalette>('editorial');
 export const customThemeColorsAtom = atom<CustomThemeColors>(defaultCustomTheme());
+const storedCreativeTriggerAtom = atomWithStorage<unknown>(
+  CREATIVE_TRIGGER_STORAGE_KEY,
+  'lightbulb-rope'
+);
+export const creativeTriggerVariantAtom = atom(
+  (get) => normalizeCreativeTriggerVariant(get(storedCreativeTriggerAtom)),
+  (_get, set, variant: CreativeTriggerVariant) => set(storedCreativeTriggerAtom, variant)
+);
+export const creativeTriggerHintAtom = atom(0);
 
 // Authentication atoms
 export const userAtom = atom<User | null>(null);

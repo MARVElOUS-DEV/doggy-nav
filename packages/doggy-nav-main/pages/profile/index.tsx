@@ -1,17 +1,27 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Form, Input, Button, Message, Upload, Popconfirm } from '@arco-design/web-react';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Camera, Fingerprint, KeyRound, Mail, ShieldCheck, Trash2, UserRound } from 'lucide-react';
+import {
+  Camera,
+  Fingerprint,
+  KeyRound,
+  Mail,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  UserRound,
+} from 'lucide-react';
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser';
 import AuthGuard from '@/components/AuthGuard';
 import PageLoading from '@/components/PageLoading';
-import { authStateAtom, authActionsAtom } from '@/store/store';
+import { authStateAtom, authActionsAtom, creativeTriggerVariantAtom } from '@/store/store';
 import api from '@/utils/api';
 import type { Passkey } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { creativeTriggerOptions } from '@/creativeTrigger';
 
 const FormItem = Form.Item;
 
@@ -27,6 +37,7 @@ function ProfileContent() {
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeySupported, setPasskeySupported] = useState(false);
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
+  const [creativeTriggerVariant, setCreativeTriggerVariant] = useAtom(creativeTriggerVariantAtom);
 
   const user = authState.user!;
 
@@ -330,6 +341,60 @@ function ProfileContent() {
                   </div>
                 </FormItem>
               </Form>
+            </section>
+
+            <section className="rounded-[1.75rem] border border-theme-border bg-theme-card p-6 shadow-lg sm:p-8">
+              <fieldset>
+                <legend className="sr-only">{t('creative_trigger_section_name')}</legend>
+                <div className="mb-7 flex items-start gap-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-theme-secondary text-theme-secondary-foreground">
+                    <Sparkles size={21} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h2 className="text-xl font-semibold tracking-[-0.025em]">
+                      {t('creative_trigger_section_name')}
+                    </h2>
+                    <p className="mt-1 text-sm leading-6 text-theme-muted-foreground">
+                      {t('creative_trigger_section_description')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  {creativeTriggerOptions.map((option) => {
+                    const selected = creativeTriggerVariant === option.id;
+                    return (
+                      <label
+                        key={option.id}
+                        className={`relative cursor-pointer rounded-2xl border p-4 transition-colors focus-within:ring-2 focus-within:ring-theme-primary ${
+                          selected
+                            ? 'border-theme-primary bg-theme-primary/10'
+                            : 'border-theme-border bg-theme-muted hover:border-theme-primary/40'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="creative-trigger"
+                          value={option.id}
+                          checked={selected}
+                          onChange={() => setCreativeTriggerVariant(option.id)}
+                          className="sr-only"
+                        />
+                        <span
+                          aria-hidden="true"
+                          className="mb-4 grid h-20 place-items-center rounded-xl bg-theme-background text-4xl shadow-inner"
+                        >
+                          {option.preview}
+                        </span>
+                        <span className="block font-semibold">{t(option.nameKey)}</span>
+                        <span className="mt-1 block text-sm leading-5 text-theme-muted-foreground">
+                          {t(option.descriptionKey)}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
             </section>
 
             <section className="rounded-[1.75rem] border border-theme-border bg-theme-card p-6 shadow-lg sm:p-8">

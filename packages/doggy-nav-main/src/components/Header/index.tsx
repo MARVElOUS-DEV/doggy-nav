@@ -19,18 +19,20 @@ import { useRouter } from 'next/router';
 import { useAtom } from 'jotai';
 import { searchModalOpenAtom } from '@/store/store';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 interface AppHeaderProps {
   onHandleShowMenu: () => void;
   showMenuType?: boolean;
   onOpenMobileMenu?: () => void;
+  creativeTrigger?: ReactNode;
 }
 
 export default function AppHeader({
   onHandleShowMenu,
   showMenuType = false,
   onOpenMobileMenu,
+  creativeTrigger,
 }: AppHeaderProps) {
   const { t } = useTranslation('translation');
   const [showSearch, setShowSearch] = useAtom(searchModalOpenAtom);
@@ -183,6 +185,8 @@ export default function AppHeader({
         </div>
 
         <div className="hidden lg:block flex-1" />
+
+        {creativeTrigger ? <div className="ml-auto mr-2 lg:mr-3">{creativeTrigger}</div> : null}
 
         {/* Desktop Actions */}
         <div className="hidden lg:flex items-center space-x-2">

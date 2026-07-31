@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { I18nextProvider } from 'react-i18next';
 import AppNavMenus from '../AppNavMenus';
 import AppHeader from '../Header';
@@ -11,14 +11,18 @@ import {
   mobileAtom,
   manualCollapseAtom,
   themeAtom,
+  authStateAtom,
+  creativeTriggerHintAtom,
+  creativeTriggerVariantAtom,
 } from '@/store/store';
 import { useSetAtom } from 'jotai';
 import RightSideToolbar from '../RightSideToolbar';
-import LightbulbRope from '../LightBulb';
-import router from 'next/router';
+import CreativeTrigger from '../CreativeTrigger';
+import { useRouter } from 'next/router';
 import AppFooter from '../Footer';
 import SiteMetadataHead from '../SiteMetadataHead';
 import ScrollProgress from '../ScrollProgress';
+import { useTranslation } from 'react-i18next';
 
 export default function RootLayout({
   children,
@@ -30,7 +34,12 @@ export default function RootLayout({
   const [isMobile, setIsMobile] = useAtom(mobileAtom);
   const [manualCollapse, setManualCollapse] = useAtom(manualCollapseAtom);
   const [theme] = useAtom(themeAtom);
+  const authState = useAtomValue(authStateAtom);
+  const creativeTriggerVariant = useAtomValue(creativeTriggerVariantAtom);
+  const creativeTriggerHint = useAtomValue(creativeTriggerHintAtom);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation();
+  const router = useRouter();
 
   // Initialize auth state from server session
   useEffect(() => {
@@ -88,7 +97,7 @@ export default function RootLayout({
     return () => {
       router.events?.off('routeChangeComplete', handleRoute);
     };
-  }, []);
+  }, [router.events]);
 
   const toggleMenu = () => {
     // Only allow manual toggle on desktop, not on mobile/tablet
@@ -100,6 +109,17 @@ export default function RootLayout({
       setShowMenuType(false);
     }
   };
+  const creativeTrigger =
+    authState.isAuthenticated && router.pathname !== '/desktop' ? (
+      <CreativeTrigger
+        variant={creativeTriggerVariant}
+        onActivate={async () => {
+          await router.push('/desktop');
+        }}
+        hintRequest={creativeTriggerHint}
+        ariaLabel={t('creative_trigger_aria_label')}
+      />
+    ) : null;
 
   return (
     <I18nextProvider i18n={i18n}>
@@ -129,6 +149,9 @@ export default function RootLayout({
                 onHandleShowMenu={toggleMenu}
                 showMenuType={showMenuType}
                 onOpenMobileMenu={() => setMobileMenuOpen(true)}
+                creativeTrigger={
+                  creativeTriggerVariant === 'portal-slider' ? creativeTrigger : null
+                }
               />
               <ScrollProgress />
             </div>
@@ -148,7 +171,7 @@ export default function RootLayout({
           </div>
 
           <RightSideToolbar />
-          <LightbulbRope />
+          {creativeTriggerVariant === 'portal-slider' ? null : creativeTrigger}
 
           {/* Mobile Menu Drawer */}
           {isMobile && (

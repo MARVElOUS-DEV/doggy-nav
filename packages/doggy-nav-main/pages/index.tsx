@@ -12,6 +12,7 @@ import {
   navRankingAtom,
   isAuthenticatedAtom,
   searchModalOpenAtom,
+  creativeTriggerHintAtom,
 } from '@/store/store';
 import Link from 'next/link';
 import { TimelineItem as TimelineItemType, TimelineYear } from '@/types/timeline';
@@ -70,11 +71,9 @@ export default function HomePage() {
   const categories = useAtomValue(categoriesAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const setSearchModalOpen = useSetAtom(searchModalOpenAtom);
+  const requestCreativeTriggerHint = useSetAtom(creativeTriggerHintAtom);
   const handleTryGotoDesktop = () => {
-    // Trigger driver hint on LightbulbRope
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('lightbulbrope:hint'));
-    }
+    requestCreativeTriggerHint((request) => request + 1);
   };
   const [selectedItem, setSelectedItem] = useState<TimelineItemType | undefined>();
   const [totalNavCount, setTotalNavCount] = useState(0);
