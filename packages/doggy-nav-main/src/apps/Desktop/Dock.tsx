@@ -57,7 +57,7 @@ export default function Dock({ items }: { items: DockItem[] }) {
         aria-label="Desktop apps"
         onPointerMove={onMove}
         onPointerLeave={onLeave}
-        className="pointer-events-auto glass-dark flex max-w-full snap-x snap-proximity gap-1 overflow-x-auto overscroll-x-contain rounded-2xl px-2 py-2 shadow-xl [scrollbar-width:none] touch-pan-x [&::-webkit-scrollbar]:hidden sm:gap-2 sm:px-3"
+        className="pointer-events-auto glass-dark flex max-w-full snap-x snap-proximity gap-1 overflow-x-auto overscroll-x-contain rounded-2xl px-2 py-2 shadow-xl [scrollbar-width:none] touch-pan-x [&::-webkit-scrollbar]:hidden sm:gap-2 sm:overflow-visible sm:px-3"
         style={{
           transform: `scale(${barScaleX}, ${barScaleY})`,
           transformOrigin: 'bottom center',
