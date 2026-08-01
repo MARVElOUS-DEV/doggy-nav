@@ -198,6 +198,7 @@ userRoutes.post(
         isActive,
         roles,
         groups,
+        toolOutputPublicationLimit,
       } = body || {};
       const svc = getDI(c).resolve(TOKENS.UserService) as UserService;
       try {
@@ -210,6 +211,10 @@ userRoutes.post(
           phone,
           roles,
           groups,
+          toolOutputPublicationLimit:
+            toolOutputPublicationLimit === undefined
+              ? undefined
+              : Number(toolOutputPublicationLimit),
         });
         const info = await svc.adminGetOne(res.id);
         const payload = info ? { user: info } : { id: res.id };
@@ -245,6 +250,10 @@ userRoutes.put(
         password: body.password,
         roles: body.roles,
         groups: body.groups,
+        toolOutputPublicationLimit:
+          body.toolOutputPublicationLimit === undefined
+            ? undefined
+            : Number(body.toolOutputPublicationLimit),
       });
       if (!ok) return c.json(responses.serverError('Failed to update user'), 500);
       const info = await svc.adminGetOne(id);
@@ -275,6 +284,10 @@ userRoutes.patch(
         password: body.password,
         roles: Array.isArray(body.roles) ? body.roles : undefined,
         groups: Array.isArray(body.groups) ? body.groups : undefined,
+        toolOutputPublicationLimit:
+          body.toolOutputPublicationLimit === undefined
+            ? undefined
+            : Number(body.toolOutputPublicationLimit),
       });
       if (!ok) return c.json(responses.serverError('Failed to update user'), 500);
       return c.json(responses.ok(true));

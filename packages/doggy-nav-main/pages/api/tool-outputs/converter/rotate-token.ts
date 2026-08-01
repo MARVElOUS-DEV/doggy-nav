@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const response = await axios.post(
       `${DOGGY_SERVER}/api/tool-outputs/converter/rotate-token`,
-      {},
+      req.body || {},
       { headers, withCredentials: true }
     );
 

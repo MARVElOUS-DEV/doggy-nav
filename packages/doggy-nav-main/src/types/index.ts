@@ -175,3 +175,8 @@ export interface ToolOutputPublication {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface ToolOutputPublicationCollection {
+  items: ToolOutputPublication[];
+  limit: number;
+}

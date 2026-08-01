@@ -15,3 +15,7 @@ CREATE TABLE IF NOT EXISTS passkeys (
 );
 
 CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys(user_id);
+
+ALTER TABLE users
+  ADD COLUMN tool_output_publication_limit INTEGER NOT NULL DEFAULT 2
+  CHECK (tool_output_publication_limit BETWEEN 0 AND 100);

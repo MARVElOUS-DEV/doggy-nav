@@ -43,7 +43,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (req.method === 'PUT') {
       response = await axios.put(url, req.body || {}, { headers, withCredentials: true });
     } else {
-      response = await axios.delete(url, { headers, withCredentials: true });
+      response = await axios.delete(url, {
+        headers,
+        params: req.query,
+        withCredentials: true,
+      });
     }
 
     const setCookie = response.headers?.['set-cookie'];

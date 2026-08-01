@@ -46,6 +46,7 @@ export interface AdminGetUserResponse {
   role: 'admin' | 'default';
   roles: string[]; // role ids
   groups: string[]; // group ids
+  toolOutputPublicationLimit: number;
 }
 
 export interface AdminCreateUserInput {
@@ -58,6 +59,7 @@ export interface AdminCreateUserInput {
   roles?: string[]; // role ids
   role?: 'admin' | 'user';
   groups?: string[]; // group ids
+  toolOutputPublicationLimit?: number;
 }
 
 export interface AdminUpdateUserInput {
@@ -70,12 +72,16 @@ export interface AdminUpdateUserInput {
   roles?: string[]; // role ids
   role?: 'admin' | 'user';
   groups?: string[]; // group ids
+  toolOutputPublicationLimit?: number;
 }
 
 export interface UserRepository {
   getProfile(userId: string): Promise<UserProfile>;
   updateProfile(userId: string, input: UpdateProfileInput): Promise<UserProfile>;
-  adminList(filter: AdminUserListFilter, page: PageQuery): Promise<{ list: AdminUserListItem[]; total: number }>;
+  adminList(
+    filter: AdminUserListFilter,
+    page: PageQuery
+  ): Promise<{ list: AdminUserListItem[]; total: number }>;
   adminGetOne(id: string): Promise<AdminGetUserResponse | null>;
   adminCreate(input: AdminCreateUserInput): Promise<{ id: string }>;
   adminUpdate(id: string, input: AdminUpdateUserInput): Promise<boolean>;

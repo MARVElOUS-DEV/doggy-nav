@@ -58,6 +58,17 @@ export default class D1ToolOutputPublicationRepository implements ToolOutputPubl
       .first<any>();
   }
 
+  private async getRowByUserAndPublishId(userId: string, publishId: string) {
+    return this.db
+      .prepare(
+        `SELECT * FROM tool_output_publications
+         WHERE user_id = ? AND publish_id = ?
+         LIMIT 1`
+      )
+      .bind(userId, publishId)
+      .first<any>();
+  }
+
   private async ensureSubscriptionTokenForRow(row: any) {
     if (
       row?.encrypted_subscription_token &&
@@ -75,12 +86,7 @@ export default class D1ToolOutputPublicationRepository implements ToolOutputPubl
              updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
          WHERE id = ?`
       )
-      .bind(
-        encrypted.encryptedOutput,
-        encrypted.encryptionIv,
-        encrypted.encryptionTag,
-        row.id
-      )
+      .bind(encrypted.encryptedOutput, encrypted.encryptionIv, encrypted.encryptionTag, row.id)
       .run();
 
     return {
@@ -91,17 +97,38 @@ export default class D1ToolOutputPublicationRepository implements ToolOutputPubl
     };
   }
 
-  async getByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication | null> {
-    const row = await this.getRowByUserAndTool(userId, toolId);
-    if (!row) return null;
-    return rowToPublication(await this.ensureSubscriptionTokenForRow(row), this.encryptionKey);
+  async listByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication[]> {
+    const rows = await this.db
+      .prepare(
+        `SELECT * FROM tool_output_publications
+         WHERE user_id = ? AND (tool_id = ? OR tool_id GLOB ?)
+         ORDER BY tool_id`
+      )
+      .bind(userId, toolId, `${toolId}:[0-9]*`)
+      .all<any>();
+    return Promise.all(
+      (rows.results || []).map(async (row: any) =>
+        rowToPublication(await this.ensureSubscriptionTokenForRow(row), this.encryptionKey)
+      )
+    );
+  }
+
+  async getUserLimit(userId: string): Promise<number> {
+    const row = await this.db
+      .prepare(`SELECT tool_output_publication_limit AS value FROM users WHERE id = ? LIMIT 1`)
+      .bind(userId)
+      .first<{ value: number }>();
+    return Number.isInteger(row?.value) ? Math.max(0, Number(row?.value)) : 2;
   }
 
   async upsertByUserAndTool(
     userId: string,
     input: ToolOutputPublicationUpsertInput
   ): Promise<ToolOutputPublication> {
-    const existing = await this.getRowByUserAndTool(userId, input.toolId);
+    const existing = input.publishId
+      ? await this.getRowByUserAndPublishId(userId, input.publishId)
+      : await this.getRowByUserAndTool(userId, input.toolId);
+    if (input.publishId && !existing) throw new Error('Published output does not exist');
     const encrypted = await encryptToolOutput(String(input.output), this.encryptionKey);
     const tokenPayload =
       existing?.encrypted_subscription_token &&
@@ -166,12 +193,17 @@ export default class D1ToolOutputPublicationRepository implements ToolOutputPubl
         .run();
     }
 
-    const row = await this.getRowByUserAndTool(userId, input.toolId);
+    const row = input.publishId
+      ? await this.getRowByUserAndPublishId(userId, input.publishId)
+      : await this.getRowByUserAndTool(userId, input.toolId);
     return rowToPublication(row, this.encryptionKey);
   }
 
-  async rotateTokenByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication | null> {
-    const existing = await this.getRowByUserAndTool(userId, toolId);
+  async rotateTokenByUserAndPublishId(
+    userId: string,
+    publishId: string
+  ): Promise<ToolOutputPublication | null> {
+    const existing = await this.getRowByUserAndPublishId(userId, publishId);
     if (!existing) return null;
 
     const { encrypted } = await this.buildEncryptedSubscriptionToken();
@@ -182,27 +214,25 @@ export default class D1ToolOutputPublicationRepository implements ToolOutputPubl
              updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
          WHERE id = ?`
       )
-      .bind(
-        encrypted.encryptedOutput,
-        encrypted.encryptionIv,
-        encrypted.encryptionTag,
-        existing.id
-      )
+      .bind(encrypted.encryptedOutput, encrypted.encryptionIv, encrypted.encryptionTag, existing.id)
       .run();
 
-    const row = await this.getRowByUserAndTool(userId, toolId);
+    const row = await this.getRowByUserAndPublishId(userId, publishId);
     return row ? rowToPublication(row, this.encryptionKey) : null;
   }
 
-  async deleteByUserAndTool(userId: string, toolId: string): Promise<{ ok: boolean }> {
+  async deleteByUserAndPublishId(userId: string, publishId: string): Promise<{ ok: boolean }> {
     const result = await this.db
-      .prepare(`DELETE FROM tool_output_publications WHERE user_id = ? AND tool_id = ?`)
-      .bind(userId, toolId)
+      .prepare(`DELETE FROM tool_output_publications WHERE user_id = ? AND publish_id = ?`)
+      .bind(userId, publishId)
       .run();
     return { ok: Number(result.meta?.changes || 0) > 0 };
   }
 
-  async readPublishedWithToken(publishId: string, token: string): Promise<PublishedToolOutputReadResult> {
+  async readPublishedWithToken(
+    publishId: string,
+    token: string
+  ): Promise<PublishedToolOutputReadResult> {
     const row = await this.db
       .prepare(
         `SELECT * FROM tool_output_publications

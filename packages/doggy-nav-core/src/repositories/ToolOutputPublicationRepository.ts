@@ -2,6 +2,7 @@ import type { ToolOutputDirection, ToolOutputPublication } from '../types/types'
 
 export interface ToolOutputPublicationUpsertInput {
   toolId: string;
+  publishId?: string;
   enabled: boolean;
   direction: ToolOutputDirection;
   contentType: string;
@@ -23,12 +24,16 @@ export type PublishedToolOutputReadResult =
   | { kind: 'unauthorized' };
 
 export interface ToolOutputPublicationRepository {
-  getByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication | null>;
+  listByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication[]>;
+  getUserLimit(userId: string): Promise<number>;
   upsertByUserAndTool(
     userId: string,
     input: ToolOutputPublicationUpsertInput
   ): Promise<ToolOutputPublication>;
-  rotateTokenByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication | null>;
-  deleteByUserAndTool(userId: string, toolId: string): Promise<{ ok: boolean }>;
+  rotateTokenByUserAndPublishId(
+    userId: string,
+    publishId: string
+  ): Promise<ToolOutputPublication | null>;
+  deleteByUserAndPublishId(userId: string, publishId: string): Promise<{ ok: boolean }>;
   readPublishedWithToken(publishId: string, token: string): Promise<PublishedToolOutputReadResult>;
 }

@@ -12,14 +12,24 @@ import * as bcrypt from 'bcrypt';
 
 function toISO(d: any): string | undefined {
   if (!d) return undefined;
-  try { return new Date(d).toISOString(); } catch { return undefined; }
+  try {
+    return new Date(d).toISOString();
+  } catch {
+    return undefined;
+  }
 }
 
 export class MongooseUserRepository implements UserRepository {
   constructor(private readonly ctx: any) {}
-  private get User() { return this.ctx.model.User; }
-  private get Role() { return this.ctx.model.Role; }
-  private get Group() { return this.ctx.model.Group; }
+  private get User() {
+    return this.ctx.model.User;
+  }
+  private get Role() {
+    return this.ctx.model.Role;
+  }
+  private get Group() {
+    return this.ctx.model.Group;
+  }
 
   private async computePermissions(roleSlugs: string[]): Promise<string[]> {
     const roles = await this.Role.find({ slug: { $in: roleSlugs } }).lean();
@@ -29,10 +39,18 @@ export class MongooseUserRepository implements UserRepository {
   }
 
   async getProfile(userId: string): Promise<UserProfile> {
-    const user = await this.User.findById(userId).select('-password -resetPasswordToken').populate('roles').populate('groups').lean();
+    const user = await this.User.findById(userId)
+      .select('-password -resetPasswordToken')
+      .populate('roles')
+      .populate('groups')
+      .lean();
     if (!user) throw new Error('用户不存在');
-    const roleSlugs = Array.isArray((user as any).roles) ? (user as any).roles.map((r: any) => r?.slug || r).filter(Boolean) : [];
-    const groupSlugs = Array.isArray((user as any).groups) ? (user as any).groups.map((g: any) => g?.slug || g).filter(Boolean) : [];
+    const roleSlugs = Array.isArray((user as any).roles)
+      ? (user as any).roles.map((r: any) => r?.slug || r).filter(Boolean)
+      : [];
+    const groupSlugs = Array.isArray((user as any).groups)
+      ? (user as any).groups.map((g: any) => g?.slug || g).filter(Boolean)
+      : [];
     const permissions = await this.computePermissions(roleSlugs);
     return {
       id: (user as any)._id?.toString?.() ?? (user as any).id,
@@ -52,14 +70,25 @@ export class MongooseUserRepository implements UserRepository {
     if (!user) throw new Error('用户不存在');
     const update: any = {};
     if (input.email && input.email !== (user as any).email) {
-      const dup = await this.User.findOne({ email: input.email.toLowerCase().trim(), _id: { $ne: userId } });
+      const dup = await this.User.findOne({
+        email: input.email.toLowerCase().trim(),
+        _id: { $ne: userId },
+      });
       if (dup) throw new Error('邮箱已存在');
       update.email = input.email.toLowerCase().trim();
     }
     if (input.avatar !== undefined) update.avatar = input.avatar;
-    const updated = await this.User.findByIdAndUpdate(userId, update, { new: true }).select('-password -resetPasswordToken').populate('roles').populate('groups').lean();
-    const roleSlugs = Array.isArray((updated as any).roles) ? (updated as any).roles.map((r: any) => r?.slug || r).filter(Boolean) : [];
-    const groupSlugs = Array.isArray((updated as any).groups) ? (updated as any).groups.map((g: any) => g?.slug || g).filter(Boolean) : [];
+    const updated = await this.User.findByIdAndUpdate(userId, update, { new: true })
+      .select('-password -resetPasswordToken')
+      .populate('roles')
+      .populate('groups')
+      .lean();
+    const roleSlugs = Array.isArray((updated as any).roles)
+      ? (updated as any).roles.map((r: any) => r?.slug || r).filter(Boolean)
+      : [];
+    const groupSlugs = Array.isArray((updated as any).groups)
+      ? (updated as any).groups.map((g: any) => g?.slug || g).filter(Boolean)
+      : [];
     const permissions = await this.computePermissions(roleSlugs);
     return {
       id: (updated as any)._id?.toString?.() ?? (updated as any).id,
@@ -74,7 +103,10 @@ export class MongooseUserRepository implements UserRepository {
     };
   }
 
-  async adminList(filter: AdminUserListFilter, page: { pageSize: number; pageNumber: number; }): Promise<{ list: AdminUserListItem[]; total: number; }> {
+  async adminList(
+    filter: AdminUserListFilter,
+    page: { pageSize: number; pageNumber: number }
+  ): Promise<{ list: AdminUserListItem[]; total: number }> {
     const where: any = {};
     if (filter.account) where.username = new RegExp(filter.account, 'i');
     if (filter.email) where.email = new RegExp(filter.email, 'i');
@@ -105,9 +137,7 @@ export class MongooseUserRepository implements UserRepository {
         email: u.email,
         roles: roleSlugs,
         groups: Array.isArray(u.groups)
-          ? (u.groups as any[])
-              .map((g: any) => g?.displayName || g?.slug || '')
-              .filter(Boolean)
+          ? (u.groups as any[]).map((g: any) => g?.displayName || g?.slug || '').filter(Boolean)
           : [],
         status: u.isActive ? 1 : 0,
         createdAt: toISO(u.createdAt),
@@ -128,8 +158,15 @@ export class MongooseUserRepository implements UserRepository {
       phone: u.phone || '',
       status: !!u.isActive,
       role: Array.isArray(u.roles) && u.roles.length > 0 ? 'admin' : 'default',
-      roles: Array.isArray(u.roles) ? (u.roles as any[]).map((r) => (typeof r === 'string' ? r : r?.toString?.() || '')) : [],
-      groups: Array.isArray(u.groups) ? (u.groups as any[]).map((g) => (typeof g === 'string' ? g : g?.toString?.() || '')) : [],
+      roles: Array.isArray(u.roles)
+        ? (u.roles as any[]).map((r) => (typeof r === 'string' ? r : r?.toString?.() || ''))
+        : [],
+      groups: Array.isArray(u.groups)
+        ? (u.groups as any[]).map((g) => (typeof g === 'string' ? g : g?.toString?.() || ''))
+        : [],
+      toolOutputPublicationLimit: Number.isInteger(u.toolOutputPublicationLimit)
+        ? u.toolOutputPublicationLimit
+        : 2,
     };
   }
 
@@ -150,7 +187,7 @@ export class MongooseUserRepository implements UserRepository {
     return docs.map((d: any) => d._id);
   }
 
-  async adminCreate(input: AdminCreateUserInput): Promise<{ id: string; }> {
+  async adminCreate(input: AdminCreateUserInput): Promise<{ id: string }> {
     const username = String(input.account).trim();
     const email = String(input.email).trim().toLowerCase();
     const exists = await this.User.findOne({ $or: [{ username }, { email }] });
@@ -167,6 +204,7 @@ export class MongooseUserRepository implements UserRepository {
       phone: input.phone || '',
       roles,
       groups,
+      toolOutputPublicationLimit: input.toolOutputPublicationLimit ?? 2,
     });
     return { id: created._id?.toString?.() } as any;
   }
@@ -178,6 +216,9 @@ export class MongooseUserRepository implements UserRepository {
     if (typeof input.status !== 'undefined') update.isActive = !!input.status;
     if (typeof input.nickName !== 'undefined') update.nickName = input.nickName;
     if (typeof input.phone !== 'undefined') update.phone = input.phone;
+    if (typeof input.toolOutputPublicationLimit !== 'undefined') {
+      update.toolOutputPublicationLimit = input.toolOutputPublicationLimit;
+    }
     if (input.password) update.password = await bcrypt.hash(String(input.password), 12);
     if ('roles' in input || 'role' in input) {
       update.roles = await this.resolveRoleIds(input.roles, input.role);

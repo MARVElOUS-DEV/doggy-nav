@@ -59,11 +59,7 @@ export class MongooseToolOutputPublicationRepository implements ToolOutputPublic
   }
 
   private async ensureSubscriptionToken(doc: any) {
-    if (
-      doc?.encryptedSubscriptionToken &&
-      doc?.subscriptionTokenIv &&
-      doc?.subscriptionTokenTag
-    ) {
+    if (doc?.encryptedSubscriptionToken && doc?.subscriptionTokenIv && doc?.subscriptionTokenTag) {
       return doc;
     }
 
@@ -87,17 +83,35 @@ export class MongooseToolOutputPublicationRepository implements ToolOutputPublic
     };
   }
 
-  async getByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication | null> {
-    const doc = await this.model.findOne({ userId, toolId }).lean();
-    if (!doc) return null;
-    return mapPublication(await this.ensureSubscriptionToken(doc), this.encryptionKey);
+  async listByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication[]> {
+    const docs = await this.model
+      .find({ userId, toolId: { $regex: `^${toolId}(?::\\d+)?$` } })
+      .sort({ toolId: 1 })
+      .lean();
+    return Promise.all(
+      docs.map(async (doc: any) =>
+        mapPublication(await this.ensureSubscriptionToken(doc), this.encryptionKey)
+      )
+    );
+  }
+
+  async getUserLimit(userId: string): Promise<number> {
+    const user = await this.ctx.model.User.findById(userId)
+      .select('toolOutputPublicationLimit')
+      .lean();
+    return Number.isInteger(user?.toolOutputPublicationLimit)
+      ? Math.max(0, user.toolOutputPublicationLimit)
+      : 2;
   }
 
   async upsertByUserAndTool(
     userId: string,
     input: ToolOutputPublicationUpsertInput
   ): Promise<ToolOutputPublication> {
-    let doc = await this.model.findOne({ userId, toolId: input.toolId });
+    let doc = input.publishId
+      ? await this.model.findOne({ userId, publishId: input.publishId })
+      : await this.model.findOne({ userId, toolId: input.toolId });
+    if (input.publishId && !doc) throw new Error('Published output does not exist');
     const encrypted = encryptToolOutput(String(input.output), this.encryptionKey);
     const tokenPayload =
       doc?.encryptedSubscriptionToken && doc?.subscriptionTokenIv && doc?.subscriptionTokenTag
@@ -105,7 +119,7 @@ export class MongooseToolOutputPublicationRepository implements ToolOutputPublic
         : this.buildEncryptedSubscriptionToken();
 
     const payload = {
-      toolId: input.toolId,
+      toolId: doc?.toolId || input.toolId,
       userId,
       publishId: doc?.publishId || randomBytes(18).toString('hex'),
       enabled: !!input.enabled,
@@ -130,8 +144,11 @@ export class MongooseToolOutputPublicationRepository implements ToolOutputPublic
     return mapPublication(doc.toObject ? doc.toObject() : doc, this.encryptionKey);
   }
 
-  async rotateTokenByUserAndTool(userId: string, toolId: string): Promise<ToolOutputPublication | null> {
-    const doc = await this.model.findOne({ userId, toolId });
+  async rotateTokenByUserAndPublishId(
+    userId: string,
+    publishId: string
+  ): Promise<ToolOutputPublication | null> {
+    const doc = await this.model.findOne({ userId, publishId });
     if (!doc) return null;
 
     const { encrypted } = this.buildEncryptedSubscriptionToken();
@@ -145,19 +162,18 @@ export class MongooseToolOutputPublicationRepository implements ToolOutputPublic
     return mapPublication(doc.toObject ? doc.toObject() : doc, this.encryptionKey);
   }
 
-  async deleteByUserAndTool(userId: string, toolId: string): Promise<{ ok: boolean }> {
-    const res = await this.model.deleteOne({ userId, toolId });
+  async deleteByUserAndPublishId(userId: string, publishId: string): Promise<{ ok: boolean }> {
+    const res = await this.model.deleteOne({ userId, publishId });
     return { ok: !!res.deletedCount };
   }
 
-  async readPublishedWithToken(publishId: string, token: string): Promise<PublishedToolOutputReadResult> {
+  async readPublishedWithToken(
+    publishId: string,
+    token: string
+  ): Promise<PublishedToolOutputReadResult> {
     const doc = await this.model.findOne({ publishId, enabled: true }).lean();
     if (!doc) return { kind: 'not_found' };
-    if (
-      !doc.encryptedSubscriptionToken ||
-      !doc.subscriptionTokenIv ||
-      !doc.subscriptionTokenTag
-    ) {
+    if (!doc.encryptedSubscriptionToken || !doc.subscriptionTokenIv || !doc.subscriptionTokenTag) {
       return { kind: 'unauthorized' };
     }
 

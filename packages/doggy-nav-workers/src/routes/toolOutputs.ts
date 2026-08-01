@@ -22,8 +22,10 @@ const toolOutputRoutes = new Hono<{ Bindings: Env }>();
 toolOutputRoutes.get('/converter', createAuthMiddleware({ required: true }), async (c) => {
   try {
     const user = getUser(c)!;
-    const svc = getDI(c).resolve(TOKENS.ToolOutputPublicationService) as ToolOutputPublicationService;
-    const value = await svc.getForUser(String(user.id));
+    const svc = getDI(c).resolve(
+      TOKENS.ToolOutputPublicationService
+    ) as ToolOutputPublicationService;
+    const value = await svc.listForUser(String(user.id));
     return c.json(responses.ok(value));
   } catch (err) {
     console.error('Tool output publication read error:', err);
@@ -35,8 +37,11 @@ toolOutputRoutes.put('/converter', createAuthMiddleware({ required: true }), asy
   try {
     const user = getUser(c)!;
     const body = await c.req.json();
-    const svc = getDI(c).resolve(TOKENS.ToolOutputPublicationService) as ToolOutputPublicationService;
+    const svc = getDI(c).resolve(
+      TOKENS.ToolOutputPublicationService
+    ) as ToolOutputPublicationService;
     const saved = await svc.saveForUser(String(user.id), {
+      publishId: body?.publishId,
       enabled: !!body?.enabled,
       direction: body?.direction,
       contentType: String(body?.contentType || ''),
@@ -48,22 +53,31 @@ toolOutputRoutes.put('/converter', createAuthMiddleware({ required: true }), asy
   }
 });
 
-toolOutputRoutes.post('/converter/rotate-token', createAuthMiddleware({ required: true }), async (c) => {
-  try {
-    const user = getUser(c)!;
-    const svc = getDI(c).resolve(TOKENS.ToolOutputPublicationService) as ToolOutputPublicationService;
-    const result = await svc.rotateTokenForUser(String(user.id));
-    return c.json(responses.ok(result));
-  } catch (err: any) {
-    return c.json(responses.notFound(err?.message || 'Published output does not exist'), 404);
+toolOutputRoutes.post(
+  '/converter/rotate-token',
+  createAuthMiddleware({ required: true }),
+  async (c) => {
+    try {
+      const user = getUser(c)!;
+      const body = await c.req.json();
+      const svc = getDI(c).resolve(
+        TOKENS.ToolOutputPublicationService
+      ) as ToolOutputPublicationService;
+      const result = await svc.rotateTokenForUser(String(user.id), String(body?.publishId || ''));
+      return c.json(responses.ok(result));
+    } catch (err: any) {
+      return c.json(responses.notFound(err?.message || 'Published output does not exist'), 404);
+    }
   }
-});
+);
 
 toolOutputRoutes.delete('/converter', createAuthMiddleware({ required: true }), async (c) => {
   try {
     const user = getUser(c)!;
-    const svc = getDI(c).resolve(TOKENS.ToolOutputPublicationService) as ToolOutputPublicationService;
-    const result = await svc.deleteForUser(String(user.id));
+    const svc = getDI(c).resolve(
+      TOKENS.ToolOutputPublicationService
+    ) as ToolOutputPublicationService;
+    const result = await svc.deleteForUser(String(user.id), String(c.req.query('publishId') || ''));
     return c.json(responses.ok(result));
   } catch (err) {
     console.error('Tool output publication delete error:', err);
@@ -92,7 +106,9 @@ toolOutputRoutes.get('/converter/published/:publishId', async (c) => {
   }
 
   try {
-    const svc = getDI(c).resolve(TOKENS.ToolOutputPublicationService) as ToolOutputPublicationService;
+    const svc = getDI(c).resolve(
+      TOKENS.ToolOutputPublicationService
+    ) as ToolOutputPublicationService;
     const result = await svc.readPublished(c.req.param('publishId'), token);
 
     if (result.kind === 'not_found') {

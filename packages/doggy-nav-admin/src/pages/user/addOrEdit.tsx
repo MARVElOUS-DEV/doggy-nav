@@ -1,5 +1,6 @@
 import {
   DrawerForm,
+  ProFormDigit,
   ProFormSelect,
   ProFormSwitch,
   ProFormText,
@@ -37,6 +38,7 @@ const AddOrEdit: React.FC<any> = ({ setDrawerVisible, id, actionRef }) => {
         status: data.status,
         roles,
         groups,
+        toolOutputPublicationLimit: data.toolOutputPublicationLimit ?? 2,
       });
     },
   });
@@ -108,6 +110,7 @@ const AddOrEdit: React.FC<any> = ({ setDrawerVisible, id, actionRef }) => {
       open={true}
       title={id ? '编辑用户' : '新建用户'}
       form={form}
+      initialValues={{ status: true, toolOutputPublicationLimit: 2 }}
       autoFocusFirstInput
       drawerProps={{
         destroyOnHidden: true,
@@ -192,6 +195,16 @@ const AddOrEdit: React.FC<any> = ({ setDrawerVisible, id, actionRef }) => {
         label="状态"
         fieldProps={{ checkedChildren: '启用', unCheckedChildren: '禁用' }}
         rules={[{ required: true }]}
+      />
+      <ProFormDigit
+        name="toolOutputPublicationLimit"
+        width="md"
+        label="配置存储数量"
+        tooltip="该用户最多可在 Config Exchange 中保存的配置数量"
+        min={0}
+        max={100}
+        fieldProps={{ precision: 0 }}
+        rules={[{ required: true, message: '请输入配置存储数量' }]}
       />
       <ProFormSelect
         name="roles"

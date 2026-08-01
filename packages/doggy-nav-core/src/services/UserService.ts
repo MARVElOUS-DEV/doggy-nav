@@ -20,8 +20,17 @@ export class UserService {
   private validatePasswordComplexity(password: string): string[] {
     const errors: string[] = [];
     if (!password || password.length < 6) errors.push('密码至少需要6个字符');
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) errors.push('密码必须包含至少一个大写字母、一个小写字母和一个数字');
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password))
+      errors.push('密码必须包含至少一个大写字母、一个小写字母和一个数字');
     return errors;
+  }
+
+  private validateToolOutputPublicationLimit(value?: number) {
+    if (value !== undefined && (!Number.isInteger(value) || value < 0 || value > 100)) {
+      const err = new Error('存储配置数量必须是 0 到 100 之间的整数');
+      (err as any).name = 'ValidationError';
+      throw err;
+    }
   }
 
   async getProfile(userId: string): Promise<UserProfile> {
@@ -37,7 +46,10 @@ export class UserService {
     return this.repo.updateProfile(userId, input);
   }
 
-  async adminList(filter: AdminUserListFilter, page: PageQuery): Promise<{ list: AdminUserListItem[]; total: number }> {
+  async adminList(
+    filter: AdminUserListFilter,
+    page: PageQuery
+  ): Promise<{ list: AdminUserListItem[]; total: number }> {
     return this.repo.adminList(filter, page);
   }
 
@@ -56,6 +68,7 @@ export class UserService {
       (err as any).name = 'ValidationError';
       throw err;
     }
+    this.validateToolOutputPublicationLimit(input.toolOutputPublicationLimit);
     const pwErrors = this.validatePasswordComplexity(input.password);
     if (pwErrors.length) {
       const err = new Error(pwErrors.join(', '));
@@ -71,6 +84,7 @@ export class UserService {
       (err as any).name = 'ValidationError';
       throw err;
     }
+    this.validateToolOutputPublicationLimit(input.toolOutputPublicationLimit);
     if (input.password) {
       const pwErrors = this.validatePasswordComplexity(input.password);
       if (pwErrors.length) {

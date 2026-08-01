@@ -13,6 +13,7 @@ import type {
   SiteSettings,
   ToolOutputDirection,
   ToolOutputPublication,
+  ToolOutputPublicationCollection,
 } from '@/types';
 import type { SupportCurrency } from '@/config/aboutMe';
 import type {
@@ -245,21 +246,22 @@ const api = {
   // Site customization
   getPublicSiteSettings: (): Promise<SiteSettings | null> => axios.get('/api/site-settings/public'),
 
-  getToolOutputPublication: (): Promise<ToolOutputPublication | null> =>
+  getToolOutputPublications: (): Promise<ToolOutputPublicationCollection> =>
     axios.get('/api/tool-outputs/converter'),
 
   saveToolOutputPublication: (data: {
+    publishId?: string;
     enabled: boolean;
     direction: ToolOutputDirection;
     contentType: string;
     output: string;
   }): Promise<ToolOutputPublication> => axios.put('/api/tool-outputs/converter', data),
 
-  rotateToolOutputPublicationToken: (): Promise<ToolOutputPublication> =>
-    axios.post('/api/tool-outputs/converter/rotate-token'),
+  rotateToolOutputPublicationToken: (publishId: string): Promise<ToolOutputPublication> =>
+    axios.post('/api/tool-outputs/converter/rotate-token', { publishId }),
 
-  deleteToolOutputPublication: (): Promise<{ ok: boolean }> =>
-    axios.delete('/api/tool-outputs/converter'),
+  deleteToolOutputPublication: (publishId: string): Promise<{ ok: boolean }> =>
+    axios.delete('/api/tool-outputs/converter', { params: { publishId } }),
 
   createCoffeeCheckoutSession: (data: {
     amount: number;

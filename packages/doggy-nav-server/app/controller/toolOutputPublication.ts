@@ -31,7 +31,7 @@ export default class ToolOutputPublicationController extends Controller {
       return;
     }
 
-    const result = await this.toolOutputPublicationService.getForUser(userId);
+    const result = await this.toolOutputPublicationService.listForUser(userId);
     this.success(result);
   }
 
@@ -46,6 +46,7 @@ export default class ToolOutputPublicationController extends Controller {
     try {
       const body = this.getSanitizedBody();
       const result = await this.toolOutputPublicationService.saveForUser(userId, {
+        publishId: body.publishId,
         enabled: !!body.enabled,
         direction: body.direction,
         contentType: String(body.contentType || ''),
@@ -66,7 +67,10 @@ export default class ToolOutputPublicationController extends Controller {
       return;
     }
 
-    const result = await this.toolOutputPublicationService.deleteForUser(userId);
+    const result = await this.toolOutputPublicationService.deleteForUser(
+      userId,
+      String(this.ctx.query.publishId || '')
+    );
     this.success(result);
   }
 
@@ -79,7 +83,10 @@ export default class ToolOutputPublicationController extends Controller {
     }
 
     try {
-      const result = await this.toolOutputPublicationService.rotateTokenForUser(userId);
+      const result = await this.toolOutputPublicationService.rotateTokenForUser(
+        userId,
+        String(this.getSanitizedBody().publishId || '')
+      );
       this.success(result);
     } catch (error: any) {
       this.ctx.status = 404;
@@ -88,7 +95,10 @@ export default class ToolOutputPublicationController extends Controller {
   }
 
   async published() {
-    if (this.ctx.app.config.toolOutput?.requireHttps !== false && process.env.NODE_ENV === 'production') {
+    if (
+      this.ctx.app.config.toolOutput?.requireHttps !== false &&
+      process.env.NODE_ENV === 'production'
+    ) {
       if (!this.isHttpsRequest()) {
         this.ctx.status = 400;
         this.ctx.body = 'HTTPS is required';
@@ -106,7 +116,10 @@ export default class ToolOutputPublicationController extends Controller {
     }
 
     const { publishId } = this.ctx.params;
-    const result = await this.toolOutputPublicationService.readPublished(String(publishId || ''), token);
+    const result = await this.toolOutputPublicationService.readPublished(
+      String(publishId || ''),
+      token
+    );
 
     if (result.kind === 'not_found') {
       this.ctx.status = 404;

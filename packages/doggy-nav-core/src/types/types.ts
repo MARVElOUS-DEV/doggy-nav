@@ -150,6 +150,11 @@ export interface ToolOutputPublication {
   updatedAt?: string;
 }
 
+export interface ToolOutputPublicationCollection {
+  items: ToolOutputPublication[];
+  limit: number;
+}
+
 export interface Tag {
   id: ID;
   name: string;

@@ -143,7 +143,8 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
   async adminGetOne(id: string): Promise<AdminGetUserResponse | null> {
     const r = await this.db
       .prepare(
-        `SELECT id, username, email, nick_name, phone, is_active FROM users WHERE id = ? LIMIT 1`
+        `SELECT id, username, email, nick_name, phone, is_active, tool_output_publication_limit
+         FROM users WHERE id = ? LIMIT 1`
       )
       .bind(id)
       .first<any>();
@@ -172,6 +173,9 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
       role,
       roles: rolesIds,
       groups: groupsIds,
+      toolOutputPublicationLimit: Number.isInteger(r.tool_output_publication_limit)
+        ? r.tool_output_publication_limit
+        : 2,
     };
   }
 
@@ -180,8 +184,10 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
     const passwordHash = await PasswordUtils.hashPassword(input.password);
     await this.db
       .prepare(
-        `INSERT INTO users (id, username, email, password_hash, nick_name, phone, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO users (
+          id, username, email, password_hash, nick_name, phone, is_active,
+          tool_output_publication_limit
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id,
@@ -190,7 +196,8 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
         passwordHash,
         input.nickName || '',
         input.phone || '',
-        input.status ? 1 : 0
+        input.status ? 1 : 0,
+        input.toolOutputPublicationLimit ?? 2
       )
       .run();
 
@@ -236,6 +243,10 @@ export default class D1UserRepositoryAdapter implements CoreUserRepository {
     if (input.phone !== undefined) {
       fields.push('phone = ?');
       params.push(input.phone ?? '');
+    }
+    if (input.toolOutputPublicationLimit !== undefined) {
+      fields.push('tool_output_publication_limit = ?');
+      params.push(input.toolOutputPublicationLimit);
     }
     if (fields.length) {
       fields.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')");

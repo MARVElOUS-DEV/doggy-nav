@@ -148,6 +148,10 @@ export default class UserController extends CommonController {
         roles: Array.isArray(body.roles) ? body.roles : undefined,
         role: body.role,
         groups: Array.isArray(body.groups) ? body.groups : undefined,
+        toolOutputPublicationLimit:
+          body.toolOutputPublicationLimit === undefined
+            ? undefined
+            : Number(body.toolOutputPublicationLimit),
       });
       this.success(created);
     } catch (e: any) {
@@ -169,6 +173,10 @@ export default class UserController extends CommonController {
         roles: Array.isArray(body.roles) ? body.roles : undefined,
         role: body.role,
         groups: Array.isArray(body.groups) ? body.groups : undefined,
+        toolOutputPublicationLimit:
+          body.toolOutputPublicationLimit === undefined
+            ? undefined
+            : Number(body.toolOutputPublicationLimit),
       });
       this.success(ok);
     } catch (e: any) {

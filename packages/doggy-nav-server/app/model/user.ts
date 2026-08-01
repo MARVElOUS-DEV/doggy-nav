@@ -57,6 +57,7 @@ export default function (app: any) {
       roles: [{ type: Schema.Types.ObjectId, ref: 'Role', default: [] }],
       groups: [{ type: Schema.Types.ObjectId, ref: 'Group', default: [] }],
       extraPermissions: { type: [String], default: [] },
+      toolOutputPublicationLimit: { type: Number, default: 2, min: 0, max: 100 },
       lastLoginAt: {
         type: Date,
         default: null,

@@ -5,7 +5,9 @@ import {
   ArrowLeftRight,
   Copy,
   Download,
+  Eraser,
   LoaderCircle,
+  Plus,
   RefreshCw,
   RotateCcw,
   Share2,
@@ -78,6 +80,12 @@ function getFormatFromPublication(publication: ToolOutputPublication | null): Ed
   if (publication?.contentType?.includes('yaml')) return 'yaml';
   if (publication?.contentType?.includes('json')) return 'json';
   return publication?.direction === 'json-to-yaml' ? 'yaml' : 'json';
+}
+
+function getPublicationLabel(publication: ToolOutputPublication) {
+  const parts = publication.toolId.split(':');
+  const slot = Number(parts[parts.length - 1]);
+  return `Config ${publication.toolId.includes(':') && Number.isInteger(slot) ? slot + 1 : 1}`;
 }
 
 function inferContentFormat(content: string, contentType?: string): EditorKind | null {
@@ -181,7 +189,7 @@ function IconActionButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="rounded-lg border p-2 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border p-2 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
       style={{
         borderColor: 'rgba(148, 163, 184, 0.14)',
         color: '#b8bed5',
@@ -202,6 +210,7 @@ function EditorPane({
   message,
   compact = false,
   onChange,
+  onClear,
   onCopy,
 }: {
   label: string;
@@ -211,11 +220,12 @@ function EditorPane({
   message?: string;
   compact?: boolean;
   onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+  onClear: () => void;
   onCopy: () => void;
 }) {
   return (
     <section
-      className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', compact ? 'min-h-[156px]' : '')}
+      className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', compact ? 'min-h-[220px]' : '')}
     >
       <div
         className={cn(
@@ -232,9 +242,14 @@ function EditorPane({
             {status === 'valid' ? 'Valid' : status === 'invalid' ? 'Invalid' : 'Ready'}
           </StatusBadge>
         </div>
-        <IconActionButton disabled={!value.trim()} onClick={onCopy} title={`Copy ${label}`}>
-          <Copy className="h-4 w-4" />
-        </IconActionButton>
+        <div className="flex items-center gap-2">
+          <IconActionButton disabled={!value.trim()} onClick={onClear} title={`Clear ${label}`}>
+            <Eraser className="h-4 w-4" />
+          </IconActionButton>
+          <IconActionButton disabled={!value.trim()} onClick={onCopy} title={`Copy ${label}`}>
+            <Copy className="h-4 w-4" />
+          </IconActionButton>
+        </div>
       </div>
 
       <textarea
@@ -337,7 +352,9 @@ export default function YamlJsonConverterApp() {
   const [activeEditor, setActiveEditor] = useState<EditorKind>('json');
   const [jsonError, setJsonError] = useState('');
   const [yamlError, setYamlError] = useState('');
-  const [publication, setPublication] = useState<ToolOutputPublication | null>(null);
+  const [publications, setPublications] = useState<ToolOutputPublication[]>([]);
+  const [publicationLimit, setPublicationLimit] = useState(2);
+  const [selectedPublishId, setSelectedPublishId] = useState('');
   const [publicationLoaded, setPublicationLoaded] = useState(false);
   const [savingPublication, setSavingPublication] = useState(false);
   const [rotatingToken, setRotatingToken] = useState(false);
@@ -349,6 +366,10 @@ export default function YamlJsonConverterApp() {
   const jsonStatus = jsonInput.trim() ? (jsonError ? 'invalid' : 'valid') : 'neutral';
   const yamlStatus = yamlInput.trim() ? (yamlError ? 'invalid' : 'valid') : 'neutral';
   const currentError = activeEditor === 'json' ? jsonError : yamlError;
+  const publication = useMemo(
+    () => publications.find((item) => item.publishId === selectedPublishId) || null,
+    [publications, selectedPublishId]
+  );
   const selectedOutput = publishFormat === 'json' ? jsonInput : yamlInput;
   const selectedDirection: ToolOutputDirection =
     publishFormat === 'json' ? 'yaml-to-json' : 'json-to-yaml';
@@ -368,6 +389,8 @@ export default function YamlJsonConverterApp() {
     return `Latest published record ${stamp || 'recently'} with a live subscription URL`;
   }, [publication, publicationLoaded]);
   const canPublish = !currentError && !!jsonInput.trim() && !!yamlInput.trim();
+  const canCreatePublication = publications.length < publicationLimit;
+  const canSavePublication = canPublish && (!!publication || canCreatePublication);
   const stackedEditors = containerWidth < 980;
   const compactControls = containerWidth < 1040;
   const stackedActions = containerWidth < 640;
@@ -489,13 +512,20 @@ export default function YamlJsonConverterApp() {
     setSavingPublication(true);
     try {
       const saved = await api.saveToolOutputPublication({
+        publishId: publication?.publishId,
         enabled: true,
         direction: selectedDirection,
         contentType,
         output: selectedOutput,
       });
 
-      setPublication(saved);
+      setPublications((current) => {
+        const exists = current.some((item) => item.publishId === saved.publishId);
+        return exists
+          ? current.map((item) => (item.publishId === saved.publishId ? saved : item))
+          : [...current, saved];
+      });
+      setSelectedPublishId(saved.publishId);
       setPublishFormat(getFormatFromPublication(saved));
       setLatestRecord({
         content: selectedOutput,
@@ -516,8 +546,10 @@ export default function YamlJsonConverterApp() {
 
     setRotatingToken(true);
     try {
-      const rotated = await api.rotateToolOutputPublicationToken();
-      setPublication(rotated);
+      const rotated = await api.rotateToolOutputPublicationToken(publication.publishId);
+      setPublications((current) =>
+        current.map((item) => (item.publishId === rotated.publishId ? rotated : item))
+      );
       Message.success('Subscription URL rotated');
     } finally {
       setRotatingToken(false);
@@ -527,8 +559,11 @@ export default function YamlJsonConverterApp() {
   const handleDeletePublication = async () => {
     setDeletingPublication(true);
     try {
-      await api.deleteToolOutputPublication();
-      setPublication(null);
+      if (!publication) return;
+      await api.deleteToolOutputPublication(publication.publishId);
+      const remaining = publications.filter((item) => item.publishId !== publication.publishId);
+      setPublications(remaining);
+      setSelectedPublishId(remaining[0]?.publishId || '');
       setLatestRecord(null);
       Message.success('Published output deleted');
     } finally {
@@ -539,20 +574,22 @@ export default function YamlJsonConverterApp() {
   useEffect(() => {
     let active = true;
 
-    const loadPublication = async () => {
+    const loadPublications = async () => {
       try {
-        const current = await api.getToolOutputPublication();
+        const current = await api.getToolOutputPublications();
         if (!active) return;
 
-        setPublication(current);
-        setPublishFormat(getFormatFromPublication(current));
+        setPublications(current.items);
+        setPublicationLimit(current.limit);
+        setSelectedPublishId(current.items[0]?.publishId || '');
+        setPublishFormat(getFormatFromPublication(current.items[0] || null));
       } catch {
       } finally {
         if (active) setPublicationLoaded(true);
       }
     };
 
-    loadPublication();
+    loadPublications();
     return () => {
       active = false;
     };
@@ -630,23 +667,93 @@ export default function YamlJsonConverterApp() {
         </div>
       </header>
 
+      <nav
+        className="flex items-center gap-3 border-b px-5 py-3"
+        style={{ borderColor: 'rgba(148, 163, 184, 0.1)' }}
+        aria-label="Stored configurations"
+      >
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="flex w-max items-center gap-2">
+            {publications.map((item) => {
+              const selected = item.publishId === selectedPublishId;
+              return (
+                <button
+                  key={item.publishId}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => {
+                    setSelectedPublishId(item.publishId);
+                    setPublishFormat(getFormatFromPublication(item));
+                    setLatestRecord(null);
+                  }}
+                  className="min-w-[132px] rounded-xl border px-3 py-2 text-left transition hover:bg-white/5"
+                  style={{
+                    borderColor: selected
+                      ? 'rgba(196, 181, 253, 0.58)'
+                      : 'rgba(148, 163, 184, 0.14)',
+                    backgroundColor: selected ? 'rgba(124, 58, 237, 0.2)' : 'transparent',
+                  }}
+                >
+                  <span className="block text-xs font-semibold text-[#f8fafc]">
+                    {getPublicationLabel(item)}
+                  </span>
+                  <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-[#94a3b8]">
+                    {getFormatFromPublication(item)} · {item.enabled ? 'Live' : 'Paused'}
+                  </span>
+                </button>
+              );
+            })}
+            {!selectedPublishId && publicationLoaded ? (
+              <div
+                className="min-w-[132px] rounded-xl border px-3 py-2"
+                style={{
+                  borderColor: 'rgba(196, 181, 253, 0.58)',
+                  backgroundColor: 'rgba(124, 58, 237, 0.2)',
+                }}
+              >
+                <span className="block text-xs font-semibold text-[#f8fafc]">New config</span>
+                <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-[#94a3b8]">
+                  Unsaved draft
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="text-xs tabular-nums text-[#94a3b8]">
+            {publications.length} / {publicationLimit}
+          </span>
+          <IconActionButton
+            title={canCreatePublication ? 'Create a new config' : 'Storage limit reached'}
+            disabled={!publicationLoaded || !canCreatePublication || !selectedPublishId}
+            onClick={() => {
+              setSelectedPublishId('');
+              setLatestRecord(null);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+          </IconActionButton>
+        </div>
+      </nav>
+
       <div className="flex min-h-0 flex-1 flex-col">
         <div
           className={cn(
             'grid',
             stackedEditors
-              ? 'flex-none auto-rows-[minmax(156px,auto)]'
+              ? 'flex-none grid-rows-[minmax(220px,auto)_1px_minmax(220px,auto)]'
               : 'min-h-0 flex-1 grid-cols-[1fr_auto_1fr]'
           )}
         >
           <EditorPane
             label="JSON"
-            placeholder={sampleJson}
+            placeholder="Paste JSON here..."
             value={jsonInput}
             status={jsonStatus}
             message={jsonError}
             compact={stackedEditors}
             onChange={(event) => applyJsonDraft(event.target.value)}
+            onClear={() => applyJsonDraft('')}
             onCopy={() => copyText(jsonInput, 'JSON copied')}
           />
 
@@ -661,18 +768,19 @@ export default function YamlJsonConverterApp() {
 
           <EditorPane
             label="YAML"
-            placeholder={sampleYaml}
+            placeholder="Paste YAML here..."
             value={yamlInput}
             status={yamlStatus}
             message={yamlError}
             compact={stackedEditors}
             onChange={(event) => applyYamlDraft(event.target.value)}
+            onClear={() => applyYamlDraft('')}
             onCopy={() => copyText(yamlInput, 'YAML copied')}
           />
         </div>
 
         <section
-          className="border-t px-5 py-5"
+          className="min-h-0 overflow-y-auto border-t px-5 py-5"
           style={{
             borderColor: 'rgba(148, 163, 184, 0.12)',
             background: 'linear-gradient(180deg, rgba(10, 8, 15, 0.72), rgba(8, 6, 14, 0.96))',
@@ -721,7 +829,7 @@ export default function YamlJsonConverterApp() {
                   </ActionButton>
                   <ActionButton
                     tone="solid"
-                    disabled={savingPublication || !canPublish}
+                    disabled={savingPublication || !canSavePublication}
                     onClick={handleSavePublication}
                   >
                     {savingPublication ? (
@@ -778,7 +886,7 @@ export default function YamlJsonConverterApp() {
                     </ActionButton>
                     <ActionButton
                       tone="solid"
-                      disabled={savingPublication || !canPublish}
+                      disabled={savingPublication || !canSavePublication}
                       onClick={handleSavePublication}
                     >
                       {savingPublication ? (
