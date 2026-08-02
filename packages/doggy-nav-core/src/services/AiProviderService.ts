@@ -5,8 +5,17 @@ import type {
   AiProviderRepository,
   AiProviderUpdateInput,
 } from '../repositories/AiProviderRepository';
+import { AiProviderError } from './AiService';
 
 export const AI_PROVIDER_KINDS: AiProviderKind[] = ['openai-compatible', 'mimo'];
+
+export interface AiProviderFailure {
+  id: string;
+  name: string;
+  provider: string;
+  status?: number;
+  message: string;
+}
 
 function validationError(message: string) {
   const err = new Error(message);
@@ -102,8 +111,41 @@ export class AiProviderService {
     return this.repo.getConfigById(id);
   }
 
-  getActiveConfig(): Promise<AiProviderConfig | null> {
-    return this.repo.getActiveConfig();
+  async runWithFailover<T>(
+    task: (config: AiProviderConfig) => Promise<T>,
+    onExhausted?: (failures: AiProviderFailure[]) => Promise<void>
+  ): Promise<T> {
+    const configs = await this.repo.listConfigs();
+    const activeIndex = configs.findIndex((config) => config.active);
+    if (activeIndex < 0) {
+      const error = new Error('No active AI provider configured');
+      (error as any).status = 503;
+      throw error;
+    }
+
+    const ordered = [...configs.slice(activeIndex), ...configs.slice(0, activeIndex)];
+    const failures: AiProviderFailure[] = [];
+    let lastError: AiProviderError | undefined;
+
+    for (const [index, config] of ordered.entries()) {
+      if (index > 0 && !(await this.repo.setActive(config.id))) continue;
+      try {
+        return await task(config);
+      } catch (error) {
+        if (!(error instanceof AiProviderError)) throw error;
+        lastError = error;
+        failures.push({
+          id: config.id,
+          name: config.name,
+          provider: error.provider,
+          status: error.status,
+          message: error.message,
+        });
+      }
+    }
+
+    await onExhausted?.(failures);
+    throw lastError!;
   }
 }
 

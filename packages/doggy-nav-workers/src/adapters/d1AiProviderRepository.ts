@@ -42,7 +42,7 @@ export default class D1AiProviderRepository implements AiProviderRepository {
       .prepare(
         `SELECT id, name, provider, base_url, model, api_key, active, created_at, updated_at
          FROM ai_providers
-         ORDER BY active DESC, created_at DESC
+         ORDER BY created_at DESC, id DESC
          LIMIT ? OFFSET ?`
       )
       .bind(pageSize, offset)
@@ -156,13 +156,13 @@ export default class D1AiProviderRepository implements AiProviderRepository {
     return row ? rowToConfig(row) : null;
   }
 
-  async getActiveConfig(): Promise<AiProviderConfig | null> {
-    const row = await this.db
+  async listConfigs(): Promise<AiProviderConfig[]> {
+    const rows = await this.db
       .prepare(
         `SELECT id, name, provider, base_url, model, api_key, active, created_at, updated_at
-         FROM ai_providers WHERE active = 1 LIMIT 1`
+         FROM ai_providers ORDER BY created_at DESC, id DESC`
       )
-      .first<any>();
-    return row ? rowToConfig(row) : null;
+      .all<any>();
+    return (rows.results || []).map(rowToConfig);
   }
 }

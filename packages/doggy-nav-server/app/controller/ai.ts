@@ -22,14 +22,11 @@ export default class AiController extends Controller {
   @Inject(TOKENS.AiProviderService)
   private aiProviderService!: AiProviderService;
 
-  private async createAiConfig() {
-    const activeProvider = await this.aiProviderService.getActiveConfig();
-    if (!activeProvider) {
-      const err = new Error('No active AI provider configured');
-      (err as any).status = 503;
-      throw err;
-    }
-    return activeProvider;
+  private runAiTask<T>(taskName: string, task: (ai: AiService) => Promise<T>) {
+    return this.aiProviderService.runWithFailover(
+      (config) => task(new AiService(config)),
+      (failures) => this.ctx.service.email.sendAiProviderFailureNotification(taskName, failures)
+    );
   }
 
   async chatCompletions() {
@@ -57,24 +54,24 @@ export default class AiController extends Controller {
     }
 
     const messages = prependSystemPrompt(body.messages, activePrompt);
-    const cfg = await this.createAiConfig();
-    const ai = new AiService(cfg);
     try {
-      const res = await ai.chatCompletions({
-        model: body.model,
-        messages,
-        temperature: body.temperature,
-        max_tokens: body.max_tokens,
-        max_completion_tokens: body.max_completion_tokens,
-        top_p: body.top_p,
-        stop: body.stop,
-        frequency_penalty: body.frequency_penalty,
-        presence_penalty: body.presence_penalty,
-        response_format: body.response_format,
-        thinking: body.thinking,
-        extra_body: body.extra_body,
-        stream: false,
-      });
+      const res = await this.runAiTask('chat', (ai) =>
+        ai.chatCompletions({
+          model: body.model,
+          messages,
+          temperature: body.temperature,
+          max_tokens: body.max_tokens,
+          max_completion_tokens: body.max_completion_tokens,
+          top_p: body.top_p,
+          stop: body.stop,
+          frequency_penalty: body.frequency_penalty,
+          presence_penalty: body.presence_penalty,
+          response_format: body.response_format,
+          thinking: body.thinking,
+          extra_body: body.extra_body,
+          stream: false,
+        })
+      );
       this.ctx.body = res;
     } catch (e) {
       if (e instanceof AiProviderError) {
@@ -125,22 +122,22 @@ export default class AiController extends Controller {
       this.logger.warn('Failed to load recommendation prompt', _e);
     }
 
-    const cfg = await this.createAiConfig();
-    const ai = new AiService(cfg);
     try {
-      const res = await ai.chatCompletions({
-        messages: buildRecommendationAutofillMessages(
-          {
-            url,
-          },
-          prompt
-        ),
-        temperature: body.temperature,
-        max_tokens: body.max_tokens || 2048,
-        max_completion_tokens: body.max_completion_tokens,
-        top_p: body.top_p,
-        stream: false,
-      });
+      const res = await this.runAiTask('recommendation-autofill', (ai) =>
+        ai.chatCompletions({
+          messages: buildRecommendationAutofillMessages(
+            {
+              url,
+            },
+            prompt
+          ),
+          temperature: body.temperature,
+          max_tokens: body.max_tokens || 2048,
+          max_completion_tokens: body.max_completion_tokens,
+          top_p: body.top_p,
+          stream: false,
+        })
+      );
       const content = res?.choices?.[0]?.message?.content;
       const values = parseRecommendationAutofillContent(content);
       if (!values) {
@@ -199,20 +196,20 @@ export default class AiController extends Controller {
       this.logger.warn('Failed to load similar navigation prompt', _e);
     }
 
-    const cfg = await this.createAiConfig();
-    const ai = new AiService(cfg);
     try {
-      const res = await ai.chatCompletions(
-        {
-          messages: buildSimilarNavRecommendationMessages(source, prompt),
-          temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
-          max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
-          max_completion_tokens: body.max_completion_tokens
-            ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
-            : undefined,
-          stream: false,
-        },
-        { timeoutMs: 120_000, maxRetries: 0 }
+      const res = await this.runAiTask('similar-nav', (ai) =>
+        ai.chatCompletions(
+          {
+            messages: buildSimilarNavRecommendationMessages(source, prompt),
+            temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
+            max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
+            max_completion_tokens: body.max_completion_tokens
+              ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
+              : undefined,
+            stream: false,
+          },
+          { timeoutMs: 120_000, maxRetries: 0 }
+        )
       );
       const values = parseSimilarNavRecommendations(
         res?.choices?.[0]?.message?.content,

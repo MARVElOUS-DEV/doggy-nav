@@ -132,7 +132,7 @@ const AiProviderPage = () => {
     Modal.confirm({
       title: '确认删除该 Provider?',
       content: record.active
-        ? '该 Provider 当前正在使用。删除后主站 AI 调用将回退到环境变量配置。'
+        ? '该 Provider 当前正在使用。删除后必须手动启用另一个 Provider。'
         : '删除后无法恢复该配置。',
       okButtonProps: { danger: true },
       onOk: async () => {
@@ -270,8 +270,8 @@ const AiProviderPage = () => {
         type="info"
         showIcon
         style={{ marginBottom: 16 }}
-        message="主站 AI 调用使用当前启用的 Provider"
-        description="Provider 配置保存在后端数据库中；运行时不读取 AI_PROVIDER、AI_API_KEY、AI_BASE_URL 或 AI_MODEL 环境变量。"
+        message="主站 AI 调用按列表顺序自动故障转移"
+        description="当前 Provider 请求失败后，系统会启用列表中的下一个 Provider 并重试同一任务；全部失败时通知系统管理员。配置以数据库为准。"
       />
 
       <ProTable<AiProvider>

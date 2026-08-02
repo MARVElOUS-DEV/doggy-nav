@@ -19,6 +19,12 @@ This guide covers the deployment of the Cloudflare Workers backend for Doggy Nav
 4. Install Wrangler CLI: `npm install -g wrangler`
 5. Authenticate Wrangler: `wrangler login`
 
+### AI failover email alerts
+
+The Worker sends exhausted-provider alerts through the SMTP server configured in Admin → Email
+Settings. Use port 465 (implicit TLS) or 587 (STARTTLS); Cloudflare Workers blocks outbound SMTP
+port 25.
+
 ## Environment Variables
 
 ### Required Environment Variables

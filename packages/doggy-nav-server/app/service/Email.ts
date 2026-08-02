@@ -1,5 +1,6 @@
 import { Service } from 'egg';
 import nodemailer from 'nodemailer';
+import type { AiProviderFailure } from 'doggy-nav-core';
 import type { EmailNotificationSettings } from '../../types/email';
 
 export default class EmailService extends Service {
@@ -222,6 +223,52 @@ export default class EmailService extends Service {
       </div>
     `;
 
+    const recipients = await this.resolveAdminRecipients(adminEmails);
+
+    const results = await Promise.all(
+      recipients.map((email) => this.sendEmail(email, subject, html))
+    );
+
+    return results;
+  }
+
+  async sendAiProviderFailureNotification(
+    taskName: string,
+    failures: AiProviderFailure[]
+  ): Promise<boolean[]> {
+    const settings = await this.getEffectiveSettings();
+    const recipients = await this.resolveAdminRecipients(settings?.adminEmails || []);
+    const details = failures
+      .map(
+        ({ name, provider, status, message }) =>
+          `- ${name} (${provider}): ${status ? `HTTP ${status} - ` : ''}${message}`
+      )
+      .join('\n');
+    const text = `All AI providers failed while running ${taskName}.\n\n${details}`;
+    const html = `<h2>All AI providers failed</h2><p>Task: ${this.escapeHtml(
+      taskName
+    )}</p><pre>${this.escapeHtml(details)}</pre>`;
+    return Promise.all(
+      recipients.map((email) =>
+        this.sendEmail(email, `[Doggy Nav] All AI providers failed: ${taskName}`, html, text)
+      )
+    );
+  }
+
+  private escapeHtml(value: string) {
+    return value.replace(/[&<>"']/g, (char) => {
+      const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      };
+      return entities[char];
+    });
+  }
+
+  private async resolveAdminRecipients(adminEmails: string[]): Promise<string[]> {
     let recipients = Array.isArray(adminEmails) ? adminEmails.filter(Boolean) : [];
     if (recipients.length === 0) {
       try {
@@ -236,12 +283,7 @@ export default class EmailService extends Service {
         this.ctx.logger.warn('Failed to resolve admin recipients from roles:', e);
       }
     }
-
-    const results = await Promise.all(
-      recipients.map((email) => this.sendEmail(email, subject, html))
-    );
-
-    return results;
+    return [...new Set(recipients)];
   }
 
   // Test email configuration

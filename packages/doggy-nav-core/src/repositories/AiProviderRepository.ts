@@ -27,7 +27,7 @@ export interface AiProviderRepository {
   delete(id: string): Promise<boolean>;
   setActive(id: string): Promise<AiProvider | null>;
   getConfigById(id: string): Promise<AiProviderConfig | null>;
-  getActiveConfig(): Promise<AiProviderConfig | null>;
+  listConfigs(): Promise<AiProviderConfig[]>;
 }
 
 export default AiProviderRepository;

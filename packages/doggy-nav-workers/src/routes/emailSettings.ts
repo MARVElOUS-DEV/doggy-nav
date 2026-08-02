@@ -3,33 +3,62 @@ import { responses } from '../utils/responses';
 import { createAuthMiddleware, requireRole } from '../middleware/auth';
 import { getDI } from '../ioc/helpers';
 import { TOKENS } from '../ioc/tokens';
+import { loadSmtpSettings, sendSmtpEmail } from '../utils/smtp';
 
 export const emailSettingsRoutes = new Hono<{ Bindings: { DB: D1Database } }>();
 
-emailSettingsRoutes.get('/', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
-  const svc = getDI(c).resolve(TOKENS.EmailSettingsService) as any;
-  const value = await svc.get();
-  return c.json(responses.ok(value));
-});
-
-emailSettingsRoutes.put('/', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
-  const b = await c.req.json();
-  const svc = getDI(c).resolve(TOKENS.EmailSettingsService) as any;
-  try {
-    await svc.update(b);
-    return c.json(responses.ok({ updated: true }));
-  } catch (err: any) {
-    const isValidation = err?.name === 'ValidationError';
-    return c.json(isValidation ? responses.badRequest(err.message) : responses.serverError(), isValidation ? 400 : 500);
+emailSettingsRoutes.get(
+  '/',
+  createAuthMiddleware({ required: true }),
+  requireRole('sysadmin'),
+  async (c) => {
+    const svc = getDI(c).resolve(TOKENS.EmailSettingsService) as any;
+    const value = await svc.get();
+    return c.json(responses.ok(value));
   }
-});
+);
 
-emailSettingsRoutes.post('/test', createAuthMiddleware({ required: true }), requireRole('sysadmin'), async (c) => {
-  // Basic validation-only test (Workers runtime cannot send SMTP directly without external service)
-  const row = await c.env.DB.prepare(`SELECT * FROM email_settings WHERE id = 'default'`).first<any>();
-  if (!row) return c.json(responses.badRequest('Email settings not configured'), 400);
-  return c.json(responses.ok({ message: 'Config validated' }));
-});
+emailSettingsRoutes.put(
+  '/',
+  createAuthMiddleware({ required: true }),
+  requireRole('sysadmin'),
+  async (c) => {
+    const b = await c.req.json();
+    const svc = getDI(c).resolve(TOKENS.EmailSettingsService) as any;
+    try {
+      await svc.update(b);
+      return c.json(responses.ok({ updated: true }));
+    } catch (err: any) {
+      const isValidation = err?.name === 'ValidationError';
+      return c.json(
+        isValidation ? responses.badRequest(err.message) : responses.serverError(),
+        isValidation ? 400 : 500
+      );
+    }
+  }
+);
+
+emailSettingsRoutes.post(
+  '/test',
+  createAuthMiddleware({ required: true }),
+  requireRole('sysadmin'),
+  async (c) => {
+    const settings = await loadSmtpSettings(c.env.DB);
+    if (!settings) return c.json(responses.badRequest('Email settings not configured'), 400);
+    try {
+      await sendSmtpEmail({
+        ...settings,
+        to: [settings.adminEmails[0] || settings.from],
+        subject: '[Doggy Nav] Email configuration test',
+        text: `Email configuration test sent at ${new Date().toISOString()}.`,
+      });
+      return c.json(responses.ok({ message: 'Test email sent successfully' }));
+    } catch (error: any) {
+      console.error('Test email failed:', error);
+      return c.json(responses.serverError(error?.message || 'Test email failed'), 500);
+    }
+  }
+);
 
 emailSettingsRoutes.get('/health', async (c) => {
   const svc = getDI(c).resolve(TOKENS.EmailSettingsService) as any;

@@ -323,7 +323,16 @@ export class AiService {
           await sleep(getRetryDelayMs(resp, attempt));
           continue;
         }
-        throw e;
+        if (e instanceof AiProviderError) throw e;
+        throw new AiProviderError({
+          provider,
+          request: debugRequest,
+          message: isAbort
+            ? `AI provider ${provider} request timed out`
+            : `AI provider ${provider} request failed: ${
+                e instanceof Error ? e.message : String(e)
+              }`,
+        });
       } finally {
         clearTimeout(timeout);
       }

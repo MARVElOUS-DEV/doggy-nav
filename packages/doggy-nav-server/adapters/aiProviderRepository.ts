@@ -51,7 +51,7 @@ export default class MongooseAiProviderRepository implements AiProviderRepositor
     const skip = (pageNumber - 1) * pageSize;
 
     const [rows, total] = await Promise.all([
-      this.model.find({}).skip(skip).limit(pageSize).sort({ active: -1, _id: -1 }).lean(),
+      this.model.find({}).skip(skip).limit(pageSize).sort({ _id: -1 }).lean(),
       this.model.countDocuments(),
     ]);
 
@@ -121,8 +121,8 @@ export default class MongooseAiProviderRepository implements AiProviderRepositor
     return doc ? mapDocToConfig(doc) : null;
   }
 
-  async getActiveConfig(): Promise<AiProviderConfig | null> {
-    const doc = await this.model.findOne({ active: true }).sort({ updatedAt: -1 }).lean();
-    return doc ? mapDocToConfig(doc) : null;
+  async listConfigs(): Promise<AiProviderConfig[]> {
+    const docs = await this.model.find({}).sort({ _id: -1 }).lean();
+    return docs.map(mapDocToConfig);
   }
 }

@@ -60,7 +60,7 @@ try {
       { messages: [{ role: 'user', content: 'test' }] },
       { timeoutMs: 5, maxRetries: 0 }
     ),
-    { name: 'AbortError' }
+    { name: 'AiProviderError', message: /timed out/ }
   );
   assert.equal(fetchCalls, 1);
 } finally {

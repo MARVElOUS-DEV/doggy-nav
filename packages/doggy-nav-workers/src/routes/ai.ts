@@ -13,23 +13,61 @@ import {
   RECOMMENDATION_AUTOFILL_PROMPT_CODE,
   SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE,
 } from 'doggy-nav-core';
-import type { AiProviderService, ChatMessage, PromptService } from 'doggy-nav-core';
+import type {
+  AiProviderFailure,
+  AiProviderService,
+  ChatMessage,
+  PromptService,
+} from 'doggy-nav-core';
 import type { Env } from './index';
 import { getDI } from '../ioc/helpers';
 import { TOKENS } from '../ioc/tokens';
 import { createAuthMiddleware } from '../middleware/auth';
+import { loadSmtpSettings, sendSmtpEmail } from '../utils/smtp';
 
 const aiRoutes = new Hono<{ Bindings: Env }>();
 
-async function createAiConfig(c: any) {
-  const svc = getDI(c).resolve(TOKENS.AiProviderService) as AiProviderService;
-  const activeProvider = await svc.getActiveConfig();
-  if (!activeProvider) {
-    const err = new Error('No active AI provider configured');
-    (err as any).status = 503;
-    throw err;
+async function notifyAiProviderFailures(c: any, taskName: string, failures: AiProviderFailure[]) {
+  try {
+    const settings = await loadSmtpSettings(c.env.DB);
+    if (!settings?.enabled) return;
+    let recipients = settings.adminEmails;
+    if (!recipients.length) {
+      const result = await c.env.DB.prepare(
+        `SELECT DISTINCT u.email FROM users u
+         JOIN user_roles ur ON ur.user_id = u.id
+         JOIN roles r ON r.id = ur.role_id
+         WHERE r.slug = 'sysadmin' AND u.is_active = 1`
+      ).all();
+      recipients = (result.results || []).map((row: any) => row.email).filter(Boolean);
+    }
+    if (!recipients.length) {
+      console.error('[ai] exhausted provider alert has no recipients', { taskName });
+      return;
+    }
+    const details = failures
+      .map(
+        ({ name, provider, status, message }) =>
+          `- ${name} (${provider}): ${status ? `HTTP ${status} - ` : ''}${message}`
+      )
+      .join('\n');
+    await sendSmtpEmail({
+      ...settings,
+      to: [...new Set(recipients)].slice(0, 50),
+      subject: `[Doggy Nav] All AI providers failed: ${taskName}`,
+      text: `All AI providers failed while running ${taskName}.\n\n${details}`,
+    });
+  } catch (error) {
+    console.error('[ai] failed to send exhausted provider alert', error);
   }
-  return activeProvider;
+}
+
+async function runAiTask<T>(c: any, taskName: string, task: (ai: AiService) => Promise<T>) {
+  const svc = getDI(c).resolve(TOKENS.AiProviderService) as AiProviderService;
+  return svc.runWithFailover(
+    (config) => task(new AiService(config)),
+    (failures) => notifyAiProviderFailures(c, taskName, failures)
+  );
 }
 
 function providerErrorResponse(c: any, e: AiProviderError) {
@@ -72,23 +110,23 @@ aiRoutes.post('/api/ai/chat', createAuthMiddleware({ required: true }), async (c
         if (active?.content) messages = prependSystemPrompt(messages, active.content);
       } catch {}
     }
-    const cfg = await createAiConfig(c);
-    const ai = new AiService(cfg);
-    const res = await ai.chatCompletions({
-      model: body.model,
-      messages,
-      temperature: body.temperature,
-      max_tokens: body.max_tokens,
-      max_completion_tokens: body.max_completion_tokens,
-      top_p: body.top_p,
-      stop: body.stop,
-      frequency_penalty: body.frequency_penalty,
-      presence_penalty: body.presence_penalty,
-      response_format: body.response_format,
-      thinking: body.thinking,
-      extra_body: body.extra_body,
-      stream: false,
-    });
+    const res = await runAiTask(c, 'chat', (ai) =>
+      ai.chatCompletions({
+        model: body.model,
+        messages,
+        temperature: body.temperature,
+        max_tokens: body.max_tokens,
+        max_completion_tokens: body.max_completion_tokens,
+        top_p: body.top_p,
+        stop: body.stop,
+        frequency_penalty: body.frequency_penalty,
+        presence_penalty: body.presence_penalty,
+        response_format: body.response_format,
+        thinking: body.thinking,
+        extra_body: body.extra_body,
+        stream: false,
+      })
+    );
     return c.json(res);
   } catch (e: any) {
     if (e instanceof AiProviderError) {
@@ -114,21 +152,21 @@ aiRoutes.post('/api/ai/tasks/recommendation-autofill', async (c) => {
       if (active?.content) prompt = active.content;
     } catch {}
 
-    const cfg = await createAiConfig(c);
-    const ai = new AiService(cfg);
-    const res = await ai.chatCompletions({
-      messages: buildRecommendationAutofillMessages(
-        {
-          url,
-        },
-        prompt
-      ),
-      temperature: body.temperature,
-      max_tokens: body.max_tokens || 2048,
-      max_completion_tokens: body.max_completion_tokens,
-      top_p: body.top_p,
-      stream: false,
-    });
+    const res = await runAiTask(c, 'recommendation-autofill', (ai) =>
+      ai.chatCompletions({
+        messages: buildRecommendationAutofillMessages(
+          {
+            url,
+          },
+          prompt
+        ),
+        temperature: body.temperature,
+        max_tokens: body.max_tokens || 2048,
+        max_completion_tokens: body.max_completion_tokens,
+        top_p: body.top_p,
+        stream: false,
+      })
+    );
     const values = parseRecommendationAutofillContent(res?.choices?.[0]?.message?.content);
     if (!values) {
       return c.json({ error: { message: 'AI returned invalid recommendation JSON' } }, 502);
@@ -159,19 +197,19 @@ aiRoutes.post('/api/ai/tasks/similar-nav', async (c) => {
       if (active?.content) prompt = active.content;
     } catch {}
 
-    const cfg = await createAiConfig(c);
-    const ai = new AiService(cfg);
-    const res = await ai.chatCompletions(
-      {
-        messages: buildSimilarNavRecommendationMessages(source, prompt),
-        temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
-        max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
-        max_completion_tokens: body.max_completion_tokens
-          ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
-          : undefined,
-        stream: false,
-      },
-      { timeoutMs: 120_000, maxRetries: 0 }
+    const res = await runAiTask(c, 'similar-nav', (ai) =>
+      ai.chatCompletions(
+        {
+          messages: buildSimilarNavRecommendationMessages(source, prompt),
+          temperature: Math.min(1, Math.max(0, Number(body.temperature) || 0.35)),
+          max_tokens: Math.min(2400, Math.max(256, Number(body.max_tokens) || 1800)),
+          max_completion_tokens: body.max_completion_tokens
+            ? Math.min(2400, Math.max(256, Number(body.max_completion_tokens) || 1800))
+            : undefined,
+          stream: false,
+        },
+        { timeoutMs: 120_000, maxRetries: 0 }
+      )
     );
     const values = parseSimilarNavRecommendations(res?.choices?.[0]?.message?.content, source.url);
     if (!values) {
