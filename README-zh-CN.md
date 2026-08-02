@@ -34,21 +34,18 @@ Doggy Nav 是一款为团队和个人设计的导航与书签管理系统。基�
 ## 📸 截图预览
 
 <p align="center">
-  <img src="docs/assets/overview.png" alt="概览" width="45%" />
-  <img src="docs/assets/overview_dark.jpeg" alt="概览（暗色模式）" width="45%" />
+  <a href="https://doggy-nav.ggff.net/">
+    <img src="docs/assets/product-desktop.jpeg" alt="Doggy Nav 个人桌面" width="92%" />
+  </a>
   <br/>
-  <img src="docs/assets/nav_list.png" alt="导航列表" width="45%" />
-  <img src="docs/assets/nav_detail.png" alt="导航详情" width="45%" />
+  <img src="docs/assets/product-overview-light.jpeg" alt="浅色模式导航概览" width="45%" />
+  <img src="docs/assets/product-overview-dark.jpeg" alt="深色模式导航概览" width="45%" />
   <br/>
-  <img src="docs/assets/statistic.png" alt="统计看板" width="45%" />
-  <img src="docs/assets/timeline.png" alt="活动时间线" width="45%" />
-  <br/>
-  <img src="docs/assets/login_page.png" alt="登录页" width="45%" />
-  <img src="docs/assets/login_page_dark.jpeg" alt="登录页（暗色模式）" width="45%" />
-  <br/>
-  <img src="docs/assets/desktop-light.jpeg" alt="desktop-light" width="45%" />
-  <img src="docs/assets/desktop-dark.jpeg" alt="desktop-dark" width="45%" />
+  <img src="docs/assets/product-launchpad.jpeg" alt="个人桌面启动台" width="45%" />
+  <img src="docs/assets/product-config-exchange.jpeg" alt="JSON 与 YAML 配置转换器" width="45%" />
 </p>
+
+<p align="center"><a href="https://doggy-nav.ggff.net/">在线体验 →</a></p>
 
 ## ✨ 功能特性
 
