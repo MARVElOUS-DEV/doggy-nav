@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { IconCloseCircle } from '@arco-design/web-react/icon';
-import { Link as ArcoLink } from '@arco-design/web-react';
+import { ArrowUpRight, ChevronLeft, ChevronRight, Megaphone, X } from 'lucide-react';
 import api from '@/utils/api';
 import type { Affiche as AfficheItem } from '@/types';
 
@@ -41,7 +40,7 @@ export default function Affiche() {
       clearInterval(intervalRef.current);
     }
     intervalRef.current = setInterval(() => {
-      setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length);
     }, 5000);
   };
 
@@ -62,7 +61,7 @@ export default function Affiche() {
     return () => {
       clearTimers();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcements.length]);
 
   useEffect(() => {
@@ -105,15 +104,13 @@ export default function Affiche() {
   // Handle manual navigation
   const goToNext = () => {
     clearTimers();
-    setCurrentIndex(prevIndex => (prevIndex + 1) % announcements.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length);
     scheduleAutoRotate();
   };
 
   const goToPrev = () => {
     clearTimers();
-    setCurrentIndex(prevIndex =>
-      prevIndex === 0 ? announcements.length - 1 : prevIndex - 1
-    );
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? announcements.length - 1 : prevIndex - 1));
     scheduleAutoRotate();
   };
 
@@ -124,124 +121,108 @@ export default function Affiche() {
   const currentAnnouncement = announcements[currentIndex];
 
   return (
-    <div className="bg-theme-background border border-theme-border rounded-lg p-3 text-sm relative overflow-hidden shadow-sm">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between min-h-[40px] gap-2">
-        <div className="flex items-center flex-1 w-full min-h-[24px]">
-          <div className="flex items-center w-full">
-            <span className="mr-2 text-theme-primary text-lg">📢</span>
-            <div className="flex flex-wrap items-center flex-1 text-wrap break-words">
-              <span className="mr-1">{currentAnnouncement.text}</span>
-              {currentAnnouncement.link && (
-                <Link
-                  className="text-theme-primary hover:opacity-90 font-medium hover:underline whitespace-nowrap"
-                  href={currentAnnouncement.link.href}
-                  target={currentAnnouncement.link.target || '_self'}
-                  rel={currentAnnouncement.link.target === '_blank' ? 'noopener noreferrer' : undefined}
-                >
-                  {currentAnnouncement.link.text}
-                </Link>
-              )}
-            </div>
+    <section
+      className="relative overflow-hidden rounded-2xl border border-theme-border bg-theme-card shadow-[0_14px_40px_rgba(15,23,42,0.08)]"
+      aria-label="Announcements"
+      aria-live="polite"
+    >
+      <div
+        className="pointer-events-none absolute -left-12 -top-16 h-40 w-40 rounded-full"
+        style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 12%, transparent)' }}
+      />
+      <div
+        className="pointer-events-none absolute -bottom-20 right-20 h-36 w-36 rounded-full"
+        style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 7%, transparent)' }}
+      />
+
+      <div className="relative flex min-h-[88px] items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6">
+        <div
+          className="flex h-11 w-11 flex-none items-center justify-center rounded-xl text-theme-primary shadow-sm sm:h-12 sm:w-12"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--color-primary) 12%, var(--color-card))',
+            border: '1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border))',
+          }}
+        >
+          <Megaphone className="h-5 w-5" aria-hidden="true" />
+        </div>
+
+        <div key={currentAnnouncement.id} className="min-w-0 flex-1 animate-fade-in-simple">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-theme-primary">
+              Announcement
+            </span>
+            {announcements.length > 1 && (
+              <span className="text-[10px] tabular-nums text-theme-muted-foreground">
+                {String(currentIndex + 1).padStart(2, '0')} /{' '}
+                {String(announcements.length).padStart(2, '0')}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-theme-foreground sm:text-[15px]">
+            <span className="break-words">{currentAnnouncement.text}</span>
+            {currentAnnouncement.link && (
+              <Link
+                className="inline-flex items-center gap-1 font-semibold text-theme-primary transition-opacity hover:opacity-75 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60"
+                href={currentAnnouncement.link.href}
+                target={currentAnnouncement.link.target || '_self'}
+                rel={
+                  currentAnnouncement.link.target === '_blank' ? 'noopener noreferrer' : undefined
+                }
+              >
+                {currentAnnouncement.link.text}
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
-          <div className="flex items-center space-x-1">
-            {/* Navigation controls - hidden on small screens to save space */}
-            {announcements.length > 1 && (
-              <>
-                <button
-                  onClick={goToPrev}
-                  className="text-theme-muted-foreground hover:text-theme-foreground p-1 rounded-full hover:bg-theme-muted transition-colors sm:hidden"
-                  aria-label="Previous announcement"
-                >
-                  ‹
-                </button>
-                <div className="flex space-x-1 sm:hidden">
-                  {announcements.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        clearTimers();
-                        setCurrentIndex(index);
-                        scheduleAutoRotate();
-                      }}
-                      className={`w-2 h-2 rounded-full ${
-                        index === currentIndex ? 'bg-theme-primary' : ''
-                      }`}
-                      aria-label={`Go to announcement ${index + 1}`}
-                    />
-                  ))}
-                </div>
-                <button
-                  onClick={goToNext}
-                  className="text-theme-muted-foreground hover:text-theme-foreground p-1 rounded-full hover:bg-theme-muted transition-colors sm:hidden"
-                  aria-label="Next announcement"
-                >
-                  ›
-                </button>
-
-                {/* Show full controls on larger screens */}
-                <div className="hidden sm:flex items-center space-x-1">
-                  <button
-                    onClick={goToPrev}
-                    className="text-theme-muted-foreground hover:text-theme-foreground p-1 rounded-full hover:bg-theme-muted transition-colors"
-                    aria-label="Previous announcement"
-                  >
-                    ▲
-                  </button>
-                  <div className="flex space-x-1">
-                    {announcements.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          clearTimers();
-                          setCurrentIndex(index);
-                          scheduleAutoRotate();
-                        }}
-                        className={`w-2 h-2 rounded-full ${
-                          index === currentIndex ? 'bg-theme-primary' : ''
-                        }`}
-                        aria-label={`Go to announcement ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={goToNext}
-                    className="text-theme-muted-foreground hover:text-theme-foreground p-1 rounded-full hover:bg-theme-muted transition-colors"
-                    aria-label="Next announcement"
-                  >
-                    ▼
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Close button */}
-          <ArcoLink
-            icon={<IconCloseCircle className="text-theme-muted-foreground hover:text-theme-foreground ml-1"/>}
+        <div className="flex flex-none items-center gap-1">
+          {announcements.length > 1 && (
+            <div className="mr-1 flex items-center rounded-full border border-theme-border bg-theme-background p-1 shadow-sm">
+              <button
+                type="button"
+                onClick={goToPrev}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-theme-muted-foreground transition-colors hover:bg-theme-muted hover:text-theme-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60"
+                aria-label="Previous announcement"
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={goToNext}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-theme-muted-foreground transition-colors hover:bg-theme-muted hover:text-theme-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60"
+                aria-label="Next announcement"
+              >
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
             onClick={() => setShow(false)}
-            className="ml-1"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-theme-muted-foreground transition-colors hover:bg-theme-muted hover:text-theme-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60"
             aria-label="Hide announcements"
-          />
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
-      {/* Progress indicator - full width on mobile */}
       {announcements.length > 1 && (
-        <div className="mt-2 sm:mt-2">
-          <div className="w-full bg-theme-muted rounded-full h-1">
-            <div
-              className="bg-theme-primary h-1 rounded-full transition-all duration-1000 ease-linear"
-              style={{
-                width: `${(1 / announcements.length) * 100}%`,
-                marginLeft: `${(currentIndex / announcements.length) * 100}%`
-              }}
-            ></div>
-          </div>
+        <div
+          className="absolute inset-x-0 bottom-0 flex h-0.5 gap-1 bg-theme-muted"
+          aria-hidden="true"
+        >
+          {announcements.map((announcement, index) => (
+            <span
+              key={announcement.id}
+              className={`h-full flex-1 transition-colors duration-300 ${
+                index === currentIndex ? 'bg-theme-primary' : 'bg-transparent'
+              }`}
+            />
+          ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }

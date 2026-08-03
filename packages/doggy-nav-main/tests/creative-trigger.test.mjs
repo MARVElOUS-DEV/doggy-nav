@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {
   isCreativeTriggerGestureComplete,
   normalizeCreativeTriggerVariant,
-} from './creativeTrigger.ts';
+} from '../src/creativeTrigger.ts';
 
 assert.equal(normalizeCreativeTriggerVariant('paper-plane'), 'paper-plane');
 assert.equal(normalizeCreativeTriggerVariant('invalid'), 'lightbulb-rope');

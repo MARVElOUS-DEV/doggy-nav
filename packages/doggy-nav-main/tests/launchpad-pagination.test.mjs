@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { buildLaunchpadPages } from './pagination.ts';
+import { buildLaunchpadPages } from '../src/apps/LaunchPad/pagination.ts';
 
 const apps = [{ key: 'settings' }, { key: 'news' }];
 const favorites = [{ kind: 'item', id: 'favorite' }];

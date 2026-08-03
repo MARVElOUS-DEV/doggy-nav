@@ -42,7 +42,10 @@ export default function UserAvatar({
   };
 
   const handleLogin = () => {
-    router.push('/login');
+    void router.push({
+      pathname: '/login',
+      query: { redirect: router.asPath },
+    });
   };
 
   const isAuthed = authState.isAuthenticated && !!authState.user;

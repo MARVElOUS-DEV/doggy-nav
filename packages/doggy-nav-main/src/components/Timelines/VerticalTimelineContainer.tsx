@@ -6,6 +6,7 @@ import Link from 'next/link';
 import DoggyImage from '../DoggyImage';
 import { useTranslation } from 'react-i18next';
 import api from '@/utils/api';
+import { useRouter } from 'next/router';
 
 interface VerticalTimelineContainerProps {
   year: number;
@@ -22,6 +23,7 @@ export default function VerticalTimelineContainer({
 }: VerticalTimelineContainerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const { t } = useTranslation('translation');
+  const router = useRouter();
 
   const filteredItems = items.filter((item) => {
     if (!searchTerm) return true;
@@ -39,10 +41,12 @@ export default function VerticalTimelineContainer({
   );
 
   const handleItemClick = useCallback(
-    async (item: TimelineItemType) => {
+    (item: TimelineItemType) => {
       onItemSelect?.(item);
+      const navId = item.navId || item.id;
+      void router.push(`/nav/${encodeURIComponent(navId)}`);
     },
-    [onItemSelect]
+    [onItemSelect, router]
   );
 
   return (
@@ -149,12 +153,22 @@ export default function VerticalTimelineContainer({
 
                     {/* Content Card */}
                     <div
-                      className={`flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg cursor-pointer transition-all duration-200 group-hover:shadow-md ${
+                      className={`flex cursor-pointer items-center space-x-2 rounded-xl p-2 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/60 md:space-x-3 md:p-3 ${
                         selectedItem?.id === item.id
                           ? `bg-theme-secondary border-l-4 ${isLeft ? 'md:border-l-0 md:border-r-4' : ''} border-theme-primary`
                           : 'border border-theme-border bg-theme-card hover:bg-theme-muted'
                       } ${isLeft ? 'md:flex-row-reverse md:space-x-reverse' : ''}`}
                       onClick={() => handleItemClick(item)}
+                      role="link"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.currentTarget !== event.target) return;
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          handleItemClick(item);
+                        }
+                      }}
+                      aria-label={`View details for ${item.title}`}
                     >
                       {/* Website Icon */}
                       {item.logo && (
@@ -182,7 +196,7 @@ export default function VerticalTimelineContainer({
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
-                              const id = (item as any).navId || (item as any).id;
+                              const id = item.navId || item.id;
                               if (id) {
                                 await api.updateNavView(String(id));
                               }

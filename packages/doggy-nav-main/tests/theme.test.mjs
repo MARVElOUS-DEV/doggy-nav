@@ -4,7 +4,7 @@ import {
   normalizeThemePreferences,
   resolveTheme,
   validateCustomTheme,
-} from './theme.ts';
+} from '../src/theme/theme.ts';
 
 assert.equal(resolveTheme('system', true), 'dark');
 assert.equal(validateCustomTheme(defaultCustomTheme()), null);

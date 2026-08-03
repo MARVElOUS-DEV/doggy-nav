@@ -14,6 +14,7 @@ import { authActionsAtom } from '@/store/store';
 import type { LoginFormValues, OAuthProvider } from '@/types';
 import api from '@/utils/api';
 import { setAccessExpEpochMs } from '@/utils/session';
+import { getSafeAuthRedirect } from '@/utils/authRedirect';
 
 const FormItem = Form.Item;
 
@@ -86,7 +87,7 @@ export default function LoginPage() {
         if (typeof me.accessExp === 'number') setAccessExpEpochMs(me.accessExp);
       } catch {}
 
-      await router.push((router.query.redirect as string) || '/');
+      await router.replace(getSafeAuthRedirect(router.query.redirect));
     } catch (error: unknown) {
       Message.error(
         typeof error === 'object' && error !== null && 'message' in error
@@ -106,7 +107,7 @@ export default function LoginPage() {
       const { user } = await api.finishPasskeyLogin(credential);
       dispatchAuth({ type: 'LOGIN', payload: { user } });
       Message.success(t('login_successful'));
-      await router.push((router.query.redirect as string) || '/');
+      await router.replace(getSafeAuthRedirect(router.query.redirect));
     } catch (error: unknown) {
       Message.error(
         typeof error === 'object' && error !== null && 'message' in error
@@ -287,7 +288,10 @@ export default function LoginPage() {
                     key={provider}
                     type="button"
                     onClick={() => {
-                      window.location.href = `/api/auth/${provider}`;
+                      const redirect = getSafeAuthRedirect(router.query.redirect);
+                      window.location.assign(
+                        `/api/auth/${provider}?redirect=${encodeURIComponent(redirect)}`
+                      );
                     }}
                     disabled={busy}
                     className="flex h-12 cursor-pointer items-center justify-center gap-3 rounded-xl border border-theme-border bg-transparent px-4 font-medium transition-colors hover:border-theme-primary hover:bg-theme-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50"
