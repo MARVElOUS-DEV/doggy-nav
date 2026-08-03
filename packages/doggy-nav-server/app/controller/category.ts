@@ -83,7 +83,7 @@ export default class CategoryController extends Controller {
   private toIdStrings(arr: any): string[] {
     if (!Array.isArray(arr)) return [];
     return arr
-      .map((x) => (typeof x === 'string' ? x : (x && x.toString ? x.toString() : '')))
+      .map((x) => (typeof x === 'string' ? x : x && x.toString ? x.toString() : ''))
       .filter((s) => typeof s === 'string' && /^[a-fA-F0-9]{24}$/.test(s));
   }
 
@@ -196,10 +196,73 @@ export default class CategoryController extends Controller {
   async del() {
     const { ctx } = this;
     try {
-      const { id } = ctx.request.body;
+      const { id, cascade } = this.getSanitizedBody();
       if (!(await this.ensureHiddenCategoryAccess({ currentId: id }))) {
         return;
       }
+
+      if (cascade) {
+        if (!this.isSysadminUser()) {
+          this.denyHiddenManage('只有 sysadmin 可以清理整个分类树');
+          return;
+        }
+        if (!Types.ObjectId.isValid(id)) {
+          this.error('Category not found');
+          return;
+        }
+
+        const root = await ctx.model.Category.findOne({ _id: id }).select('_id').lean();
+        if (!root) {
+          this.error('Category not found');
+          return;
+        }
+
+        const categories = await ctx.model.Category.find({}, { _id: 1, categoryId: 1 }).lean();
+        const childIdsByParent = new Map<string, string[]>();
+        categories.forEach((category: any) => {
+          const parentId = String(category.categoryId || '');
+          const children = childIdsByParent.get(parentId) || [];
+          children.push(String(category._id));
+          childIdsByParent.set(parentId, children);
+        });
+
+        const categoryIds = [String(id)];
+        for (let index = 0; index < categoryIds.length; index += 1) {
+          categoryIds.push(...(childIdsByParent.get(categoryIds[index]) || []));
+        }
+
+        const navs = await ctx.model.Nav.find(
+          { categoryId: { $in: categoryIds } },
+          { _id: 1 }
+        ).lean();
+        const navIds = navs.map((nav: any) => nav._id);
+        const objectCategoryIds = categoryIds.map((categoryId) => new Types.ObjectId(categoryId));
+
+        await Promise.all([
+          navIds.length
+            ? ctx.model.Favorite.deleteMany({ navId: { $in: navIds } })
+            : Promise.resolve(),
+          navIds.length
+            ? ctx.model.FavoriteFolder.updateMany(
+                { coverNavId: { $in: navIds } },
+                { $set: { coverNavId: null } }
+              )
+            : Promise.resolve(),
+        ]);
+        const deletedNavs = await ctx.model.Nav.deleteMany({
+          categoryId: { $in: categoryIds },
+        });
+        const deletedCategories = await ctx.model.Category.deleteMany({
+          _id: { $in: objectCategoryIds },
+        });
+
+        this.success({
+          deletedNavs: deletedNavs.deletedCount || 0,
+          deletedCategories: deletedCategories.deletedCount || 0,
+        });
+        return;
+      }
+
       const data = await Promise.all([
         ctx.model.Category.deleteOne({ _id: id }),
         ctx.model.Category.deleteOne({ categoryId: id }),

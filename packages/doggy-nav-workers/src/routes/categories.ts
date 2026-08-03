@@ -197,7 +197,58 @@ categoryRoutes.delete(
       const body = await c.req.json().catch(() => ({}));
       const id = body?.id;
       if (!id) return c.json(responses.badRequest('id required'), 400);
-      const res = await c.env.DB.prepare('DELETE FROM categories WHERE id = ?').bind(id).run();
+      const db = c.env.DB;
+      const category = await db
+        .prepare('SELECT id FROM categories WHERE id = ? LIMIT 1')
+        .bind(id)
+        .first<{ id: string }>();
+      if (!category) return c.json(responses.notFound('Category not found'), 404);
+
+      if (body?.cascade) {
+        const categoryTreeSql = `
+          WITH RECURSIVE category_tree(id) AS (
+            SELECT id FROM categories WHERE id = ?
+            UNION ALL
+            SELECT categories.id
+            FROM categories
+            INNER JOIN category_tree ON categories.category_id = category_tree.id
+          )`;
+        const [categoryCountResult, navCountResult] = await db.batch([
+          db.prepare(`${categoryTreeSql} SELECT COUNT(*) AS count FROM category_tree`).bind(id),
+          db
+            .prepare(
+              `${categoryTreeSql}
+               SELECT COUNT(*) AS count
+               FROM bookmarks
+               WHERE category_id IN (SELECT id FROM category_tree)`
+            )
+            .bind(id),
+          db
+            .prepare(
+              `${categoryTreeSql}
+               DELETE FROM bookmarks
+               WHERE category_id IN (SELECT id FROM category_tree)`
+            )
+            .bind(id),
+          db
+            .prepare(
+              `${categoryTreeSql}
+               DELETE FROM categories
+               WHERE id IN (SELECT id FROM category_tree)`
+            )
+            .bind(id),
+        ]);
+        const deletedCategories = Number(
+          (categoryCountResult.results?.[0] as { count?: number } | undefined)?.count || 0
+        );
+        const deletedNavs = Number(
+          (navCountResult.results?.[0] as { count?: number } | undefined)?.count || 0
+        );
+
+        return c.json(responses.ok({ deletedNavs, deletedCategories }));
+      }
+
+      const res = await db.prepare('DELETE FROM categories WHERE id = ?').bind(id).run();
       if ((res.meta?.rows_written ?? 0) === 0)
         return c.json(responses.notFound('Category not found'), 404);
       return c.json(responses.ok({}));

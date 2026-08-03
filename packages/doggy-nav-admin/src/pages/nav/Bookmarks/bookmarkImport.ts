@@ -8,6 +8,7 @@ export type BookmarkImportFolder = {
   pathLabels: string[];
   ancestorFolderKeys: string[];
   children: BookmarkImportNode[];
+  isBrowserRoot?: boolean;
 };
 
 export type BookmarkImportBookmark = {
@@ -55,6 +56,81 @@ type TraverseContext = {
   parentFolderKey?: string;
 };
 
+const GENERIC_BOOKMARK_ROOT_NAMES = new Set([
+  'bookmark',
+  'bookmarks',
+  'favorite',
+  'favorites',
+  'favourite',
+  'favourites',
+  '书签',
+  '收藏',
+  '收藏夹',
+]);
+
+function isGenericBookmarkRoot(title: string) {
+  return GENERIC_BOOKMARK_ROOT_NAMES.has(title.trim().toLocaleLowerCase());
+}
+
+function rebaseNodes(
+  nodes: BookmarkImportNode[],
+  context: TraverseContext,
+): BookmarkImportNode[] {
+  return nodes.map((node) => {
+    const pathLabels = [...context.pathLabels, node.title];
+
+    if (node.type === 'bookmark') {
+      return {
+        ...node,
+        parentKey: context.parentFolderKey,
+        depth: context.depth,
+        pathLabels,
+        ancestorFolderKeys: [...context.ancestorFolderKeys],
+      };
+    }
+
+    return {
+      ...node,
+      parentKey: context.parentFolderKey,
+      depth: context.depth,
+      pathLabels,
+      ancestorFolderKeys: [...context.ancestorFolderKeys],
+      children: rebaseNodes(node.children, {
+        ancestorFolderKeys: [...context.ancestorFolderKeys, node.key],
+        pathLabels,
+        depth: context.depth + 1,
+        parentFolderKey: node.key,
+      }),
+    };
+  });
+}
+
+function removeBrowserBookmarkRoot(nodes: BookmarkImportNode[]) {
+  const rootFolders = nodes.filter(
+    (node): node is BookmarkImportFolder => node.type === 'folder',
+  );
+  const browserRoot =
+    rootFolders.length === 1 &&
+    (rootFolders[0].isBrowserRoot ||
+      isGenericBookmarkRoot(rootFolders[0].title))
+      ? rootFolders[0]
+      : undefined;
+
+  if (browserRoot) {
+    const mergedNodes = nodes.flatMap((node) =>
+      node.key === browserRoot.key ? browserRoot.children : [node],
+    );
+
+    return rebaseNodes(mergedNodes, {
+      ancestorFolderKeys: [],
+      pathLabels: [],
+      depth: 0,
+    });
+  }
+
+  return nodes;
+}
+
 export function parseBookmarkHtml(html: string): BookmarkImportNode[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
@@ -73,7 +149,14 @@ export function parseBookmarkHtml(html: string): BookmarkImportNode[] {
   ): BookmarkImportNode[] => {
     const result: BookmarkImportNode[] = [];
 
-    Array.from(container.children).forEach((child) => {
+    const containerChildren = Array.from(container.children);
+
+    for (
+      let childIndex = 0;
+      childIndex < containerChildren.length;
+      childIndex += 1
+    ) {
+      const child = containerChildren[childIndex];
       const tagName = child.tagName.toUpperCase();
 
       if (tagName === 'DT') {
@@ -84,9 +167,27 @@ export function parseBookmarkHtml(html: string): BookmarkImportNode[] {
         const bookmarkLink = directChildren.find(
           (item) => item.tagName.toUpperCase() === 'A',
         );
-        const nestedList = directChildren.find(
+        let nestedList = directChildren.find(
           (item) => item.tagName.toUpperCase() === 'DL',
         );
+
+        // Netscape bookmark HTML is intentionally loose markup. Depending on
+        // the browser, the folder's DL can be parsed as the DT's next sibling.
+        if (folderHeading && !nestedList) {
+          let siblingIndex = childIndex + 1;
+          while (
+            siblingIndex < containerChildren.length &&
+            containerChildren[siblingIndex].tagName.toUpperCase() === 'P' &&
+            !containerChildren[siblingIndex].children.length
+          ) {
+            siblingIndex += 1;
+          }
+
+          if (containerChildren[siblingIndex]?.tagName.toUpperCase() === 'DL') {
+            nestedList = containerChildren[siblingIndex];
+            childIndex = siblingIndex;
+          }
+        }
 
         if (folderHeading) {
           const folderKey = nextKey('folder');
@@ -111,13 +212,15 @@ export function parseBookmarkHtml(html: string): BookmarkImportNode[] {
             pathLabels,
             ancestorFolderKeys,
             children,
+            isBrowserRoot:
+              getAttr(folderHeading, 'personal_toolbar_folder') === 'true',
           });
-          return;
+          continue;
         }
 
         if (bookmarkLink) {
           const url = getAttr(bookmarkLink, 'href') || '';
-          if (!url) return;
+          if (!url) continue;
 
           const title = bookmarkLink.textContent?.trim() || url;
           result.push({
@@ -134,22 +237,24 @@ export function parseBookmarkHtml(html: string): BookmarkImportNode[] {
           });
         }
 
-        return;
+        continue;
       }
 
       if (tagName === 'DL' || tagName === 'P') {
         result.push(...traverse(child, context));
       }
-    });
+    }
 
     return result;
   };
 
-  const nodes = traverse(root, {
-    ancestorFolderKeys: [],
-    pathLabels: [],
-    depth: 0,
-  });
+  const nodes = removeBrowserBookmarkRoot(
+    traverse(root, {
+      ancestorFolderKeys: [],
+      pathLabels: [],
+      depth: 0,
+    }),
+  );
 
   if (nodes.length === 0) {
     throw new Error('没有解析到任何书签内容');

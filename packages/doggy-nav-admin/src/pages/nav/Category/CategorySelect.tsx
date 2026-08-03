@@ -6,14 +6,16 @@ import type { SelectProps } from 'antd';
 import { Select } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
-interface CategorySelectProps {
+interface CategorySelectProps extends Omit<
+  SelectProps<string>,
+  'onChange' | 'options' | 'value'
+> {
   onChange?: (value: string) => void;
   value?: string;
-  [key: string]: any;
 }
 
 export default function CategorySelect(props: CategorySelectProps) {
-  const { onChange, value } = props;
+  const { onChange, value, ...selectProps } = props;
   const [categoryList, setCategoryList] = useState<CategoryModel[]>([]);
   const [internalValue, setInternalValue] = useState<string>('');
 
@@ -52,6 +54,7 @@ export default function CategorySelect(props: CategorySelectProps) {
 
   return (
     <Select<string>
+      {...selectProps}
       onChange={onSelectChange}
       value={currentValue}
       showSearch

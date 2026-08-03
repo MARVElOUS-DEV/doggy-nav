@@ -38,6 +38,7 @@ const EditorContent = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const getEditorPopupContainer = useCallback(() => containerRef.current ?? document.body, []);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -167,8 +168,10 @@ const EditorContent = () => {
         }
       });
 
-      let laidOutMap: Map<string, { position: { x: number; y: number }; pageIndex?: number }> | null =
-        null;
+      let laidOutMap: Map<
+        string,
+        { position: { x: number; y: number }; pageIndex?: number }
+      > | null = null;
       if (visibleIds.size > 0) {
         const visibleNodes = nds.filter((n) => visibleIds.has(n.id));
         const laidOut = applyDefaultLayout(visibleNodes);
@@ -187,7 +190,9 @@ const EditorContent = () => {
           return {
             ...n,
             ...(laid ? { position: laid.position } : {}),
-            ...(laid?.pageIndex !== undefined ? { data: { ...n.data, pageIndex: laid.pageIndex } } : {}),
+            ...(laid?.pageIndex !== undefined
+              ? { data: { ...n.data, pageIndex: laid.pageIndex } }
+              : {}),
             hidden: shouldBeHidden,
           };
         }
@@ -257,6 +262,7 @@ const EditorContent = () => {
             Modal.confirm({
               title: 'Merge Bookmarks',
               content: 'This will merge the imported bookmarks with existing ones. Continue?',
+              getPopupContainer: getEditorPopupContainer,
               onOk: processImport,
             });
           } else {
@@ -266,7 +272,7 @@ const EditorContent = () => {
       };
       reader.readAsText(file);
     },
-    [nodes]
+    [getEditorPopupContainer, nodes]
   );
 
   const handleImportFromNav = useCallback(
@@ -343,6 +349,7 @@ const EditorContent = () => {
 
     Modal.confirm({
       title: 'Create New Folder',
+      getPopupContainer: getEditorPopupContainer,
       content: (
         <div style={{ marginTop: 10 }}>
           <p style={{ marginBottom: 8 }}>Folder Name:</p>
@@ -378,31 +385,35 @@ const EditorContent = () => {
         Message.success(`Folder "${name}" added`);
       },
     });
-  }, []);
+  }, [getEditorPopupContainer]);
 
-  const handleDeleteNode = useCallback((nodeId: string) => {
-    Modal.confirm({
-      title: 'Delete Item',
-      content: 'Are you sure you want to delete this item? All children will be deleted as well.',
-      okButtonProps: { status: 'danger' },
-      onOk: () => {
-        setNodes((nds) => {
-          const idsToDelete = new Set<string>([nodeId]);
-          const findChildren = (parentNode: string) => {
-            nds.forEach((n) => {
-              if (n.parentNode === parentNode) {
-                idsToDelete.add(n.id);
-                findChildren(n.id);
-              }
-            });
-          };
-          findChildren(nodeId);
-          return nds.filter((n) => !idsToDelete.has(n.id));
-        });
-        Message.success('Item deleted');
-      },
-    });
-  }, []);
+  const handleDeleteNode = useCallback(
+    (nodeId: string) => {
+      Modal.confirm({
+        title: 'Delete Item',
+        content: 'Are you sure you want to delete this item? All children will be deleted as well.',
+        getPopupContainer: getEditorPopupContainer,
+        okButtonProps: { status: 'danger' },
+        onOk: () => {
+          setNodes((nds) => {
+            const idsToDelete = new Set<string>([nodeId]);
+            const findChildren = (parentNode: string) => {
+              nds.forEach((n) => {
+                if (n.parentNode === parentNode) {
+                  idsToDelete.add(n.id);
+                  findChildren(n.id);
+                }
+              });
+            };
+            findChildren(nodeId);
+            return nds.filter((n) => !idsToDelete.has(n.id));
+          });
+          Message.success('Item deleted');
+        },
+      });
+    },
+    [getEditorPopupContainer]
+  );
 
   const handleRenameNode = useCallback(
     (nodeId: string) => {
@@ -414,6 +425,7 @@ const EditorContent = () => {
 
       Modal.confirm({
         title: 'Rename Item',
+        getPopupContainer: getEditorPopupContainer,
         content: (
           <div style={{ marginTop: 10 }}>
             <p style={{ marginBottom: 8 }}>New Name:</p>
@@ -441,7 +453,7 @@ const EditorContent = () => {
         },
       });
     },
-    [nodes]
+    [getEditorPopupContainer, nodes]
   );
 
   // Auto Layout
@@ -455,18 +467,20 @@ const EditorContent = () => {
     Modal.confirm({
       title: 'Clear All',
       content: 'Are you sure you want to clear all bookmarks?',
+      getPopupContainer: getEditorPopupContainer,
       okButtonProps: { status: 'danger' },
       onOk: () => {
         setNodes([]);
         Message.success('Cleared all bookmarks');
       },
     });
-  }, []);
+  }, [getEditorPopupContainer]);
 
   const handleClearStorage = useCallback(async () => {
     Modal.confirm({
       title: 'Clear Storage',
       content: 'This will delete the saved bookmark graph data from this browser. Continue?',
+      getPopupContainer: getEditorPopupContainer,
       okButtonProps: { status: 'danger' },
       onOk: async () => {
         try {
@@ -492,7 +506,7 @@ const EditorContent = () => {
         }
       },
     });
-  }, []);
+  }, [getEditorPopupContainer]);
 
   // Extract All Folders for Filter Bar (flattened list)
   const allFolderIds = React.useMemo(() => {
@@ -541,7 +555,10 @@ const EditorContent = () => {
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full relative bg-gray-50 dark:bg-gray-900 overflow-hidden">
+    <div
+      ref={containerRef}
+      className="w-full h-full relative bg-gray-50 dark:bg-gray-900 overflow-hidden"
+    >
       <input
         type="file"
         accept=".html"
@@ -600,7 +617,7 @@ const EditorContent = () => {
         visible={showGuideModal}
         onClose={handleCloseGuide}
         onImportClick={handleImportClick}
-        getPopupContainer={() => containerRef.current || document.body}
+        getPopupContainer={getEditorPopupContainer}
       />
     </div>
   );

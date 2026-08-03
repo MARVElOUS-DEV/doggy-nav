@@ -4,19 +4,58 @@ import CategorySelect from '@/pages/nav/Category/CategorySelect';
 import NavListForm from '@/pages/nav/List/NavListForm';
 import TagSelect from '@/pages/nav/Tag/TagSelect';
 import NavTagList from '@/pages/nav/components/NavTagList';
-import { API_NAV, API_NAV_LIST } from '@/services/api';
+import { API_CATEGORY, API_NAV, API_NAV_LIST } from '@/services/api';
 import request from '@/utils/request';
 import { formatDateTime } from '@/utils/time';
-import { FileTextOutlined } from '@ant-design/icons';
+import { DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
 import { ProColumns } from '@ant-design/pro-table';
-import { history } from '@umijs/max';
-import { Button, message, Modal, Popconfirm, Tooltip } from 'antd';
+import { history, useAccess } from '@umijs/max';
+import {
+  Alert,
+  Button,
+  message,
+  Modal,
+  Popconfirm,
+  Space,
+  Tooltip,
+} from 'antd';
 import { useRef, useState } from 'react';
 
 export default function NavListPage() {
+  const access = useAccess();
   const tableRef = useRef<any>();
   const formProps = useTableComPopup();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [cleanupCategoryId, setCleanupCategoryId] = useState<string>();
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+
+  const handleCategoryCleanup = async () => {
+    if (!cleanupCategoryId) return;
+
+    setCleanupLoading(true);
+    try {
+      const response = await request({
+        url: API_CATEGORY,
+        method: 'DELETE',
+        data: { id: cleanupCategoryId, cascade: true },
+      });
+      const deletedNavs = Number(response?.data?.deletedNavs || 0);
+      const deletedCategories = Number(response?.data?.deletedCategories || 0);
+
+      message.success(
+        `清理完成：删除 ${deletedNavs} 个导航项目和 ${deletedCategories} 个分类`,
+      );
+      setCleanupOpen(false);
+      setCleanupCategoryId(undefined);
+      setSelectedRowKeys([]);
+      tableRef.current?.reload();
+    } catch {
+      message.error('分类清理失败，请重试');
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
 
   const handleBatchDelete = async () => {
     if (selectedRowKeys.length === 0) {
@@ -140,6 +179,16 @@ export default function NavListPage() {
             >
               批量删除 ({selectedRowKeys.length})
             </Button>,
+            access.isSysadmin ? (
+              <Button
+                key="category-cleanup"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => setCleanupOpen(true)}
+              >
+                按分类清理
+              </Button>
+            ) : null,
           ],
         }}
         renderOptions={(_, record, __, action) =>
@@ -186,6 +235,37 @@ export default function NavListPage() {
         }
       />
       <NavListForm {...formProps} tableRef={tableRef.current} />
+      <Modal
+        title="清理分类及全部内容"
+        width={720}
+        open={cleanupOpen}
+        okText="确认全部删除"
+        okType="danger"
+        cancelText="取消"
+        confirmLoading={cleanupLoading}
+        okButtonProps={{ disabled: !cleanupCategoryId }}
+        onOk={handleCategoryCleanup}
+        onCancel={() => {
+          if (!cleanupLoading) {
+            setCleanupOpen(false);
+            setCleanupCategoryId(undefined);
+          }
+        }}
+      >
+        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <Alert
+            type="warning"
+            showIcon
+            message="将删除所选分类、全部子分类，以及其中的所有导航项目。此操作不可恢复。"
+          />
+          <CategorySelect
+            value={cleanupCategoryId}
+            onChange={setCleanupCategoryId}
+            placeholder="选择要彻底清理的导入根分类"
+            style={{ width: '100%' }}
+          />
+        </Space>
+      </Modal>
     </>
   );
 }

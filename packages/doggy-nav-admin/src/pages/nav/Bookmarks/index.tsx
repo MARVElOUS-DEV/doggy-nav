@@ -158,12 +158,12 @@ export default function BookmarksImportPage() {
           <Space direction="vertical" size={0}>
             <Typography.Text strong>{record.title}</Typography.Text>
             <Typography.Text type="secondary">
-              {record.ancestorFolderKeys.length
-                ? record.ancestorFolderKeys
-                    .map((key) => importIndex.nodeMap.get(key)?.title)
-                    .filter(Boolean)
-                    .join(' / ')
-                : rootCategoryName.trim() || '我的书签导入'}
+              {[
+                rootCategoryName.trim() || '我的书签导入',
+                ...record.ancestorFolderKeys
+                  .map((key) => importIndex.nodeMap.get(key)?.title)
+                  .filter(Boolean),
+              ].join(' / ')}
             </Typography.Text>
           </Space>
         ),
@@ -427,13 +427,21 @@ export default function BookmarksImportPage() {
 
             <Row gutter={16}>
               <Col xs={24} md={14}>
-                <Input
-                  value={rootCategoryName}
-                  onChange={(event) => setRootCategoryName(event.target.value)}
-                  placeholder="导入后的根分类名称"
-                  disabled={saving}
-                  addonBefore="根分类"
-                />
+                <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                  <Input
+                    value={rootCategoryName}
+                    onChange={(event) =>
+                      setRootCategoryName(event.target.value)
+                    }
+                    placeholder="导入分组名称"
+                    disabled={saving}
+                    addonBefore="导入分组"
+                  />
+                  <Typography.Text type="secondary">
+                    将作为本次导入的唯一根分类；HTML 中浏览器生成的
+                    Bookmarks/Bookmarks Bar 包装层会自动合并。
+                  </Typography.Text>
+                </Space>
               </Col>
               <Col xs={24} md={10}>
                 <Space>
@@ -533,7 +541,7 @@ export default function BookmarksImportPage() {
                       <Descriptions.Item label="名称">
                         {activeNode.title}
                       </Descriptions.Item>
-                      <Descriptions.Item label="路径">
+                      <Descriptions.Item label="源文件路径">
                         {activeNode.pathLabels.join(' / ')}
                       </Descriptions.Item>
                       {activeNode.type === 'bookmark' ? (
