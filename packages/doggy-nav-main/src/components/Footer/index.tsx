@@ -1,16 +1,24 @@
 import { Tooltip } from '@arco-design/web-react';
+import { useTranslation } from 'react-i18next';
 import { useApiEffect } from '@/hooks/useApi';
 import api from '@/utils/api';
 import type { SystemVersionInfo } from '@/types';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
+import InkBanner from '../InkBanner';
 
 export default function AppFooter() {
+  const { t } = useTranslation();
   const { data: systemVersion } = useApiEffect<SystemVersionInfo>(api.getSystemVersion, []);
   const { resolvedSiteSettings } = useSiteSettings();
 
   return (
-    <footer className="mt-4 text-xs text-theme-muted-foreground">
-      <div className="glass-card border border-theme-border rounded-b-xl px-3 py-2 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+    <footer className="glass-card mt-4 overflow-hidden rounded-xl border border-theme-border text-xs text-theme-muted-foreground shadow-sm">
+      <InkBanner
+        lines={[t('ink_banner_line_one'), t('ink_banner_line_two')]}
+        brand={resolvedSiteSettings.siteTitle}
+      />
+
+      <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 font-medium text-theme-primary">
             <span className="inline-block w-2 h-2 rounded-full bg-success" />

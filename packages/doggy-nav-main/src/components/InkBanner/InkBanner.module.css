@@ -1,0 +1,303 @@
+@keyframes inkBannerInkIn {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes inkBannerLineDraw {
+  0% {
+    stroke-dashoffset: 900;
+    opacity: 0;
+  }
+  20% {
+    stroke-dashoffset: 0;
+    opacity: 0.44;
+  }
+  80% {
+    stroke-dashoffset: 0;
+    opacity: 0.34;
+  }
+  100% {
+    stroke-dashoffset: 900;
+    opacity: 0;
+  }
+}
+
+@keyframes inkBannerLineDrawLate {
+  0% {
+    stroke-dashoffset: 900;
+    opacity: 0;
+  }
+  20% {
+    stroke-dashoffset: 0;
+    opacity: 0.34;
+  }
+  80% {
+    stroke-dashoffset: 0;
+    opacity: 0.28;
+  }
+  100% {
+    stroke-dashoffset: 900;
+    opacity: 0;
+  }
+}
+
+@keyframes inkBannerSweep {
+  0% {
+    transform: translateX(-140px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.15;
+  }
+  75% {
+    opacity: 0.08;
+  }
+  100% {
+    transform: translateX(1220px);
+    opacity: 0;
+  }
+}
+
+@keyframes inkBannerPaperTurn {
+  0%,
+  23% {
+    opacity: 0;
+    transform: translateX(-74px) scaleX(0.72);
+  }
+  28% {
+    opacity: 0.4;
+    transform: translateX(0) scaleX(1);
+  }
+  36% {
+    opacity: 0.18;
+    transform: translateX(68px) scaleX(0.84);
+  }
+  42%,
+  73% {
+    opacity: 0;
+    transform: translateX(118px) scaleX(0.72);
+  }
+  78% {
+    opacity: 0.4;
+    transform: translateX(0) scaleX(1);
+  }
+  86% {
+    opacity: 0.18;
+    transform: translateX(68px) scaleX(0.84);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateX(118px) scaleX(0.72);
+  }
+}
+
+@keyframes inkBannerFirstText {
+  0% {
+    visibility: visible;
+    opacity: 0;
+    filter: blur(2.4px);
+    transform: translateY(1px);
+  }
+  10%,
+  40% {
+    visibility: visible;
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+  48% {
+    visibility: visible;
+    opacity: 0;
+    filter: blur(2.4px);
+    transform: translateY(-1px);
+  }
+  49%,
+  100% {
+    visibility: hidden;
+    opacity: 0;
+    filter: blur(2.4px);
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes inkBannerSecondText {
+  0%,
+  47% {
+    visibility: hidden;
+    opacity: 0;
+    filter: blur(2.4px);
+    transform: translateY(1px);
+  }
+  48% {
+    visibility: visible;
+    opacity: 0;
+    filter: blur(2.4px);
+    transform: translateY(1px);
+  }
+  56%,
+  84% {
+    visibility: visible;
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+  100% {
+    visibility: visible;
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(1px);
+  }
+}
+
+.root {
+  --ink-banner-paper: color-mix(in srgb, var(--color-primary) 5%, var(--color-card));
+  --ink-banner-paper-deep: color-mix(in srgb, var(--color-primary) 10%, var(--color-card));
+  --ink-banner-ink: var(--color-foreground);
+  --ink-banner-accent: var(--color-primary);
+  --ink-banner-muted: var(--color-muted-foreground);
+  --ink-banner-border: var(--color-border);
+  --ink-banner-sheen: var(--color-foreground);
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.soft {
+  opacity: 0.7;
+}
+
+.sweep {
+  animation: inkBannerSweep 9.5s ease-in-out infinite;
+}
+
+.turn {
+  animation: inkBannerPaperTurn 8.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.rule {
+  fill: none;
+  stroke: var(--ink-banner-accent);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  stroke-dasharray: 900;
+  stroke-dashoffset: 900;
+  animation: inkBannerLineDraw 8.8s linear infinite both;
+}
+
+.rule2 {
+  stroke: var(--ink-banner-muted);
+  stroke-width: 0.55;
+  animation-name: inkBannerLineDrawLate;
+  opacity: 0.5;
+}
+
+.line {
+  font-size: 12.5px;
+  letter-spacing: 0.9px;
+  fill: var(--ink-banner-ink);
+  paint-order: stroke fill;
+  stroke: var(--ink-banner-paper);
+  stroke-width: 0.55;
+  transform-box: fill-box;
+  transform-origin: center;
+  font-family: serif;
+}
+
+.lineOne {
+  animation: inkBannerFirstText 8.8s ease-in-out infinite;
+}
+
+.lineTwo {
+  visibility: hidden;
+  opacity: 0;
+  animation: inkBannerSecondText 8.8s ease-in-out infinite;
+}
+
+.brand {
+  font-family: sans-serif;
+  font-size: 6px;
+  letter-spacing: 1.1px;
+  fill: var(--ink-banner-muted);
+  animation: inkBannerInkIn 1.1s ease 0.55s both;
+}
+
+.brandRule {
+  fill: none;
+  stroke: var(--ink-banner-muted);
+  stroke-width: 0.55;
+  stroke-linecap: round;
+  opacity: 0.75;
+  animation: inkBannerInkIn 1.1s ease 0.55s both;
+}
+
+.frame {
+  fill: none;
+  stroke: var(--ink-banner-border);
+  stroke-width: 0.75;
+}
+
+.frameAccent {
+  fill: none;
+  stroke: var(--ink-banner-accent);
+  stroke-width: 0.85;
+  stroke-linecap: round;
+  stroke-dasharray: 36 980;
+  opacity: 0.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep,
+  .turn,
+  .rule,
+  .lineOne,
+  .lineTwo,
+  .brand,
+  .brandRule {
+    animation: none !important;
+  }
+
+  .sweep,
+  .turn {
+    opacity: 0;
+  }
+
+  .rule {
+    stroke-dashoffset: 0;
+    opacity: 0.34;
+  }
+
+  .rule2 {
+    opacity: 0.5;
+  }
+
+  .lineOne {
+    visibility: visible;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .lineTwo {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .brand,
+  .brandRule {
+    opacity: 0.75;
+    transform: none;
+  }
+
+  .brand {
+    opacity: 1;
+  }
+}
