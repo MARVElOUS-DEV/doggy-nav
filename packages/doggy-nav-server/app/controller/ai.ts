@@ -13,6 +13,10 @@ import {
   ChatCompletionRequest,
   RECOMMENDATION_AUTOFILL_PROMPT_CODE,
   SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE,
+  BOOKMARK_ORGANIZE_PROMPT_CODE,
+  DEFAULT_BOOKMARK_ORGANIZE_PROMPT,
+  normalizeBookmarkOrganizeRequest,
+  organizeBookmarksWithAi,
 } from 'doggy-nav-core';
 import { Controller } from 'egg';
 import { TOKENS } from '../core/ioc';
@@ -22,10 +26,12 @@ export default class AiController extends Controller {
   @Inject(TOKENS.AiProviderService)
   private aiProviderService!: AiProviderService;
 
-  private runAiTask<T>(taskName: string, task: (ai: AiService) => Promise<T>) {
+  private runAiTask<T = any>(taskName: string, task: (ai: AiService) => Promise<T>): Promise<T> {
     return this.aiProviderService.runWithFailover(
       (config) => task(new AiService(config)),
-      (failures) => this.ctx.service.email.sendAiProviderFailureNotification(taskName, failures)
+      async (failures) => {
+        await this.ctx.service.email.sendAiProviderFailureNotification(taskName, failures);
+      }
     );
   }
 
@@ -123,7 +129,7 @@ export default class AiController extends Controller {
     }
 
     try {
-      const res = await this.runAiTask('recommendation-autofill', (ai) =>
+      const res: any = await this.runAiTask('recommendation-autofill', (ai) =>
         ai.chatCompletions({
           messages: buildRecommendationAutofillMessages(
             {
@@ -197,7 +203,7 @@ export default class AiController extends Controller {
     }
 
     try {
-      const res = await this.runAiTask('similar-nav', (ai) =>
+      const res: any = await this.runAiTask('similar-nav', (ai) =>
         ai.chatCompletions(
           {
             messages: buildSimilarNavRecommendationMessages(source, prompt),
@@ -239,6 +245,75 @@ export default class AiController extends Controller {
         return;
       }
       throw e;
+    }
+  }
+
+  async bookmarkOrganize() {
+    const input = normalizeBookmarkOrganizeRequest(this.ctx.request.body);
+    if (!input) {
+      this.ctx.status = 400;
+      this.ctx.body = {
+        error: { code: 'INVALID_REQUEST', message: 'Invalid bookmark organization request' },
+      };
+      return;
+    }
+
+    let prompt = DEFAULT_BOOKMARK_ORGANIZE_PROMPT;
+    try {
+      const doc: any = await this.ctx.model.Prompt.findOne({
+        code: BOOKMARK_ORGANIZE_PROMPT_CODE,
+        active: true,
+      }).lean();
+      if (doc?.content) prompt = doc.content;
+    } catch (_error) {
+      this.logger.warn('Failed to load bookmark organization prompt', _error);
+    }
+
+    this.logger.info('[ai:bookmark-organize] requested', {
+      bookmarkCount: input.bookmarks.length,
+    });
+    try {
+      const debug =
+        process.env.AI_BOOKMARK_ORGANIZE_DEBUG === 'true'
+          ? (stage: string, payload: unknown) =>
+              this.logger.info(
+                '[ai:bookmark-organize:debug] %s',
+                JSON.stringify({ stage, payload })
+              )
+          : undefined;
+      const result = await this.runAiTask('bookmark-organize', (ai) =>
+        organizeBookmarksWithAi(ai, input, prompt, debug)
+      );
+      if (!result) {
+        this.logger.warn('[ai:bookmark-organize] failed', { reason: 'unsafe-response' });
+        this.ctx.status = 422;
+        this.ctx.body = {
+          error: { code: 'UNSAFE_PROPOSAL', message: 'AI returned a malformed or unsafe response' },
+        };
+        return;
+      }
+      this.ctx.body = result;
+    } catch (error) {
+      this.logger.warn('[ai:bookmark-organize] failed', { reason: 'provider' });
+      if (error instanceof AiProviderError) {
+        const timedOut = /timed out|timeout|abort/i.test(error.message);
+        this.ctx.status = timedOut ? 504 : 502;
+        this.ctx.body = {
+          error: {
+            code: timedOut ? 'TIMEOUT' : 'PROVIDER_ERROR',
+            message: error.message,
+          },
+        };
+        return;
+      }
+      if ((error as any)?.status === 503) {
+        this.ctx.status = 503;
+        this.ctx.body = {
+          error: { code: 'PROVIDER_UNAVAILABLE', message: (error as Error).message },
+        };
+        return;
+      }
+      throw error;
     }
   }
 }

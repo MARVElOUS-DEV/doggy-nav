@@ -30,6 +30,7 @@ export type Env = {
   JWT_SECRET?: string;
   IMAGE_SERVICE_URL?: string;
   NODE_ENV?: string;
+  AI_BOOKMARK_ORGANIZE_DEBUG?: string;
   ALLOWED_ORIGINS?: string;
   RATE_LIMIT_ENABLED?: string;
   RATE_LIMIT_WINDOW_MS?: string | number;

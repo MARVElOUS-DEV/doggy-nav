@@ -150,6 +150,7 @@ export default (app: Application) => {
   router.post('/api/ai/chat', controller.ai.chatCompletions);
   router.post('/api/ai/tasks/recommendation-autofill', controller.ai.recommendationAutofill);
   router.post('/api/ai/tasks/similar-nav', controller.ai.similarNavRecommendations);
+  router.post('/api/ai/tasks/bookmark-organize', controller.ai.bookmarkOrganize);
 
   // Email settings routes
   router.get('/api/email-settings', controller.emailSettings.get);

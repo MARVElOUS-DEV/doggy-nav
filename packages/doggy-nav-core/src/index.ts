@@ -43,6 +43,7 @@ export * from './repositories/UserRepository';
 export * from './services/UserService';
 export * from './services/AiService';
 export * from './services/AiRecommendationService';
+export * from './services/BookmarkOrganizeService';
 export * from './ioc';
 export * from './seed/engine';
 export * from './seed/defaults';

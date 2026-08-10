@@ -20,6 +20,7 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser';
+import type { BookmarkOrganizeRequest, BookmarkOrganizeResponse } from 'doggy-nav-core';
 
 export const API_NAV_RANKING = '/api/nav/ranking';
 export const API_NAV = '/api/nav';
@@ -29,6 +30,7 @@ export const API_NAV_REPTILE = '/api/nav/reptile';
 export const API_AI_CHAT = '/api/ai/chat';
 export const API_AI_RECOMMENDATION_AUTOFILL = '/api/ai/tasks/recommendation-autofill';
 export const API_AI_SIMILAR_NAV = '/api/ai/tasks/similar-nav';
+export const API_AI_BOOKMARK_ORGANIZE = '/api/ai/tasks/bookmark-organize';
 export const API_TAG_LIST = '/api/tag/list';
 export const API_NAV_RANDOM = '/api/nav/random';
 export const API_NAV_LIST = '/api/nav/list';
@@ -75,6 +77,29 @@ const api = {
       logo?: string;
     }>;
   }> => axios.post(API_AI_SIMILAR_NAV, data, { timeout: 130_000 }),
+
+  organizeBookmarksWithAi: (data: BookmarkOrganizeRequest): Promise<BookmarkOrganizeResponse> => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 360_000);
+    return fetch(API_AI_BOOKMARK_ORGANIZE, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const error = new Error(body?.error?.message || `Request failed (${response.status})`);
+          (error as any).code = response.status;
+          (error as any).retryAfter = response.headers.get('Retry-After');
+          throw error;
+        }
+        return body as BookmarkOrganizeResponse;
+      })
+      .finally(() => window.clearTimeout(timer));
+  },
 
   // Get category list
   getCategoryList: (): Promise<Category[]> => axios.get('/api/category/list'),

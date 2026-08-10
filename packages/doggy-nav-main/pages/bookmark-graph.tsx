@@ -1,13 +1,14 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
+import type { NextPageWithLayout } from './_app';
 
 const BookmarkGraphEditor = dynamic(
   () => import('@/apps/BookmarkGraph/BookmarkGraphEditor'),
   { ssr: false }
 );
 
-const BookmarkGraphPage = () => {
+const BookmarkGraphPage: NextPageWithLayout = () => {
   return (
     <>
       <Head>
@@ -20,5 +21,7 @@ const BookmarkGraphPage = () => {
     </>
   );
 };
+
+BookmarkGraphPage.getLayout = (page) => page;
 
 export default BookmarkGraphPage;

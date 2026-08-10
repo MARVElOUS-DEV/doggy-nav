@@ -3,8 +3,8 @@ import {
   buildSimilarNavRecommendationMessages,
   normalizeSimilarNavRecommendationInput,
   parseSimilarNavRecommendations,
-} from '../../dist/services/AiRecommendationService.js';
-import { AiService } from '../../dist/services/AiService.js';
+} from '../dist/services/AiRecommendationService.js';
+import { AiService } from '../dist/services/AiService.js';
 
 const parsed = parseSimilarNavRecommendations(
   '{"headline":"Better tools","summary":"Picked from the live web.","recommendations":[{"name":"Better","url":"https://better.example","description":"A focused tool","reason":"Faster workflows","bestFor":"Teams","match":120},{"name":"Duplicate","url":"https://www.better.example/other","description":"Duplicate host","reason":"No","bestFor":"Nobody","match":90}]}',

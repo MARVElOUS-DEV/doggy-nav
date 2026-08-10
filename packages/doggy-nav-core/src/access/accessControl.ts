@@ -589,6 +589,12 @@ export const routePermissions: RoutePermission[] = [
     require: { level: 'authenticated' },
     description: 'AI similar navigation recommendations',
   },
+  {
+    method: 'POST',
+    path: '/api/ai/tasks/bookmark-organize',
+    require: { level: 'authenticated' },
+    description: 'AI bookmark organization proposal',
+  },
 
   // Affiche (announcement) routes
   {

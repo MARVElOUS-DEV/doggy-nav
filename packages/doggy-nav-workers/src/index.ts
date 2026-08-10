@@ -40,7 +40,10 @@ app.use('/api/*', async (c, next) => {
   return cors({ origin, credentials: true })(c, next);
 });
 
-// Basic rate limit
+// Populate optional auth before rate limiting so authenticated quotas are keyed per user.
+app.use('/api/*', publicRoute());
+
+// Basic and per-route rate limits
 app.use('/api/*', rateLimit());
 
 // Health check endpoint
@@ -53,9 +56,6 @@ app.use('/api/*', sourceGuard());
 
 // Enforce client secret when enabled (server parity)
 app.use('/api/*', clientSecretGuard());
-
-// Populate optional auth context for downstream access checks (non-blocking)
-app.use('/api/*', publicRoute());
 
 // Centralized access control matrix enforcement (server parity)
 app.use('/api/*', accessControl());

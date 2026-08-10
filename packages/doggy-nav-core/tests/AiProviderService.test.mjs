@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { AiProviderError, AiProviderService } from '../../dist/index.js';
+import { AiProviderError, AiProviderService } from '../dist/index.js';
 
 const configs = ['newest', 'active', 'oldest'].map((name, index) => ({
   id: String(index + 1),

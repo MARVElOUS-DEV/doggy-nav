@@ -12,7 +12,8 @@
     "build": "tsc -p tsconfig.json",
     "prepare": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json -w",
-    "test": "pnpm build && node src/services/AiRecommendationService.test.mjs && node src/services/AiProviderService.test.mjs && node src/services/ToolOutputPublicationService.test.mjs"
+    "pretest": "pnpm build",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "license": "MIT",
   "devDependencies": {

@@ -19,6 +19,7 @@ import type { SiteSettings } from '@/types';
 import { readCachedSiteSettings, writeCachedSiteSettings } from '@/utils/siteSettingsCache';
 
 import './global.css';
+import '@xyflow/react/dist/style.css';
 
 export type NextPageWithLayout<P = Record<string, any>, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -84,7 +85,7 @@ export default function MyApp({
           <SiteSettingsProvider value={pageProps.initialSiteSettings}>
             <WindowZProvider>
               <GlobalAppWindowProvider>
-                {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+                { }
                 {/* @ts-ignore */}
                 {getLayout(<Component {...pageProps} />)}
               </GlobalAppWindowProvider>

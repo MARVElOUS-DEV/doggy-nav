@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { ToolOutputPublicationService } from '../../dist/index.js';
+import { ToolOutputPublicationService } from '../dist/index.js';
 
 const records = [];
 const repo = {

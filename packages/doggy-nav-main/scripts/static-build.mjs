@@ -42,12 +42,19 @@ async function main() {
     const patched = patchNextConfig(original);
     await fs.writeFile(configPath, patched, 'utf8');
 
-    const nextBin = path.join(pkgDir, 'node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next');
-    await run(nextBin, ['build'], { cwd: pkgDir });
+    const nextBin = path.join(
+      pkgDir,
+      'node_modules',
+      '.bin',
+      process.platform === 'win32' ? 'next.cmd' : 'next'
+    );
+    await run(nextBin, ['build', '--webpack'], { cwd: pkgDir });
   } finally {
     // Always restore original config
     await fs.writeFile(configPath, original, 'utf8');
-    try { await fs.unlink(backupPath); } catch {}
+    try {
+      await fs.unlink(backupPath);
+    } catch {}
   }
 }
 

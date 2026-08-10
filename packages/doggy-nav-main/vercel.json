@@ -2,7 +2,7 @@
   "version": 2,
   "name": "doggy-nav-main",
   "framework": "nextjs",
-  "buildCommand": "next build",
+  "buildCommand": "pnpm run build",
   "installCommand": "pnpm install",
   "env": {
     "ANALYZE": "false"

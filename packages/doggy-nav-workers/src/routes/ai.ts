@@ -12,6 +12,10 @@ import {
   prependSystemPrompt,
   RECOMMENDATION_AUTOFILL_PROMPT_CODE,
   SIMILAR_NAV_RECOMMENDATIONS_PROMPT_CODE,
+  BOOKMARK_ORGANIZE_PROMPT_CODE,
+  DEFAULT_BOOKMARK_ORGANIZE_PROMPT,
+  normalizeBookmarkOrganizeRequest,
+  organizeBookmarksWithAi,
 } from 'doggy-nav-core';
 import type {
   AiProviderFailure,
@@ -221,6 +225,64 @@ aiRoutes.post('/api/ai/tasks/similar-nav', async (c) => {
     return c.json(
       { error: { message: e?.message || 'similar recommendations failed' } },
       e?.status === 503 ? 503 : 500
+    );
+  }
+});
+
+aiRoutes.post('/api/ai/tasks/bookmark-organize', async (c) => {
+  try {
+    const input = normalizeBookmarkOrganizeRequest(await c.req.json());
+    if (!input) {
+      return c.json(
+        { error: { code: 'INVALID_REQUEST', message: 'Invalid bookmark organization request' } },
+        400
+      );
+    }
+    let prompt = DEFAULT_BOOKMARK_ORGANIZE_PROMPT;
+    try {
+      const svc = getDI(c).resolve(TOKENS.PromptService) as PromptService;
+      const active = await svc.getActiveByCode(BOOKMARK_ORGANIZE_PROMPT_CODE);
+      if (active?.content) prompt = active.content;
+    } catch {}
+
+    console.info('[ai:bookmark-organize] requested', {
+      bookmarkCount: input.bookmarks.length,
+    });
+    const debug =
+      c.env.AI_BOOKMARK_ORGANIZE_DEBUG === 'true'
+        ? (stage: string, payload: unknown) =>
+            console.info('[ai:bookmark-organize:debug]', JSON.stringify({ stage, payload }))
+        : undefined;
+    const result = await runAiTask(c, 'bookmark-organize', (ai) =>
+      organizeBookmarksWithAi(ai, input, prompt, debug)
+    );
+    if (!result) {
+      console.warn('[ai:bookmark-organize] failed', { reason: 'unsafe-response' });
+      return c.json(
+        {
+          error: { code: 'UNSAFE_PROPOSAL', message: 'AI returned a malformed or unsafe response' },
+        },
+        422
+      );
+    }
+    return c.json(result);
+  } catch (error: any) {
+    console.warn('[ai:bookmark-organize] failed', { reason: 'provider' });
+    if (error instanceof AiProviderError) {
+      const timedOut = /timed out|timeout|abort/i.test(error.message);
+      return c.json(
+        { error: { code: timedOut ? 'TIMEOUT' : 'PROVIDER_ERROR', message: error.message } },
+        timedOut ? 504 : 502
+      );
+    }
+    return c.json(
+      {
+        error: {
+          code: error?.status === 503 ? 'PROVIDER_UNAVAILABLE' : 'INTERNAL_ERROR',
+          message: error?.message || 'Bookmark organization failed',
+        },
+      },
+      error?.status === 503 ? 503 : 500
     );
   }
 });

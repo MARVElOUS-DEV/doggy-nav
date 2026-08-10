@@ -6,6 +6,7 @@ export interface NavCascaderPickerProps {
   trigger?: React.ReactNode;
   title?: string;
   selectedTags?: string[];
+  getPopupContainer?: () => HTMLElement;
 }
 
 export interface CategoryColumnProps {

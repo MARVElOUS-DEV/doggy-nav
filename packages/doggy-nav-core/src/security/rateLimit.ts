@@ -153,6 +153,10 @@ export const baseRateLimitExemptPaths: string[] = [
 ];
 
 export const defaultRateLimitRoutes: Record<string, RateLimitEntry> = {
+  '/api/ai/tasks/bookmark-organize': {
+    limit: 5,
+    interval: 300000,
+  },
   // Authentication endpoints - stricter limits
   '/api/auth/login': {
     limit: 10,
