@@ -53,6 +53,7 @@ export default function AppWindow({
   const prevRectRef = useRef<WindowRect | null>(null);
   const lastTouchTimeRef = useRef<number>(0);
   const [maximized, setMaximized] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
 
   const handleMaximize = () => {
     if (!expandable) return;
@@ -88,6 +89,7 @@ export default function AppWindow({
   }, [rect.x, rect.y, rect.width, rect.height]);
 
   const onResizeStop: RndResizeCallback = (_e, _dir, ref, _delta, position) => {
+    setIsInteracting(false);
     const next: WindowRect = {
       x: position.x,
       y: position.y,
@@ -99,6 +101,7 @@ export default function AppWindow({
   };
 
   const onDragStop: RndDragCallback = (_e, d) => {
+    setIsInteracting(false);
     const next: WindowRect = { ...localRect, x: d.x, y: d.y };
     setLocalRect(next);
     onRectChange?.(next);
@@ -133,7 +136,9 @@ export default function AppWindow({
             bounds={bounds ?? 'window'}
             size={{ width: localRect.width, height: localRect.height }}
             position={{ x: localRect.x, y: localRect.y }}
+            onResizeStart={() => setIsInteracting(true)}
             onResizeStop={onResizeStop}
+            onDragStart={() => setIsInteracting(true)}
             onDragStop={onDragStop}
             dragHandleClassName="app-window-title"
             cancel=".no-drag, button"
@@ -147,10 +152,14 @@ export default function AppWindow({
               bottomLeft: true,
               topLeft: true,
             }}
-            className="pointer-events-auto shadow-2xl border rounded-2xl backdrop-blur-xl glass-dark"
+            className={`pointer-events-auto border rounded-2xl ${
+              isInteracting ? 'bg-theme-card shadow-none' : 'shadow-2xl backdrop-blur-xl glass-dark'
+            }`}
             style={{
               borderColor: 'var(--color-border)',
               color: 'var(--color-card-foreground)',
+              willChange: isInteracting ? 'transform, width, height' : undefined,
+              backfaceVisibility: 'hidden',
             }}
           >
             {/* Title bar */}
@@ -163,7 +172,7 @@ export default function AppWindow({
               }}
               onPointerDown={onActivate}
             >
-              <div className="no-drag">
+              <div className="no-drag" onPointerDown={(event) => event.stopPropagation()}>
                 <TrafficLights
                   onClose={onClose}
                   onMinimize={onMinimize}

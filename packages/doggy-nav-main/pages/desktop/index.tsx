@@ -165,6 +165,12 @@ function DesktopInner() {
   const wallUrl = state.wallpaper;
   const lpOpen = state.lpOpen;
   const sysOpen = state.sysOpen;
+  const frontmostWindowId = state.order.reduce<string | null>((frontmostId, id) => {
+    const candidate = state.windows[id];
+    if (!candidate?.open || candidate.minimized) return frontmostId;
+    if (!frontmostId) return id;
+    return (candidate.z ?? 0) >= (state.windows[frontmostId]?.z ?? 0) ? id : frontmostId;
+  }, null);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
@@ -223,7 +229,8 @@ function DesktopInner() {
           const onRectChange = (r: WindowRect) => actions.setWindowRect(id as AppId, r);
           const onClose = () => actions.closeWindow(id as AppId);
           const onMinimize = () => actions.minimizeWindow(id as AppId);
-          const onActivate = () => actions.activateWindow(id as AppId);
+          const onActivate =
+            frontmostWindowId === id ? undefined : () => actions.activateWindow(id as AppId);
           const ctx: DesktopCtx = {
             router,
             openLaunchpad: () => actions.openLaunchpad(),

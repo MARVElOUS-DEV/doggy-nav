@@ -96,6 +96,7 @@ export const appsConfig: Record<AppId, DesktopAppConfig> = {
     icon: '/app-icons/tools.png',
     iconClass: 'p-[3px]',
     shouldOpenWindow: true,
+    keepAliveOnMinimize: true,
     defaultRect: { x: 100, y: 80, width: 1024, height: 768 },
     render: () => <BookmarkGraphApp />,
   },

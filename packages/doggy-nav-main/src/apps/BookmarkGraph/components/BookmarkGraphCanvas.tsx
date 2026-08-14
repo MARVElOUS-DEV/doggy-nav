@@ -479,6 +479,7 @@ function FlowContent({
       selectionMode={SelectionMode.Partial}
       multiSelectionKeyCode={['Meta', 'Control']}
       deleteKeyCode={['Backspace', 'Delete']}
+      onlyRenderVisibleElements
       proOptions={{ hideAttribution: true }}
     >
       <Background color="var(--color-border)" gap={22} size={1} />
