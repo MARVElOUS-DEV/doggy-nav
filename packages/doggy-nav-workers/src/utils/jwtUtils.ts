@@ -5,7 +5,9 @@ interface JWTPayload {
   email: string;
   username: string;
   roles: string[];
+  roleIds: string[];
   groups: string[];
+  groupIds: string[];
   permissions: string[];
   iat?: number;
   exp?: number;
@@ -80,9 +82,11 @@ export class JWTUtils {
         userId: payload.userId as string,
         email: payload.email as string,
         username: payload.username as string,
-        roles: payload.roles as string[],
-        groups: payload.groups as string[],
-        permissions: payload.permissions as string[],
+        roles: Array.isArray(payload.roles) ? (payload.roles as string[]) : [],
+        roleIds: Array.isArray(payload.roleIds) ? (payload.roleIds as string[]) : [],
+        groups: Array.isArray(payload.groups) ? (payload.groups as string[]) : [],
+        groupIds: Array.isArray(payload.groupIds) ? (payload.groupIds as string[]) : [],
+        permissions: Array.isArray(payload.permissions) ? (payload.permissions as string[]) : [],
         iat: payload.iat as number,
         exp: payload.exp as number,
       };
@@ -154,7 +158,9 @@ export class JWTUtils {
     email: string;
     username: string;
     roles: string[];
+    roleIds: string[];
     groups: string[];
+    groupIds: string[];
     permissions: string[];
   }): Omit<JWTPayload, 'iat' | 'exp'> {
     return {
@@ -162,7 +168,9 @@ export class JWTUtils {
       email: user.email,
       username: user.username,
       roles: user.roles,
+      roleIds: user.roleIds,
       groups: user.groups,
+      groupIds: user.groupIds,
       permissions: user.permissions,
     };
   }

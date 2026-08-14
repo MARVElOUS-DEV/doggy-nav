@@ -176,7 +176,9 @@ passkeyRoutes.post('/auth/passkey', async (c) => {
       email: access.user.email,
       avatar: access.user.avatar,
       roles: access.roles,
+      roleIds: access.roleIds,
       groups: access.groups,
+      groupIds: access.groupIds,
       permissions: access.permissions,
     };
     const tokens = await new JWTUtils(c.env.JWT_SECRET).generateTokenPair(

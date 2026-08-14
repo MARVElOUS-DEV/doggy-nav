@@ -99,13 +99,17 @@ authRoutes.post('/register', async (c) => {
 
     // Generate JWT tokens
     const jwtUtils = new JWTUtils(c.env.JWT_SECRET!);
+    const access = await getUserAccessContext(c.env.DB, userRepository, newUser.id);
+    if (!access) return c.json(responses.serverError('Failed to load registered user'), 500);
     const userPayload = JWTUtils.createPayload({
       id: newUser.id,
       email: newUser.email,
       username: newUser.username,
-      roles: await userRepository.getUserRoles(newUser.id),
-      groups: await userRepository.getUserGroups(newUser.id),
-      permissions: newUser.extraPermissions,
+      roles: access.roles,
+      roleIds: access.roleIds,
+      groups: access.groups,
+      groupIds: access.groupIds,
+      permissions: access.permissions,
     });
 
     const tokens = await jwtUtils.generateTokenPair(userPayload);
@@ -121,7 +125,9 @@ authRoutes.post('/register', async (c) => {
             email: newUser.email,
             nickName: newUser.nickName,
             roles: userPayload.roles,
+            roleIds: userPayload.roleIds,
             groups: userPayload.groups,
+            groupIds: userPayload.groupIds,
             permissions: userPayload.permissions,
           },
           tokens,
@@ -158,7 +164,9 @@ authRoutes.post('/login', async (c) => {
           email: '',
           username: payload.username,
           roles: payload.roles,
+          roleIds: payload.roleIds,
           groups: payload.groups,
+          groupIds: payload.groupIds,
           permissions: payload.permissions,
         })
       );
@@ -209,7 +217,9 @@ authRoutes.post('/refresh', async (c) => {
     if (!ctx2) return c.json(responses.err('用户不存在或已禁用'));
     const user = ctx2.user;
     const roles = ctx2.roles;
+    const roleIds = ctx2.roleIds;
     const groups = ctx2.groups;
+    const groupIds = ctx2.groupIds;
     const permissions = ctx2.permissions;
 
     const userPayload = JWTUtils.createPayload({
@@ -217,7 +227,9 @@ authRoutes.post('/refresh', async (c) => {
       email: user.email,
       username: user.username,
       roles,
+      roleIds,
       groups,
+      groupIds,
       permissions,
     });
 
@@ -288,7 +300,9 @@ authRoutes.get('/me', async (c) => {
       phone: ctxUser.user.phone,
       avatar: ctxUser.user.avatar,
       roles: ctxUser.roles,
+      roleIds: ctxUser.roleIds,
       groups: ctxUser.groups,
+      groupIds: ctxUser.groupIds,
       permissions: ctxUser.permissions,
     } as const;
 
@@ -861,7 +875,9 @@ authRoutes.get('/:provider/callback', async (c) => {
       email: user.email,
       username: user.username,
       roles: ctx?.roles || [],
+      roleIds: ctx?.roleIds || [],
       groups: ctx?.groups || [],
+      groupIds: ctx?.groupIds || [],
       permissions: ctx?.permissions || [],
     });
     const tokens = await jwtUtils.generateTokenPair(payload);

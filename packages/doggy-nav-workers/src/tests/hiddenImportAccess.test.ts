@@ -97,17 +97,17 @@ class HiddenImportMockD1Database {
         return null as T;
       },
       async all<T = any>() {
-        if (sql.includes('SELECT r.slug FROM roles r')) {
+        if (sql.includes('FROM roles r')) {
           const userId = String(params[0]);
           const slugs = db.userRoles.get(userId) || [];
           return {
             results: slugs
               .map((slug) => db.roles.get(slug))
               .filter(Boolean)
-              .map((role) => ({ slug: role.slug })),
+              .map((role) => ({ id: role.id, slug: role.slug })),
           } as T;
         }
-        if (sql.includes('SELECT g.slug FROM groups g')) {
+        if (sql.includes('FROM groups g')) {
           return { results: [] } as T;
         }
         if (sql.includes('SELECT permissions FROM roles WHERE slug IN')) {
@@ -225,7 +225,9 @@ async function makeToken(payload: {
     email: payload.email,
     username: payload.username,
     roles: payload.roles,
+    roleIds: [],
     groups: payload.groups || [],
+    groupIds: [],
     permissions: payload.permissions || [],
   });
   return tokens.accessToken;

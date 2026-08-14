@@ -3,7 +3,9 @@ import { D1UserRepository, type User } from '../adapters/d1UserRepository';
 export type UserAccessContext = {
   user: User;
   roles: string[];
+  roleIds: string[];
   groups: string[];
+  groupIds: string[];
   permissions: string[];
 };
 
@@ -29,13 +31,21 @@ async function aggregatePermissions(db: D1Database, roles: string[], extra: stri
   }
 }
 
-export async function getUserAccessContext(db: D1Database, userRepo: D1UserRepository, userId: string): Promise<UserAccessContext | null> {
+export async function getUserAccessContext(
+  db: D1Database,
+  userRepo: D1UserRepository,
+  userId: string
+): Promise<UserAccessContext | null> {
   const user = await userRepo.getById(userId);
   if (!user || !user.isActive) return null;
-  const [roles, groups] = await Promise.all([
-    userRepo.getUserRoles(user.id),
-    userRepo.getUserGroups(user.id),
+  const [roleRefs, groupRefs] = await Promise.all([
+    userRepo.getUserRoleRefs(user.id),
+    userRepo.getUserGroupRefs(user.id),
   ]);
+  const roles = roleRefs.map((role) => role.slug);
+  const roleIds = roleRefs.map((role) => role.id);
+  const groups = groupRefs.map((group) => group.slug);
+  const groupIds = groupRefs.map((group) => group.id);
   const permissions = await aggregatePermissions(db, roles, user.extraPermissions || []);
-  return { user, roles, groups, permissions };
+  return { user, roles, roleIds, groups, groupIds, permissions };
 }

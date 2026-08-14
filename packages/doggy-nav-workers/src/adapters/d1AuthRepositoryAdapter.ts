@@ -42,18 +42,32 @@ export default class D1AuthRepositoryAdapter implements AuthRepository {
     if (!u) throw new Error('User not found');
     const rolesRs = await this.db
       .prepare(
-        `SELECT r.slug FROM roles r JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?`
+        `SELECT r.id, r.slug FROM roles r JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?`
       )
       .bind(userId)
       .all<any>();
     const groupsRs = await this.db
       .prepare(
-        `SELECT g.slug FROM groups g JOIN user_groups ug ON ug.group_id = g.id WHERE ug.user_id = ?`
+        `SELECT g.id, g.slug FROM groups g JOIN user_groups ug ON ug.group_id = g.id WHERE ug.user_id = ?`
       )
       .bind(userId)
       .all<any>();
-    const roleSlugs = (rolesRs.results || []).map((r: any) => String(r.slug)).filter(Boolean);
-    const groupSlugs = (groupsRs.results || []).map((g: any) => String(g.slug)).filter(Boolean);
+    const roleSlugs = (rolesRs.results || [])
+      .map((r: any) => r.slug)
+      .filter(Boolean)
+      .map(String);
+    const roleIds = (rolesRs.results || [])
+      .map((r: any) => r.id)
+      .filter(Boolean)
+      .map(String);
+    const groupSlugs = (groupsRs.results || [])
+      .map((g: any) => g.slug)
+      .filter(Boolean)
+      .map(String);
+    const groupIds = (groupsRs.results || [])
+      .map((g: any) => g.id)
+      .filter(Boolean)
+      .map(String);
     // Aggregate permissions: from roles + user extras
     const permsFromRolesRs = await this.db
       .prepare(
@@ -85,7 +99,9 @@ export default class D1AuthRepositoryAdapter implements AuthRepository {
       email: u.email ?? undefined,
       avatar: u.avatar ?? undefined,
       roles: roleSlugs,
+      roleIds,
       groups: groupSlugs,
+      groupIds,
       permissions,
     };
   }

@@ -25,6 +25,11 @@ export interface UserListOptions {
   };
 }
 
+export interface MembershipRef {
+  id: string;
+  slug: string;
+}
+
 function rowToUser(row: any): User {
   return {
     id: String(row.id),
@@ -277,25 +282,37 @@ export class D1UserRepository {
   }
 
   async getUserRoles(userId: string): Promise<string[]> {
+    return (await this.getUserRoleRefs(userId)).map((role) => role.slug);
+  }
+
+  async getUserRoleRefs(userId: string): Promise<MembershipRef[]> {
     const stmt = this.db.prepare(`
-      SELECT r.slug FROM roles r
+      SELECT r.id, r.slug FROM roles r
       JOIN user_roles ur ON r.id = ur.role_id
       WHERE ur.user_id = ?
     `);
     const result = await stmt.bind(userId).all<any>();
     const rows = (result?.results ?? []) as any[];
-    return rows.map((row) => row.slug).filter(Boolean);
+    return rows
+      .filter((row) => row.id && row.slug)
+      .map((row) => ({ id: String(row.id), slug: String(row.slug) }));
   }
 
   async getUserGroups(userId: string): Promise<string[]> {
+    return (await this.getUserGroupRefs(userId)).map((group) => group.slug);
+  }
+
+  async getUserGroupRefs(userId: string): Promise<MembershipRef[]> {
     const stmt = this.db.prepare(`
-      SELECT g.slug FROM groups g
+      SELECT g.id, g.slug FROM groups g
       JOIN user_groups ug ON g.id = ug.group_id
       WHERE ug.user_id = ?
     `);
     const result = await stmt.bind(userId).all<any>();
     const rows = (result?.results ?? []) as any[];
-    return rows.map((row) => row.slug).filter(Boolean);
+    return rows
+      .filter((row) => row.id && row.slug)
+      .map((row) => ({ id: String(row.id), slug: String(row.slug) }));
   }
 
   async setUserRoles(userId: string, roleIds: string[]): Promise<void> {

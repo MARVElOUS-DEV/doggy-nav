@@ -16,7 +16,9 @@ categoryRoutes.get('/list', publicRoute(), async (c) => {
     const auth = user
       ? ({
           roles: Array.isArray(user.roles) ? user.roles : [],
+          roleIds: Array.isArray(user.roleIds) ? user.roleIds : [],
           groups: Array.isArray(user.groups) ? user.groups : [],
+          groupIds: Array.isArray(user.groupIds) ? user.groupIds : [],
           source: 'main' as const,
         } as any)
       : undefined;

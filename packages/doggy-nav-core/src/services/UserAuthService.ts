@@ -10,7 +10,9 @@ export interface IssueTokensFn {
     userId: string;
     username: string;
     roles: string[];
+    roleIds: string[];
     groups: string[];
+    groupIds: string[];
     permissions: string[];
   }): Promise<TokenPair>;
 }
@@ -28,7 +30,9 @@ export class UserAuthService {
       userId: authUser.id,
       username: authUser.username,
       roles: authUser.roles,
+      roleIds: authUser.roleIds,
       groups: authUser.groups,
+      groupIds: authUser.groupIds,
       permissions: authUser.permissions,
     });
     return {
@@ -40,7 +44,9 @@ export class UserAuthService {
         email: authUser.email || undefined,
         avatar: authUser.avatar || undefined,
         roles: authUser.roles,
+        roleIds: authUser.roleIds,
         groups: authUser.groups,
+        groupIds: authUser.groupIds,
         permissions: authUser.permissions,
       },
     };

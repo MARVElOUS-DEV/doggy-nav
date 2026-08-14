@@ -13,7 +13,9 @@ export function getUser(c: Context) {
     email: string;
     username: string;
     roles: string[];
+    roleIds: string[];
     groups: string[];
+    groupIds: string[];
     permissions: string[];
     nickName?: string;
     avatar?: string | null;

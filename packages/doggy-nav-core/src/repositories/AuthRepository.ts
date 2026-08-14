@@ -4,7 +4,9 @@ export interface AuthUser {
   email?: string | null;
   avatar?: string | null;
   roles: string[]; // slugs
+  roleIds: string[]; // database ids
   groups: string[]; // slugs
+  groupIds: string[]; // database ids
   permissions: string[];
 }
 

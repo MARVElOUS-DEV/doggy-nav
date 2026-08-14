@@ -1,5 +1,6 @@
 import type { AuthRepository, AuthUser } from 'doggy-nav-core';
 import * as bcrypt from 'bcrypt';
+import { Types } from 'mongoose';
 
 export class MongooseAuthRepository implements AuthRepository {
   constructor(private readonly ctx: any) {}
@@ -30,10 +31,14 @@ export class MongooseAuthRepository implements AuthRepository {
     const rawRoles = Array.isArray((user as any).roles) ? (user as any).roles : [];
     const rawGroups = Array.isArray((user as any).groups) ? (user as any).groups : [];
 
-    const roleIds: any[] = rawRoles.filter((r: any) => typeof r !== 'string');
-    const roleSlugs: string[] = rawRoles.map((r: any) => (typeof r === 'string' ? r : r?.slug)).filter(Boolean);
-    const groupIds: any[] = rawGroups.filter((g: any) => typeof g !== 'string');
-    const groupSlugs: string[] = rawGroups.map((g: any) => (typeof g === 'string' ? g : g?.slug)).filter(Boolean);
+    const roleIds: any[] = rawRoles.filter((r: any) => Types.ObjectId.isValid(r?._id ?? r));
+    const roleSlugs: string[] = rawRoles
+      .map((r: any) => (typeof r === 'string' && !Types.ObjectId.isValid(r) ? r : r?.slug))
+      .filter(Boolean);
+    const groupIds: any[] = rawGroups.filter((g: any) => Types.ObjectId.isValid(g?._id ?? g));
+    const groupSlugs: string[] = rawGroups
+      .map((g: any) => (typeof g === 'string' && !Types.ObjectId.isValid(g) ? g : g?.slug))
+      .filter(Boolean);
 
     const [rolesById, rolesBySlug, groupsById, groupsBySlug] = await Promise.all([
       roleIds.length ? this.Role.find({ _id: { $in: roleIds.map((r: any) => r?._id || r) } }, { slug: 1, permissions: 1 }).lean() : Promise.resolve([]),
@@ -44,9 +49,20 @@ export class MongooseAuthRepository implements AuthRepository {
 
     const roles = [...(rolesById as any[]), ...(rolesBySlug as any[])];
     const groups = [...(groupsById as any[]), ...(groupsBySlug as any[])];
-    const roleSlugList = roles.map((r: any) => r.slug).filter(Boolean);
-    const groupSlugList = groups.map((g: any) => g.slug).filter(Boolean);
-    const permissions = Array.from(new Set<string>(roles.flatMap((r: any) => r.permissions || [])));
+    const roleSlugList = Array.from(new Set(roles.map((r: any) => r.slug).filter(Boolean)));
+    const resolvedRoleIds = Array.from(
+      new Set(roles.map((r: any) => r._id?.toString?.()).filter(Boolean))
+    );
+    const groupSlugList = Array.from(new Set(groups.map((g: any) => g.slug).filter(Boolean)));
+    const resolvedGroupIds = Array.from(
+      new Set(groups.map((g: any) => g._id?.toString?.()).filter(Boolean))
+    );
+    const permissions = Array.from(
+      new Set<string>([
+        ...roles.flatMap((r: any) => r.permissions || []),
+        ...((user as any).extraPermissions || []),
+      ])
+    );
 
     return {
       id: (user as any)._id?.toString?.() ?? (user as any).id,
@@ -54,7 +70,9 @@ export class MongooseAuthRepository implements AuthRepository {
       email: (user as any).email,
       avatar: (user as any).avatar,
       roles: roleSlugList,
+      roleIds: resolvedRoleIds,
       groups: groupSlugList,
+      groupIds: resolvedGroupIds,
       permissions,
     };
   }

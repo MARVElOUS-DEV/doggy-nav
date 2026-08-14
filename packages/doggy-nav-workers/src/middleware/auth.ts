@@ -10,7 +10,9 @@ interface AuthContext {
     email: string;
     username: string;
     roles: string[];
+    roleIds: string[];
     groups: string[];
+    groupIds: string[];
     permissions: string[];
   };
 }
@@ -72,7 +74,9 @@ export function createAuthMiddleware(options: { required?: boolean } = {}) {
         email: ctx.user.email,
         username: ctx.user.username,
         roles: ctx.roles,
+        roleIds: ctx.roleIds,
         groups: ctx.groups,
+        groupIds: ctx.groupIds,
         permissions: ctx.permissions,
       });
 
@@ -151,13 +155,16 @@ export function refreshUserContext() {
 
     if (user) {
       const userRepository = new D1UserRepository(c.env.DB);
-      const freshUser = await userRepository.getById(user.id);
+      const freshContext = await getUserAccessContext(c.env.DB, userRepository, user.id);
 
-      if (freshUser) {
+      if (freshContext) {
         c.set('user', {
           ...user,
-          roles: await userRepository.getUserRoles(user.id),
-          groups: await userRepository.getUserGroups(user.id),
+          roles: freshContext.roles,
+          roleIds: freshContext.roleIds,
+          groups: freshContext.groups,
+          groupIds: freshContext.groupIds,
+          permissions: freshContext.permissions,
         });
       }
     }
@@ -187,16 +194,18 @@ export function publicRoute() {
 
         if (payload && !JWTUtils.isTokenExpired(payload)) {
           const userRepository = new D1UserRepository(c.env.DB);
-          const user = await userRepository.getById(payload.userId);
+          const ctx = await getUserAccessContext(c.env.DB, userRepository, payload.userId);
 
-          if (user && user.isActive) {
+          if (ctx) {
             c.set('user', {
-              id: user.id,
-              email: user.email,
-              username: user.username,
-              roles: payload.roles,
-              groups: payload.groups,
-              permissions: payload.permissions,
+              id: ctx.user.id,
+              email: ctx.user.email,
+              username: ctx.user.username,
+              roles: ctx.roles,
+              roleIds: ctx.roleIds,
+              groups: ctx.groups,
+              groupIds: ctx.groupIds,
+              permissions: ctx.permissions,
             });
           }
         }

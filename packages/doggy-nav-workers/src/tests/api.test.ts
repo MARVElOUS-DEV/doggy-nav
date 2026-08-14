@@ -341,7 +341,9 @@ describe('Doggy Nav Worker API', () => {
         email: user.email,
         username: user.username,
         roles: ['user'],
+        roleIds: [],
         groups: [],
+        groupIds: [],
         permissions: [],
       });
 
@@ -581,7 +583,9 @@ describe('Doggy Nav Worker API', () => {
         email: user.email,
         username: user.username,
         roles: [],
+        roleIds: [],
         groups: [],
+        groupIds: [],
         permissions: [],
       });
 
@@ -623,7 +627,9 @@ describe('Doggy Nav Worker API', () => {
         email: user.email,
         username: user.username,
         roles: [],
+        roleIds: [],
         groups: [],
+        groupIds: [],
         permissions: [],
       });
 
@@ -693,7 +699,9 @@ describe('JWT Utilities', () => {
       email: 'test@example.com',
       username: 'testuser',
       roles: ['admin'],
+      roleIds: ['role-admin'],
       groups: ['default'],
+      groupIds: ['group-default'],
       permissions: ['user:read'],
     };
 
@@ -705,6 +713,8 @@ describe('JWT Utilities', () => {
     const verifiedPayload = await jwtUtils.verifyAccessToken(tokens.accessToken);
     expect(verifiedPayload).toBeDefined();
     expect(verifiedPayload?.userId).toBe('user123');
+    expect(verifiedPayload?.roleIds).toEqual(['role-admin']);
+    expect(verifiedPayload?.groupIds).toEqual(['group-default']);
   });
 
   it('should verify refresh tokens', async () => {
@@ -716,7 +726,9 @@ describe('JWT Utilities', () => {
       email: 'test@example.com',
       username: 'testuser',
       roles: ['admin'],
+      roleIds: ['role-admin'],
       groups: ['default'],
+      groupIds: ['group-default'],
       permissions: ['user:read'],
     };
 
@@ -735,7 +747,9 @@ describe('JWT Utilities', () => {
       email: 'test@example.com',
       username: 'testuser',
       roles: ['admin'],
+      roleIds: ['role-admin'],
       groups: ['default'],
+      groupIds: ['group-default'],
       permissions: ['user:read'],
     };
 
