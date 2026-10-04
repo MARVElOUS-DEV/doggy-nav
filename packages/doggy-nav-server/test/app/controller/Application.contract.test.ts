@@ -6,7 +6,11 @@ const ENABLED = RUN === '1' || RUN === 'true' || RUN === 'yes';
 describe('contract: GET /api/application/list', () => {
   it('returns stable envelope with list+total when enabled (sysadmin required)', async function () {
     if (!ENABLED) return this.skip();
-    const token = (app as any).jwt.sign({ userId: '507f1f77bcf86cd799439013', roles: ['sysadmin'] }, (app as any).config.jwt.secret, { expiresIn: '5m' });
+    const token = (app as any).jwt.sign(
+      { typ: 'access', userId: '507f1f77bcf86cd799439013', roles: ['sysadmin'] },
+      (app as any).config.jwt.secret,
+      { expiresIn: '5m' }
+    );
     const res = await app
       .httpRequest()
       .get('/api/application/list')

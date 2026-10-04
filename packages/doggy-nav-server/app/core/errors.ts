@@ -25,6 +25,12 @@ export class AuthenticationError extends AppError {
   }
 }
 
+export class RefreshConcurrencyError extends AuthenticationError {
+  constructor() {
+    super('Refresh token was already rotated');
+  }
+}
+
 export class ForbiddenError extends AppError {
   constructor(message: string = '无权限') {
     super(message, 403);

@@ -5,7 +5,7 @@ import { app, mock } from 'egg-mock/bootstrap';
 async function signPayload(payload: any) {
   const a = app as any;
   const secret = a.config.jwt.secret;
-  return 'Bearer ' + a.jwt.sign(payload, secret, { expiresIn: '10m' });
+  return 'Bearer ' + a.jwt.sign({ typ: 'access', ...payload }, secret, { expiresIn: '10m' });
 }
 
 describe('hidden import access control', () => {
@@ -18,15 +18,15 @@ describe('hidden import access control', () => {
     const sysadminToken = await signPayload({
       userId: 'u-sysadmin-tags',
       username: 'root',
-      roles: [ 'sysadmin' ],
+      roles: ['sysadmin'],
       roleIds: [],
       groups: [],
       groupIds: [],
-      permissions: [ '*' ],
+      permissions: ['*'],
     });
 
     mock(app.model.Category, 'find', () => ({
-      select: async () => [ { _id: '507f1f77bcf86cd799439012' } ],
+      select: async () => [{ _id: '507f1f77bcf86cd799439012' }],
     }));
 
     mock(app.model.Nav, 'aggregate', async (pipeline: any[]) => {
@@ -35,12 +35,12 @@ describe('hidden import access control', () => {
       const includesVisibilityFilter = serialized.includes('audience.visibility');
 
       if (includesVisibilityFilter) {
-        return isCount ? [ { total: 0 } ] : [];
+        return isCount ? [{ total: 0 }] : [];
       }
 
       return isCount
-        ? [ { total: 1 } ]
-        : [ { _id: 'hidden-sysadmin-tag', name: 'hidden-sysadmin-tag', count: 1 } ];
+        ? [{ total: 1 }]
+        : [{ _id: 'hidden-sysadmin-tag', name: 'hidden-sysadmin-tag', count: 1 }];
     });
 
     await request(server)
@@ -73,7 +73,7 @@ describe('hidden import access control', () => {
     const adminToken = await signPayload({
       userId: 'u-admin',
       username: 'admin',
-      roles: [ 'admin' ],
+      roles: ['admin'],
       roleIds: [],
       groups: [],
       groupIds: [],
@@ -97,11 +97,11 @@ describe('hidden import access control', () => {
     const sysadminToken = await signPayload({
       userId: 'u-sysadmin',
       username: 'root',
-      roles: [ 'sysadmin' ],
+      roles: ['sysadmin'],
       roleIds: [],
       groups: [],
       groupIds: [],
-      permissions: [ '*' ],
+      permissions: ['*'],
     });
 
     let createdPayload: any;
@@ -138,7 +138,7 @@ describe('hidden import access control', () => {
     const adminToken = await signPayload({
       userId: 'u-admin',
       username: 'admin',
-      roles: [ 'admin' ],
+      roles: ['admin'],
       roleIds: [],
       groups: [],
       groupIds: [],

@@ -12,7 +12,12 @@ import type {
   WebAuthnCredential,
 } from '@simplewebauthn/server';
 import CommonController from '../core/base_controller';
-import { AuthenticationError, NotFoundError, ValidationError } from '../core/errors';
+import {
+  AuthenticationError,
+  NotFoundError,
+  RefreshConcurrencyError,
+  ValidationError,
+} from '../core/errors';
 import {
   clearAuthCookies,
   setAuthCookies,
@@ -89,7 +94,7 @@ export default class AuthController extends CommonController {
     const { ctx } = this;
     // Ensure JWT payload uses role/group slugs by loading populated user first
     const authUser = await ctx.service.user.getAuthUserForTokens(user._id);
-    const tokens = await ctx.service.user.generateTokens(authUser);
+    const tokens = await ctx.service.user.generateTokens(authUser, getAppSource(ctx));
     await ctx.service.user.recordSuccessfulLogin(tokens.payload.userId);
     setAuthCookies(ctx, tokens);
   }
@@ -186,37 +191,49 @@ export default class AuthController extends CommonController {
 
   // Explicit refresh endpoint: exchanges refresh token cookie for new access+refresh
   async refresh() {
-    const { ctx, app } = this;
+    const { ctx } = this;
     try {
-      const jwt = app.jwt;
-      const secret = app.config.jwt?.secret;
-      if (!jwt || !secret) return this.error('JWT not available');
-
       const refresh = getRefreshTokenFromCookies(ctx);
-      if (!refresh) return this.error('缺少refresh token');
-      const payload: any = await jwt.verify(refresh, secret);
-      if (payload?.typ !== 'refresh' || !payload?.sub) return this.error('refresh token 类型错误');
-
-      const user = await ctx.service.user.getAuthUserForTokens(payload.sub);
-      const tokens = await ctx.service.user.generateTokens(user);
+      if (!refresh) {
+        ctx.status = 401;
+        return this.error('缺少refresh token');
+      }
+      const tokens = await ctx.service.user.rotateRefreshToken(refresh, getAppSource(ctx));
       setAuthCookies(ctx, tokens);
       const source = getAppSource(ctx);
       ctx.state.userinfo = { ...tokens.payload, authType: 'jwt', source } as AuthUserContext;
       let accessExp: number | null = null;
       try {
-        const decoded: any = (app as any).jwt.decode(tokens.accessToken);
+        const decoded: any = ctx.app.jwt.decode(tokens.accessToken);
         if (decoded?.exp) accessExp = Number(decoded.exp) * 1000;
       } catch (e) {
         ctx.logger.debug('decode access token failed for exp', e);
       }
       this.success({ token: 'Bearer ' + tokens.accessToken, accessExp });
-    } catch {
-      this.error('刷新失败');
+    } catch (error) {
+      if (error instanceof RefreshConcurrencyError) {
+        ctx.status = 409;
+        this.error('刷新已由另一个请求完成');
+        return;
+      }
+      if (error instanceof AuthenticationError || error instanceof NotFoundError) {
+        clearAuthCookies(ctx);
+        ctx.status = 401;
+        this.error('刷新失败');
+        return;
+      }
+      ctx.logger.error('Refresh error:', error);
+      ctx.status = 503;
+      this.error('刷新暂时不可用，请稍后重试');
     }
   }
 
   async logout() {
     const { ctx } = this;
+    const refresh = getRefreshTokenFromCookies(ctx);
+    if (refresh) {
+      await ctx.service.user.revokeRefreshToken(refresh, getAppSource(ctx));
+    }
     clearAuthCookies(ctx);
     clearStateCookie(ctx);
     ctx.status = 204;

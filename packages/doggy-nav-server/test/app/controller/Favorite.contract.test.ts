@@ -9,7 +9,11 @@ const TEST_USER_ID = '507f1f77bcf86cd799439011';
 describe('contract: GET /api/favorites/list', () => {
   it('returns stable envelope and page payload when enabled', async function () {
     if (!ENABLED) return this.skip();
-    const token = (app as any).jwt.sign({ userId: TEST_USER_ID, roles: ['user'] }, (app as any).config.jwt.secret, { expiresIn: '5m' });
+    const token = (app as any).jwt.sign(
+      { typ: 'access', userId: TEST_USER_ID, roles: ['user'] },
+      (app as any).config.jwt.secret,
+      { expiresIn: '5m' }
+    );
     const res = await app
       .httpRequest()
       .get('/api/favorites/list')

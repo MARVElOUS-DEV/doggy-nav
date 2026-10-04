@@ -42,8 +42,9 @@ export function setAuthCookies(
   const accessOptions = buildCookieOptions(c, '/');
   setCookie(c, access, tokens.accessToken, accessOptions);
   if (tokens.refreshToken) {
-    const refreshOptions = buildCookieOptions(c, '/api/auth/refresh');
+    const refreshOptions = buildCookieOptions(c, '/api/auth');
     setCookie(c, refresh, tokens.refreshToken, refreshOptions);
+    deleteCookie(c, refresh, buildCookieOptions(c, '/api/auth/refresh'));
   }
 }
 
@@ -51,9 +52,10 @@ export function clearAuthCookies(c: HonoContext) {
   const src = getAppSource(c);
   const { access, refresh } = getCookieNames(src);
   const accessOptions = buildCookieOptions(c, '/');
-  const refreshOptions = buildCookieOptions(c, '/api/auth/refresh');
+  const refreshOptions = buildCookieOptions(c, '/api/auth');
   deleteCookie(c, access, { ...accessOptions, maxAge: 0 });
   deleteCookie(c, refresh, { ...refreshOptions, maxAge: 0 });
+  deleteCookie(c, refresh, buildCookieOptions(c, '/api/auth/refresh'));
 }
 
 export function getAccessTokenFromCookies(c: HonoContext): string | undefined {

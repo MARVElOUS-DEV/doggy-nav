@@ -2,7 +2,8 @@ import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { NavItem, Category, Tag, User } from '@/types';
 import api from '@/utils/api';
-import { setAccessExpEpochMs } from '@/utils/session';
+import { requestCrossTabRefresh, setAccessExpEpochMs } from '@/utils/session';
+import { restoreAuthSession } from '@/utils/authBootstrap';
 import {
   defaultCustomTheme,
   type CustomThemeColors,
@@ -46,6 +47,7 @@ export const creativeTriggerHintAtom = atom(0);
 export const userAtom = atom<User | null>(null);
 export const isAuthenticatedAtom = atom<boolean>(false);
 export const authInitializedAtom = atom<boolean>(false);
+const authInitializingAtom = atom<boolean>(false);
 
 // Derived atoms for auth state
 export const authStateAtom = atom((get) => ({
@@ -89,10 +91,13 @@ export const authActionsAtom = atom(
 
 // Initialize auth by calling API
 export const initAuthFromServerAtom = atom(null, async (get, set) => {
-  if (typeof window === 'undefined' || get(authInitializedAtom)) return;
+  if (typeof window === 'undefined' || get(authInitializedAtom) || get(authInitializingAtom)) {
+    return;
+  }
+  set(authInitializingAtom, true);
 
   try {
-    const response = await api.getCurrentUser();
+    const response = await restoreAuthSession(api.getCurrentUser, requestCrossTabRefresh);
     if (response?.authenticated && response.user) {
       set(userAtom, response.user);
       set(isAuthenticatedAtom, true);
@@ -108,6 +113,7 @@ export const initAuthFromServerAtom = atom(null, async (get, set) => {
     set(userAtom, null);
     set(isAuthenticatedAtom, false);
   } finally {
+    set(authInitializingAtom, false);
     set(authInitializedAtom, true);
   }
 });

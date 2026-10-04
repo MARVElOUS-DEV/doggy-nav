@@ -1,7 +1,11 @@
+import { publishAuthSessionRefresh } from './authSessionRefresh';
+
 let timer: any = null;
 let nextExpMs: number | null = null;
 let refreshing = false; // per-tab flag
 let failCount = 0;
+
+type RefreshResult = 'success' | 'invalid' | 'retryable';
 
 // Cross-tab coordination
 const BC_NAME = 'auth:refresh';
@@ -30,12 +34,13 @@ function calcBackoffMs() {
 
 function scheduleBackoff() {
   if (typeof window === 'undefined') return;
+  if (timer) clearTimeout(timer);
+  timer = null;
+  const delay = calcBackoffMs();
   if (typeof navigator !== 'undefined' && (navigator as any).onLine === false) {
     window.addEventListener('online', onOnline, { once: true });
     return;
   }
-  const delay = calcBackoffMs();
-  if (timer) clearTimeout(timer);
   timer = window.setTimeout(refreshNow, delay);
 }
 
@@ -52,92 +57,120 @@ export function setAccessExpEpochMs(expMs: number | null | undefined) {
     bc?.postMessage(payload);
     // storage fallback
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(LS_RESULT_KEY, JSON.stringify({
-        t: Date.now(),
-        ok: true,
-        exp: nextExpMs,
-        kind: 'exp-update',
-      }));
+      window.localStorage.setItem(
+        LS_RESULT_KEY,
+        JSON.stringify({
+          t: Date.now(),
+          ok: true,
+          exp: nextExpMs,
+          kind: 'exp-update',
+        })
+      );
     }
   } catch {}
   schedule();
 }
 
-// Core refresh worker; returns whether refresh succeeded
-async function doRefresh(): Promise<boolean> {
-  if (refreshing) return false;
-  refreshing = true;
-  let ok = false;
-  try {
-    const resp = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-    const json = await resp.json().catch(() => null);
-    const isSuccess = resp && (resp as any).ok === true && json?.code === 1;
-    ok = !!isSuccess;
-    if (ok) {
+function stopRefreshRetries() {
+  if (timer) clearTimeout(timer);
+  timer = null;
+  nextExpMs = null;
+  failCount = 0;
+  if (typeof window !== 'undefined') window.removeEventListener('online', onOnline);
+}
+
+// The winner may have committed rotation before its cookies reach the browser.
+async function recoverConcurrentRefresh(previousExpMs: number | null): Promise<boolean> {
+  for (const delay of [0, 150, 350, 750, 1500]) {
+    if (delay)
+      await new Promise((resolve) => {
+        setTimeout(resolve, delay);
+      });
+    try {
+      const response = await fetch('/api/auth/me', { credentials: 'include' });
+      const json = await response.json().catch(() => null);
       const exp = json?.data?.accessExp;
-      if (typeof exp === 'number') {
+      if (
+        response.ok &&
+        json?.code === 1 &&
+        json?.data?.authenticated === true &&
+        typeof exp === 'number' &&
+        (!previousExpMs || normalizeEpochMs(exp) > previousExpMs)
+      ) {
         nextExpMs = normalizeEpochMs(exp);
+        return true;
       }
+    } catch {
+      // Keep waiting within the bounded recovery window.
+    }
+  }
+  return false;
+}
+
+async function doRefresh(): Promise<RefreshResult> {
+  if (refreshing) return 'retryable';
+  refreshing = true;
+  let result: RefreshResult = 'retryable';
+  const previousExpMs = nextExpMs;
+  try {
+    const resp = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+    });
+    const json = await resp.json().catch(() => null);
+    if (resp.ok && json?.code === 1) {
+      result = 'success';
+      const exp = json?.data?.accessExp;
+      if (typeof exp === 'number') nextExpMs = normalizeEpochMs(exp);
+    } else if (resp.status === 401) {
+      result = 'invalid';
+    } else if (resp.status === 409 && (await recoverConcurrentRefresh(previousExpMs))) {
+      result = 'success';
     }
   } catch {
-    // ignore, reactive 401 handler will manage logout
+    // Network and server failures retain the session for a later retry.
   } finally {
     refreshing = false;
-    if (ok) failCount = 0;
-    // Broadcast outcome to other tabs
+    if (result === 'success') failCount = 0;
+    if (result === 'invalid') stopRefreshRetries();
     try {
-      const msg = ok
-        ? ({ type: 'refresh-success', exp: nextExpMs } as const)
-        : ({ type: 'refresh-fail' } as const);
+      const msg =
+        result === 'success'
+          ? { type: 'refresh-success', exp: nextExpMs }
+          : { type: 'refresh-fail', invalid: result === 'invalid' };
       bc?.postMessage(msg);
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(
           LS_RESULT_KEY,
-          JSON.stringify({ t: Date.now(), ok, exp: nextExpMs, kind: 'refresh' })
+          JSON.stringify({
+            t: Date.now(),
+            ok: result === 'success',
+            invalid: result === 'invalid',
+            exp: nextExpMs,
+            kind: 'refresh',
+          })
         );
       }
     } catch {}
-
-    if (ok) {
+    if (result === 'success') {
+      publishAuthSessionRefresh();
       schedule();
-    } else {
+    } else if (result === 'retryable') {
       scheduleBackoff();
     }
   }
-  return ok;
+  return result;
 }
 
 // Exclusive execution wrapper using Web Locks (if available) or localStorage fallback (best-effort)
-async function runExclusiveRefresh(wait: boolean): Promise<boolean | void> {
+async function runExclusiveRefresh(wait: boolean): Promise<RefreshResult | void> {
   if (typeof window === 'undefined') return;
   const locks = (navigator as any)?.locks;
   if (locks && typeof locks.request === 'function') {
-    let result = false;
-    if (wait) {
-      await new Promise<void>((resolve) => {
-        locks.request(LOCK_NAME, async () => {
-          result = await doRefresh();
-          resolve();
-        });
-      });
-      return result;
-    } else {
-      await new Promise<void>((resolve) => {
-        locks.request(
-          LOCK_NAME,
-          { ifAvailable: true },
-          async (lock: any) => {
-            if (!lock) {
-              resolve();
-              return;
-            }
-            result = await doRefresh();
-            resolve();
-          }
-        );
-      });
-      return result;
-    }
+    if (wait) return await locks.request(LOCK_NAME, doRefresh);
+    return await locks.request(LOCK_NAME, { ifAvailable: true }, async (lock: any) => {
+      if (lock) return await doRefresh();
+    });
   }
 
   // Fallback: localStorage-based best-effort inflight lock
@@ -151,7 +184,7 @@ async function runExclusiveRefresh(wait: boolean): Promise<boolean | void> {
   }
   if (wait) {
     // Wait for another tab to finish
-    await waitForRefreshResult();
+    return await waitForRefreshResult();
   }
 }
 
@@ -183,22 +216,23 @@ function releaseInflight(owner: string) {
   } catch {}
 }
 
-function waitForRefreshResult(timeoutMs = 20000): Promise<void> {
+function waitForRefreshResult(timeoutMs = 20000): Promise<RefreshResult> {
   return new Promise((resolve, reject) => {
     let settled = false;
-    const onDone = (ok: boolean) => {
+    const onDone = (result: RefreshResult) => {
       if (settled) return;
       settled = true;
       cleanup();
-      ok ? resolve() : reject(new Error('refresh_failed'));
+      if (result === 'invalid') stopRefreshRetries();
+      result === 'retryable' ? reject(new Error('refresh_failed')) : resolve(result);
     };
 
     const onMessage = (ev: any) => {
       const data = ev?.data || ev;
       if (!data || typeof data !== 'object') return;
-      if (data.type === 'refresh-success') onDone(true);
-      if (data.type === 'refresh-fail') onDone(false);
-      if (data.type === 'exp-update') onDone(true);
+      if (data.type === 'refresh-success') onDone('success');
+      if (data.type === 'refresh-fail') onDone(data.invalid ? 'invalid' : 'retryable');
+      if (data.type === 'exp-update') onDone('success');
     };
 
     const onStorage = (e: StorageEvent) => {
@@ -206,7 +240,7 @@ function waitForRefreshResult(timeoutMs = 20000): Promise<void> {
       try {
         const data = JSON.parse(e.newValue);
         if (data?.kind === 'refresh' || data?.kind === 'exp-update') {
-          onDone(!!data?.ok);
+          onDone(data.ok ? 'success' : data.invalid ? 'invalid' : 'retryable');
         }
       } catch {}
     };
@@ -229,7 +263,7 @@ function waitForRefreshResult(timeoutMs = 20000): Promise<void> {
       window.addEventListener('storage', onStorage);
     }
 
-    const timeoutId = window.setTimeout(() => onDone(false), timeoutMs);
+    const timeoutId = window.setTimeout(() => onDone('retryable'), timeoutMs);
   });
 }
 
@@ -238,10 +272,17 @@ function attachBroadcastHandlers() {
   bc.onmessage = (ev: MessageEvent) => {
     const data: any = ev?.data;
     if (!data || typeof data !== 'object') return;
-    if (typeof data.exp === 'number' && (data.type === 'refresh-success' || data.type === 'exp-update')) {
+    if (
+      typeof data.exp === 'number' &&
+      (data.type === 'refresh-success' || data.type === 'exp-update')
+    ) {
       nextExpMs = normalizeEpochMs(data.exp);
       schedule();
       failCount = 0;
+    }
+    if (data.type === 'refresh-fail' && data.invalid) stopRefreshRetries();
+    if (data.type === 'refresh-success') {
+      publishAuthSessionRefresh();
     }
   };
 }
@@ -303,9 +344,7 @@ function onOnline() {
 // Public: reactive, cross-tab coordinated refresh; waits for completion
 export async function requestCrossTabRefresh(): Promise<void> {
   const result = await runExclusiveRefresh(true);
-  // When Web Locks path used, result can be boolean; when waiting on others, result is void.
-  // If we waited on others via waitForRefreshResult and timed out, it throws; otherwise success.
-  if (typeof result === 'boolean' && !result) {
-    throw new Error('refresh_failed');
+  if (result === 'invalid' || result === 'retryable') {
+    throw new Error(result === 'invalid' ? 'refresh_invalid' : 'refresh_failed');
   }
 }

@@ -1,4 +1,9 @@
-import { getRoutePermission, hasAccess, enforceClientSecret, type ClientSecretGuardConfig } from 'doggy-nav-core';
+import {
+  getRoutePermission,
+  hasAccess,
+  enforceClientSecret,
+  type ClientSecretGuardConfig,
+} from 'doggy-nav-core';
 import { getAccessTokenFromCookies, getAppSource } from '../utils/appSource';
 import { computeEffectiveRoles } from '../utils/rbac';
 import type { AuthUserContext } from '../../types/rbac';
@@ -46,7 +51,11 @@ export default () => {
         const valid = await ctx.service.clientSecret.verifyClientSecret(secret);
         if (!valid) return { valid };
         const appInfo = await ctx.service.clientSecret.getApplicationByClientSecret(secret);
-        if (appInfo) return { valid: true, app: { id: appInfo._id?.toString?.() ?? appInfo.id, name: appInfo.name } };
+        if (appInfo)
+          return {
+            valid: true,
+            app: { id: appInfo._id?.toString?.() ?? appInfo.id, name: appInfo.name },
+          };
         return { valid: true };
       },
     });
@@ -120,7 +129,10 @@ async function accessTokenVerify(ctx: any) {
 
   if (token) {
     try {
-      const decode: any = await jwt.verify(token, secret);
+      const decode: any = await jwt.verify(token, secret, { algorithms: ['HS256'] });
+      if (decode?.typ !== 'access' || !decode?.userId) {
+        return { authenticated: false, error: 'token 类型错误' };
+      }
       // Attach request source and effective roles
       const source = getAppSource(ctx);
       const eff = computeEffectiveRoles(Array.isArray(decode?.roles) ? decode.roles : [], source);

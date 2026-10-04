@@ -36,8 +36,12 @@ export const setAuthCookies = (ctx: Context, tokens: TokenPair) => {
   ctx.cookies.set(access, tokens.accessToken, accessOptions);
 
   if (tokens.refreshToken) {
-    const refreshOptions = buildCookieOptions(ctx, '/api/auth/refresh');
+    const refreshOptions = buildCookieOptions(ctx, '/api/auth');
     ctx.cookies.set(refresh, tokens.refreshToken, refreshOptions);
+    ctx.cookies.set(refresh, '', {
+      ...buildCookieOptions(ctx, '/api/auth/refresh'),
+      maxAge: 0,
+    });
   }
 };
 
@@ -45,9 +49,13 @@ export const clearAuthCookies = (ctx: Context) => {
   const src = getAppSource(ctx);
   const { access, refresh } = getCookieNames(src);
   const accessOptions = buildCookieOptions(ctx, '/');
-  const refreshOptions = buildCookieOptions(ctx, '/api/auth/refresh');
+  const refreshOptions = buildCookieOptions(ctx, '/api/auth');
   ctx.cookies.set(access, '', { ...accessOptions, maxAge: 0 });
   ctx.cookies.set(refresh, '', { ...refreshOptions, maxAge: 0 });
+  ctx.cookies.set(refresh, '', {
+    ...buildCookieOptions(ctx, '/api/auth/refresh'),
+    maxAge: 0,
+  });
 };
 
 export const setStateCookie = (ctx: Context, state: string) => {

@@ -6,9 +6,10 @@ import api from '@/utils/api';
 import { localCategories, OVERVIEW } from '@/utils/localCategories';
 import { useAtom, useSetAtom } from 'jotai';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { t } from '@/utils';
+import { getAuthSessionRevision, subscribeToAuthSessionRefresh } from '@/utils/authSessionRefresh';
 
 // Fallback icon component for items without icons
 const FallbackIcon = ({ name, fontSize = 16 }: { name: string; fontSize?: number }) => {
@@ -50,6 +51,11 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
   const [categories, setCategories] = useAtom(categoriesAtom);
   const setTags = useSetAtom(tagsAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  const authSessionRevision = useSyncExternalStore(
+    subscribeToAuthSessionRefresh,
+    getAuthSessionRevision,
+    () => 0
+  );
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   // Check if we're on a nav detail page where category will be set by the page itself
   const isNavDetailPage = router.pathname === '/nav/[id]';
@@ -64,18 +70,20 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
   }, [router.isReady, router.query.category, setSelectedCategory]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchCategories = async () => {
       try {
         const categoriesData = await api.getCategoryList();
-        if (Array.isArray(categoriesData)) {
-          categoriesData.unshift(...localCategories);
+        if (Array.isArray(categoriesData) && !cancelled) {
+          const nextCategories = [...localCategories, ...categoriesData];
           if (router.isReady && !selectedCategory && !router.query.category && !isNavDetailPage) {
-            setSelectedCategory(categoriesData[0].id);
+            setSelectedCategory(nextCategories[0].id);
           }
-          setCategories(categoriesData);
+          setCategories(nextCategories);
         }
       } catch (error) {
-        console.error('Failed to fetch categories', error);
+        if (!cancelled) console.error('Failed to fetch categories', error);
       }
     };
 
@@ -83,25 +91,37 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
       try {
         const { data } = await api.getTagList();
         const options =
-          data?.map((item) => {
-            item.value = item.name;
-            item.label = item.name;
-            return item;
-          }) || [];
-        setTags(options);
+          data?.map((item) => ({
+            ...item,
+            value: item.name,
+            label: item.name,
+          })) || [];
+        if (!cancelled) setTags(options);
       } catch (error) {
-        console.error('Failed to fetch tags', error);
+        if (!cancelled) console.error('Failed to fetch tags', error);
       }
     };
     fetchCategories();
     fetchTags();
-  }, [isAuthenticated, router.isReady, router.query.category, isNavDetailPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    return () => {
+      cancelled = true;
+    };
+    // Fetches are intentionally keyed by authentication and route context, not atom setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    authSessionRevision,
+    isAuthenticated,
+    router.isReady,
+    router.query.category,
+    isNavDetailPage,
+  ]);
 
   const activeGroupKey = useMemo(() => {
     const activeGroup = categories.find(
       (category) =>
         category.children?.some((child) => containsCategory(child, selectedCategory)) ||
-        (category.id === selectedCategory && category.children?.some((child) => child.showInMenu)),
+        (category.id === selectedCategory && category.children?.some((child) => child.showInMenu))
     );
     return activeGroup ? `${activeGroup.id}__group` : '';
   }, [categories, selectedCategory]);
@@ -119,7 +139,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
     category: Category,
     options?: {
       compact?: boolean;
-    },
+    }
   ) => (
     <Menu.Item
       key={category.id}
@@ -140,9 +160,7 @@ export default function MenuStack({ collapse }: { collapse: boolean }) {
           {renderMenuIcon(category, 16)}
           <span
             className={`group-hover:text-theme-foreground transition-colors ${
-              options?.compact
-                ? 'text-sm text-theme-muted-foreground'
-                : 'font-medium'
+              options?.compact ? 'text-sm text-theme-muted-foreground' : 'font-medium'
             }`}
           >
             {t(category.name, { defaultValue: category.name })}

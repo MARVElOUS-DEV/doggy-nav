@@ -9,7 +9,11 @@ const TEST_USER_ID = '507f1f77bcf86cd799439012';
 describe('contract: GET /api/user/profile', () => {
   it('returns stable envelope when enabled', async function () {
     if (!ENABLED) return this.skip();
-    const token = (app as any).jwt.sign({ userId: TEST_USER_ID, roles: ['user'] }, (app as any).config.jwt.secret, { expiresIn: '5m' });
+    const token = (app as any).jwt.sign(
+      { typ: 'access', userId: TEST_USER_ID, roles: ['user'] },
+      (app as any).config.jwt.secret,
+      { expiresIn: '5m' }
+    );
     const res = await app
       .httpRequest()
       .get('/api/user/profile')
@@ -25,7 +29,8 @@ describe('contract: GET /api/user/profile', () => {
 
     if (body.code === 1) {
       // success path: data should be an object (profile)
-      if (typeof body.data !== 'object' || body.data === null) throw new Error('profile payload not object');
+      if (typeof body.data !== 'object' || body.data === null)
+        throw new Error('profile payload not object');
     } else {
       if (body.data !== null) throw new Error('data should be null when error');
     }

@@ -1,10 +1,10 @@
-import { defaultHeaders } from './request';
-
 let timer: any = null;
 let nextExpMs: number | null = null;
-let refreshing = false;
+let refreshPromise: Promise<RefreshResult> | null = null;
 let started = false;
 let failCount = 0;
+
+type RefreshResult = 'success' | 'invalid' | 'retryable';
 
 const LEEWAY_MS = (process.env.NODE_ENV === 'development' ? 10 : 90) * 1000;
 const MIN_DELAY_MS = 1000; // avoid tight loops when delta <= 0
@@ -32,50 +32,114 @@ function onOnline() {
 }
 function scheduleBackoff() {
   if (typeof window === 'undefined') return;
+  if (timer) clearTimeout(timer);
+  timer = null;
+  const delay = calcBackoffMs();
   // If offline, wait for online event instead of tight retry
   if (typeof navigator !== 'undefined' && (navigator as any).onLine === false) {
     window.addEventListener('online', onOnline, { once: true });
     return;
   }
-  const delay = calcBackoffMs();
-  if (timer) clearTimeout(timer);
   timer = window.setTimeout(refreshNow, delay);
 }
 
-export async function refreshNow() {
-  if (refreshing) return;
-  refreshing = true;
-  let ok = false;
+function stopRefreshRetries() {
+  if (timer) clearTimeout(timer);
+  timer = null;
+  nextExpMs = null;
+  failCount = 0;
+  if (typeof window !== 'undefined')
+    window.removeEventListener('online', onOnline);
+}
+
+// The winner may have committed rotation before its cookies reach the browser.
+async function recoverConcurrentRefresh(
+  previousExpMs: number | null,
+): Promise<boolean> {
+  for (const delay of [0, 150, 350, 750, 1500]) {
+    if (delay)
+      await new Promise((resolve) => {
+        setTimeout(resolve, delay);
+      });
+    try {
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include',
+        headers: { 'X-App-Source': 'admin' },
+      });
+      const json = await response.json().catch(() => null);
+      const exp = json?.data?.accessExp;
+      if (
+        response.ok &&
+        json?.code === 1 &&
+        json?.data?.authenticated === true &&
+        typeof exp === 'number' &&
+        (!previousExpMs || normalizeEpochMs(exp) > previousExpMs)
+      ) {
+        nextExpMs = normalizeEpochMs(exp);
+        return true;
+      }
+    } catch {
+      // Keep waiting within the bounded recovery window.
+    }
+  }
+  return false;
+}
+
+async function performRefresh(): Promise<RefreshResult> {
+  let result: RefreshResult = 'retryable';
+  const previousExpMs = nextExpMs;
   try {
     const resp = await fetch('/api/auth/refresh', {
       method: 'POST',
       credentials: 'include',
-      headers: defaultHeaders(),
+      headers: { 'X-App-Source': 'admin' },
     });
     const json = await resp.json().catch(() => null);
-    const isSuccess = resp && (resp as any).ok === true && json?.code === 1;
-    ok = isSuccess;
-    if (isSuccess) {
+    if (resp.ok && json?.code === 1) {
+      result = 'success';
       const exp = json?.data?.accessExp;
-      if (typeof exp === 'number') {
-        nextExpMs = normalizeEpochMs(exp);
-      }
+      if (typeof exp === 'number') nextExpMs = normalizeEpochMs(exp);
+    } else if (resp.status === 401) {
+      result = 'invalid';
+    } else if (
+      resp.status === 409 &&
+      (await recoverConcurrentRefresh(previousExpMs))
+    ) {
+      result = 'success';
     }
   } catch {
+    // Network and server failures retain the session for a later retry.
   } finally {
-    refreshing = false;
-    if (ok) failCount = 0;
-    if (typeof window !== 'undefined') {
-      if (ok && nextExpMs) {
-        const now = Date.now();
-        const delay = Math.max(MIN_DELAY_MS, nextExpMs - now - LEEWAY_MS);
-        if (timer) clearTimeout(timer);
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        timer = window.setTimeout(refreshNow, delay);
-      } else {
-        scheduleBackoff();
-      }
+    if (result === 'success') failCount = 0;
+    if (result === 'invalid') stopRefreshRetries();
+    if (result === 'success') {
+      schedule();
+    } else if (result === 'retryable') {
+      scheduleBackoff();
     }
+  }
+  return result;
+}
+
+function getRefreshPromise(): Promise<RefreshResult> {
+  if (!refreshPromise) {
+    refreshPromise = performRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
+export async function refreshNow() {
+  await getRefreshPromise();
+}
+
+export async function requestAdminRefresh() {
+  const result = await getRefreshPromise();
+  if (result !== 'success') {
+    throw new Error(
+      result === 'invalid' ? 'refresh_invalid' : 'refresh_failed',
+    );
   }
 }
 

@@ -4,11 +4,20 @@ import { Types } from 'mongoose';
 
 export class MongooseAuthRepository implements AuthRepository {
   constructor(private readonly ctx: any) {}
-  private get User() { return this.ctx.model.User; }
-  private get Role() { return this.ctx.model.Role; }
-  private get Group() { return this.ctx.model.Group; }
+  private get User() {
+    return this.ctx.model.User;
+  }
+  private get Role() {
+    return this.ctx.model.Role;
+  }
+  private get Group() {
+    return this.ctx.model.Group;
+  }
 
-  async verifyCredentials(identifier: string, password: string): Promise<{ userId: string } | null> {
+  async verifyCredentials(
+    identifier: string,
+    password: string
+  ): Promise<{ userId: string } | null> {
     const user = await this.User.findOne({
       $or: [{ username: identifier }, { email: identifier.toLowerCase() }],
       isActive: true,
@@ -21,12 +30,18 @@ export class MongooseAuthRepository implements AuthRepository {
 
   async recordSuccessfulLogin(userId: string): Promise<void> {
     try {
-      await this.User.findByIdAndUpdate(userId, { lastLoginAt: new Date() }, { useFindAndModify: false });
-    } catch { /* ignore */ return; }
+      await this.User.findByIdAndUpdate(
+        userId,
+        { lastLoginAt: new Date() },
+        { useFindAndModify: false }
+      );
+    } catch {
+      /* ignore */ return;
+    }
   }
 
   async loadAuthUser(userId: string): Promise<AuthUser> {
-    const user = await this.User.findById(userId).lean();
+    const user = await this.User.findOne({ _id: userId, isActive: true }).lean();
     if (!user) throw new Error('用户不存在');
     const rawRoles = Array.isArray((user as any).roles) ? (user as any).roles : [];
     const rawGroups = Array.isArray((user as any).groups) ? (user as any).groups : [];
@@ -41,10 +56,24 @@ export class MongooseAuthRepository implements AuthRepository {
       .filter(Boolean);
 
     const [rolesById, rolesBySlug, groupsById, groupsBySlug] = await Promise.all([
-      roleIds.length ? this.Role.find({ _id: { $in: roleIds.map((r: any) => r?._id || r) } }, { slug: 1, permissions: 1 }).lean() : Promise.resolve([]),
-      roleSlugs.length ? this.Role.find({ slug: { $in: roleSlugs } }, { slug: 1, permissions: 1 }).lean() : Promise.resolve([]),
-      groupIds.length ? this.Group.find({ _id: { $in: groupIds.map((g: any) => g?._id || g) } }, { slug: 1 }).lean() : Promise.resolve([]),
-      groupSlugs.length ? this.Group.find({ slug: { $in: groupSlugs } }, { slug: 1 }).lean() : Promise.resolve([]),
+      roleIds.length
+        ? this.Role.find(
+            { _id: { $in: roleIds.map((r: any) => r?._id || r) } },
+            { slug: 1, permissions: 1 }
+          ).lean()
+        : Promise.resolve([]),
+      roleSlugs.length
+        ? this.Role.find({ slug: { $in: roleSlugs } }, { slug: 1, permissions: 1 }).lean()
+        : Promise.resolve([]),
+      groupIds.length
+        ? this.Group.find(
+            { _id: { $in: groupIds.map((g: any) => g?._id || g) } },
+            { slug: 1 }
+          ).lean()
+        : Promise.resolve([]),
+      groupSlugs.length
+        ? this.Group.find({ slug: { $in: groupSlugs } }, { slug: 1 }).lean()
+        : Promise.resolve([]),
     ]);
 
     const roles = [...(rolesById as any[]), ...(rolesBySlug as any[])];

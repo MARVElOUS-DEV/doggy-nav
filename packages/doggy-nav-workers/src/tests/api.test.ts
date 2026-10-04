@@ -715,6 +715,8 @@ describe('JWT Utilities', () => {
     expect(verifiedPayload?.userId).toBe('user123');
     expect(verifiedPayload?.roleIds).toEqual(['role-admin']);
     expect(verifiedPayload?.groupIds).toEqual(['group-default']);
+    expect(verifiedPayload?.typ).toBe('access');
+    expect(await jwtUtils.verifyAccessToken(tokens.refreshToken)).toBeNull();
   });
 
   it('should verify refresh tokens', async () => {
@@ -736,6 +738,35 @@ describe('JWT Utilities', () => {
     const refreshPayload = await jwtUtils.verifyRefreshToken(tokens.refreshToken);
     expect(refreshPayload).toBeDefined();
     expect(refreshPayload?.userId).toBe('user123');
+    expect(refreshPayload?.sessionId).toBeDefined();
+    expect(refreshPayload?.tokenId).toBeDefined();
+    expect(await jwtUtils.verifyRefreshToken(tokens.accessToken)).toBeNull();
+  });
+
+  it('should sign both token types with JWT_SECRET', async () => {
+    const { JWTUtils } = await import('../utils/jwtUtils');
+    const { jwtVerify } = await import('jose');
+    const secret = 'shared-jwt-secret';
+    const issuer = new JWTUtils(secret);
+    const wrongVerifier = new JWTUtils('different-jwt-secret');
+    const tokens = await issuer.generateTokenPair({
+      userId: 'user123',
+      email: 'test@example.com',
+      username: 'testuser',
+      roles: [],
+      roleIds: [],
+      groups: [],
+      groupIds: [],
+      permissions: [],
+    });
+
+    const key = new TextEncoder().encode(secret);
+    const access = await jwtVerify(tokens.accessToken, key, { algorithms: ['HS256'] });
+    const refresh = await jwtVerify(tokens.refreshToken, key, { algorithms: ['HS256'] });
+    expect(access.payload.typ).toBe('access');
+    expect(refresh.payload.typ).toBe('refresh');
+    expect(await wrongVerifier.verifyAccessToken(tokens.accessToken)).toBeNull();
+    expect(await wrongVerifier.verifyRefreshToken(tokens.refreshToken)).toBeNull();
   });
 
   it('should refresh access tokens', async () => {

@@ -6,6 +6,7 @@ import { resolvePageTitle } from '../config/routes';
 import ContentHeader from './components/ContentHeader';
 import apiRequest, { requestConfigure } from './utils/request';
 import {
+  requestAdminRefresh,
   setAccessExpEpochMs,
   startProactiveAuthRefresh,
 } from './utils/session';
@@ -21,7 +22,15 @@ export async function getInitialState(): Promise<{
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
   const fetchUserInfo = async () => {
-    const json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
+    let json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
+    if (json?.data?.authenticated === false) {
+      try {
+        await requestAdminRefresh();
+        json = await apiRequest({ url: '/api/auth/me', method: 'GET' });
+      } catch {
+        return undefined;
+      }
+    }
     const currentUser = json?.data?.user || undefined;
     if (typeof json?.data?.accessExp === 'number') {
       setAccessExpEpochMs(json.data.accessExp);

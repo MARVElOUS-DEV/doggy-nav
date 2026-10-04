@@ -25,8 +25,10 @@ function validateSecret(secret, name, minLength = 32) {
     'a_strange_jwt_token',
   ];
 
-  const isWeak = weakSecrets.some(weak =>
-    secret.toLowerCase().includes(weak) || secret === 'your-super-secure-jwt-secret-here-change-in-production',
+  const isWeak = weakSecrets.some(
+    (weak) =>
+      secret.toLowerCase().includes(weak) ||
+      secret === 'your-super-secure-jwt-secret-here-change-in-production'
   );
 
   if (isWeak) {

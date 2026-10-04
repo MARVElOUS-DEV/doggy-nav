@@ -113,10 +113,16 @@ instance.interceptors.response.use(
             await refreshPromise;
             cfg.__isRetryRequest = true;
             return instance.request(cfg);
-          } catch {
-            try {
-              await axios.post('/api/auth/logout', undefined, { withCredentials: true });
-            } catch {}
+          } catch (refreshError) {
+            if (refreshError instanceof Error && refreshError.message === 'refresh_invalid') {
+              try {
+                await axios.post('/api/auth/logout', undefined, { withCredentials: true });
+              } catch {}
+            } else {
+              errorCode = 503;
+              errorMessage = 'Session refresh temporarily unavailable - Please try again';
+              break;
+            }
             errorMessage = 'Unauthorized';
             break;
           }
