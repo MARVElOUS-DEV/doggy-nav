@@ -14,13 +14,14 @@ export interface GroupRef {
 
 // Snapshot embedded in JWT access token
 export interface AuthJwtPayload {
+  typ: 'access';
   userId: string;
   username: string;
   isSysAdmin: boolean;
-  roles: string[];     // role slugs
-  roleIds: string[];   // role ids as strings
-  groups: string[];    // group slugs
-  groupIds: string[];  // group ids as strings
+  roles: string[]; // role slugs
+  roleIds: string[]; // role ids as strings
+  groups: string[]; // group slugs
+  groupIds: string[]; // group ids as strings
   permissions: PermissionCode[];
 }
 

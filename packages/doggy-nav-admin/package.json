@@ -8,7 +8,8 @@
     "dev": "max dev",
     "lint": "max lint",
     "lint:fix": "max lint --fix",
-    "prettier": "prettier -c --write 'src/**/*'"
+    "prettier": "prettier -c --write 'src/**/*'",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",

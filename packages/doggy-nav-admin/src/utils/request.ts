@@ -1,6 +1,6 @@
 import { history, RequestConfig, request as umiRequest } from '@umijs/max';
 import { message, notification } from 'antd';
-import { setAccessExpEpochMs } from './session';
+import { requestAdminRefresh } from './session';
 
 export function defaultHeaders() {
   const headers: Record<string, string> = { 'X-App-Source': 'admin' };
@@ -19,9 +19,7 @@ interface RequestOptions {
 
 function request(params: RequestOptions): any {
   let { url, method = 'GET', headers, data, body, msg } = params;
-  if (!headers) {
-    headers = defaultHeaders();
-  }
+  headers = { ...(headers || {}), ...defaultHeaders() };
   if (method === 'GET' && data) {
     const cleaned: Record<string, any> = {};
     Object.keys(data).forEach((k) => {
@@ -67,20 +65,7 @@ function request(params: RequestOptions): any {
 }
 
 export function requestConfigure(options = {}): RequestConfig {
-  // Single-flight refresh guard shared across all requests
-  let refreshPromise: Promise<any> | null = null;
   const isRefreshUrl = (url: string) => /\/api\/auth\/refresh\b/.test(url);
-  const doRefresh = async () => {
-    const resp = await umiRequest('/api/auth/refresh', {
-      method: 'POST',
-      withCredentials: true,
-    });
-    try {
-      const exp = (resp as any)?.data?.accessExp;
-      if (typeof exp === 'number') setAccessExpEpochMs(exp);
-    } catch {}
-    return resp;
-  };
 
   return {
     withCredentials: true,
@@ -130,12 +115,7 @@ export function requestConfigure(options = {}): RequestConfig {
             // already retried once, stop here
           } else {
             try {
-              if (!refreshPromise) {
-                refreshPromise = doRefresh().finally(() => {
-                  refreshPromise = null;
-                });
-              }
-              await refreshPromise;
+              await requestAdminRefresh();
               const resolvedUrl: string =
                 cfg.__finalUrl || eRequest?.responseURL || cfg.url || '';
               if (typeof resolvedUrl === 'string' && resolvedUrl.length > 1) {
@@ -146,6 +126,9 @@ export function requestConfigure(options = {}): RequestConfig {
               }
             } catch (e) {
               console.error('silent refresh failed:', e);
+              if (!(e instanceof Error && e.message === 'refresh_invalid')) {
+                throw e;
+              }
             }
           }
           if (location.pathname !== loginPath) {

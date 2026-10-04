@@ -24,7 +24,7 @@ describe('MongooseAuthRepository', () => {
     const ctx = {
       model: {
         User: {
-          findById: () => ({ lean: async () => user }),
+          findOne: () => ({ lean: async () => user }),
         },
         Role: {
           find: (filter: any) => ({ lean: async () => matchingDocs(filter, role) }),

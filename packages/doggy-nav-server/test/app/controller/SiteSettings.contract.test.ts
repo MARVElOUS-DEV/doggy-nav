@@ -26,7 +26,7 @@ describe('contract: /api/site-settings', () => {
 
   it('allows admin writes and public reads of saved settings', async () => {
     const token = (app as any).jwt.sign(
-      { userId: TEST_ADMIN_ID, roles: ['admin'] },
+      { typ: 'access', userId: TEST_ADMIN_ID, roles: ['admin'] },
       (app as any).config.jwt.secret,
       { expiresIn: '5m' }
     );
@@ -123,7 +123,7 @@ describe('contract: /api/site-settings', () => {
 
   it('rejects malformed hero media and CTA pairs', async () => {
     const token = (app as any).jwt.sign(
-      { userId: TEST_ADMIN_ID, roles: ['admin'] },
+      { typ: 'access', userId: TEST_ADMIN_ID, roles: ['admin'] },
       (app as any).config.jwt.secret,
       { expiresIn: '5m' }
     );
@@ -150,7 +150,7 @@ describe('contract: /api/site-settings', () => {
 
   it('rejects non-admin writes', async () => {
     const token = (app as any).jwt.sign(
-      { userId: TEST_USER_ID, roles: ['user'] },
+      { typ: 'access', userId: TEST_USER_ID, roles: ['user'] },
       (app as any).config.jwt.secret,
       { expiresIn: '5m' }
     );

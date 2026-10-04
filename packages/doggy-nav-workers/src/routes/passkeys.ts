@@ -14,11 +14,12 @@ import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { createAuthMiddleware } from '../middleware/auth';
 import { D1UserRepository } from '../adapters/d1UserRepository';
 import { getUser } from '../ioc/helpers';
-import { clearAuthCookies, setAuthCookies } from '../utils/cookieAuth';
+import { clearAuthCookies, getAppSource, setAuthCookies } from '../utils/cookieAuth';
 import { newId24 } from '../utils/id';
 import { JWTUtils } from '../utils/jwtUtils';
 import { responses } from '../utils/responses';
 import { getUserAccessContext } from '../utils/userContext';
+import { issueTrackedTokenPair } from '../utils/refreshSessions';
 
 type PasskeyEnv = {
   DB: D1Database;
@@ -181,8 +182,11 @@ passkeyRoutes.post('/auth/passkey', async (c) => {
       groupIds: access.groupIds,
       permissions: access.permissions,
     };
-    const tokens = await new JWTUtils(c.env.JWT_SECRET).generateTokenPair(
-      JWTUtils.createPayload(user)
+    const tokens = await issueTrackedTokenPair(
+      c.env.DB,
+      new JWTUtils(c.env.JWT_SECRET),
+      JWTUtils.createPayload(user),
+      getAppSource(c)
     );
     await userRepository.update(user.id, { lastLoginAt: new Date() });
     clearAuthCookies(c);

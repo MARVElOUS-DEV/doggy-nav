@@ -1,8 +1,36 @@
 import { Service } from 'egg';
 import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
-import { ValidationError, AuthenticationError, ConflictError, NotFoundError } from '../core/errors';
+import { createHash, randomBytes } from 'crypto';
+import { Types } from 'mongoose';
+import {
+  ValidationError,
+  AuthenticationError,
+  ConflictError,
+  NotFoundError,
+  RefreshConcurrencyError,
+} from '../core/errors';
 import { isValidId } from '../utils/mongoose/normalize';
+import { getAppSource, type AppSource } from '../utils/appSource';
+
+interface AccessTokenPayload {
+  typ: 'access';
+  userId: string;
+  username: string;
+  isSysAdmin: boolean;
+  roles: string[];
+  roleIds: string[];
+  groups: string[];
+  groupIds: string[];
+  permissions: string[];
+}
+
+interface RefreshTokenPayload {
+  typ?: string;
+  sub?: string;
+  sid?: string;
+  jti?: string;
+  source?: AppSource;
+}
 
 export default class UserService extends Service {
   private buildJwtPayload(user: {
@@ -24,6 +52,7 @@ export default class UserService extends Service {
       ? user.computedPermissions
       : [];
     return {
+      typ: 'access' as const,
       userId: (user as any)._id?.toString?.() ?? (user as any).id,
       username: user.username,
       isSysAdmin,
@@ -35,23 +64,192 @@ export default class UserService extends Service {
     };
   }
 
-  async generateTokens(user: Parameters<UserService['buildJwtPayload']>[0]) {
-    const { app } = this;
-    const payload = this.buildJwtPayload(user);
-    const jwtConfig = app.config.jwt as { accessExpiresIn?: string; refreshExpiresIn?: string };
-    const accessToken = app.jwt.sign(payload, app.config.jwt.secret, {
-      expiresIn: jwtConfig?.accessExpiresIn || '15m',
-    });
+  private hashRefreshTokenId(tokenId: string) {
+    return createHash('sha256').update(tokenId).digest('hex');
+  }
 
-    const refreshToken = app.jwt.sign(
-      { sub: payload.userId, typ: 'refresh' },
+  private signAccessToken(payload: AccessTokenPayload) {
+    const { app } = this;
+    return app.jwt.sign(payload, app.config.jwt.secret, {
+      algorithm: 'HS256',
+      expiresIn: app.config.jwt.accessExpiresIn || '15m',
+    });
+  }
+
+  private signRefreshToken(params: {
+    userId: string;
+    source: AppSource;
+    sessionId: string;
+    tokenId: string;
+  }) {
+    const { app } = this;
+    return app.jwt.sign(
+      {
+        typ: 'refresh',
+        sid: params.sessionId,
+        source: params.source,
+      },
       app.config.jwt.secret,
       {
-        expiresIn: jwtConfig?.refreshExpiresIn || '7d',
+        algorithm: 'HS256',
+        expiresIn: app.config.jwt.refreshExpiresIn || '7d',
+        subject: params.userId,
+        jwtid: params.tokenId,
       }
     );
+  }
+
+  private getTokenExpiry(token: string) {
+    const decoded = this.app.jwt.decode(token) as { exp?: number } | null;
+    if (!decoded?.exp) throw new AuthenticationError('Token expiry is missing');
+    return new Date(decoded.exp * 1000);
+  }
+
+  private async verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
+    try {
+      return await this.app.jwt.verify(token, this.app.config.jwt.secret, {
+        algorithms: ['HS256'],
+      });
+    } catch (error) {
+      if (['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError'].includes(error?.name)) {
+        throw new AuthenticationError('Invalid refresh token');
+      }
+      throw error;
+    }
+  }
+
+  async generateTokensForPayload(
+    input: Omit<AccessTokenPayload, 'typ' | 'isSysAdmin'> & { isSysAdmin?: boolean },
+    source: AppSource = getAppSource(this.ctx)
+  ) {
+    const payload: AccessTokenPayload = {
+      ...input,
+      typ: 'access',
+      isSysAdmin: input.isSysAdmin ?? input.roles.includes('sysadmin'),
+    };
+    const accessToken = this.signAccessToken(payload);
+    const sessionId = new Types.ObjectId();
+    const tokenId = randomBytes(32).toString('hex');
+    const refreshToken = this.signRefreshToken({
+      userId: payload.userId,
+      source,
+      sessionId: sessionId.toString(),
+      tokenId,
+    });
+
+    await this.ctx.model.RefreshSession.create({
+      _id: sessionId,
+      userId: payload.userId,
+      source,
+      currentTokenHash: this.hashRefreshTokenId(tokenId),
+      expiresAt: this.getTokenExpiry(refreshToken),
+    });
 
     return { accessToken, refreshToken, payload };
+  }
+
+  async generateTokens(
+    user: Parameters<UserService['buildJwtPayload']>[0],
+    source: AppSource = getAppSource(this.ctx)
+  ) {
+    return await this.generateTokensForPayload(this.buildJwtPayload(user), source);
+  }
+
+  async rotateRefreshToken(refreshToken: string, source: AppSource = getAppSource(this.ctx)) {
+    const decoded = await this.verifyRefreshToken(refreshToken);
+    if (
+      decoded.typ !== 'refresh' ||
+      !decoded.sub ||
+      !decoded.sid ||
+      !decoded.jti ||
+      decoded.source !== source ||
+      !Types.ObjectId.isValid(decoded.sid)
+    ) {
+      throw new AuthenticationError('Invalid refresh token');
+    }
+
+    const now = new Date();
+    const presentedHash = this.hashRefreshTokenId(decoded.jti);
+    const session: any = await this.ctx.model.RefreshSession.findOne({
+      _id: decoded.sid,
+      userId: decoded.sub,
+      source,
+    }).lean();
+    if (!session || session.revokedAt || new Date(session.expiresAt) <= now) {
+      throw new AuthenticationError('Refresh session is unavailable');
+    }
+
+    if (session.currentTokenHash !== presentedHash) {
+      const rotatedRecently =
+        session.previousTokenHash === presentedHash &&
+        session.rotatedAt &&
+        now.getTime() - new Date(session.rotatedAt).getTime() < 10_000;
+      if (rotatedRecently) {
+        throw new RefreshConcurrencyError();
+      }
+      await this.ctx.model.RefreshSession.updateOne(
+        { _id: session._id, revokedAt: null },
+        { $set: { revokedAt: now } }
+      );
+      throw new AuthenticationError('Refresh token reuse detected');
+    }
+
+    const user = await this.getAuthUserForTokens(decoded.sub);
+    const payload = this.buildJwtPayload(user);
+    const nextTokenId = randomBytes(32).toString('hex');
+    const nextRefreshToken = this.signRefreshToken({
+      userId: payload.userId,
+      source,
+      sessionId: decoded.sid,
+      tokenId: nextTokenId,
+    });
+    const nextTokenHash = this.hashRefreshTokenId(nextTokenId);
+    const updateResult = await this.ctx.model.RefreshSession.updateOne(
+      {
+        _id: session._id,
+        currentTokenHash: presentedHash,
+        revokedAt: null,
+        expiresAt: { $gt: now },
+      },
+      {
+        $set: {
+          previousTokenHash: presentedHash,
+          currentTokenHash: nextTokenHash,
+          rotatedAt: now,
+          expiresAt: this.getTokenExpiry(nextRefreshToken),
+        },
+      }
+    );
+    if (updateResult.modifiedCount !== 1) {
+      throw new RefreshConcurrencyError();
+    }
+
+    return {
+      accessToken: this.signAccessToken(payload),
+      refreshToken: nextRefreshToken,
+      payload,
+    };
+  }
+
+  async revokeRefreshToken(refreshToken: string, source: AppSource = getAppSource(this.ctx)) {
+    let decoded: RefreshTokenPayload;
+    try {
+      decoded = await this.verifyRefreshToken(refreshToken);
+    } catch (error) {
+      if (error instanceof AuthenticationError) return;
+      throw error;
+    }
+    if (
+      decoded.typ === 'refresh' &&
+      decoded.source === source &&
+      decoded.sid &&
+      Types.ObjectId.isValid(decoded.sid)
+    ) {
+      await this.ctx.model.RefreshSession.updateOne(
+        { _id: decoded.sid, revokedAt: null },
+        { $set: { revokedAt: new Date() } }
+      );
+    }
   }
 
   /**
@@ -71,7 +269,7 @@ export default class UserService extends Service {
   }> {
     const { ctx } = this;
     const user = await ctx.model.User.findById(userId).lean();
-    if (!user) {
+    if (!user || (user as any).isActive === false) {
       throw new NotFoundError('用户不存在');
     }
     const rawRoles = Array.isArray((user as any).roles) ? (user as any).roles : [];
@@ -230,19 +428,14 @@ export default class UserService extends Service {
     return user;
   }
 
-  private async ensureProviderGroup(
-    userId: any,
-    provider: 'github' | 'google' | 'linuxdo'
-  ) {
+  private async ensureProviderGroup(userId: any, provider: 'github' | 'google' | 'linuxdo') {
     const { ctx } = this;
     let slug: string | null = null;
     if (provider === 'linuxdo') slug = 'linuxdo';
     if (!slug) return;
 
     try {
-      const group = (await ctx.model.Group
-        .findOne({ slug }, { _id: 1 })
-        .lean()) as any;
+      const group = (await ctx.model.Group.findOne({ slug }, { _id: 1 }).lean()) as any;
       if (group?._id) {
         await ctx.model.User.updateOne({ _id: userId }, { $addToSet: { groups: group._id } });
       }

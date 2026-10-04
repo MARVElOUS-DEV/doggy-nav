@@ -2,7 +2,7 @@ import TableCom from '@/components/TableCom';
 import { addGroupMembers } from '@/services/api';
 import request from '@/utils/request';
 import { Button, Modal, Space, message } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const AddMembers: React.FC<{
   groupId: string;
@@ -12,7 +12,6 @@ const AddMembers: React.FC<{
 }> = ({ groupId, open, onClose, onSuccess }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  const queryRef = useRef<any>({});
 
   useEffect(() => {
     if (!open) setSelectedRowKeys([]);
@@ -54,11 +53,14 @@ const AddMembers: React.FC<{
         search={{ labelWidth: 60 }}
         pagination={{ pageSize: 10 }}
         request={async (params) => {
-          queryRef.current = params;
+          const { current, ...filters } = params;
           const res: any = await request({
             method: 'GET',
             url: '/api/user',
-            params,
+            data: {
+              ...filters,
+              pageNumber: current,
+            },
           });
           const list = Array.isArray(res?.list)
             ? res.list

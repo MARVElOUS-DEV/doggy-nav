@@ -6,6 +6,7 @@ import { TOKENS } from '../core/ioc';
 import { Inject } from '../core/inject';
 import type { UserService } from 'doggy-nav-core';
 import MongooseAuthRepository from '../../adapters/authRepository';
+import { getAppSource } from '../utils/appSource';
 
 export default class UserController extends CommonController {
   @Inject(TOKENS.UserService)
@@ -49,22 +50,8 @@ export default class UserController extends CommonController {
     }
     const repo = new MongooseAuthRepository(ctx);
     const service = new UserAuthService(repo);
-    const issueTokens = async (payload: any) => {
-      const jwtConfig = ctx.app.config.jwt as {
-        accessExpiresIn?: string;
-        refreshExpiresIn?: string;
-        secret: string;
-      };
-      const accessToken = ctx.app.jwt.sign(payload, jwtConfig.secret, {
-        expiresIn: jwtConfig?.accessExpiresIn || '15m',
-      });
-      const refreshToken = ctx.app.jwt.sign(
-        { sub: payload.userId, typ: 'refresh' },
-        jwtConfig.secret,
-        { expiresIn: jwtConfig?.refreshExpiresIn || '7d' }
-      );
-      return { accessToken, refreshToken };
-    };
+    const issueTokens = async (payload: any) =>
+      await ctx.service.user.generateTokensForPayload(payload, getAppSource(ctx));
     const res = await service.login(String(username || ''), String(password || ''), issueTokens);
     if (!res) {
       throw new AuthenticationError('账号或密码错误');

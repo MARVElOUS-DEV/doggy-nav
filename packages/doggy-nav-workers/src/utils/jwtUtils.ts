@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-interface JWTPayload {
+export interface JWTPayload {
   userId: string;
   email: string;
   username: string;
@@ -9,77 +9,91 @@ interface JWTPayload {
   groups: string[];
   groupIds: string[];
   permissions: string[];
+  typ?: 'access';
   iat?: number;
   exp?: number;
 }
 
-interface TokenPair {
+export interface RefreshTokenPayload {
+  userId: string;
+  sessionId: string;
+  tokenId: string;
+  source: 'main' | 'admin';
+  exp?: number;
+}
+
+export interface TokenPair {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+  refreshExpiresAt: number;
+}
+
+export interface RefreshTokenOptions {
+  sessionId: string;
+  tokenId: string;
+  source: 'main' | 'admin';
 }
 
 export class JWTUtils {
-  private static readonly ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15 minutes
-  private static readonly REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
+  private static readonly ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000;
+  private static readonly REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000;
 
-  private secretKey: Uint8Array;
+  private readonly key: Uint8Array;
 
   constructor(secret: string) {
-    this.secretKey = new TextEncoder().encode(secret);
+    this.key = new TextEncoder().encode(secret);
   }
 
-  /**
-   * Generate a new JWT token pair
-   */
-  async generateTokenPair(payload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<TokenPair> {
+  async generateTokenPair(
+    payload: Omit<JWTPayload, 'iat' | 'exp' | 'typ'>,
+    options: RefreshTokenOptions = {
+      sessionId: crypto.randomUUID(),
+      tokenId: crypto.randomUUID(),
+      source: 'main',
+    }
+  ): Promise<TokenPair> {
     const now = Math.floor(Date.now() / 1000);
     const accessTokenExpiry = now + Math.floor(JWTUtils.ACCESS_TOKEN_EXPIRY / 1000);
     const refreshTokenExpiry = now + Math.floor(JWTUtils.REFRESH_TOKEN_EXPIRY / 1000);
 
-    // Generate access token
-    const accessToken = await new SignJWT({
-      ...payload,
-      iat: now,
-      exp: accessTokenExpiry,
-    })
+    const accessToken = await new SignJWT({ ...payload, typ: 'access' })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt(now)
       .setExpirationTime(accessTokenExpiry)
-      .sign(this.secretKey);
+      .sign(this.key);
 
-    // Generate refresh token
     const refreshToken = await new SignJWT({
-      userId: payload.userId,
-      type: 'refresh',
-      iat: now,
-      exp: refreshTokenExpiry,
+      typ: 'refresh',
+      sid: options.sessionId,
+      source: options.source,
     })
       .setProtectedHeader({ alg: 'HS256' })
+      .setSubject(payload.userId)
+      .setJti(options.tokenId)
       .setIssuedAt(now)
       .setExpirationTime(refreshTokenExpiry)
-      .sign(this.secretKey);
+      .sign(this.key);
 
     return {
       accessToken,
       refreshToken,
       expiresIn: JWTUtils.ACCESS_TOKEN_EXPIRY,
+      refreshExpiresAt: refreshTokenExpiry * 1000,
     };
   }
 
-  /**
-   * Verify and decode an access token
-   */
   async verifyAccessToken(token: string): Promise<JWTPayload | null> {
     try {
-      const { payload } = await jwtVerify(token, this.secretKey, {
+      const { payload } = await jwtVerify(token, this.key, {
         algorithms: ['HS256'],
-        // Allow small clock skew to reduce false expirations in distributed/dev environments
-        clockTolerance: 60, // seconds
+        clockTolerance: 60,
       });
+      if (payload.typ !== 'access' || typeof payload.userId !== 'string') return null;
 
       return {
-        userId: payload.userId as string,
+        typ: 'access',
+        userId: payload.userId,
         email: payload.email as string,
         username: payload.username as string,
         roles: Array.isArray(payload.roles) ? (payload.roles as string[]) : [],
@@ -87,72 +101,60 @@ export class JWTUtils {
         groups: Array.isArray(payload.groups) ? (payload.groups as string[]) : [],
         groupIds: Array.isArray(payload.groupIds) ? (payload.groupIds as string[]) : [],
         permissions: Array.isArray(payload.permissions) ? (payload.permissions as string[]) : [],
-        iat: payload.iat as number,
-        exp: payload.exp as number,
+        iat: payload.iat,
+        exp: payload.exp,
       };
-    } catch (error) {
-      console.error('Access token verification failed:', error);
+    } catch {
       return null;
     }
   }
 
-  /**
-   * Verify and decode a refresh token
-   */
-  async verifyRefreshToken(token: string): Promise<{ userId: string } | null> {
+  async verifyRefreshToken(token: string): Promise<RefreshTokenPayload | null> {
     try {
-      const { payload } = await jwtVerify(token, this.secretKey, {
+      const { payload } = await jwtVerify(token, this.key, {
         algorithms: ['HS256'],
-        clockTolerance: 60, // seconds
+        clockTolerance: 60,
       });
-
-      if (payload.type !== 'refresh') {
-        throw new Error('Invalid token type');
+      if (
+        payload.typ !== 'refresh' ||
+        typeof payload.sub !== 'string' ||
+        typeof payload.sid !== 'string' ||
+        typeof payload.jti !== 'string' ||
+        (payload.source !== 'main' && payload.source !== 'admin')
+      ) {
+        return null;
       }
-
       return {
-        userId: payload.userId as string,
+        userId: payload.sub,
+        sessionId: payload.sid,
+        tokenId: payload.jti,
+        source: payload.source,
+        exp: payload.exp,
       };
-    } catch (error) {
-      console.error('Refresh token verification failed:', error);
+    } catch {
       return null;
     }
   }
 
-  /**
-   * Refresh access token using refresh token
-   */
   async refreshAccessToken(
     refreshToken: string,
-    userPayload: Omit<JWTPayload, 'iat' | 'exp'>
+    userPayload: Omit<JWTPayload, 'iat' | 'exp' | 'typ'>
   ): Promise<TokenPair | null> {
     const refreshPayload = await this.verifyRefreshToken(refreshToken);
-    if (!refreshPayload || refreshPayload.userId !== userPayload.userId) {
-      return null;
-    }
-
-    return await this.generateTokenPair(userPayload);
+    if (!refreshPayload || refreshPayload.userId !== userPayload.userId) return null;
+    return this.generateTokenPair(userPayload, {
+      sessionId: refreshPayload.sessionId,
+      tokenId: crypto.randomUUID(),
+      source: refreshPayload.source,
+    });
   }
 
-  /**
-   * Extract JWT from Authorization header
-   */
   static extractTokenFromHeader(authorizationHeader: string | null): string | null {
-    if (!authorizationHeader) {
-      return null;
-    }
-
+    if (!authorizationHeader) return null;
     const parts = authorizationHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      return null;
-    }
-
-    return parts[1];
+    return parts.length === 2 && parts[0] === 'Bearer' ? parts[1] : null;
   }
 
-  /**
-   * Create JWT payload from user data
-   */
   static createPayload(user: {
     id: string;
     email: string;
@@ -162,7 +164,7 @@ export class JWTUtils {
     groups: string[];
     groupIds: string[];
     permissions: string[];
-  }): Omit<JWTPayload, 'iat' | 'exp'> {
+  }): Omit<JWTPayload, 'iat' | 'exp' | 'typ'> {
     return {
       userId: user.id,
       email: user.email,
@@ -175,38 +177,22 @@ export class JWTUtils {
     };
   }
 
-  /**
-   * Check if token is expired
-   */
   static isTokenExpired(payload: JWTPayload): boolean {
-    const now = Math.floor(Date.now() / 1000);
-    return payload.exp ? payload.exp < now : false;
+    return payload.exp ? payload.exp < Math.floor(Date.now() / 1000) : false;
   }
 
-  /**
-   * Get token expiry time in milliseconds
-   */
   static getTokenExpiry(payload: JWTPayload): number {
     return payload.exp ? payload.exp * 1000 : 0;
   }
 
-  /**
-   * Check if user has required permission
-   */
   static hasPermission(payload: JWTPayload, requiredPermission: string): boolean {
     return payload.permissions.includes(requiredPermission) || payload.permissions.includes('*');
   }
 
-  /**
-   * Check if user has required role
-   */
   static hasRole(payload: JWTPayload, requiredRole: string): boolean {
     return payload.roles.includes(requiredRole) || payload.roles.includes('sysadmin');
   }
 
-  /**
-   * Check if user is in required group
-   */
   static isInGroup(payload: JWTPayload, requiredGroup: string): boolean {
     return payload.groups.includes(requiredGroup);
   }

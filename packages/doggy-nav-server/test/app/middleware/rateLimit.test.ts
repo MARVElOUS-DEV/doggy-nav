@@ -6,7 +6,7 @@ import { app } from 'egg-mock/bootstrap';
 async function signPayload(payload: any) {
   const a = app as any;
   const secret = a.config.jwt.secret;
-  return 'Bearer ' + a.jwt.sign(payload, secret, { expiresIn: '10m' });
+  return 'Bearer ' + a.jwt.sign({ typ: 'access', ...payload }, secret, { expiresIn: '10m' });
 }
 
 describe('middleware rateLimit', () => {

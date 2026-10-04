@@ -11,12 +11,20 @@ import {
   getStateCookie,
   clearStateCookie,
   getAccessTokenFromCookies,
+  getRefreshTokenFromCookies,
+  getAppSource,
 } from '../utils/cookieAuth';
 import { D1OAuthRepository, type OAuthProvider } from '../adapters/d1OAuthRepository';
 import { PasswordUtils } from '../utils/passwordUtils';
 import { getUserAccessContext } from '../utils/userContext';
 import { TOKENS } from '../ioc/tokens';
 import type { UserAuthService } from 'doggy-nav-core';
+import {
+  issueTrackedTokenPair,
+  RefreshConcurrencyError,
+  revokeTrackedRefreshToken,
+  rotateTrackedRefreshToken,
+} from '../utils/refreshSessions';
 
 const authRoutes = new Hono<{
   Bindings: {
@@ -112,7 +120,7 @@ authRoutes.post('/register', async (c) => {
       permissions: access.permissions,
     });
 
-    const tokens = await jwtUtils.generateTokenPair(userPayload);
+    const tokens = await issueTrackedTokenPair(c.env.DB, jwtUtils, userPayload, getAppSource(c));
     // Set auth cookies for web clients
     setAuthCookies(c as any, tokens);
 
@@ -157,26 +165,24 @@ authRoutes.post('/login', async (c) => {
 
     const svc = getDI(c).resolve(TOKENS.AuthService) as UserAuthService;
     const jwtUtils = new JWTUtils(c.env.JWT_SECRET!);
+    const source = getAppSource(c);
     const result = await svc.login(id, password, async (payload) => {
-      const tokens = await jwtUtils.generateTokenPair(
-        JWTUtils.createPayload({
-          id: payload.userId,
-          email: '',
-          username: payload.username,
-          roles: payload.roles,
-          roleIds: payload.roleIds,
-          groups: payload.groups,
-          groupIds: payload.groupIds,
-          permissions: payload.permissions,
-        })
-      );
-      return tokens;
+      const tokenPayload = JWTUtils.createPayload({
+        id: payload.userId,
+        email: '',
+        username: payload.username,
+        roles: payload.roles,
+        roleIds: payload.roleIds,
+        groups: payload.groups,
+        groupIds: payload.groupIds,
+        permissions: payload.permissions,
+      });
+      return issueTrackedTokenPair(c.env.DB, jwtUtils, tokenPayload, source);
     });
     if (!result) return c.json(responses.badRequest('Invalid credentials'), 401);
 
     // Enforce admin access for admin app source
-    const src = (c.req.header('X-App-Source') || '').toLowerCase();
-    if (src === 'admin') {
+    if (source === 'admin') {
       const roleSet = new Set(result.user.roles);
       if (!(roleSet.has('admin') || roleSet.has('sysadmin'))) {
         return c.json(responses.err('权限不足'), 403);
@@ -193,16 +199,16 @@ authRoutes.post('/login', async (c) => {
 authRoutes.post('/refresh', async (c) => {
   try {
     if (!c.env.JWT_SECRET) {
-      return c.json(responses.err('服务器配置错误: 缺少 JWT 密钥'));
+      return c.json(responses.serverError(), 503);
     }
     const body = await c.req.json().catch(() => ({}));
     let refreshToken = body?.refreshToken;
     if (!refreshToken) {
-      const { getRefreshTokenFromCookies } = await import('../utils/cookieAuth');
       refreshToken = getRefreshTokenFromCookies(c as any);
     }
     if (!refreshToken) {
-      return c.json(responses.err('缺少refresh token'));
+      clearAuthCookies(c as any);
+      return c.json(responses.err('缺少refresh token'), 401);
     }
 
     const userRepository = new D1UserRepository(c.env.DB);
@@ -210,11 +216,15 @@ authRoutes.post('/refresh', async (c) => {
 
     const refreshPayload = await jwtUtils.verifyRefreshToken(refreshToken);
     if (!refreshPayload) {
-      return c.json(responses.err('refresh token 类型错误'));
+      clearAuthCookies(c as any);
+      return c.json(responses.err('refresh token 类型错误'), 401);
     }
 
     const ctx2 = await getUserAccessContext(c.env.DB, userRepository, refreshPayload.userId);
-    if (!ctx2) return c.json(responses.err('用户不存在或已禁用'));
+    if (!ctx2) {
+      clearAuthCookies(c as any);
+      return c.json(responses.err('用户不存在或已禁用'), 401);
+    }
     const user = ctx2.user;
     const roles = ctx2.roles;
     const roleIds = ctx2.roleIds;
@@ -233,9 +243,16 @@ authRoutes.post('/refresh', async (c) => {
       permissions,
     });
 
-    const newTokens = await jwtUtils.refreshAccessToken(refreshToken, userPayload);
+    const newTokens = await rotateTrackedRefreshToken(
+      c.env.DB,
+      jwtUtils,
+      refreshToken,
+      userPayload,
+      getAppSource(c)
+    );
     if (!newTokens) {
-      return c.json(responses.err('刷新失败'));
+      clearAuthCookies(c as any);
+      return c.json(responses.err('刷新失败'), 401);
     }
 
     setAuthCookies(c as any, newTokens);
@@ -249,13 +266,23 @@ authRoutes.post('/refresh', async (c) => {
 
     return c.json(responses.ok({ token: 'Bearer ' + newTokens.accessToken, accessExp }));
   } catch (error) {
+    if (error instanceof RefreshConcurrencyError) {
+      return c.json(responses.err('refresh already completed'), 409);
+    }
     console.error('Refresh error:', error);
-    return c.json(responses.err('刷新失败'));
+    return c.json(responses.serverError('刷新暂时不可用，请稍后重试'), 503);
   }
 });
 
 authRoutes.post('/logout', async (c) => {
   try {
+    if (c.env.JWT_SECRET) {
+      const refreshToken = getRefreshTokenFromCookies(c as any);
+      if (refreshToken) {
+        const jwtUtils = new JWTUtils(c.env.JWT_SECRET);
+        await revokeTrackedRefreshToken(c.env.DB, jwtUtils, refreshToken);
+      }
+    }
     clearAuthCookies(c as any);
     return c.body(null, 204);
   } catch (error) {
@@ -880,7 +907,7 @@ authRoutes.get('/:provider/callback', async (c) => {
       groupIds: ctx?.groupIds || [],
       permissions: ctx?.permissions || [],
     });
-    const tokens = await jwtUtils.generateTokenPair(payload);
+    const tokens = await issueTrackedTokenPair(c.env.DB, jwtUtils, payload, getAppSource(c));
     await userRepository.update(user.id, { lastLoginAt: new Date() });
     setAuthCookies(c as any, tokens);
     clearStateCookie(c as any);
