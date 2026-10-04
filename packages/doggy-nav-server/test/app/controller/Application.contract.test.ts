@@ -1,4 +1,5 @@
 import { app } from 'egg-mock/bootstrap';
+import { mockAuthUser } from '../../utils/auth-user';
 
 const RUN = String(process.env.RUN_CONTRACT || '').toLowerCase();
 const ENABLED = RUN === '1' || RUN === 'true' || RUN === 'yes';
@@ -6,6 +7,7 @@ const ENABLED = RUN === '1' || RUN === 'true' || RUN === 'yes';
 describe('contract: GET /api/application/list', () => {
   it('returns stable envelope with list+total when enabled (sysadmin required)', async function () {
     if (!ENABLED) return this.skip();
+    mockAuthUser({ typ: 'access', userId: '507f1f77bcf86cd799439013', roles: ['sysadmin'] });
     const token = (app as any).jwt.sign(
       { typ: 'access', userId: '507f1f77bcf86cd799439013', roles: ['sysadmin'] },
       (app as any).config.jwt.secret,

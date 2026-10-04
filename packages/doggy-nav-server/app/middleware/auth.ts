@@ -7,6 +7,7 @@ import {
 import { getAccessTokenFromCookies, getAppSource } from '../utils/appSource';
 import { computeEffectiveRoles } from '../utils/rbac';
 import type { AuthUserContext } from '../../types/rbac';
+import MongooseAuthRepository from '../../adapters/authRepository';
 
 export default () => {
   return async function (ctx: any, next: any) {
@@ -130,14 +131,17 @@ async function accessTokenVerify(ctx: any) {
   if (token) {
     try {
       const decode: any = await jwt.verify(token, secret, { algorithms: ['HS256'] });
-      if (decode?.typ !== 'access' || !decode?.userId) {
+      if (decode?.typ !== 'access' || typeof decode?.userId !== 'string' || !decode.userId) {
         return { authenticated: false, error: 'token 类型错误' };
       }
-      // Attach request source and effective roles
+      // Resolve current access on every request: token claims can outlive account revocation.
+      const user = await new MongooseAuthRepository(ctx).loadAuthUser(decode.userId);
       const source = getAppSource(ctx);
-      const eff = computeEffectiveRoles(Array.isArray(decode?.roles) ? decode.roles : [], source);
+      const eff = computeEffectiveRoles(user.roles, source);
       ctx.state.userinfo = {
         ...decode,
+        ...user,
+        userId: user.id,
         authType: 'jwt',
         source,
         effectiveRoles: eff,

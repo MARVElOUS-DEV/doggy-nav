@@ -1,4 +1,5 @@
 import { app } from 'egg-mock/bootstrap';
+import { mockAuthUser } from '../../utils/auth-user';
 
 const TEST_ADMIN_ID = '507f1f77bcf86cd799439015';
 const TEST_USER_ID = '507f1f77bcf86cd799439016';
@@ -25,6 +26,7 @@ describe('contract: /api/site-settings', () => {
   });
 
   it('allows admin writes and public reads of saved settings', async () => {
+    mockAuthUser({ typ: 'access', userId: TEST_ADMIN_ID, roles: ['admin'] });
     const token = (app as any).jwt.sign(
       { typ: 'access', userId: TEST_ADMIN_ID, roles: ['admin'] },
       (app as any).config.jwt.secret,
@@ -122,6 +124,7 @@ describe('contract: /api/site-settings', () => {
   });
 
   it('rejects malformed hero media and CTA pairs', async () => {
+    mockAuthUser({ typ: 'access', userId: TEST_ADMIN_ID, roles: ['admin'] });
     const token = (app as any).jwt.sign(
       { typ: 'access', userId: TEST_ADMIN_ID, roles: ['admin'] },
       (app as any).config.jwt.secret,
@@ -149,6 +152,7 @@ describe('contract: /api/site-settings', () => {
   });
 
   it('rejects non-admin writes', async () => {
+    mockAuthUser({ typ: 'access', userId: TEST_USER_ID, roles: ['user'] });
     const token = (app as any).jwt.sign(
       { typ: 'access', userId: TEST_USER_ID, roles: ['user'] },
       (app as any).config.jwt.secret,

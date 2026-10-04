@@ -11,7 +11,7 @@ const FORCE = process.argv.includes('--force') || process.env.FORCE === '1';
 const DEFAULT_ADMIN = {
   username: process.env.ADMIN_USERNAME || 'admin',
   email: process.env.ADMIN_EMAIL || 'admin@doggy-nav.cn',
-  password: process.env.ADMIN_PASSWORD || 'Admin123',
+  password: Core.requireBootstrapPassword(process.env.ADMIN_PASSWORD),
   nickName: process.env.ADMIN_NICKNAME || 'Administrator',
 };
 

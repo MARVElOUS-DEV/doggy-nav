@@ -17,14 +17,10 @@ interface AuthContext {
   };
 }
 
-// Global cache for JWT utilities
-let jwtUtils: JWTUtils | null = null;
-
 function getJWTUtils(env: { JWT_SECRET?: string }): JWTUtils {
-  if (!jwtUtils && env.JWT_SECRET) {
-    jwtUtils = new JWTUtils(env.JWT_SECRET);
-  }
-  return jwtUtils!;
+  if (!env.JWT_SECRET) throw new Error('Missing JWT secret');
+  // Bind verification to this request's configuration, including after secret rotation.
+  return new JWTUtils(env.JWT_SECRET);
 }
 
 /**

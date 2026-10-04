@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { requestPublicHttpEdge } from 'doggy-nav-core/dist/security/publicHttpEdge';
 import { TOKENS } from '../ioc/tokens';
 import { getDI } from '../ioc/helpers';
 import { responses } from '../utils/responses';
@@ -673,8 +674,8 @@ navRoutes.get('/reptile', async (c) => {
   try {
     const target = c.req.query('url');
     if (!target) return c.json(responses.badRequest('url required'), 400);
-    const res = await fetch(target, { method: 'GET' });
-    const html = await res.text();
+    const res = await requestPublicHttpEdge(target, { method: 'GET', timeoutMs: 10000 });
+    const html = res.body;
     const name = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '').trim();
     const desc = (
       html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i)?.[1] ||
