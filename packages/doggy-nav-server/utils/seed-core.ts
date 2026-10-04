@@ -20,6 +20,7 @@ async function withDb<T>(fn: (ctx: any) => Promise<T>): Promise<T> {
 }
 
 async function seedDefaultsCLI() {
+  const plain = Core.requireBootstrapPassword(process.env.ADMIN_PASSWORD);
   return withDb(async (db) => {
     const Role = roleModel(db);
     const User = userModel(db);
@@ -73,7 +74,6 @@ async function seedDefaultsCLI() {
 
     const username = process.env.ADMIN_USERNAME || 'admin';
     const email = process.env.ADMIN_EMAIL || 'admin@doggy-nav.cn';
-    const plain = process.env.ADMIN_PASSWORD || 'admin123';
     const nickName = process.env.ADMIN_NICKNAME || 'Administrator';
     const passwordHash = await bcrypt.hash(plain, 12);
 

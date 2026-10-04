@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { probeUrlAvailability } from '../../lib/urlAvailability';
+import { requestPublicHttpNode } from 'doggy-nav-core/dist/security/publicHttpNode';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -17,6 +18,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const result = await probeUrlAvailability(url, {
       timeoutMs: 5000,
+      fetchImpl: async (input, init) => {
+        const response = await requestPublicHttpNode(String(input), {
+          method: init?.method === 'GET' ? 'GET' : 'HEAD',
+          headers: Object.fromEntries(new Headers(init?.headers).entries()),
+          timeoutMs: 5000,
+        });
+        return new Response(null, { status: response.status });
+      },
       init: {
         headers: {
           'User-Agent':

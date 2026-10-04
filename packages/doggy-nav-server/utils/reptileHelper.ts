@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { requestPublicHttpNode } from 'doggy-nav-core/dist/security/publicHttpNode';
 import * as cheerio from 'cheerio';
 import { URL } from 'url';
 
@@ -44,14 +44,12 @@ export async function parseHTML(url) {
   try {
     const { origin, hostname } = new URL(targetUrl);
 
-    const response = await axios.get(targetUrl, {
-      timeout: 10000, // Increased timeout
+    const response = await requestPublicHttpNode(targetUrl, {
+      timeoutMs: 10000,
       headers: BROWSER_HEADERS,
-      maxRedirects: 5,
-      validateStatus: (status) => status < 400, // Resolve only for 2xx/3xx
     });
-
-    const body = response.data;
+    if (response.status >= 400) throw new Error('Site returned an HTTP error');
+    const body = response.body;
 
     if (body) {
       const $ = cheerio.load(body);

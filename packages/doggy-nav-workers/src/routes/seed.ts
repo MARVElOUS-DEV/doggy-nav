@@ -48,12 +48,18 @@ seedRoutes.post('/defaults', async (c) => {
   const token = c.req.query('token');
   if (!c.env.SEED_TOKEN || token !== c.env.SEED_TOKEN) return c.text('forbidden', 403);
 
+  let plain: string;
+  try {
+    plain = Core.requireBootstrapPassword(c.env.ADMIN_PASSWORD);
+  } catch (error) {
+    return c.json({ ok: false, message: (error as Error).message }, 400);
+  }
+
   await ensureSystemMetaTable(c.env.DB);
   if (await hasMeta(c.env.DB, 'seed:defaults')) return c.json({ ok: true, skipped: true });
 
   const username = c.env.ADMIN_USERNAME || 'admin';
   const email = c.env.ADMIN_EMAIL || 'admin@doggy-nav.cn';
-  const plain = c.env.ADMIN_PASSWORD || 'Admin123';
   const nick = c.env.ADMIN_NICKNAME || 'Administrator';
   const hash = await bcrypt.hash(plain, 12);
 

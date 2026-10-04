@@ -3,6 +3,7 @@ import userModel from '../app/model/user';
 import * as readline from 'readline';
 import * as bcrypt from 'bcrypt';
 import mongoCfg from '../config/mongodb';
+import { requireBootstrapPassword } from 'doggy-nav-core';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -46,8 +47,8 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
       console.error(`User ${finalUsername} does not exist!`);
       process.exit(1);
     }
-    const password = await askQuestion('Enter password you want to reset to (default: admin123)', true);
-    const finalPassword = await bcrypt.hash(password.trim() || 'admin123', 12);
+    const password = requireBootstrapPassword(await askQuestion('Enter new password (required)', true));
+    const finalPassword = await bcrypt.hash(password, 12);
 
     const {modifiedCount} = await userSchema.updateOne({
       username: { $eq: finalUsername },

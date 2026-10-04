@@ -813,9 +813,21 @@ async function findOrCreateFromProvider(
     }
   }
 
-  // Try by email
-  const email = profile.emails?.find((e) => !!e.value)?.value;
-  let user = email ? await userRepo.getByEmail(email!) : null;
+  // Email equality is not proof of account ownership. Match the Egg backend's
+  // conflict policy; linking requires an authenticated, explicit flow.
+  const email =
+    profile.emails
+      ?.find((e) => e.verified === true && e.value)
+      ?.value?.trim()
+      .toLowerCase() ||
+    profile.emails
+      ?.find((e) => e.value)
+      ?.value?.trim()
+      .toLowerCase();
+  if (email && (await userRepo.getByEmail(email))) {
+    throw new Error('OAuth email already belongs to an existing account');
+  }
+  let user = null;
   let isNewUser = false;
 
   if (!user) {
@@ -830,7 +842,7 @@ async function findOrCreateFromProvider(
       .slice(0, 20);
     const suffix = Math.random().toString(36).slice(2, 6);
     const username = [base || profile.provider, suffix].join('_');
-    const pwd = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const pwd = crypto.randomUUID() + crypto.randomUUID();
     const passwordHash = await PasswordUtils.hashPassword(pwd);
     user = await userRepo.create({
       username,
@@ -896,6 +908,10 @@ authRoutes.get('/:provider/callback', async (c) => {
     if (!c.env.JWT_SECRET) return c.json(responses.serverError('Missing JWT secret'), 500);
     const userRepository = new D1UserRepository(c.env.DB);
     const ctx = await getUserAccessContext(c.env.DB, userRepository, user.id);
+    if (!ctx) {
+      clearStateCookie(c as any);
+      return c.redirect('/login?err=inactive');
+    }
     const jwtUtils = new JWTUtils(c.env.JWT_SECRET);
     const payload = JWTUtils.createPayload({
       id: user.id,
@@ -916,6 +932,7 @@ authRoutes.get('/:provider/callback', async (c) => {
     return c.redirect(redirectTo.startsWith('/') ? redirectTo : redirectTo);
   } catch (err) {
     console.error('OAuth callback error:', err);
+    clearStateCookie(c as any);
     return c.redirect('/login?err=oauth');
   }
 });

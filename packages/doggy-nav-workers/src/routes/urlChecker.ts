@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { requestPublicHttpEdge } from 'doggy-nav-core/dist/security/publicHttpEdge';
 import { responses } from '../utils/responses';
 import { createAuthMiddleware, requireRole } from '../middleware/auth';
 
@@ -37,8 +38,8 @@ urlCheckerRoutes.post('/check', createAuthMiddleware({ required: true }), requir
     const start = Date.now();
     let status: 'accessible' | 'inaccessible' = 'inaccessible';
     try {
-      const r = await fetch(href, { method: 'HEAD' });
-      status = r.ok ? 'accessible' : 'inaccessible';
+      const r = await requestPublicHttpEdge(href, { method: 'HEAD' });
+      status = r.status >= 200 && r.status < 400 ? 'accessible' : 'inaccessible';
     } catch {
       status = 'inaccessible';
     }
@@ -57,8 +58,8 @@ urlCheckerRoutes.post('/check/:id', createAuthMiddleware({ required: true }), re
     const start = Date.now();
     let status: 'accessible' | 'inaccessible' = 'inaccessible';
     try {
-      const r = await fetch(row.href, { method: 'HEAD' });
-      status = r.ok ? 'accessible' : 'inaccessible';
+      const r = await requestPublicHttpEdge(row.href, { method: 'HEAD' });
+      status = r.status >= 200 && r.status < 400 ? 'accessible' : 'inaccessible';
     } catch {
       status = 'inaccessible';
     }

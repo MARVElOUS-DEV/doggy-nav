@@ -1,9 +1,11 @@
 import assert from 'assert';
 import request from 'supertest';
 import { app } from 'egg-mock/bootstrap';
+import { mockAuthUser } from '../../utils/auth-user';
 
 // Helper to sign a fake JWT payload via app.jwt
 async function signPayload(payload: any) {
+  mockAuthUser(payload);
   const a = app as any;
   const secret = a.config.jwt.secret;
   return 'Bearer ' + a.jwt.sign({ typ: 'access', ...payload }, secret, { expiresIn: '10m' });

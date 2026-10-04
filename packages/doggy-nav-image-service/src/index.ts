@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { ImageUploadService } from 'doggy-nav-core';
+import { ImageUploadService, verifyHs256AccessToken } from 'doggy-nav-core';
 
 type Env = {
   IMAGES_BUCKET: R2Bucket;
@@ -10,12 +10,6 @@ type Env = {
   IMAGE_MAX_SIZE_MB?: string;
   VIDEO_MAX_SIZE_MB?: string;
   IMAGE_USER_QUOTA_MB?: string;
-};
-
-type JwtPayload = {
-  userId: string;
-  roles?: string[];
-  exp?: number;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -35,20 +29,6 @@ app.use('*', async (c, next) => {
 
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok' }));
-
-// JWT verification helper
-async function verifyJwt(token: string, secret: string): Promise<JwtPayload | null> {
-  try {
-    const [, payloadB64] = token.split('.');
-    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
-    // Note: For production, implement proper HMAC verification
-    // This is simplified - the main backend already verified the token
-    return payload;
-  } catch {
-    return null;
-  }
-}
 
 // R2 storage client
 class R2Storage {
@@ -95,7 +75,7 @@ app.post('/upload', async (c) => {
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (!token) return c.json({ success: false, error: 'Authentication required' }, 401);
 
-  const payload = await verifyJwt(token, c.env.JWT_SECRET);
+  const payload = await verifyHs256AccessToken(token, c.env.JWT_SECRET);
   if (!payload) return c.json({ success: false, error: 'Invalid token' }, 401);
 
   // Config check
@@ -103,7 +83,7 @@ app.post('/upload', async (c) => {
     return c.json({ success: false, error: 'Image storage not configured' }, 503);
   }
 
-  const isAdmin = payload.roles?.includes('admin') || payload.roles?.includes('sys_admin');
+  const isAdmin = payload.roles.includes('admin') || payload.roles.includes('sysadmin');
   const storage = new R2Storage(c.env.IMAGES_BUCKET, c.env.IMAGES_PUBLIC_URL);
   const service = new ImageUploadService(storage, {
     maxFileSizeBytes: parseFloat(c.env.IMAGE_MAX_SIZE_MB || '3') * 1024 * 1024,

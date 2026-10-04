@@ -4,6 +4,11 @@ ALLOWED_ORIGINS="http://localhost:3001"
 RATE_LIMIT_MAX="100"
 RATE_LIMIT_WINDOW_MS="60000"
 NODE_ENV="development"
+# Required for /api/seed/defaults and d1:seed:defaults; no default password.
+# Set ADMIN_PASSWORD as a secret (12+ characters, uppercase, lowercase and a number).
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@doggy-nav.cn
+ADMIN_PASSWORD=
 AI_BOOKMARK_ORGANIZE_DEBUG=false
 PUBLIC_BASE_URL="http://localhost:3001"
 # Override these when the passkey origin/RP differs from PUBLIC_BASE_URL.
@@ -48,6 +53,8 @@ GITHUB_TOKEN=
 
 # Do NOT put secrets here. Set secrets with:
 #   wrangler secret put JWT_SECRET
+#   wrangler secret put ADMIN_PASSWORD
+#   wrangler secret put SEED_TOKEN
 #   wrangler secret put GITHUB_CLIENT_SECRET
 #   wrangler secret put LINUXDO_CLIENT_SECRET
 #   wrangler secret put STRIPE_SECRET_KEY

@@ -1,4 +1,5 @@
 import { app } from 'egg-mock/bootstrap';
+import { mockAuthUser } from '../../utils/auth-user';
 
 const RUN = String(process.env.RUN_CONTRACT || '').toLowerCase();
 const ENABLED = RUN === '1' || RUN === 'true' || RUN === 'yes';
@@ -9,6 +10,7 @@ const TEST_USER_ID = '507f1f77bcf86cd799439011';
 describe('contract: GET /api/favorites/list', () => {
   it('returns stable envelope and page payload when enabled', async function () {
     if (!ENABLED) return this.skip();
+    mockAuthUser({ typ: 'access', userId: TEST_USER_ID, roles: ['user'] });
     const token = (app as any).jwt.sign(
       { typ: 'access', userId: TEST_USER_ID, roles: ['user'] },
       (app as any).config.jwt.secret,

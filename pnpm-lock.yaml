@@ -147,6 +147,9 @@ importers:
 
   packages/doggy-nav-core:
     devDependencies:
+      '@types/node':
+        specifier: 24.10.1
+        version: 24.10.1
       typescript:
         specifier: ^5
         version: 5.9.2

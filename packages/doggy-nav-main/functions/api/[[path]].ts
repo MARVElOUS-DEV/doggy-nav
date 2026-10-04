@@ -1,4 +1,5 @@
 import { probeUrlAvailability } from '../../lib/urlAvailability';
+import { requestPublicHttpEdge } from 'doggy-nav-core/dist/security/publicHttpEdge';
 
 // Cloudflare Pages Function: proxy /api/* to backend and implement Next-only endpoints
 export const onRequest = async (context: any) => {
@@ -25,6 +26,13 @@ export const onRequest = async (context: any) => {
     try {
       const result = await probeUrlAvailability(target, {
         timeoutMs: 5000,
+        fetchImpl: async (input, init) => {
+          const response = await requestPublicHttpEdge(String(input), {
+            method: init?.method === 'GET' ? 'GET' : 'HEAD',
+            headers: Object.fromEntries(new Headers(init?.headers).entries()),
+          });
+          return new Response(null, { status: response.status });
+        },
         init: {
           headers: {
             'User-Agent':
@@ -44,7 +52,7 @@ export const onRequest = async (context: any) => {
           responseTime: Date.now() - start,
           checkedVia: 'HEAD',
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
     }
   }
@@ -126,7 +134,8 @@ export const onRequest = async (context: any) => {
     if (page) upstreamParams.set('pageNumber', page);
     if (limit) upstreamParams.set('pageSize', limit);
 
-    const targetUrl = base + 'api/nav' + (upstreamParams.toString() ? `?${upstreamParams.toString()}` : '');
+    const targetUrl =
+      base + 'api/nav' + (upstreamParams.toString() ? `?${upstreamParams.toString()}` : '');
 
     const headers = new Headers(request.headers);
     headers.set('X-App-Source', 'main');

@@ -8,6 +8,7 @@ import applicationModel from '../app/model/application';
 import * as crypto from 'crypto';
 import { DEFAULT_ROLES } from '../app/permissions';
 import groupModel from '../app/model/group';
+import { requireBootstrapPassword } from 'doggy-nav-core';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -44,8 +45,8 @@ const askQuestion = (query: string, isPassword: boolean = false): Promise<string
     const username = await askQuestion('Enter username (default: admin)', false);
     const finalUsername = username.trim() || 'admin';
 
-    const password = await askQuestion('Enter password (default: Admin123)', true);
-    const finalPassword = await bcrypt.hash(password.trim() || 'Admin123', 12);
+    const password = requireBootstrapPassword(await askQuestion('Enter administrator password (required)', true));
+    const finalPassword = await bcrypt.hash(password, 12);
 
     const { modifiedCount, upsertedCount, matchedCount } = await userSchemaModel.updateOne(
       {
