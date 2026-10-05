@@ -25,7 +25,8 @@ jobs:
           - dockerfile: Dockerfile-Main
             image: doggy-nav-frontend
             context: .
-            build-args: ''
+            build-args: |
+              NEXT_PUBLIC_IMAGE_SERVICE_URL=${{ vars.NEXT_PUBLIC_IMAGE_SERVICE_URL }}
           - dockerfile: Dockerfile-Server
             image: doggy-nav-server
             context: .

@@ -5,6 +5,7 @@ import { IconImage } from '@arco-design/web-react/icon';
 import { Message, Tooltip } from '@arco-design/web-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { LoadingSpinner } from '@/components/PageLoading';
+import { getNavImageMarkdownUrl } from '@/utils/nav-images';
 
 interface ImageUploadToolbarProps {
   onInsert: (markdown: string) => void;
@@ -12,13 +13,17 @@ interface ImageUploadToolbarProps {
   imageHostname?: string;
 }
 
-export default function ImageUploadToolbar({ onInsert, disabled, imageHostname }: ImageUploadToolbarProps) {
+export default function ImageUploadToolbar({
+  onInsert,
+  disabled,
+  imageHostname,
+}: ImageUploadToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { upload, uploading, progress } = useImageUpload({
     imageHostname,
     onSuccess: (images) => {
-      const md = images.map((img) => `![image](${img.url})`).join('\n');
+      const md = images.map((img) => `![image](${getNavImageMarkdownUrl(img)})`).join('\n');
       onInsert(md);
       Message.success(`${images.length} image(s) uploaded`);
     },

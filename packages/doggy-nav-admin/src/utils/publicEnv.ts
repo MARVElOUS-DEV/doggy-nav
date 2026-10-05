@@ -26,6 +26,11 @@ export function getPublicEnv(key: PublicEnvKey, fallback = '') {
     typeof window !== 'undefined'
       ? window.__DOGGY_NAV_RUNTIME_CONFIG__?.[key]
       : undefined;
+  // Umi's define replacements require static property access in the browser bundle.
+  const buildValue =
+    key === 'UMI_APP_IMAGE_SERVICE_URL'
+      ? process.env.UMI_APP_IMAGE_SERVICE_URL
+      : process.env.UMI_APP_COPY_RIGHT_TEXT;
 
-  return normalizePublicEnvValue(runtimeValue ?? process.env[key] ?? fallback);
+  return normalizePublicEnvValue(runtimeValue ?? buildValue ?? fallback);
 }

@@ -13,6 +13,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/doggy-nav-admin/package.json ./packages/doggy-nav-admin/
 COPY packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
 COPY packages/doggy-nav-server/package.json ./packages/doggy-nav-server/
+COPY packages/doggy-nav-core ./packages/doggy-nav-core
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -22,6 +23,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/doggy-nav-admin/node_modules ./packages/doggy-nav-admin/node_modules
+COPY --from=deps /app/packages/doggy-nav-core ./packages/doggy-nav-core
 
 # Copy source code
 COPY packages/doggy-nav-admin ./packages/doggy-nav-admin
@@ -29,7 +31,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
 
 # Build the application
 ENV NODE_ENV=production
-RUN pnpm -F doggy-nav-admin build
+RUN pnpm -F doggy-nav-core build && pnpm -F doggy-nav-admin build
 
 # Production image with nginx
 FROM nginx:1.25-alpine AS runner

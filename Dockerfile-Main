@@ -13,13 +13,16 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
 COPY packages/doggy-nav-main ./packages/doggy-nav-main
 COPY packages/doggy-nav-server/package.json ./packages/doggy-nav-server/
 COPY packages/doggy-nav-admin/package.json ./packages/doggy-nav-admin/
+COPY packages/doggy-nav-core ./packages/doggy-nav-core
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-RUN pnpm -F doggy-nav-main build
+ARG NEXT_PUBLIC_IMAGE_SERVICE_URL=
+ENV NEXT_PUBLIC_IMAGE_SERVICE_URL=${NEXT_PUBLIC_IMAGE_SERVICE_URL}
+RUN pnpm -F doggy-nav-core build && pnpm -F doggy-nav-main build
 
 # Install production dependencies only
 FROM base AS prod-deps
@@ -27,8 +30,10 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
+COPY packages/doggy-nav-core/package.json ./packages/doggy-nav-core/
 ENV CI=true
-RUN pnpm install --prod --frozen-lockfile
+# Core is compiled in the builder; its TypeScript prepare hook needs dev dependencies.
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Production image, copy all the files and run Next.js
 FROM base AS runner
@@ -48,6 +53,8 @@ COPY --from=builder /app/packages/doggy-nav-main/next.config.ts ./packages/doggy
 COPY --from=builder /app/packages/doggy-nav-main/package.json ./packages/doggy-nav-main/
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=prod-deps /app/packages/doggy-nav-main/node_modules ./packages/doggy-nav-main/node_modules
+COPY --from=builder /app/packages/doggy-nav-core/package.json ./packages/doggy-nav-core/
+COPY --from=builder /app/packages/doggy-nav-core/dist ./packages/doggy-nav-core/dist
 
 USER nextjs
 

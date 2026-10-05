@@ -34,6 +34,7 @@ jobs:
       - name: Build admin
         env:
           UMI_APP_COPY_RIGHT_TEXT: ${{ vars.UMI_APP_COPY_RIGHT_TEXT || '2025 狗狗导航' }}
+          UMI_APP_IMAGE_SERVICE_URL: ${{ vars.UMI_APP_IMAGE_SERVICE_URL }}
         run: pnpm -F doggy-nav-admin build
 
       - name: Select deploy branch

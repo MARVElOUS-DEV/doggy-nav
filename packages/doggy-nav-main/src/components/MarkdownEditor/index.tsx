@@ -6,6 +6,7 @@ import type { editor } from 'monaco-editor';
 import ImageUploadToolbar from './ImageUploadToolbar';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { Message } from '@arco-design/web-react';
+import { getNavImageMarkdownUrl } from '@/utils/nav-images';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
@@ -41,7 +42,7 @@ export default function MarkdownEditor({
   const { upload, uploading } = useImageUpload({
     imageHostname,
     onSuccess: (images) => {
-      const md = images.map((img) => `![image](${img.url})`).join('\n');
+      const md = images.map((img) => `![image](${getNavImageMarkdownUrl(img)})`).join('\n');
       insertAtCursor(md);
       Message.success(`${images.length} image(s) uploaded`);
     },
@@ -127,7 +128,11 @@ export default function MarkdownEditor({
     >
       {enableImageUpload && (
         <div className="flex items-center gap-1 px-2 py-1 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
-          <ImageUploadToolbar onInsert={insertAtCursor} disabled={uploading} imageHostname={imageHostname} />
+          <ImageUploadToolbar
+            onInsert={insertAtCursor}
+            disabled={uploading}
+            imageHostname={imageHostname}
+          />
         </div>
       )}
       <div style={{ height }}>

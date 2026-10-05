@@ -4,6 +4,7 @@ import NavTagList from '@/pages/nav/components/NavTagList';
 import { API_NAV_AUDIT, API_NAV_LIST } from '@/services/api';
 import { NavStatus } from '@/types/api';
 import { getCategoryDisplayName } from '@/utils/helpers';
+import { resolveNavImageUrl } from '@/utils/nav-images';
 import request from '@/utils/request';
 import { formatDateTime } from '@/utils/time';
 import { ActionType, ProColumns } from '@ant-design/pro-table';
@@ -154,7 +155,7 @@ function MarkdownPreview({ value }: { value?: string }) {
           ),
           img: ({ src, alt }) => (
             <img
-              src={src || ''}
+              src={resolveNavImageUrl(src) || ''}
               alt={alt || ''}
               style={{ maxWidth: '100%', borderRadius: 8 }}
             />

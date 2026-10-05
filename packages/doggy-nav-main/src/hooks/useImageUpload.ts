@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import axios from '@/utils/axios';
+import { normalizeImageServiceUrl } from 'doggy-nav-core/dist/utils/markdown-images.js';
 
 interface UploadedImage {
   url: string;
@@ -25,7 +26,7 @@ const ALLOWED_TYPES = [
 ];
 
 // Use standalone image service if configured, otherwise use main backend
-const IMAGE_SERVICE_URL = process.env.NEXT_PUBLIC_IMAGE_SERVICE_URL || '';
+const IMAGE_SERVICE_URL = normalizeImageServiceUrl(process.env.NEXT_PUBLIC_IMAGE_SERVICE_URL || '');
 
 async function getAccessToken(): Promise<string | null> {
   try {
@@ -74,9 +75,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         const formData = new FormData();
         files.forEach((file) => formData.append('files', file));
 
-        const uploadUrl = IMAGE_SERVICE_URL
-          ? `${IMAGE_SERVICE_URL}/upload`
-          : '/api/images/upload';
+        const uploadUrl = IMAGE_SERVICE_URL ? `${IMAGE_SERVICE_URL}/upload` : '/api/images/upload';
 
         const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' };
         if (imageHostname) {
