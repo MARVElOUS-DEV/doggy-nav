@@ -21,6 +21,7 @@
     "@arco-design/web-react": "^2.66.5",
     "@monaco-editor/react": "^4.7.0",
     "antd": "^5.28.1",
+    "doggy-nav-core": "workspace:*",
     "monaco-editor": "^0.54.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

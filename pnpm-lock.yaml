@@ -101,6 +101,9 @@ importers:
       antd:
         specifier: ^5.28.1
         version: 5.28.1(date-fns@2.30.0)(moment@2.30.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      doggy-nav-core:
+        specifier: workspace:*
+        version: link:../doggy-nav-core
       monaco-editor:
         specifier: ^0.54.0
         version: 0.54.0

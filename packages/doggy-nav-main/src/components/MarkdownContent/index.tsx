@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { resolveNavImageUrl } from '@/utils/nav-images';
 
 const markdownComponents: Components = {
   h1: ({ children, ...props }) => (
@@ -92,7 +93,7 @@ const markdownComponents: Components = {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       {...props}
-      src={src}
+      src={resolveNavImageUrl(src)}
       alt={alt || ''}
       className="max-w-full h-auto rounded-lg my-4"
       loading="lazy"

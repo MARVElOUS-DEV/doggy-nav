@@ -1,4 +1,5 @@
 import { API_NAV } from '@/services/api';
+import { getNavImageMarkdownUrl, resolveNavImageUrl } from '@/utils/nav-images';
 import { getPublicEnv } from '@/utils/publicEnv';
 import request, { defaultHeaders } from '@/utils/request';
 import {
@@ -150,7 +151,7 @@ function MarkdownPreview({ value }: { value?: string }) {
           ),
           img: ({ src, alt }) => (
             <img
-              src={src || ''}
+              src={resolveNavImageUrl(src) || ''}
               alt={alt || ''}
               style={{ maxWidth: '100%', borderRadius: 8 }}
             />
@@ -337,7 +338,9 @@ export default function NavDetailEditorPage() {
         }
 
         insertAtCursor(
-          images.map((item: any) => `![image](${item.url})`).join('\n'),
+          images
+            .map((item: any) => `![image](${getNavImageMarkdownUrl(item)})`)
+            .join('\n'),
         );
         message.success(`已插入 ${images.length} 张图片`);
       } catch (error: any) {
