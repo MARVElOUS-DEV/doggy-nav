@@ -66,13 +66,17 @@ RUN pnpm -F doggy-nav-server install --prod --frozen-lockfile --ignore-scripts
 # Copy the entire built application from dist to the package directory
 COPY --from=builder /app/packages/doggy-nav-server/dist/ ./packages/doggy-nav-server/
 COPY --from=builder /app/packages/doggy-nav-server/scripts ./packages/doggy-nav-server/scripts
-COPY --from=builder /app/packages/doggy-nav-core/dist/ ./packages/doggy-nav-core/
+# Preserve the dist directory used by core's package entry point and subpath imports.
+COPY --from=builder /app/packages/doggy-nav-core/dist/ ./packages/doggy-nav-core/dist/
 
 WORKDIR /app/packages/doggy-nav-server
 # Change ownership to non-root user
 RUN chown -R eggjs:eggjs /app/packages/doggy-nav-server
 
 USER eggjs
+
+# Verify runtime module resolution before publishing the image.
+RUN node -e "require('./app/service/UrlChecker')"
 
 EXPOSE 3002
 
